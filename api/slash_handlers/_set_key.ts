@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
 export async function setKey(res : VercelResponse, commandArray : string[]) { 
-  let key : string   = commandArray[1]
+  let key   : string = commandArray[1]
   let value : string = commandArray[2]
 
   try {

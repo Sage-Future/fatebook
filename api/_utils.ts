@@ -2,6 +2,22 @@ import { VercelResponse } from '@vercel/node';
 
 import { token } from './_constants.js'
 
+// tokenize a string into an array by splitting on sections
+// in the following syntax, with two strings and one number:
+// "forecast" "date" 0.8
+export function tokenizeForecastString(instring : string) : string[] | null {
+  const regex = /([a-zA-Z]+)\s(\"[^"]*\")\s?(\"?[^"\s]*\"?)?\s?([\d.]*)?/
+  const array : string[] | null = instring.match(regex)
+  console.log('Tokenized version:', array)
+  return array
+}
+
+
+export function getUserID(slack_id : string) : number {
+  // its always alice
+  return 1
+}
+
 export function tokenizeString(instring : string) {
   const array : string[] = instring.split(' ').filter((element) => {
     return element !== ''

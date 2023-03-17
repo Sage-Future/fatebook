@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Forecast {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  comment    String?
+  forecast   Decimal
+  authorId   Int
+  questionId Int
+  user       User     @relation(fields: [authorId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+}
+
+model Question {
+  id         Int        @id @default(autoincrement())
+  createdAt  DateTime   @default(now())
+  comment    String?
+  authorId   Int
+  title      String     @db.VarChar(255)
+  forecasts  Forecast[]
+  resolve_at DateTime
+  resolved   Boolean    @default(false)
+  user       User       @relation(fields: [authorId], references: [id])
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String?
+  forecasts Forecast[]
+  questions Question[]
+}
