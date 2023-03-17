@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/vercel/examples.git",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "crypto": "1.0.1",
+    "next": "^12.3.1",
+    "vercel": "^28.16.15"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^12.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0",
+    "eslint": "8.23.1",
+    "eslint-config-next": "12.3.1",
+    "eslint-config-prettier": "^8.5.0",
+    "@types/node": "^18.15.3",
+    "@types/react": "^18.0.28",
+    "typescript": "^4.9.5"
+  }
+}
