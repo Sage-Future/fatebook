@@ -2,7 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 
 import { tokenizeForecastString } from './_utils.js'
 import { createForecast } from './slash_handlers/_create_forecast.js'
-import { getKey } from './slash_handlers/_get_key.js'
+import { getForecasts } from './slash_handlers/_get_forecasts.js'
 
 export default async function forecast(req : VercelRequest, res: VercelResponse){
   // If the user just types /note, we'll show them the help text
@@ -30,7 +30,7 @@ export default async function forecast(req : VercelRequest, res: VercelResponse)
       createForecast(res, commandArray!, req.body.user_id)
       break
     case 'get':
-      getKey(res, commandArray)
+      getForecasts(res, req.body.user_id)
       break
     default:
       res.send({
