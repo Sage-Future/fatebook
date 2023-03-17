@@ -1,6 +1,6 @@
 import { VercelResponse } from '@vercel/node';
 
-import { token } from './_constants'
+import { token } from './_constants.js'
 
 export function tokenizeString(instring : string) {
   const array : string[] = instring.split(' ').filter((element) => {

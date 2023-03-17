@@ -1,9 +1,9 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { challenge } from './events_handlers/_challenge'
-import { app_mention } from './events_handlers/_app_mention'
-import { validate_slack_request } from './_validate'
-import { signing_secret } from './_constants'
+import { challenge } from './events_handlers/_challenge.js'
+import { app_mention } from './events_handlers/_app_mention.js'
+import { validate_slack_request } from './_validate.js'
+import { signing_secret } from './_constants.js'
 
 export default async function events (req : VercelRequest, res: VercelResponse) {
   const type : string = req.body.type

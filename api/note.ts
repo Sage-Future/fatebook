@@ -1,8 +1,8 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { tokenizeString } from './_utils'
-import { setKey } from './slash_handlers/_set_key'
-import { getKey } from './slash_handlers/_get_key'
+import { tokenizeString } from './_utils.js'
+import { setKey } from './slash_handlers/_set_key.js'
+import { getKey } from './slash_handlers/_get_key.js'
 
 export default async function note(req : VercelRequest, res: VercelResponse){
   // If the user just types /note, we'll show them the help text

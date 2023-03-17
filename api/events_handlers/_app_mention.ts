@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { postToChannel } from '../_utils'
+import { postToChannel } from '../_utils.js'
 
 export async function app_mention(req : VercelRequest, res: VercelResponse) {
   let event = req.body.event
