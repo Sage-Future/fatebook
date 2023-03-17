@@ -23,10 +23,5 @@
       "alwaysStrict": true
   },
   "include": ["next-env.d.ts", "types/additional.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
-  }
+  "exclude": ["node_modules"]
 }

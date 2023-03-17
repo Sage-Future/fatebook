@@ -2,6 +2,12 @@
   "repository": "https://github.com/vercel/examples.git",
   "license": "MIT",
   "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "crypto": "1.0.1",
     "next": "^12.3.1",
