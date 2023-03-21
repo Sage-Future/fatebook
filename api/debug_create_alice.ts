@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const foobar = async (req: VercelRequest, res: VercelResponse) => {
+const createAlice = async (req: VercelRequest, res: VercelResponse) => {
   await prisma.user.create({
     data: {
       name: 'Alice'
@@ -12,4 +12,4 @@ const foobar = async (req: VercelRequest, res: VercelResponse) => {
   res.status(200).json({ message: 'ok' });
 };
 
-export default foobar;
+export default createAlice;

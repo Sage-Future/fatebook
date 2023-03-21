@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const foobar = async (req: VercelRequest, res: VercelResponse) => {
+const dumpAllUsers = async (req: VercelRequest, res: VercelResponse) => {
   const allUsers = await prisma.user.findMany({
     include: {
       forecasts: true,
@@ -14,4 +14,4 @@ const foobar = async (req: VercelRequest, res: VercelResponse) => {
   res.json(allUsers);
 };
 
-export default foobar;
+export default dumpAllUsers;
