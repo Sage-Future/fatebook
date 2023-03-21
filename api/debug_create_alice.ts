@@ -6,7 +6,8 @@ const prisma = new PrismaClient();
 const createAlice = async (req: VercelRequest, res: VercelResponse) => {
   await prisma.user.create({
     data: {
-      name: 'Alice'
+      name: 'Alice',
+      email: 'foobar@foob.com'
     },
   })
   res.status(200).json({ message: 'ok' });
