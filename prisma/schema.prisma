@@ -34,7 +34,7 @@ model Question {
 model User {
   id        Int       @id @default(autoincrement())
   createdAt DateTime  @default(now())
-  email     String
+  email     String    @unique
   name      String?
   profiles  Profile[]
 }

@@ -1,7 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from './_utils.js'
 
 const createAlice = async (req: VercelRequest, res: VercelResponse) => {
   await prisma.user.create({

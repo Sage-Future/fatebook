@@ -1,9 +1,8 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { PrismaClient } from '@prisma/client'
 
-import { getUserID } from '../_utils.js'
+import { getProfileID } from '../_utils.js'
+import prisma from '../_utils.js'
 
-const prisma = new PrismaClient()
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slack_userID : string) {
   let question : string = commandArray[2]
@@ -11,7 +10,18 @@ export async function createForecast(res : VercelResponse, commandArray : string
   let forecast : string = commandArray[4]
   console.log(`question: ${question}, date: ${date_str}, forecast: ${forecast}`)
 
-  let userID       : number = getUserID(slack_userID)
+  let createUserIfNotExists : boolean = true
+  let userID = await getProfileID(slack_userID, createUserIfNotExists)
+
+  if(userID === undefined) {
+    console.log(`Error: couldn't find or create userID for slack_userID: ${slack_userID}`)
+    res.send({
+      response_type: 'ephemeral',
+      text: `I couldn't find your userID`,
+    })
+    return
+  }
+
   let forecast_num : number = Number(forecast)
 
   //parse the date string
@@ -21,7 +31,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
     data: {
           title     : question,
           resolve_at: date,
-          authorId  : userID,
+          authorId  : userID!,
       forecasts : { 
         create: {
       authorId : userID,

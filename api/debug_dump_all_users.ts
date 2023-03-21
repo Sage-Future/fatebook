@@ -1,17 +1,15 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { PrismaClient } from '@prisma/client';
+import prisma from './_utils.js'
 
-const prisma = new PrismaClient();
-
-const dumpAllUsers = async (req: VercelRequest, res: VercelResponse) => {
-  const allUsers = await prisma.user.findMany({
+const dumpAllProfiles = async (req: VercelRequest, res: VercelResponse) => {
+  const allProfiles = await prisma.profile.findMany({
     include: {
       forecasts: true,
       questions: true,
     },
   })
 
-  res.json(allUsers);
+  res.json(allProfiles);
 };
 
-export default dumpAllUsers;
+export default dumpAllProfiles;
