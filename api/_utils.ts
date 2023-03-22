@@ -61,25 +61,25 @@ export async function getSlackProfileFromSlackId(slackId : string) {
   return slackProfile
 }
 
-export async function createProfileID(slackId : string) : Promise<Profile>{
+export async function createProfile(slackId : string, groupId : number) : Promise<Profile>{
   // check if the user exists
-  let slackUser = (await getSlackProfileFromSlackId(slackId))
+  const slackProfile = (await getSlackProfileFromSlackId(slackId))
+  const email = slackProfile.email
+  const realName = slackProfile.real_name
+
   let user = await prisma.user.findUnique({
     where: {
-      email: slackUser.email
+      email: email
     },
   })
-
-  // find the group id, create group if doesn't exist for workspace
-  let groupId = await getGroupIDFromSlack(slackUser.team, true)
 
   // if the user doesn't exist in our db, create them
   //   and create a profile for them
   if (!user) {
     await prisma.user.create({
       data: {
-        email: slackUser.email,
-        name: slackUser.real_name,
+        email: email,
+        name: realName,
         profiles: {
           create: {
             slackId: slackId,
@@ -119,14 +119,15 @@ export async function createProfileID(slackId : string) : Promise<Profile>{
   return profile!
 }
 
-export async function getGroupIDFromSlack(workspaceId : string, createGroupIfNotExists : boolean = false) : Promise<number | undefined>{
+export async function getGroupIDFromSlackID(slackTeamId : string, createGroupIfNotExists : boolean = false) : Promise<number>{
   // query the database for the group
   //   see above for why findFirst is used
   let group = await prisma.group.findFirst({
     where: {
-      workspaceId: workspaceId
+      slackTeamId: slackTeamId
     },
   })
+
   if (createGroupIfNotExists && !group) {
     // get workspace name for nice labelling of new group
     let slackWorkspaceName
@@ -137,13 +138,13 @@ export async function getGroupIDFromSlack(workspaceId : string, createGroupIfNot
       }
     } catch (err) {
       console.log('Error getting workspace')
-      return undefined
+      throw Error('Error getting workspace')
     }
 
     // create the group if they don't exist
     await prisma.group.create({
       data: {
-        workspaceId: workspaceId,
+        slackTeamId: slackTeamId,
         type: GroupType.SLACK,
         name: slackWorkspaceName,
       },
@@ -151,14 +152,14 @@ export async function getGroupIDFromSlack(workspaceId : string, createGroupIfNot
     // we now have a group, so we can return it
     group = await prisma.group.findFirst({
       where: {
-        workspaceId: workspaceId
+        slackTeamId: slackTeamId
       },
     })
-  } else {
-    return undefined
+  } else if (!group) {
+    throw Error('Group not found')
   }
 
-  return group?.id
+  return group!.id
 }
 
 export function tokenizeString(instring : string) {

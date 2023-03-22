@@ -1,10 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { createProfileID, getGroupIDFromSlack } from '../_utils.js'
+import { createProfile, getGroupIDFromSlackID } from '../_utils.js'
 import prisma from '../_utils.js'
 
 
-export async function createForecast(res : VercelResponse, commandArray : string[], slack_userID : string) {
+export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string) {
   let question : string = commandArray[2]
   let date_str : string = commandArray[3]
   let forecast : string = commandArray[4]
@@ -17,16 +17,31 @@ export async function createForecast(res : VercelResponse, commandArray : string
   //   uncertain field
   let profile = await prisma.profile.findFirst({
     where: {
-      slackId: slack_userID
+      slackId: slackUserId
     },
   })
+
+
+  // find the group id, create group if doesn't exist for workspace
+  let groupId : number
+  try {
+    const createGroupIfNotExists : boolean = true
+    groupId = await getGroupIDFromSlackID(slackTeamId, createGroupIfNotExists)
+  } catch (err) {
+    console.log(`Error: couldn't find slack group`)
+    res.send({
+      response_type: 'ephemeral',
+      text: `I couldn't find your group! So I don't know where to assign your forecasts.`,
+    })
+    return
+  }
 
   // if no profile, create one
   if(!profile) {
     try{
-      profile = await createProfileID(slack_userID)
-    } catch(err){
-      console.log(`Error: couldn't find or create userID for slack_userID: ${slack_userID}\n Underlying error:\n`)
+      profile = await createProfile(slackUserId, groupId)
+    } catch(err) {
+      console.log(`Error: couldn't find or create userID for slackUserId: ${slackUserId}\n Underlying error:\n`)
       console.log(err)
       res.send({
         response_type: 'ephemeral',
@@ -35,18 +50,6 @@ export async function createForecast(res : VercelResponse, commandArray : string
       return
     }
   }
-
-  // get group ID
-  let groupId = await getGroupIDFromSlack(slack_userID, true)
-  if(groupId === undefined) {
-    console.log(`Error: couldn't find slack group`)
-    res.send({
-      response_type: 'ephemeral',
-      text: `I couldn't find your group! So I don't know what forecasts to show you.`,
-    })
-    return
-  }
-
 
   let forecast_num : number = Number(forecast)
 

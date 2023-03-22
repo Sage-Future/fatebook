@@ -1,9 +1,9 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { createProfileID } from '../_utils.js'
+import { createProfile, getGroupIDFromSlackID } from '../_utils.js'
 import prisma from '../_utils.js'
 
-export async function getForecasts(res : VercelResponse, slack_userID : string) {
+export async function getForecasts(res : VercelResponse, slackUserId : string, slackTeamId : string) {
 
 
   // query the database for the user
@@ -12,19 +12,21 @@ export async function getForecasts(res : VercelResponse, slack_userID : string) 
   //   uncertain field
   let profile = await prisma.profile.findFirst({
     where: {
-      slackId: slack_userID
+      slackId: slackUserId
     },
   })
 
   // if no profile, create one
   if(!profile) {
-    try{
-      profile = await createProfileID(slack_userID)
+    try {
+      const createGroupIfNotExists : boolean = true
+      const groupId = await getGroupIDFromSlackID(slackTeamId, createGroupIfNotExists)
+      profile = await createProfile(slackUserId, groupId)
     } catch(err){
-      console.log(`Error: couldn't find or create userID for slack_userID: ${slack_userID}`)
+      console.log(`Error: couldn't create userID or group for slackUserID: ${slackUserId}`)
       res.send({
         response_type: 'ephemeral',
-        text: `I couldn't find your userID`,
+        text: `I couldn't find your userID or group!`,
       })
       return
     }

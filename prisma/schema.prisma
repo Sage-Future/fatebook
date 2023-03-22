@@ -29,6 +29,7 @@ model Question {
   resolved   Boolean    @default(false)
   profile    Profile    @relation(fields: [authorId], references: [id])
   groups     Group[]
+  pingedForResolution Boolean  @default(false)
 }
 
 model User {
@@ -55,7 +56,7 @@ model Group {
   type        GroupType
   createdAt   DateTime   @default(now())
   name        String     @db.VarChar(255)
-  workspaceId String?
+  slackTeamId String?
   questions   Question[]
   profiles    Profile[]
 }

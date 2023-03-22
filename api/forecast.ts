@@ -27,10 +27,10 @@ export default async function forecast(req : VercelRequest, res: VercelResponse)
 
   switch (action) {
     case 'set':
-      createForecast(res, commandArray!, req.body.user_id)
+      createForecast(res, commandArray!, req.body.user_id, req.body.team_id)
       break
     case 'get':
-      getForecasts(res, req.body.user_id)
+      getForecasts(res, req.body.user_id, req.body.team_id)
       break
     default:
       res.send({
