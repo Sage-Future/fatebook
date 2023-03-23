@@ -1,0 +1,6 @@
+{
+  "crons": [{
+    "path": "/api/check_for_resolution",
+    "schedule": "0 0 * * *"
+  }]
+}

@@ -1,5 +1,6 @@
 import { VercelResponse } from '@vercel/node';
 import { PrismaClient, GroupType, Profile } from '@prisma/client'
+import fetch from 'node-fetch'
 
 import { token } from './_constants.js'
 
@@ -28,7 +29,7 @@ export async function getSlackWorkspaceName() {
     })
     const data = await response.json()
     console.log('data from team fetch:', data)
-    return data.team.name
+    return (data as any).team.name
   } catch (err) {
     console.log('fetch email Error:', err)
     throw err
@@ -53,7 +54,7 @@ export async function getSlackProfileFromSlackId(slackId : string) {
     throw err
   }
 
-  const slackProfile = data.user.profile
+  const slackProfile = (data as any).user.profile
   if( slackProfile === undefined) {
     throw new Error('slackProfile not found')
   }
@@ -170,39 +171,27 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function postToChannel(channel : string, res : VercelResponse, payload : string) {
-  console.log('channel:', channel)
-  const channelId = await channelNameToId(channel)
-
-  console.log('ID:', channelId)
-
+export async function postMessage(channelId : string, payload : string){
+  console.log('Posting message to channel:', channelId)
   const message = {
     channel: channelId,
     text: payload,
   }
 
-  try {
-    const url = 'https://slack.com/api/chat.postMessage'
-    const response = await fetch(url, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(message),
-    })
-    const data = await response.json()
-
-    console.log('data from fetch:', data)
-    res.json({ ok: true })
-  } catch (err) {
-    console.log('fetch Error:', err)
-    res.send({
-      response_type: 'ephemeral',
-      text: `${err}`,
-    })
-  }
+  console.log('about to post')
+  const url = 'https://slack.com/api/chat.postMessage'
+  const response = await fetch(url, {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(message),
+  })
+  let data = await response.json()
+  console.log('Result from post message:', data)
 }
+
 
 async function channelNameToId(channelName : string) {
   let generalId
@@ -217,7 +206,7 @@ async function channelNameToId(channelName : string) {
         Authorization: `Bearer ${token}`,
       },
     })
-    const data = await response.json()
+    const data : any = (( await response) as any).json()
 
     data.channels.forEach((element : any) => {
       if (element.name === channelName) {
