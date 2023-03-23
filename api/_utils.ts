@@ -171,16 +171,31 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function postMessage(channelId : string, payload : string){
+export async function postBlockMessage(channelId : string, blocks : any){
+  postMessage(channelId, '', blocks)
+}
+
+export async function postTextMessage(channelId : string, payload : string){
+  postMessage(channelId, payload, [])
+}
+
+export async function postMessage(channelId : string, payload : string, blocks : Object[]){
   console.log('Posting message to channel:', channelId)
-  const message = {
-    channel: channelId,
-    text: payload,
+  let message
+  if (payload === ''){
+    message = {
+      channel: channelId,
+      blocks: blocks,
+    }
+  } else {
+    message = {
+      channel: channelId,
+      text: payload,
+    }
   }
 
-  console.log('about to post')
   const url = 'https://slack.com/api/chat.postMessage'
-  const response = await fetch(url, {
+  const response = fetch(url, {
     method: 'post',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
@@ -188,8 +203,11 @@ export async function postMessage(channelId : string, payload : string){
     },
     body: JSON.stringify(message),
   })
-  let data = await response.json()
+  let data = (await response).json()
   console.log('Result from post message:', data)
+  if ((data as any).ok === false) {
+    throw new Error('Error posting message')
+  }
 }
 
 

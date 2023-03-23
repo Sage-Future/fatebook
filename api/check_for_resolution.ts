@@ -1,7 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { Question } from '@prisma/client'
 
-import { postMessage } from './_utils.js'
+import { default as questionResolveBlocks } from './blocks-designs/resolve_question.json' assert { type: "json" }
+
+
+import { postBlockMessage } from './_utils.js'
 import prisma from './_utils.js'
 
 async function getQuestionsToBeResolved()  {
@@ -30,8 +33,7 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
 
   for (const question of allQuestionsToBeNotified) {
     try { 
-      let payload : string = `Hey ${question.profile.user.name}, your question *${question.title}* is ready to be resolved!`
-      postMessage(question.profile.slackId!, payload)
+      postBlockMessage(question.profile.slackId!, questionResolveBlocks.blocks)
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
       await prisma.question.update({
@@ -39,7 +41,8 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
           id: question.id,
         },
         data: {
-          pingedForResolution: true,
+          //TODO change to true
+          pingedForResolution: false,
         },
       })
       console.log(`Updated question ${question.id} to pingedForResolution`)
