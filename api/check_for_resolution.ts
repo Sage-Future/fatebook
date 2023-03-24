@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { Question } from '@prisma/client'
 
-import { default as questionResolveBlocks } from './blocks-designs/resolve_question.json' assert { type: "json" }
+import { blocks as questionResolveBlocks } from './blocks-designs/resolve_question.js'
 
 
 import { postBlockMessage } from './_utils.js'

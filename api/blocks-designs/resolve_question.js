@@ -1,4 +1,4 @@
-{
+export const blocks = {
 	"blocks": [
 		{
 			"type": "section",
