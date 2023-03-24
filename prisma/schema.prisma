@@ -16,6 +16,8 @@ model Forecast {
   questionId Int
   profile    Profile  @relation(fields: [authorId], references: [id])
   question   Question @relation(fields: [questionId], references: [id])
+  scored     Boolean  @default(false)
+  score      Int?
 }
 
 model Question {
@@ -29,6 +31,7 @@ model Question {
   resolved   Boolean    @default(false)
   profile    Profile    @relation(fields: [authorId], references: [id])
   groups     Group[]
+  resolution Resolution?
   pingedForResolution Boolean  @default(false)
 }
 
@@ -64,4 +67,10 @@ model Group {
 enum GroupType {
   WEB
   SLACK
+}
+
+enum Resolution {
+  YES
+  NO
+  AMBIGUOUS
 }
