@@ -1,7 +1,7 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { VercelResponse } from '@vercel/node';
 
-import { createProfile, getGroupIDFromSlackID } from '../_utils.js'
-import prisma from '../_utils.js'
+import { buildQuestionBlocks } from '../blocks-designs/question.js';
+import prisma, { createProfile, getGroupIDFromSlackID } from '../_utils.js';
 
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string) {
@@ -56,7 +56,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
   //parse the date string
   let date : Date = new Date(date_str)
 
-  await prisma.question.create({
+  const createdQuestion = await prisma.question.create({
     data: {
           title     : question,
           resolve_by: date,
@@ -73,12 +73,23 @@ export async function createForecast(res : VercelResponse, commandArray : string
             }
           }
     },
+    include: {
+      forecasts: {
+        include: {
+          profile: true
+        }
+      }
+    }
   })
+
+  const questionBlocks = buildQuestionBlocks(createdQuestion)
+
+  console.log(JSON.stringify(questionBlocks))
 
   try {
     res.send({
       response_type: 'in_channel',
-      text: `I made a forecast for ${question} on ${date.toDateString()} with the forecast ${forecast} likelihood`,
+      blocks: questionBlocks
     })
   } catch (err) {
     console.log('fetch Error:', err)

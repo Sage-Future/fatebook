@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@prisma/client": "^4.11.0",
+    "@slack/types": "^2.8.0",
     "crypto": "1.0.1",
     "dotenv": "^16.0.3",
     "next": "^12.3.1",

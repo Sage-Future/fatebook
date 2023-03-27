@@ -11,7 +11,7 @@ export default prisma
 // in the following syntax, with two strings and one number:
 // "forecast" "date" 0.8
 export function tokenizeForecastString(instring : string) : string[] | null {
-  const regex = /([a-zA-Z]+)\s?(\"[^"]*\")?\s?(\"?[^"\s]*\"?)?\s?([\d.]*)?/
+  const regex = /([a-zA-Z_]+)\s?([\"\“][^"”]*[\"\”])?\s?(\"?[^"\s]*\"?)?\s?([\d.]*)?/
   const array : string[] | null = instring.match(regex)
   console.log('Tokenized version:', array)
   return array
