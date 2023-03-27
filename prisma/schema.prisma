@@ -21,17 +21,18 @@ model Forecast {
 }
 
 model Question {
-  id         Int        @id @default(autoincrement())
-  createdAt  DateTime   @default(now())
-  comment    String?
-  authorId   Int
-  title      String     @db.VarChar(255)
-  forecasts  Forecast[]
-  resolve_at DateTime
-  resolved   Boolean    @default(false)
-  profile    Profile    @relation(fields: [authorId], references: [id])
-  groups     Group[]
-  resolution Resolution?
+  id          Int        @id @default(autoincrement())
+  createdAt   DateTime   @default(now())
+  comment     String?
+  authorId    Int
+  title       String     @db.VarChar(255)
+  forecasts   Forecast[]
+  resolve_by  DateTime
+  resolved_at DateTime?
+  resolved    Boolean    @default(false)
+  profile     Profile    @relation(fields: [authorId], references: [id])
+  groups      Group[]
+  resolution  Resolution?
   pingedForResolution Boolean  @default(false)
 }
 

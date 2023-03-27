@@ -194,6 +194,7 @@ export async function postMessage(channelId : string, payload : string, blocks :
     }
   }
 
+  console.log('Message:\n', JSON.stringify(message))
   const url = 'https://slack.com/api/chat.postMessage'
   const response = fetch(url, {
     method: 'post',
@@ -204,7 +205,6 @@ export async function postMessage(channelId : string, payload : string, blocks :
     body: JSON.stringify(message),
   })
   let data = (await response).json()
-  console.log('Result from post message:', data)
   if ((data as any).ok === false) {
     throw new Error('Error posting message')
   }

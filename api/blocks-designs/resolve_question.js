@@ -4,7 +4,7 @@ export const blocks = {
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": "Time to resolve!\n*DOGGO RAN?*"
+				"text": ""
 			}
 		},
 		{
@@ -17,8 +17,7 @@ export const blocks = {
 						"emoji": true,
 						"text": "Yes"
 					},
-					"style": "primary",
-					"value": "click_me_123"
+					"action_id": "yes_<qidhere>"
 				},
 				{
 					"type": "button",
@@ -27,8 +26,16 @@ export const blocks = {
 						"emoji": true,
 						"text": "No"
 					},
-					"style": "primary",
-					"value": "click_me_123"
+					"action_id": "no_<qidhere>"
+				},
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"emoji": true,
+						"text": "Ambiguous"
+					},
+					"action_id": "ambiguous_<qidhere>"
 				}
 			]
 		}
