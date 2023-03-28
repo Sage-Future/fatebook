@@ -20,20 +20,31 @@ model Forecast {
   score      Int?
 }
 
+model QuestionScore {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  score      Int
+  profileId  Int
+  questionId Int
+  profile    Profile  @relation(fields: [profileId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id])
+}
+
 model Question {
-  id          Int        @id @default(autoincrement())
-  createdAt   DateTime   @default(now())
-  comment     String?
-  authorId    Int
-  title       String     @db.VarChar(255)
-  forecasts   Forecast[]
-  resolve_by  DateTime
-  resolved_at DateTime?
-  resolved    Boolean    @default(false)
-  profile     Profile    @relation(fields: [authorId], references: [id])
-  groups      Group[]
-  resolution  Resolution?
-  pingedForResolution Boolean  @default(false)
+  id                  Int             @id @default(autoincrement())
+  createdAt           DateTime        @default(now())
+  comment             String?
+  authorId            Int
+  title               String          @db.VarChar(255)
+  forecasts           Forecast[]
+  resolve_by          DateTime
+  resolved_at         DateTime?
+  resolved            Boolean         @default(false)
+  profile             Profile         @relation(fields: [authorId], references: [id])
+  groups              Group[]
+  resolution          Resolution?
+  pingedForResolution Boolean         @default(false)
+  questionScores      QuestionScore[]
 }
 
 model User {
@@ -45,14 +56,15 @@ model User {
 }
 
 model Profile {
-  id        Int        @id @default(autoincrement())
-  createdAt DateTime   @default(now())
-  groups    Group[]
-  slackId   String?
-  userId    Int        @unique
-  user      User       @relation(fields: [userId], references: [id])
-  forecasts Forecast[]
-  questions Question[]
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime        @default(now())
+  groups         Group[]
+  slackId        String?
+  userId         Int             @unique
+  user           User            @relation(fields: [userId], references: [id])
+  forecasts      Forecast[]
+  questions      Question[]
+  questionScores QuestionScore[]
 }
 
 model Group {
