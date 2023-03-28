@@ -14,8 +14,8 @@ model Forecast {
   forecast   Decimal
   authorId   Int
   questionId Int
-  profile    Profile  @relation(fields: [authorId], references: [id])
-  question   Question @relation(fields: [questionId], references: [id])
+  profile    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   scored     Boolean  @default(false)
   score      Int?
 }
@@ -26,8 +26,8 @@ model QuestionScore {
   score      Int
   profileId  Int
   questionId Int
-  profile    Profile  @relation(fields: [profileId], references: [id])
-  question   Question @relation(fields: [questionId], references: [id])
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model Question {
@@ -40,7 +40,7 @@ model Question {
   resolve_by          DateTime
   resolved_at         DateTime?
   resolved            Boolean         @default(false)
-  profile             Profile         @relation(fields: [authorId], references: [id])
+  profile             Profile         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   groups              Group[]
   resolution          Resolution?
   pingedForResolution Boolean         @default(false)
@@ -62,7 +62,7 @@ model Profile {
   groups         Group[]
   slackId        String?
   userId         Int             @unique
-  user           User            @relation(fields: [userId], references: [id])
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   forecasts      Forecast[]
   questions      Question[]
   questionScores QuestionScore[]

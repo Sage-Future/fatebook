@@ -7,7 +7,8 @@
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^4.11.0",
