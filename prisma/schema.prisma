@@ -52,6 +52,7 @@ model User {
   createdAt DateTime  @default(now())
   email     String    @unique
   name      String?
+  imageUrl  String?
   profiles  Profile[]
 }
 

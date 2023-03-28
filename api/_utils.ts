@@ -76,20 +76,22 @@ export async function createProfile(slackId : string, groupId : number) : Promis
 
   // if the user doesn't exist in our db, create them
   //   and create a profile for them
+  const profileData = {
+    slackId: slackId,
+    groups: {
+      connect: {
+        id: groupId
+      }
+    }
+  }
   if (!user) {
     await prisma.user.create({
       data: {
         email: email,
         name: realName,
+        imageUrl: slackProfile.image_512,
         profiles: {
-          create: {
-            slackId: slackId,
-            groups: {
-              connect: {
-                id: groupId
-              }
-            }
-          }
+          create: profileData
         }
       },
     })
@@ -97,13 +99,8 @@ export async function createProfile(slackId : string, groupId : number) : Promis
     // create the profile if they don't exist
     await prisma.profile.create({
       data: {
-        slackId: slackId,
-        userId: user.id,
-        groups: {
-          connect: {
-            id: groupId
-          }
-        }
+        ...profileData,
+        userId: user.id
       },
     })
   }
