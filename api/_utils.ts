@@ -169,23 +169,23 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function postBlockMessage(channelId : string, blocks : Blocks, notificationText : string = ''){
-  postMessage({
-    channelId,
+export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = ''){
+  await postMessage({
+    channel,
     text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
     blocks
   })
 }
 
-export async function postTextMessage(channelId : string, payload : string){
+export async function postTextMessage(channel : string, payload : string){
   postMessage({
-    channelId,
+    channel,
     text: payload,
   })
 }
 
-export async function postMessage(message: {channelId: string, text: string, blocks?: Blocks}){
-  console.log(`Posting message to channel: ${message.channelId}, text: ${message.text}, blocks: ${message?.blocks}`)
+export async function postMessage(message: {channel: string, text: string, blocks?: Blocks}){
+  console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: ${message?.blocks}`)
   
   const url = 'https://slack.com/api/chat.postMessage'
   const response = fetch(url, {
