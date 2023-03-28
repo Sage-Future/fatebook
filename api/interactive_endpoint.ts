@@ -1,15 +1,31 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
+import { unpackBlockActionId } from './blocks-designs/_block_utils.js';
 
 import { resolve } from './interactive_handlers/resolve.js'
 
 
 async function blockActions(payload: BlockActionPayload) {
-  await resolve(payload)
+  payload.actions?.forEach(async (action) => {
+    if (!action.action_id) {
+      console.warn(`Missing action id in action: ${action}`)
+      return
+    }
+    const actionParts = unpackBlockActionId(action.action_id)
+    switch (actionParts.action) {
+      case 'resolve':
+        await resolve(actionParts)
+        break;
+      
+      default:
+        console.warn(`Unknown action: ${actionParts.action}`)
+        break;
+    }
+  })
 }
 
 export default async function (req : VercelRequest, res: VercelResponse){
-  const payload: BlockActionPayload = JSON.parse(req.body.payload)
+  const payload = JSON.parse(req.body.payload)
   switch (payload.type) {
     case 'block_actions':
       console.log('block_actions')

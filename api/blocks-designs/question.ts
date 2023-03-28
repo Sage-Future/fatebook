@@ -1,8 +1,9 @@
 import { Question } from '@prisma/client'
 import { ActionsBlock, Block, InputBlock, KnownBlock } from '@slack/types'
-import { QuestionWithForecastsAndAuthor } from '../../prisma/additional'
+import { QuestionWithForecastsAndUsers } from '../../prisma/additional'
+import { Blocks } from './_block_utils'
 
-export function buildQuestionBlocks(question: QuestionWithForecastsAndAuthor): (KnownBlock | Block)[] {
+export function buildQuestionBlocks(question: QuestionWithForecastsAndUsers): Blocks {
 
   return [
     {

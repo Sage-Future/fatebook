@@ -3,6 +3,7 @@ import { PrismaClient, GroupType, Profile } from '@prisma/client'
 import fetch from 'node-fetch'
 
 import { token } from './_constants.js'
+import { Blocks } from './blocks-designs/_block_utils.js';
 
 const prisma = new PrismaClient()
 export default prisma
@@ -168,30 +169,24 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function postBlockMessage(channelId : string, blocks : any){
-  postMessage(channelId, '', blocks)
+export async function postBlockMessage(channelId : string, blocks : Blocks, notificationText : string = ''){
+  postMessage({
+    channelId,
+    text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
+    blocks
+  })
 }
 
 export async function postTextMessage(channelId : string, payload : string){
-  postMessage(channelId, payload, [])
+  postMessage({
+    channelId,
+    text: payload,
+  })
 }
 
-export async function postMessage(channelId : string, payload : string, blocks : Object[]){
-  console.log('Posting message to channel:', channelId)
-  let message
-  if (payload === ''){
-    message = {
-      channel: channelId,
-      blocks: blocks,
-    }
-  } else {
-    message = {
-      channel: channelId,
-      text: payload,
-    }
-  }
-
-  console.log('Message:\n', JSON.stringify(message))
+export async function postMessage(message: {channelId: string, text: string, blocks?: Blocks}){
+  console.log(`Posting message to channel: ${message.channelId}, text: ${message.text}, blocks: ${message?.blocks}`)
+  
   const url = 'https://slack.com/api/chat.postMessage'
   const response = fetch(url, {
     method: 'post',
@@ -203,6 +198,7 @@ export async function postMessage(channelId : string, payload : string, blocks :
   })
   let data = (await response).json()
   if ((data as any).ok === false) {
+    console.error('Error posting message:', data)
     throw new Error('Error posting message')
   }
 }
