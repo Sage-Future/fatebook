@@ -28,6 +28,7 @@ model QuestionScore {
   questionId Int
   profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  profileQuestionComboId Int @unique
 }
 
 model Question {
