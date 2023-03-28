@@ -76,7 +76,11 @@ export async function createForecast(res : VercelResponse, commandArray : string
     include: {
       forecasts: {
         include: {
-          profile: true
+          profile: {
+            include: {
+              user: true
+            }
+          }
         }
       }
     }

@@ -1,9 +1,13 @@
-import { Forecast, Profile, Question } from "@prisma/client";
+import { Forecast, Profile, Question, User } from "@prisma/client";
 
 export type QuestionWithForecastsAndAuthor = Question & {
-    forecasts: ForecastWithProfile[]
+    forecasts: ForecastWithProfileAndUser[]
 }
 
-export type ForecastWithProfile = Forecast & {
-    profile: Profile
+export type ForecastWithProfileAndUser = Forecast & {
+    profile: ProfileWithUser
+}
+
+export type ProfileWithUser = Profile & {
+    user: User
 }

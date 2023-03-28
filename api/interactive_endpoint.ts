@@ -9,7 +9,7 @@ async function blockActions(payload: BlockActionPayload) {
 }
 
 export default async function (req : VercelRequest, res: VercelResponse){
-  const payload = JSON.parse(req.body.payload)
+  const payload: BlockActionPayload = JSON.parse(req.body.payload)
   switch (payload.type) {
     case 'block_actions':
       console.log('block_actions')
