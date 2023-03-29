@@ -3,9 +3,10 @@ import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-
 import { unpackBlockActionId } from './blocks-designs/_block_utils.js'
 
 import { resolve } from './interactive_handlers/resolve.js'
+import { submitTextForecast } from './interactive_handlers/submit_text_forecast.js';
 
 async function blockActions(payload: BlockActionPayload) {
-  for(const action of payload.actions!) {
+  for (const action of payload.actions!) {
     if (!action.action_id) {
       console.warn(`Missing action id in action: ${action}`)
       return
@@ -15,16 +16,20 @@ async function blockActions(payload: BlockActionPayload) {
       case 'resolve':
         console.log('  resolve')
         await resolve(actionParts)
-        break
+        break;
+
+      case 'submitTextForecast':
+        await submitTextForecast(actionParts, action, payload)
+        break;
       
       default:
-        console.warn(`Unknown action: ${actionParts.action}`)
-        break
+        console.warn(`Unknown action: ${actionParts}`)
+        break;
     }
   }
 }
 
-export default async function handler(req : VercelRequest, res: VercelResponse){
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const payload = JSON.parse(req.body.payload)
   switch (payload.type) {
     case 'block_actions':

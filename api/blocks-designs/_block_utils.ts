@@ -6,7 +6,12 @@ export interface ResolveQuestionActionParts {
   answer: 'yes' | 'no' | 'ambiguous'
 }
 
-export type ActionIdParts = ResolveQuestionActionParts
+export interface SubmitTextForecastActionParts {
+  action: 'submitTextForecast'
+  questionId: number
+}
+
+export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts
 
 export type Blocks = (KnownBlock | Block)[]
 
@@ -19,5 +24,24 @@ export function toActionId(parts: ActionIdParts) {
 }
 
 export function unpackBlockActionId(actionId: string) {
-  return JSON.parse(actionId) as ActionIdParts
+  try {
+    return JSON.parse(actionId) as ActionIdParts
+  } catch (e) {
+    throw new Error("Could not parse actionId: " + actionId)
+  }
+}
+
+export function textBlock(content: string, emoji = true) {
+  return {
+    'type': "plain_text" as "plain_text",
+    'emoji': emoji,
+    'text': content,
+  }
+}
+
+export function markdownBlock(content: string) {
+  return {
+    'type': "mrkdwn" as "mrkdwn",
+    'text': content,
+  }
 }

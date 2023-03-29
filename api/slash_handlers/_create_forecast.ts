@@ -1,7 +1,7 @@
 import { VercelResponse } from '@vercel/node'
 
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
-import prisma, { createProfile, getGroupIDFromSlackID } from '../_utils.js'
+import prisma, { createProfile, getGroupIDFromSlackID, postMessageToResponseUrl } from '../_utils.js'
 
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string) {
@@ -89,6 +89,8 @@ export async function createForecast(res : VercelResponse, commandArray : string
   const questionBlocks = buildQuestionBlocks(createdQuestion)
 
   console.log(JSON.stringify(questionBlocks))
+
+  // postMessageToResponseUrl({blocks: questionBlocks, text: "Forecast created!"})
 
   try {
     res.send({

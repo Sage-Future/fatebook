@@ -1,9 +1,8 @@
-import { VercelResponse } from '@vercel/node'
-import { PrismaClient, GroupType, Profile } from '@prisma/client'
+import { GroupType, PrismaClient, Profile } from '@prisma/client'
 import fetch from 'node-fetch'
 
-import { token } from './_constants.js'
 import { Blocks } from './blocks-designs/_block_utils.js'
+import { token } from './_constants.js'
 
 const prisma = new PrismaClient()
 export default prisma
@@ -185,7 +184,7 @@ export async function postTextMessage(channel : string, payload : string){
 }
 
 export async function postMessage(message: {channel: string, text: string, blocks?: Blocks}){
-  console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: ${message?.blocks}`)
+  console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
   
   const url = 'https://slack.com/api/chat.postMessage'
   const response = fetch(url, {
@@ -203,6 +202,29 @@ export async function postMessage(message: {channel: string, text: string, block
   }
 }
 
+interface ResponseMessage {
+  text: string
+  blocks?: Blocks
+  response_type?: "in_channel" | "ephemeral"
+  replace_original?: boolean
+  thread_ts?: string
+  [key: string]: any
+}
+export async function postMessageToResponseUrl(message: ResponseMessage, responseUrl: string) {
+  console.log(`Posting message to response url: ${responseUrl}: `, message)
+  const response = fetch(responseUrl, {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(message),
+  })
+  let data = (await response).json()
+  if ((data as any).ok === false) {
+    console.error('Error posting message:', data)
+    throw new Error('Error posting message')
+  }
+}
 
 async function channelNameToId(channelName : string) {
   let generalId
