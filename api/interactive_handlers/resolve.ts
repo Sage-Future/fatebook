@@ -10,7 +10,7 @@ async function handleResolution(questionid : number, resolution : Resolution) {
     data: {
       resolved: true,
       resolution: resolution,
-      resolved_at: new Date()
+      resolvedAt: new Date()
     },
   })
   console.log(`handledUpdateResolution: ${questionid} ${resolution}`)

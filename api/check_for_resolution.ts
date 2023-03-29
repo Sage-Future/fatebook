@@ -9,7 +9,7 @@ async function getQuestionsToBeResolved()  {
   // check if any questions need to be resolved by time
   const allQuestionsToBeNotified = prisma.question.findMany({
     where: {
-      resolve_by: {
+      resolveBy: {
         lte: new Date()
       },
       resolved: false,

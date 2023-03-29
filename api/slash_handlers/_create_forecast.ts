@@ -59,7 +59,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,
-      resolve_by: date,
+      resolveBy : date,
       authorId  : profile!.id,
       groups    : {
         connect: {
