@@ -26,7 +26,7 @@ export async function getSlackWorkspaceName() {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         Authorization: `Bearer ${token}`,
-      }
+      } 
     })
     const data = await response.json()
     console.log('data from team fetch:', data)

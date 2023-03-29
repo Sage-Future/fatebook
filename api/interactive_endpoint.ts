@@ -4,9 +4,8 @@ import { unpackBlockActionId } from './blocks-designs/_block_utils.js'
 
 import { resolve } from './interactive_handlers/resolve.js'
 
-
 async function blockActions(payload: BlockActionPayload) {
-  payload.actions?.forEach(async (action) => {
+  for(const action of payload.actions!) {
     if (!action.action_id) {
       console.warn(`Missing action id in action: ${action}`)
       return
@@ -14,6 +13,7 @@ async function blockActions(payload: BlockActionPayload) {
     const actionParts = unpackBlockActionId(action.action_id)
     switch (actionParts.action) {
       case 'resolve':
+        console.log('  resolve')
         await resolve(actionParts)
         break
       
@@ -21,7 +21,7 @@ async function blockActions(payload: BlockActionPayload) {
         console.warn(`Unknown action: ${actionParts.action}`)
         break
     }
-  })
+  }
 }
 
 export default async function handler(req : VercelRequest, res: VercelResponse){

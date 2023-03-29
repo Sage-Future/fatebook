@@ -23,7 +23,7 @@ model Forecast {
 model QuestionScore {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
-  score      Int
+  score      Decimal
   profileId  Int
   questionId Int
   profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
