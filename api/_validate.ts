@@ -1,22 +1,22 @@
 import { VercelRequest } from '@vercel/node'
 import crypto from 'crypto'
 
-export function validate_slack_request(event : VercelRequest, signing_secret : string) {
+export function validateSlackRequest(event : VercelRequest, signingSecret : string) {
   // Note this method is succeptible to replay attack - should check timestamp to current time
-  const request_body = JSON.stringify(event['body'])
+  const requestBody = JSON.stringify(event['body'])
 
   const headers = event.headers
 
   const timestamp = headers['x-slack-request-timestamp']
-  const slack_signature = headers['x-slack-signature']
-  const base_string = 'v0:' + timestamp + ':' + request_body
+  const slackSignature = headers['x-slack-signature']
+  const baseString = 'v0:' + timestamp + ':' + requestBody
 
   const hmac = crypto
-    .createHmac('sha256', signing_secret)
-    .update(base_string)
+    .createHmac('sha256', signingSecret)
+    .update(baseString)
     .digest('hex')
-  const computed_slack_signature = 'v0=' + hmac
-  const isValid = computed_slack_signature === slack_signature
+  const computedSlackSignature = 'v0=' + hmac
+  const isValid = computedSlackSignature === slackSignature
 
   return isValid
 }

@@ -6,9 +6,9 @@ import prisma, { createProfile, getGroupIDFromSlackID, postMessageToResponseUrl 
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string) {
   let question : string = commandArray[2]
-  let date_str : string = commandArray[3]
+  let dateStr  : string = commandArray[3]
   let forecast : string = commandArray[4]
-  console.log(`question: ${question}, date: ${date_str}, forecast: ${forecast}`)
+  console.log(`question: ${question}, date: ${dateStr}, forecast: ${forecast}`)
 
   let createUserIfNotExists : boolean = true
   // query the database for the user
@@ -51,10 +51,10 @@ export async function createForecast(res : VercelResponse, commandArray : string
     }
   }
 
-  let forecast_num : number = Number(forecast)
+  let forecastNum : number = Number(forecast)
 
   //parse the date string
-  let date : Date = new Date(date_str)
+  let date : Date = new Date(dateStr)
 
   const createdQuestion = await prisma.question.create({
     data: {
@@ -69,7 +69,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
       forecasts : {
         create: {
           authorId : profile!.id,
-          forecast : forecast_num
+          forecast : forecastNum
         }
       }
     },

@@ -1,4 +1,36 @@
 {
-  "extends": ["next/core-web-vitals","prettier"]
-  // todo add https://typescript-eslint.io/rules/no-floating-promises/
+  "plugins": ["@typescript-eslint"],
+  "extends": ["next/core-web-vitals","prettier"],
+  "rules":
+  {
+    "semi": ["error", "never"],
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "@typescript-eslint/naming-convention": [
+    "error",
+    {
+      "selector": "default",
+      "format": ["camelCase"]
+    },
+
+    {
+      "selector": "variable",
+      "format": ["camelCase", "UPPER_CASE"]
+    },
+
+    {
+      "selector": "objectLiteralProperty",
+      "format": null
+    },
+
+    {
+      "selector": "interface",
+      "format": ["PascalCase"]
+    },
+
+    {
+      "selector": "typeAlias",
+      "format": ["PascalCase"]
+    }
+    ]
+  }
 }
