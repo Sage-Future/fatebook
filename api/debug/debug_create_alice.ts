@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { VercelRequest, VercelResponse } from '@vercel/node'
 import prisma from '../_utils.js'
 
 const createAlice = async (req: VercelRequest, res: VercelResponse) => {
@@ -8,7 +8,7 @@ const createAlice = async (req: VercelRequest, res: VercelResponse) => {
       email: 'foobar@foob.com'
     },
   })
-  res.status(200).json({ message: 'ok' });
-};
+  res.status(200).json({ message: 'ok' })
+}
 
-export default createAlice;
+export default createAlice

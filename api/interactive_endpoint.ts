@@ -1,6 +1,6 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { unpackBlockActionId } from './blocks-designs/_block_utils.js';
+import { unpackBlockActionId } from './blocks-designs/_block_utils.js'
 
 import { resolve } from './interactive_handlers/resolve.js'
 
@@ -15,11 +15,11 @@ async function blockActions(payload: BlockActionPayload) {
     switch (actionParts.action) {
       case 'resolve':
         await resolve(actionParts)
-        break;
+        break
       
       default:
         console.warn(`Unknown action: ${actionParts.action}`)
-        break;
+        break
     }
   })
 }
@@ -32,21 +32,21 @@ export default async function handler(req : VercelRequest, res: VercelResponse){
       await blockActions(payload)
       console.log('block_actions done')
       res.status(200).json({message:'ok'})
-      break;
+      break
     case 'view_submission':
       console.log('view_submission')
-      break;
+      break
     case 'view_closed':
       console.log('view_closed')
-      break;
+      break
     case 'message_action':
       console.log('message_action')
-      break;
+      break
     case 'shortcut':
       console.log('shortcut')
-      break;
+      break
     default:
       console.log('default')
-      break;
+      break
   }
 }

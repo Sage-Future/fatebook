@@ -1,7 +1,7 @@
-import { VercelResponse } from '@vercel/node';
+import { VercelResponse } from '@vercel/node'
 
-import { buildQuestionBlocks } from '../blocks-designs/question.js';
-import prisma, { createProfile, getGroupIDFromSlackID } from '../_utils.js';
+import { buildQuestionBlocks } from '../blocks-designs/question.js'
+import prisma, { createProfile, getGroupIDFromSlackID } from '../_utils.js'
 
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string) {
@@ -58,20 +58,20 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   const createdQuestion = await prisma.question.create({
     data: {
-          title     : question,
-          resolve_by: date,
-          authorId  : profile!.id,
-          groups    : {
-            connect: {
-              id: groupId
-            }
-          },
-          forecasts : {
-            create: {
-              authorId : profile!.id,
-              forecast : forecast_num
-            }
-          }
+      title     : question,
+      resolve_by: date,
+      authorId  : profile!.id,
+      groups    : {
+        connect: {
+          id: groupId
+        }
+      },
+      forecasts : {
+        create: {
+          authorId : profile!.id,
+          forecast : forecast_num
+        }
+      }
     },
     include: {
       forecasts: {

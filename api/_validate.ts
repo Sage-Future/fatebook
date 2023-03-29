@@ -1,4 +1,4 @@
-import { VercelRequest } from '@vercel/node';
+import { VercelRequest } from '@vercel/node'
 import crypto from 'crypto'
 
 export function validate_slack_request(event : VercelRequest, signing_secret : string) {

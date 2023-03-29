@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { VercelRequest, VercelResponse } from '@vercel/node'
 
 import { tokenizeForecastString } from './_utils.js'
 import { createForecast } from './slash_handlers/_create_forecast.js'

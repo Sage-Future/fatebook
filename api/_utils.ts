@@ -1,9 +1,9 @@
-import { VercelResponse } from '@vercel/node';
+import { VercelResponse } from '@vercel/node'
 import { PrismaClient, GroupType, Profile } from '@prisma/client'
 import fetch from 'node-fetch'
 
 import { token } from './_constants.js'
-import { Blocks } from './blocks-designs/_block_utils.js';
+import { Blocks } from './blocks-designs/_block_utils.js'
 
 const prisma = new PrismaClient()
 export default prisma

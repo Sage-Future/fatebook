@@ -1,6 +1,6 @@
-import { Resolution } from '@prisma/client';
-import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js';
-import prisma from '../_utils.js';
+import { Resolution } from '@prisma/client'
+import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
+import prisma from '../_utils.js'
 
 async function handleResolution(questionid : number, resolution : Resolution) {
   await prisma.question.update({
@@ -28,16 +28,16 @@ export async function resolve(actionParts: ResolveQuestionActionParts) {
   switch (answer) {
     case 'yes':
       await handleResolution(questionId, Resolution.YES)
-      break;
+      break
     case 'no':
       handleResolution(questionId, Resolution.NO)
-      break;
+      break
     case 'ambiguous':
       handleResolution(questionId, Resolution.AMBIGUOUS)
-      break;
+      break
     default:
       console.log('default')
-      break;
+      break
   }
 }
 

@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { VercelRequest, VercelResponse } from '@vercel/node'
 import prisma from '../_utils.js'
 
 const dumpAllProfiles = async (req: VercelRequest, res: VercelResponse) => {
@@ -9,7 +9,7 @@ const dumpAllProfiles = async (req: VercelRequest, res: VercelResponse) => {
     },
   })
 
-  res.json(allProfiles);
-};
+  res.json(allProfiles)
+}
 
-export default dumpAllProfiles;
+export default dumpAllProfiles
