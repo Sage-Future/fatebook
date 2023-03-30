@@ -16,8 +16,6 @@ model Forecast {
   questionId Int
   profile    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  scored     Boolean  @default(false)
-  score      Int?
 }
 
 model QuestionScore {
