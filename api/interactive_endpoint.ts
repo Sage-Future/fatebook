@@ -3,7 +3,7 @@ import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-
 import { unpackBlockActionId } from './blocks-designs/_block_utils.js'
 
 import { resolve } from './interactive_handlers/resolve.js'
-import { submitTextForecast } from './interactive_handlers/submit_text_forecast.js';
+import { submitTextForecast } from './interactive_handlers/submit_text_forecast.js'
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {
@@ -16,15 +16,15 @@ async function blockActions(payload: BlockActionPayload) {
       case 'resolve':
         console.log('  resolve')
         await resolve(actionParts)
-        break;
+        break
 
       case 'submitTextForecast':
         await submitTextForecast(actionParts, action, payload)
-        break;
+        break
       
       default:
         console.warn(`Unknown action: ${actionParts}`)
-        break;
+        break
     }
   }
 }

@@ -18,6 +18,11 @@
     },
 
     {
+      "selector": "property",
+      "format": null
+    },
+
+    {
       "selector": "objectLiteralProperty",
       "format": null
     },

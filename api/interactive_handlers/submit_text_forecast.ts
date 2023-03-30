@@ -1,6 +1,6 @@
-import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload";
-import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils";
-import { postMessageToResponseUrl } from "../_utils.js";
+import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
+import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
+import { postMessageToResponseUrl } from "../_utils.js"
 
 export async function submitTextForecast(actionParts: SubmitTextForecastActionParts, action: BlockActionPayloadAction, payload: BlockActionPayload) {
   if (actionParts.questionId === undefined)

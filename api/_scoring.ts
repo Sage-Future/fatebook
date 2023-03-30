@@ -93,18 +93,18 @@ function oneUserScoring(forecasts : Forecast[], question : Question, id : number
 function median(values : number[]) : number {
   if (values.length === 0) return 0
   // filter out undefined values
-  let num_values = values.filter(v => v !== undefined).sort((a, b) => a - b)
+  let numValues = values.filter(v => v !== undefined).sort((a, b) => a - b)
 
   // get the median
-  let half_index = Math.floor(num_values.length / 2)
-  if (num_values.length % 2) {
-    return num_values[half_index]
+  let halfIndex = Math.floor(numValues.length / 2)
+  if (numValues.length % 2) {
+    return numValues[halfIndex]
   } else {
-    return (num_values[half_index - 1] + num_values[half_index]) / 2.0
+    return (numValues[halfIndex - 1] + numValues[halfIndex]) / 2.0
   }
 }
 
 function brierScore(forecast : number, resolution : Resolution) : number {
-  let true_value = resolution == Resolution.YES ? 1 : 0
-  return ((forecast - true_value) ** 2) + (((1-forecast) - (1-true_value)) ** 2)
+  let trueValue = resolution == Resolution.YES ? 1 : 0
+  return ((forecast - trueValue) ** 2) + (((1-forecast) - (1-trueValue)) ** 2)
 }
