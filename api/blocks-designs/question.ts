@@ -1,14 +1,15 @@
 import { Question } from '@prisma/client'
 import { ActionsBlock, InputBlock } from '@slack/types'
 import { QuestionWithForecastsAndUsers } from '../../prisma/additional'
+import { conciseDateTime } from '../_utils.js'
 import { Blocks, markdownBlock, textBlock, toActionId } from './_block_utils.js'
 
 export function buildQuestionBlocks(question: QuestionWithForecastsAndUsers): Blocks {
 
   return [
     {
-      'type': 'section',
-      'text': markdownBlock(`*${question.title}*`)
+      'type': 'header',
+      'text': textBlock(question.title)
     },
     ...question.forecasts.map((forecast) => (
       {
@@ -19,7 +20,7 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsers): Bl
             'image_url': forecast.profile.user.imageUrl || 'https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg',
             'alt_text': 'profile picture'
           },
-          markdownBlock(`*${forecast.profile.user.name || 'Unknown user'}* ${forecast.forecast.toNumber() * 100}% - _submitted ${forecast.createdAt.toDateString()}_`)
+          markdownBlock(`*${forecast.profile.user.name || 'Unknown user'}* ${forecast.forecast.toNumber() * 100}% - _submitted ${conciseDateTime(forecast.createdAt)}_`)
         ]
       }
     )),

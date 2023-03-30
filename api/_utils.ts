@@ -1,4 +1,5 @@
 import { GroupType, PrismaClient, Profile } from '@prisma/client'
+import { MessageMetadataEventPayloadObject } from '@slack/types'
 import fetch from 'node-fetch'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
@@ -60,6 +61,30 @@ export async function getSlackProfileFromSlackId(slackId : string) {
   }
   console.log('slackUser found:', slackProfile)
   return slackProfile
+}
+
+export async function getOrCreateProfile(slackUserId: string, groupId: number) {
+  // query the database for the user
+  //   we use findFirst because we expect only one result
+  //   cannot get unique because we don't have a unique on
+  //   uncertain field
+  let profile = await prisma.profile.findFirst({
+    where: {
+      slackId: slackUserId
+    },
+  })
+  
+  // if no profile, create one
+  if(!profile) {
+    try{
+      profile = await createProfile(slackUserId, groupId)
+    } catch(err) {
+      console.error(`Couldn't create userID or group for slackUserID: ${slackUserId}`)
+      throw new Error(`Couldn't create profile for slackUserId: ${slackUserId}. ${err}`)
+    }
+  }
+
+  return profile
 }
 
 export async function createProfile(slackId : string, groupId : number) : Promise<Profile>{
@@ -187,43 +212,57 @@ export async function postMessage(message: {channel: string, text: string, block
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
   
   const url = 'https://slack.com/api/chat.postMessage'
-  const response = fetch(url, {
-    method: 'post',
+  return await callSlackApi(message, url) as {ok: boolean, ts: string}
+}
+
+export async function updateMessage(message: {channel: string, ts: string, text: string, blocks?: Blocks}){
+  console.log(`Updating message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
+  
+  const url = 'https://slack.com/api/chat.update'
+  return await callSlackApi(message, url) as {ok: boolean}
+}
+
+async function callSlackApi(message: any, url: string, method = 'post') {
+  const response = await fetch(url, {
+    method,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(message),
   })
-  let data = (await response).json()
-  if ((data as any).ok === false) {
-    console.error('Error posting message:', data)
-    throw new Error('Error posting message')
+  let data = await response.json() as {ok: boolean}
+  if (data.ok === false) {
+    console.error('Error calling Slack API:', data)
+    throw new Error('Error calling Slack API')
   }
+  return data
 }
 
 interface ResponseMessage {
   text: string
+  response_type: "in_channel" | "ephemeral"
+  replace_original: boolean
   blocks?: Blocks
-  response_type?: "in_channel" | "ephemeral"
-  replace_original?: boolean
   thread_ts?: string
   [key: string]: any
 }
 export async function postMessageToResponseUrl(message: ResponseMessage, responseUrl: string) {
-  console.log(`Posting message to response url: ${responseUrl}: `, message)
-  const response = fetch(responseUrl, {
+  console.log(`\nPosting message to response url: ${responseUrl}: `, JSON.stringify(message, null, 2))
+  const response = await fetch(responseUrl, {
     method: 'post',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
     },
     body: JSON.stringify(message),
   })
-  let data = (await response).json()
-  if ((data as any).ok === false) {
-    console.error('Error posting message:', data)
-    throw new Error('Error posting message')
+
+  if (response.ok === false) {
+    console.error('Error posting message:', await response.text())
+    throw new Error(`Error posting message to response URL`)
   }
+
+  return await response.text()
 }
 
 async function channelNameToId(channelName : string) {
@@ -254,4 +293,8 @@ async function channelNameToId(channelName : string) {
     console.log('fetch Error:', err)
   }
   return id
+}
+
+export function conciseDateTime(date: Date) {
+  return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
 }

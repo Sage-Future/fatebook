@@ -1,26 +1,15 @@
+import { Profile } from '@prisma/client'
 import { VercelResponse } from '@vercel/node'
 
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
-import prisma, { createProfile, getGroupIDFromSlackID, postMessageToResponseUrl } from '../_utils.js'
+import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessage } from '../_utils.js'
 
 
-export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string) {
+export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {
   let question : string = commandArray[2]
   let dateStr  : string = commandArray[3]
   let forecast : string = commandArray[4]
   console.log(`question: ${question}, date: ${dateStr}, forecast: ${forecast}`)
-
-  let createUserIfNotExists : boolean = true
-  // query the database for the user
-  //   we use findFirst because we expect only one result
-  //   cannot get unique because we don't have a unique on
-  //   uncertain field
-  let profile = await prisma.profile.findFirst({
-    where: {
-      slackId: slackUserId
-    },
-  })
-
 
   // find the group id, create group if doesn't exist for workspace
   let groupId : number
@@ -28,7 +17,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
     const createGroupIfNotExists : boolean = true
     groupId = await getGroupIDFromSlackID(slackTeamId, createGroupIfNotExists)
   } catch (err) {
-    console.log(`Error: couldn't find slack group`)
+    console.error(`Couldn't find slack group`)
     res.send({
       response_type: 'ephemeral',
       text: `I couldn't find your group! So I don't know where to assign your forecasts.`,
@@ -36,19 +25,15 @@ export async function createForecast(res : VercelResponse, commandArray : string
     return
   }
 
-  // if no profile, create one
-  if(!profile) {
-    try{
-      profile = await createProfile(slackUserId, groupId)
-    } catch(err) {
-      console.log(`Error: couldn't find or create userID for slackUserId: ${slackUserId}\n Underlying error:\n`)
-      console.log(err)
-      res.send({
-        response_type: 'ephemeral',
-        text: `I couldn't create an account for your userID`,
-      })
-      return
-    }
+  let profile : Profile
+  try {
+    profile = await getOrCreateProfile(slackUserId, groupId)
+  } catch (err) {
+    res.send({
+      response_type: 'ephemeral',
+      text: `I couldn't find or create your profile!`,
+    })
+    return
   }
 
   let forecastNum : number = Number(forecast)
@@ -60,7 +45,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
     data: {
       title     : question,
       resolveBy : date,
-      authorId  : profile!.id,
+      authorId  : profile.id,
       groups    : {
         connect: {
           id: groupId
@@ -68,7 +53,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
       },
       forecasts : {
         create: {
-          authorId : profile!.id,
+          authorId : profile.id,
           forecast : forecastNum
         }
       }
@@ -88,20 +73,32 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   const questionBlocks = buildQuestionBlocks(createdQuestion)
 
-  console.log(JSON.stringify(questionBlocks))
+  const data = await postMessage({
+    channel: channelId,
+    text: `Forecasting question created: ${question}`,
+    blocks: questionBlocks,
+  })
 
-  // postMessageToResponseUrl({blocks: questionBlocks, text: "Forecast created!"})
-
-  try {
-    res.send({
-      response_type: 'in_channel',
-      blocks: questionBlocks
-    })
-  } catch (err) {
-    console.log('fetch Error:', err)
-    res.send({
-      response_type: 'ephemeral',
-      text: `${err}`,
-    })
+  if (!data?.ts) {
+    console.error(`Missing message.ts in response ${JSON.stringify(data)}`)
+    throw new Error("Missing message.ts in response")
   }
+
+  await prisma.question.update({
+    where: {
+      id: createdQuestion.id
+    },
+    data: {
+      slackMessages: {
+        create: {
+          ts: data.ts,
+          channel: channelId,
+        }
+      }
+    }
+  })
+
+  console.log(data?.ts)
+
+  res.status(200).send("")
 }
