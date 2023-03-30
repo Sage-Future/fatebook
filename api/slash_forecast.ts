@@ -3,7 +3,6 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import { tokenizeForecastString } from './_utils.js'
 import { createForecast } from './slash_handlers/_create_forecast.js'
 import { getForecasts } from './slash_handlers/_get_forecasts.js'
-import { MessageMetadataEventPayloadObject } from '@slack/types'
 
 export default async function forecast(req : VercelRequest, res: VercelResponse){
   // If the user just types /note, we'll show them the help text

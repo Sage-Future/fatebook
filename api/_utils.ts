@@ -1,5 +1,4 @@
 import { GroupType, PrismaClient, Profile } from '@prisma/client'
-import { MessageMetadataEventPayloadObject } from '@slack/types'
 import fetch from 'node-fetch'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
@@ -12,7 +11,7 @@ export default prisma
 // in the following syntax, with two strings and one number:
 // "forecast" "date" 0.8
 export function tokenizeForecastString(instring : string) : string[] | null {
-  const regex = /([a-zA-Z_]+)\s?([\"\“][^"”]*[\"\”])?\s?(\"?[^"\s]*\"?)?\s?([\d.]*)?/
+  const regex = /([a-zA-Z_]+)\s?(["“][^"”]*["”])?\s?("?[^"\s]*"?)?\s?([\d.]*)?/
   const array : string[] | null = instring.match(regex)
   console.log('Tokenized version:', array)
   return array
@@ -26,7 +25,7 @@ export async function getSlackWorkspaceName() {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         Authorization: `Bearer ${token}`,
-      } 
+      }
     })
     const data = await response.json()
     console.log('data from team fetch:', data)
@@ -73,7 +72,7 @@ export async function getOrCreateProfile(slackUserId: string, groupId: number) {
       slackId: slackUserId
     },
   })
-  
+
   // if no profile, create one
   if(!profile) {
     try{
@@ -210,14 +209,14 @@ export async function postTextMessage(channel : string, payload : string){
 
 export async function postMessage(message: {channel: string, text: string, blocks?: Blocks}){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
-  
+
   const url = 'https://slack.com/api/chat.postMessage'
   return await callSlackApi(message, url) as {ok: boolean, ts: string}
 }
 
 export async function updateMessage(message: {channel: string, ts: string, text: string, blocks?: Blocks}){
   console.log(`Updating message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
-  
+
   const url = 'https://slack.com/api/chat.update'
   return await callSlackApi(message, url) as {ok: boolean}
 }
@@ -263,36 +262,6 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
   }
 
   return await response.text()
-}
-
-async function channelNameToId(channelName : string) {
-  let generalId
-  let id
-
-  try {
-    const url = 'https://slack.com/api/conversations.list'
-    const response = await fetch(url, {
-      method: 'post',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    const data : any = (( await response) as any).json()
-
-    data.channels.forEach((element : any) => {
-      if (element.name === channelName) {
-        id = element.id
-      }
-      if (element.name === 'general') generalId = element.id
-    })
-    if (id) {
-      return id
-    } else return generalId
-  } catch (err) {
-    console.log('fetch Error:', err)
-  }
-  return id
 }
 
 export function conciseDateTime(date: Date) {

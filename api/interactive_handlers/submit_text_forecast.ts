@@ -108,7 +108,7 @@ async function updateQuestionMessages(questionTs: string, channel: string) {
   console.log(`Updating ${questions.length} question messages `, questions)
   for (const question of questions) {
     const questionBlocks = buildQuestionBlocks(question)
-    const result = await updateMessage({
+    await updateMessage({
       ts: questionTs,
       channel: channel,
       blocks: questionBlocks,

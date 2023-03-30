@@ -1,4 +1,3 @@
-import { VercelRequest, VercelResponse } from '@vercel/node'
 import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { Resolution, Question } from '@prisma/client'
 import { relativeBrierScoring, ScoreArray } from '../_scoring.js'

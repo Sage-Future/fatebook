@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node'
+import { VercelResponse } from '@vercel/node'
 
 import { createProfile, getGroupIDFromSlackID } from '../_utils.js'
 import prisma from '../_utils.js'

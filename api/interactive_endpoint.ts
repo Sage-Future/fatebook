@@ -21,7 +21,7 @@ async function blockActions(payload: BlockActionPayload) {
       case 'submitTextForecast':
         await submitTextForecast(actionParts, action, payload)
         break
-      
+
       default:
         console.warn(`Unknown action: ${actionParts}`)
         break

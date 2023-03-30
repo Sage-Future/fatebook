@@ -21,7 +21,7 @@ async function getQuestionsToBeResolved()  {
           user: true,
         }
       }
-    } 
+    }
   })
   return allQuestionsToBeNotified
 }
@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const allQuestionsToBeNotified  = await getQuestionsToBeResolved()
 
   for (const question of allQuestionsToBeNotified) {
-    try { 
+    try {
       let resolveQuestionBlock = buildResolveQuestionBlocks(question)
 
       await postBlockMessage(question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
