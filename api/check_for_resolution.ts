@@ -7,7 +7,7 @@ import prisma, { postBlockMessage } from './_utils.js'
 
 async function getQuestionsToBeResolved()  {
   // check if any questions need to be resolved by time
-  const allQuestionsToBeNotified = prisma.question.findMany({
+  const allQuestionsToBeNotified = await prisma.question.findMany({
     where: {
       resolveBy: {
         lte: new Date()
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try { 
       let resolveQuestionBlock = buildResolveQuestionBlocks(question)
 
-      postBlockMessage(question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
+      await postBlockMessage(question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
       await prisma.question.update({

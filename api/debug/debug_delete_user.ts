@@ -7,7 +7,7 @@ const deleteUser = async (req: VercelRequest, res: VercelResponse) => {
     return
   }
 
-  prisma.user.delete({
+  await prisma.user.delete({
     where: {
       email: req.query.email as string,
     }

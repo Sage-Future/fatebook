@@ -16,7 +16,7 @@ export default async function forecast(req : VercelRequest, res: VercelResponse)
   }
   console.log(req.body)
 
-  const commandArray : string[] | null = tokenizeForecastString(req.body.text)
+  const commandArray : string[] | null = tokenizeForecastString(req.body.text as string)
   if (commandArray === null) {
     res.send({
       response_type: 'ephemeral',
@@ -28,10 +28,10 @@ export default async function forecast(req : VercelRequest, res: VercelResponse)
 
   switch (action) {
     case 'set':
-      createForecast(res, commandArray!, req.body.user_id, req.body.team_id, req.body.channel_id)
+      await createForecast(res, commandArray!, req.body.user_id, req.body.team_id, req.body.channel_id)
       break
     case 'get':
-      getForecasts(res, req.body.user_id, req.body.team_id)
+      await getForecasts(res, req.body.user_id, req.body.team_id)
       break
     default:
       res.send({

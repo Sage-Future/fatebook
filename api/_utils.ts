@@ -202,7 +202,7 @@ export async function postBlockMessage(channel : string, blocks : Blocks, notifi
 }
 
 export async function postTextMessage(channel : string, payload : string){
-  postMessage({
+  await postMessage({
     channel,
     text: payload,
   })
