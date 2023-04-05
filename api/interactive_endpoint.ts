@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { unpackBlockActionId } from './blocks-designs/_block_utils.js'
+import { QuestionModalActionParts, unpackBlockActionId } from './blocks-designs/_block_utils.js'
+import { questionModalSubmitted } from './interactive_handlers/edit_question_modal.js'
 
 import { resolve } from './interactive_handlers/resolve.js'
 import { submitTextForecast } from './interactive_handlers/submit_text_forecast.js'
@@ -40,6 +41,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       break
     case 'view_submission':
       console.log('view_submission')
+      if (payload.view.callback_id.startsWith('question_modal')) {
+        // extract callback_id after 'question_modal'
+        const actionId = payload.view.callback_id.substring('question_modal'.length)
+        const actionParts = unpackBlockActionId(actionId) as QuestionModalActionParts
+        await questionModalSubmitted(payload, actionParts)
+      }
+      res.status(200).send(null) // close the modal
       break
     case 'view_closed':
       console.log('view_closed')
@@ -54,4 +62,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log('default')
       break
   }
+
+  console.log('handler done')
 }

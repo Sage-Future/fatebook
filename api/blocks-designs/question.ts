@@ -24,6 +24,12 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsers): Bl
         ]
       }
     )),
+    ...(question.forecasts.length === 0 ? [{
+      'type': 'context',
+        'elements': [
+          markdownBlock(`_No forecasts yet_`)
+        ]
+    }] : []),
     buildPredictOptions(question)
   ]
 }

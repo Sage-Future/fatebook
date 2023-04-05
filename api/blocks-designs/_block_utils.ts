@@ -11,13 +11,20 @@ export interface SubmitTextForecastActionParts {
   questionId: number
 }
 
-export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts
+export interface QuestionModalActionParts {
+  action: 'qModal'
+  questionId?: number // only required for editing
+  isCreating: boolean
+  channel: string
+}
+
+export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | QuestionModalActionParts
 
 export type Blocks = (KnownBlock | Block)[]
 
 export function toActionId(parts: ActionIdParts) {
   const stringified = JSON.stringify(parts)
-  if (stringified.length > 255) {
+  if (stringified.length >= 255) {
     throw new Error(`ActionIdParts too long - Slack limits actionId to 255 chars. ${parts}`)
   }
   return stringified

@@ -1,4 +1,5 @@
 import { GroupType, PrismaClient, Profile } from '@prisma/client'
+import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
@@ -219,6 +220,17 @@ export async function updateMessage(message: {channel: string, ts: string, text:
 
   const url = 'https://slack.com/api/chat.update'
   return await callSlackApi(message, url) as {ok: boolean}
+}
+
+export async function showModal(trigger_id: string, view: ModalView) {
+  console.log('Showing modal view: ', JSON.stringify(view, null, 2))
+
+  const response = await callSlackApi({
+    trigger_id,
+    view
+  }, 'https://slack.com/api/views.open') as { ok: boolean, view: {id: string} }
+  
+  return response
 }
 
 async function callSlackApi(message: any, url: string, method = 'post') {

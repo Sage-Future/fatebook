@@ -4,7 +4,6 @@ import { VercelResponse } from '@vercel/node'
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
 import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessage } from '../_utils.js'
 
-
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {
   let question : string = commandArray[2]
   let dateStr  : string = commandArray[3]
@@ -40,7 +39,10 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   //parse the date string
   let date : Date = new Date(dateStr)
+  createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId })
+}
 
+export async function createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string}) {
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,
@@ -51,12 +53,12 @@ export async function createForecast(res : VercelResponse, commandArray : string
           id: groupId
         }
       },
-      forecasts : {
+      forecasts : forecastNum ? {
         create: {
           authorId : profile.id,
           forecast : forecastNum
         }
-      }
+      } : {}
     },
     include: {
       forecasts: {
@@ -97,8 +99,5 @@ export async function createForecast(res : VercelResponse, commandArray : string
       }
     }
   })
-
-  console.log(data?.ts)
-
-  res.status(200).send("")
+  console.log("Recorded question message ts ", data?.ts)
 }
