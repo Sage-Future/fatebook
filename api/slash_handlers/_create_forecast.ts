@@ -39,7 +39,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   //parse the date string
   let date : Date = new Date(dateStr)
-  createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId })
+  await createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId })
 }
 
 export async function createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string}) {
@@ -68,6 +68,11 @@ export async function createForecastingQuestion({ question, date, forecastNum, p
               user: true
             }
           }
+        }
+      },
+      profile: {
+        include: {
+          user: true
         }
       }
     }

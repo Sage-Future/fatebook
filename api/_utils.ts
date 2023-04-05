@@ -222,14 +222,14 @@ export async function updateMessage(message: {channel: string, ts: string, text:
   return await callSlackApi(message, url) as {ok: boolean}
 }
 
-export async function showModal(trigger_id: string, view: ModalView) {
-  console.log('Showing modal view: ', JSON.stringify(view, null, 2))
+export async function showModal(triggerId: string, view: ModalView) {
+  console.log('Showing modal view: ', view)
 
   const response = await callSlackApi({
-    trigger_id,
+    trigger_id: triggerId,
     view
   }, 'https://slack.com/api/views.open') as { ok: boolean, view: {id: string} }
-  
+
   return response
 }
 

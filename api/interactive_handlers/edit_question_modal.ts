@@ -1,20 +1,17 @@
-import { Profile } from "@prisma/client"
 import { buildEditQuestionModalView } from "../blocks-designs/question_modal.js"
 import { QuestionModalActionParts } from "../blocks-designs/_block_utils.js"
 import { createForecastingQuestion } from "../slash_handlers/_create_forecast.js"
 import { getGroupIDFromSlackID, getOrCreateProfile, showModal } from "../_utils.js"
 
-export async function showCreateQuestionModal(trigger_id: string, channelId: string) {
+export async function showCreateQuestionModal(triggerId: string, channelId: string) {
   const view = buildEditQuestionModalView({}, true, channelId)
-
-  console.log("showing modal ", JSON.stringify(view, null, 2))
-
-  const response = await showModal(trigger_id, view)
+  const response = await showModal(triggerId, view)
   console.log('showCreateQuestionModal response', response)
 }
 
-export async function showEditQuestionModal(trigger_id: string, questionId: string) {
+export function showEditQuestionModal(triggerId: string, questionId: string) { // todo set async
   console.log("todo get question, show modal")
+  console.log({triggerId, questionId})
 }
 
 interface ViewStateValues {
@@ -27,8 +24,6 @@ interface ViewStateValues {
   }
 }
 export async function questionModalSubmitted(payload: any, actionParts: QuestionModalActionParts) {
-  console.log("questionModalSubmitted", payload)
-
   function getVal(actionId: string) {
     const blockObj = Object.values(payload.view.state.values as ViewStateValues).find((v) => v[actionId] !== undefined)
     if (!blockObj) {
@@ -41,6 +36,8 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
   const question = getVal('forecast_question')?.value
   const resolutionDate = getVal('resolution_date')?.selected_date
   const notes = getVal('notes')?.value
+
+  console.log("Notes not yet implemented, but here they are: ", notes)
 
   if (!question || !resolutionDate) {
     console.error("missing question or resolution date")

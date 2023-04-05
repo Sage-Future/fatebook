@@ -96,6 +96,11 @@ async function updateQuestionMessages(questionTs: string, channel: string) {
             }
           }
         }
+      },
+      profile: {
+        include: {
+          user: true
+        }
       }
     }
   })

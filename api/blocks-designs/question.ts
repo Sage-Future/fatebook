@@ -1,10 +1,10 @@
 import { Question } from '@prisma/client'
 import { ActionsBlock, InputBlock } from '@slack/types'
-import { QuestionWithForecastsAndUsers } from '../../prisma/additional'
+import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
 import { conciseDateTime } from '../_utils.js'
 import { Blocks, markdownBlock, textBlock, toActionId } from './_block_utils.js'
 
-export function buildQuestionBlocks(question: QuestionWithForecastsAndUsers): Blocks {
+export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAuthor): Blocks {
 
   return [
     {
@@ -20,17 +20,24 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsers): Bl
             'image_url': forecast.profile.user.imageUrl || 'https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg',
             'alt_text': 'profile picture'
           },
-          markdownBlock(`*${forecast.profile.user.name || 'Unknown user'}* ${forecast.forecast.toNumber() * 100}% - _submitted ${conciseDateTime(forecast.createdAt)}_`)
+          // todo update this for non-slack profiles or profiles from other workspaces (can't mention them)
+          markdownBlock(`*${`<@${forecast.profile.slackId}>` || 'Unknown user'}* ${forecast.forecast.toNumber() * 100}% - _submitted ${conciseDateTime(forecast.createdAt)}_`)
         ]
       }
     )),
     ...(question.forecasts.length === 0 ? [{
       'type': 'context',
-        'elements': [
-          markdownBlock(`_No forecasts yet_`)
-        ]
+      'elements': [
+        markdownBlock(`_No forecasts yet_`)
+      ]
     }] : []),
-    buildPredictOptions(question)
+    buildPredictOptions(question),
+    {
+      'type': 'context',
+      'elements': [
+        markdownBlock(`_Created by <@${question.profile.slackId}> using /forecast_`)
+      ]
+    }
   ]
 }
 
