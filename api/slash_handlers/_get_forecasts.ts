@@ -1,9 +1,11 @@
 import { VercelResponse } from '@vercel/node'
 
+import {  buildGetForecastsBlocks } from '../blocks-designs/get_forecasts.js'
 import { createProfile, getGroupIDFromSlackID } from '../_utils.js'
 import prisma from '../_utils.js'
 
 export async function getForecasts(res : VercelResponse, slackUserId : string, slackTeamId : string) {
+  console.log('getForecasts called')
 
 
   // query the database for the user
@@ -15,6 +17,7 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
       slackId: slackUserId
     },
   })
+  console.log("profile tes:", profile)
 
   // if no profile, create one
   if(!profile) {
@@ -37,15 +40,22 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
       authorId: profile!.id
     },
     include: {
-      question: true,
+      question: {
+        include: {
+          forecasts: true,
+          slackMessages: true
+        }
+      }
     },
   })
+  console.log("allUserForecasts:", allUserForecasts)
 
   try {
+    const builtBlocks = buildGetForecastsBlocks(allUserForecasts)
+    console.log('builtBlocks:', builtBlocks)
     res.send({
       response_type: 'in_channel',
-      text: `I found ${allUserForecasts.length} forecasts for you:\n
-        ${allUserForecasts.map((forecast) => {return `*${forecast.question.title}* - ${forecast.forecast}`}).join('\n')}`
+      blocks: builtBlocks
     })
   } catch (err) {
     console.log('fetch Error:', err)

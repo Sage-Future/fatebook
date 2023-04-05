@@ -1,9 +1,10 @@
-import { GroupType, PrismaClient, Profile } from '@prisma/client'
+import { GroupType, PrismaClient, Profile, Forecast } from '@prisma/client'
 import { ModalView } from '@slack/types'
+import { QuestionWithForecasts } from '../prisma/additional'
 import fetch from 'node-fetch'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
-import { token } from './_constants.js'
+import { token, maxDecmialPlaces } from './_constants.js'
 
 const prisma = new PrismaClient()
 export default prisma
@@ -193,6 +194,16 @@ export function tokenizeString(instring : string) {
   return array
 }
 
+export async function getSlackPermalinkFromChannelAndTS(channel: string, timestamp: string){
+  const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
+  const data = await callSlackApi({}, url, 'get') as {ok: boolean, permalink: string}
+  if (data.ok === false) {
+    console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
+    throw new Error('No message found')
+  }
+  return data.permalink
+}
+
 export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = ''){
   await postMessage({
     channel,
@@ -258,6 +269,7 @@ interface ResponseMessage {
   thread_ts?: string
   [key: string]: any
 }
+
 export async function postMessageToResponseUrl(message: ResponseMessage, responseUrl: string) {
   console.log(`\nPosting message to response url: ${responseUrl}: `, JSON.stringify(message, null, 2))
   const response = await fetch(responseUrl, {
@@ -276,8 +288,46 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
   return await response.text()
 }
 
-export function conciseDateTime(date: Date) {
-  return `${date.getHours()}:${date.getMinutes()} on ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+export function getMostRecentForecastPerProfile(forecasts: Forecast[], date : Date) : [number, Forecast][] {
+  const forecastsPerProfile = new Map<number, Forecast>()
+  for (const forecast of forecasts) {
+    const authorId = forecast.authorId
+    if (forecastsPerProfile.has(authorId) && forecast.createdAt < date) {
+      const existingForecast = forecastsPerProfile.get(authorId)
+      if (existingForecast!.createdAt < forecast.createdAt) {
+        forecastsPerProfile.set(authorId, forecast)
+      }
+    } else if(forecast.createdAt < date){
+      forecastsPerProfile.set(authorId, forecast)
+    }
+  }
+  return Array.from(forecastsPerProfile, ([id, value]) => [id, value])
+}
+
+export function getCommunityForecast(question : QuestionWithForecasts, date : Date) : number {
+  // get all forecasts for this question
+  const uptoDateForecasts : number[] = getMostRecentForecastPerProfile(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
+  // sum each forecast
+  const summedForecasts : number = uptoDateForecasts.reduce(
+    (acc, forecast) => acc + forecast,
+    0
+  )
+  // divide by number of forecasts
+  return summedForecasts / question.forecasts.length
+}
+
+
+export function conciseDateTime(date: Date, includeTime = true) {
+  let timeStr = ''
+  if (includeTime)
+    timeStr = `${date.getHours()}:${date.getMinutes()} on `
+  return `${timeStr}${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+}
+
+export function formatDecimalNicely(num : number) : string {
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxDecmialPlaces,})
 }
 
 export function getDateYYYYMMDD(date: Date) {
