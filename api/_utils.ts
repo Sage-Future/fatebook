@@ -277,5 +277,18 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
 }
 
 export function conciseDateTime(date: Date) {
-  return `${date.getHours()}:${date.getMinutes()} ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`
+  return `${date.getHours()}:${date.getMinutes()} on ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+}
+
+export function getDateYYYYMMDD(date: Date) {
+  return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
+}
+
+export function zeroPad(num: number) {
+  return num.toString().padStart(2, '0')
+}
+
+export function round(number: number, places = 2) {
+  // @ts-ignore
+  return +(Math.round(number + "e+" + places)  + "e-" + places)
 }

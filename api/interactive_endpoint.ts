@@ -23,6 +23,10 @@ async function blockActions(payload: BlockActionPayload) {
         await submitTextForecast(actionParts, action, payload)
         break
 
+      case 'updateResolutionDate':
+        console.log('  updateResolutionDate: user changed resolution date in modal, do nothing')
+        break
+
       default:
         console.warn(`Unknown action: ${actionParts}`)
         break
@@ -37,7 +41,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log('block_actions')
       await blockActions(payload)
       console.log('block_actions done')
-      res.status(200).json({message:'ok'})
+      if (!res.headersSent) {
+        res.status(200).json({message:'ok'})
+      }
       break
     case 'view_submission':
       console.log('view_submission')
@@ -45,9 +51,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // extract callback_id after 'question_modal'
         const actionId = payload.view.callback_id.substring('question_modal'.length)
         const actionParts = unpackBlockActionId(actionId) as QuestionModalActionParts
-        await questionModalSubmitted(payload, actionParts)
+        await questionModalSubmitted(payload, actionParts, res)
       }
-      res.status(200).send(null) // close the modal
+      if (!res.headersSent) {
+        res.status(200).send(null) // close the modal
+      }
       break
     case 'view_closed':
       console.log('view_closed')

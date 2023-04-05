@@ -18,7 +18,12 @@ export interface QuestionModalActionParts {
   channel: string
 }
 
+export interface UpdateResolutionDateActionParts {
+  action: 'updateResolutionDate'
+}
+
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | QuestionModalActionParts
+  | UpdateResolutionDateActionParts
 
 export type Blocks = (KnownBlock | Block)[]
 

@@ -1,6 +1,7 @@
 import { Question } from '@prisma/client'
 import { ActionsBlock, ModalView } from '@slack/types'
-import { markdownBlock, textBlock, toActionId } from './_block_utils.js'
+import { getDateYYYYMMDD } from '../_utils.js'
+import { textBlock, toActionId } from './_block_utils.js'
 
 export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string): ModalView {
   return {
@@ -25,13 +26,18 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
         },
       },
       {
-        'type': 'section',
-        'text': markdownBlock('When should I remind you to resolve this question?'),
-        'accessory': {
+        'block_id': 'resolution_date',
+        'type': 'input',
+        'label': textBlock('When should I remind you to resolve this question?'),
+        'element': {
           'type': 'datepicker',
-          'initial_date': '2023-01-01',
+          'initial_date': getDateYYYYMMDD(
+            question?.resolveBy || new Date(Date.now() + ( 3600 * 1000 * 24))  // default = tomorrow
+          ),
           'placeholder': textBlock('Select a date'),
-          'action_id': 'resolution_date'
+          'action_id': toActionId({
+            action: 'updateResolutionDate',
+          })
         },
       },
       {

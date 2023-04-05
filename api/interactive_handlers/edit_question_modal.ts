@@ -1,3 +1,4 @@
+import { VercelResponse } from '@vercel/node'
 import { buildEditQuestionModalView } from "../blocks-designs/question_modal.js"
 import { QuestionModalActionParts } from "../blocks-designs/_block_utils.js"
 import { createForecastingQuestion } from "../slash_handlers/_create_forecast.js"
@@ -23,18 +24,18 @@ interface ViewStateValues {
     }
   }
 }
-export async function questionModalSubmitted(payload: any, actionParts: QuestionModalActionParts) {
+export async function questionModalSubmitted(payload: any, actionParts: QuestionModalActionParts, res: VercelResponse) {
   function getVal(actionId: string) {
     const blockObj = Object.values(payload.view.state.values as ViewStateValues).find((v) => v[actionId] !== undefined)
     if (!blockObj) {
-      console.error("missing blockObj for actionId", actionId)
+      console.error("missing blockObj for actionId", actionId, ". values: ", payload.view.state.values)
       throw new Error("missing blockObj for actionId")
     }
     return blockObj[actionId]
   }
 
   const question = getVal('forecast_question')?.value
-  const resolutionDate = getVal('resolution_date')?.selected_date
+  const resolutionDate = getVal('{"action":"updateResolutionDate"}')?.selected_date
   const notes = getVal('notes')?.value
 
   console.log("Notes not yet implemented, but here they are: ", notes)
@@ -43,6 +44,16 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
     console.error("missing question or resolution date")
     throw new Error("missing question or resolution date")
   }
+
+  if (resolutionDate && new Date(resolutionDate) < new Date()) {
+    res.send({
+      response_action: 'errors',
+      errors: {
+        "resolution_date": 'The date must be in the future',
+      },
+    })
+  }
+
 
   if (actionParts.isCreating) {
     const groupId = await getGroupIDFromSlackID(payload.user.team_id, true)
