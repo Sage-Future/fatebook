@@ -1,10 +1,10 @@
-import { GroupType, PrismaClient, Profile, Forecast } from '@prisma/client'
+import { Forecast, GroupType, PrismaClient, Profile } from '@prisma/client'
 import { ModalView } from '@slack/types'
-import { QuestionWithForecasts } from '../prisma/additional'
 import fetch from 'node-fetch'
+import { QuestionWithForecasts } from '../prisma/additional'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
-import { token, maxDecmialPlaces } from './_constants.js'
+import { maxDecmialPlaces } from './_constants.js'
 
 const prisma = new PrismaClient()
 export default prisma
@@ -41,14 +41,26 @@ export function tokenizeForecastString(instring : string) : string[] | null {
   return array
 }
 
-export async function getSlackWorkspaceName() {
+export async function getToken(teamId: string) {
+  const workspace = await prisma.workspace.findUnique({
+    where: {
+      teamId: teamId
+    }
+  })
+  if (!workspace) {
+    throw new Error('Workspace not found for team id ' + teamId)
+  }
+  return workspace.token
+}
+
+export async function getSlackWorkspaceName(teamId: string, ) {
   try {
     const url = 'https://slack.com/api/team.info'
     const response = await fetch(url, {
       method: 'get',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${await getToken(teamId)}`,
       }
     })
     const data = await response.json()
@@ -60,7 +72,7 @@ export async function getSlackWorkspaceName() {
   }
 }
 
-export async function getSlackProfileFromSlackId(slackId : string) {
+export async function getSlackProfileFromSlackId(teamId: string, slackId : string) {
   let data
   try {
     const url = 'https://slack.com/api/users.info'
@@ -68,7 +80,7 @@ export async function getSlackProfileFromSlackId(slackId : string) {
       method: 'get',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${await getToken(teamId)}`,
       }
     })
     data = await response.json()
@@ -86,7 +98,7 @@ export async function getSlackProfileFromSlackId(slackId : string) {
   return slackProfile
 }
 
-export async function getOrCreateProfile(slackUserId: string, groupId: number) {
+export async function getOrCreateProfile(teamId: string, slackUserId: string, groupId: number) {
   // query the database for the user
   //   we use findFirst because we expect only one result
   //   cannot get unique because we don't have a unique on
@@ -100,7 +112,7 @@ export async function getOrCreateProfile(slackUserId: string, groupId: number) {
   // if no profile, create one
   if(!profile) {
     try{
-      profile = await createProfile(slackUserId, groupId)
+      profile = await createProfile(teamId, slackUserId, groupId)
     } catch(err) {
       console.error(`Couldn't create userID or group for slackUserID: ${slackUserId}`)
       throw new Error(`Couldn't create profile for slackUserId: ${slackUserId}. ${err}`)
@@ -110,9 +122,9 @@ export async function getOrCreateProfile(slackUserId: string, groupId: number) {
   return profile
 }
 
-export async function createProfile(slackId : string, groupId : number) : Promise<Profile>{
+export async function createProfile(teamId: string, slackId : string, groupId : number) : Promise<Profile>{
   // check if the user exists
-  const slackProfile = (await getSlackProfileFromSlackId(slackId))
+  const slackProfile = (await getSlackProfileFromSlackId(teamId, slackId))
   const email = slackProfile.email
   const realName = slackProfile.real_name
 
@@ -178,7 +190,7 @@ export async function getGroupIDFromSlackID(slackTeamId : string, createGroupIfN
     // get workspace name for nice labelling of new group
     let slackWorkspaceName
     try {
-      slackWorkspaceName = (await getSlackWorkspaceName())
+      slackWorkspaceName = (await getSlackWorkspaceName(slackTeamId))
       if(slackWorkspaceName === undefined) {
         throw new Error('slackWorkspace not found')
       }
@@ -216,9 +228,9 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function getSlackPermalinkFromChannelAndTS(channel: string, timestamp: string){
+export async function getSlackPermalinkFromChannelAndTS(teamId: string, channel: string, timestamp: string){
   const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
-  const data = await callSlackApi(null, url, 'get') as {ok: boolean, permalink: string}
+  const data = await callSlackApi(teamId, null, url, 'get') as {ok: boolean, permalink: string}
   if (data.ok === false) {
     console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
     throw new Error('No message found')
@@ -226,8 +238,8 @@ export async function getSlackPermalinkFromChannelAndTS(channel: string, timesta
   return data.permalink
 }
 
-export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostMessageAdditionalArgs = {}){
-  await postSlackMessage({
+export async function postBlockMessage(teamId: string, channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostMessageAdditionalArgs = {}){
+  await postSlackMessage(teamId, {
     channel,
     text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
     blocks,
@@ -236,32 +248,33 @@ export async function postBlockMessage(channel : string, blocks : Blocks, notifi
   })
 }
 
-export async function postTextMessage(channel : string, payload : string, additionalArgs : PostMessageAdditionalArgs = {}){
-  await postSlackMessage({
-    channel,
-    text: payload,
-    ...(additionalArgs && { additionalArgs } )
-  })
+export async function postTextMessage(teamId: string, channel : string, payload : string, additionalArgs : PostMessageAdditionalArgs = {}){
+  await postSlackMessage(teamId,
+    {
+      channel,
+      text: payload,
+      ...(additionalArgs && { additionalArgs } )
+    })
 }
 
-export async function postSlackMessage(message: PostMessagePayload){
+export async function postSlackMessage(teamId: string, message: PostMessagePayload){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
 
   const url = 'https://slack.com/api/chat.postMessage'
-  return await callSlackApi(message, url) as {ok: boolean, ts: string}
+  return await callSlackApi(teamId, message, url) as {ok: boolean, ts: string}
 }
 
-export async function updateMessage(message: {channel: string, ts: string, text: string, blocks?: Blocks}){
+export async function updateMessage(teamId: string, message: {channel: string, ts: string, text: string, blocks?: Blocks}){
   console.log(`Updating message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
 
   const url = 'https://slack.com/api/chat.update'
-  return await callSlackApi(message, url) as {ok: boolean}
+  return await callSlackApi(teamId, message, url) as {ok: boolean}
 }
 
-export async function showModal(triggerId: string, view: ModalView) {
+export async function showModal(teamId: string, triggerId: string, view: ModalView) {
   console.log('Showing modal view: ', view)
 
-  const response = await callSlackApi({
+  const response = await callSlackApi(teamId, {
     trigger_id: triggerId,
     view
   }, 'https://slack.com/api/views.open') as { ok: boolean, view: {id: string} }
@@ -269,12 +282,12 @@ export async function showModal(triggerId: string, view: ModalView) {
   return response
 }
 
-async function callSlackApi(message: any, url: string, method = 'POST') {
+async function callSlackApi(teamId: string, message: any, url: string, method = 'POST') {
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${await getToken(teamId)}`,
     },
     ...(message && { body: JSON.stringify(message)}),
   })

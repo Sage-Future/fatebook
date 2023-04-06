@@ -33,7 +33,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
   let profile
   try {
     const groupId = await getGroupIDFromSlackID(payload.team.id)
-    profile = await getOrCreateProfile(payload.user.id, groupId)
+    profile = await getOrCreateProfile(payload.team.id, payload.user.id, groupId)
   } catch (e) {
     console.error(e)
     await postMessageToResponseUrl({
@@ -69,13 +69,13 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
   // }, payload.response_url)
 
   if (payload.message?.ts && payload.channel?.id) {
-    await updateQuestionMessages(payload.message.ts, payload.channel.id)
+    await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id)
   } else {
     console.error(`Missing message.ts or channel.id in payload ${JSON.stringify(payload)}`)
   }
 }
 
-async function updateQuestionMessages(questionTs: string, channel: string) {
+async function updateQuestionMessages(teamId: string, questionTs: string, channel: string) {
   const questions = await prisma.question.findMany({
     where: {
       slackMessages: {
@@ -113,7 +113,7 @@ async function updateQuestionMessages(questionTs: string, channel: string) {
   console.log(`Updating ${questions.length} question messages `, questions)
   for (const question of questions) {
     const questionBlocks = buildQuestionBlocks(question)
-    await updateMessage({
+    await updateMessage(teamId, {
       ts: questionTs,
       channel: channel,
       blocks: questionBlocks,

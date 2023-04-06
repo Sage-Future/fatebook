@@ -24,7 +24,7 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
     try {
       const createGroupIfNotExists : boolean = true
       const groupId = await getGroupIDFromSlackID(slackTeamId, createGroupIfNotExists)
-      profile = await createProfile(slackUserId, groupId)
+      profile = await createProfile(slackTeamId, slackUserId, groupId)
     } catch(err){
       console.log(`Error: couldn't create userID or group for slackUserID: ${slackUserId}`)
       res.send({
@@ -51,9 +51,9 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
   console.log("allUserForecasts:", allUserForecasts)
 
   try {
-    const forecastsBlocks = await buildGetForecastsBlocks(allUserForecasts)
+    const forecastsBlocks = await buildGetForecastsBlocks(slackTeamId, allUserForecasts)
     console.log('builtBlocks:', forecastsBlocks)
-    await postSlackMessage({
+    await postSlackMessage(slackTeamId, {
       channel: channelId,
       text: `Forecasts requested for profile ID: ${profile!.id}`,
       blocks: forecastsBlocks,

@@ -41,6 +41,19 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       'elements': [
         markdownBlock(`_Created by <@${question.profile.slackId}> using /forecast_`)
       ]
+    },
+    {
+      'type': 'actions',
+      elements: [
+        {
+          'type': 'button',
+          'text': textBlock('Edit (todo)'),
+          'action_id': toActionId({
+            action: 'editQuestionBtn',
+            questionId: question.id,
+          })
+        }
+      ]
     }
   ]
 }

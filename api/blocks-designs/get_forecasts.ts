@@ -2,18 +2,19 @@ import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/
 import { KnownBlock } from '@slack/types'
 import { conciseDateTime, getSlackPermalinkFromChannelAndTS, getCommunityForecast, formatDecimalNicely } from '../_utils.js'
 import { maxForecastsVisible } from '../_constants.js'
+import { markdownBlock } from './_block_utils.js'
 
-export async function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
+export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
   if(forecasts.length == 0) {
     return [buildEmptyResponseBlock()]
   } else if (forecasts.length <= maxForecastsVisible) {
-    return await buildGetForecastsBlocksPage(forecasts, false, 1)
+    return await buildGetForecastsBlocksPage(teamId, forecasts, false, 1)
   }
 
-  return await buildGetForecastsBlocksPage(forecasts.slice(0,maxForecastsVisible-1), true, 0)
+  return await buildGetForecastsBlocksPage(teamId, forecasts.slice(0,maxForecastsVisible-1), true, 0)
 }
 
-async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number) {
+async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number) {
   let blocks = await Promise.all([
     buildResponseBlock(forecasts.length),
     {
@@ -22,28 +23,26 @@ async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSl
     ...forecasts.map(async (forecast) => (
       {
 			  "type": "section",
-			  "text": {
-			  	"type": "mrkdwn",
-          "text": await buildForecastQuestionText(forecast)
-        }
+			  "text": markdownBlock((await buildForecastQuestionText(teamId, forecast)))
       }
     )),
     {
       "type": "divider"
     }
   ])
-  if (pagination)
+  if (pagination) { // @FRANCIS - I added these curly brackets for clarity, not sure if maybeGenerateButtonsBlock should be inside or outside!
     console.log(page)
     //maybeGenerateButtonsBlock(forecasts)
+  }
   return blocks
 }
 
-async function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
+async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
   // Question title
   let questionTitle = `*${forecast.question.title}*`
   try {
     const slackMessage  = forecast.question.slackMessages[0]!
-    const slackPermalink = await getSlackPermalinkFromChannelAndTS(slackMessage.channel, slackMessage.ts)
+    const slackPermalink = await getSlackPermalinkFromChannelAndTS(teamId, slackMessage.channel, slackMessage.ts)
     questionTitle = `*<${slackPermalink}|${forecast.question.title}>*`
   } catch (err) {
     console.log('No original forecast message found:', err)
@@ -84,7 +83,7 @@ function buildEmptyResponseBlock(): KnownBlock {
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": `We found *0 open forecasts*! Perhaps you should start making some?`
+      "text": `We found *0 open forecasts*! Time to start making some?`
     }
   }
 }

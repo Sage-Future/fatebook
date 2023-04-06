@@ -4,9 +4,9 @@ import { QuestionModalActionParts } from "../blocks-designs/_block_utils.js"
 import { createForecastingQuestion } from "../slash_handlers/_create_forecast.js"
 import { getGroupIDFromSlackID, getOrCreateProfile, showModal } from "../_utils.js"
 
-export async function showCreateQuestionModal(triggerId: string, channelId: string) {
+export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string) {
   const view = buildEditQuestionModalView({}, true, channelId)
-  const response = await showModal(triggerId, view)
+  const response = await showModal(teamId, triggerId, view)
   console.log('showCreateQuestionModal response', response)
 }
 
@@ -57,9 +57,9 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
 
   if (actionParts.isCreating) {
     const groupId = await getGroupIDFromSlackID(payload.user.team_id, true)
-    const profile = await getOrCreateProfile(payload.user.id, groupId)
+    const profile = await getOrCreateProfile(payload.user.team_id, payload.user.id, groupId)
 
-    await createForecastingQuestion({
+    await createForecastingQuestion(payload.user.team_id, {
       question: question,
       date: new Date(resolutionDate),
       channelId: actionParts.channel,

@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       let resolveQuestionBlock = buildResolveQuestionBlocks(question)
 
-      await postBlockMessage(question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
+      await postBlockMessage(req.body.team_id, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
       await prisma.question.update({

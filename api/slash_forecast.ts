@@ -19,7 +19,7 @@ export default async function forecast(req : VercelRequest, res: VercelResponse)
 
   switch (action) {
     case 'set':
-      await showCreateQuestionModal(req.body?.trigger_id, req.body.channel_id)
+      await showCreateQuestionModal(req.body?.team_id, req.body?.trigger_id, req.body.channel_id)
       res.status(200).send(null)
       // await createForecast(res, commandArray!, req.body.user_id, req.body.team_id, req.body.channel_id)
       break

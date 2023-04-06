@@ -26,7 +26,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   let profile : Profile
   try {
-    profile = await getOrCreateProfile(slackUserId, groupId)
+    profile = await getOrCreateProfile(slackTeamId, slackUserId, groupId)
   } catch (err) {
     res.send({
       response_type: 'ephemeral',
@@ -39,10 +39,10 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   //parse the date string
   let date : Date = new Date(dateStr)
-  await createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId })
+  await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, groupId, channelId })
 }
 
-export async function createForecastingQuestion({ question, date, forecastNum, profile, groupId, channelId }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string}) {
+export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, groupId, channelId }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string}) {
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,
@@ -80,7 +80,7 @@ export async function createForecastingQuestion({ question, date, forecastNum, p
 
   const questionBlocks = buildQuestionBlocks(createdQuestion)
 
-  const data = await postSlackMessage({
+  const data = await postSlackMessage(teamId, {
     channel: channelId,
     text: `Forecasting question created: ${question}`,
     blocks: questionBlocks,

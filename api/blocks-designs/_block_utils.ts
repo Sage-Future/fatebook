@@ -33,8 +33,14 @@ export interface SortForecastsActionParts {
   order: 'asc' | 'desc'
 }
 
+export interface EditQuestionBtnActionParts {
+  action: 'editQuestionBtn'
+  questionId: number
+}
+
+
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 

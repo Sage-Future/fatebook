@@ -1,4 +1,4 @@
-import { Forecast, Profile, Question, User } from "@prisma/client"
+import { Forecast, Profile, Question, QuestionSlackMessage, User } from "@prisma/client"
 
 export type QuestionWithForecastsAndUsersAndAuthor = Question & {
     forecasts: ForecastWithProfileAndUser[]
