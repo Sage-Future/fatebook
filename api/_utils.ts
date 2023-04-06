@@ -244,7 +244,8 @@ export async function showModal(triggerId: string, view: ModalView) {
   return response
 }
 
-async function callSlackApi(message: any, url: string, method = 'post') {
+async function callSlackApi(message: any, url: string, method = 'POST') {
+  console.log(`Calling Slack API: ${url}, doing ${method} with message: `, message)
   const response = await fetch(url, {
     method,
     headers: {

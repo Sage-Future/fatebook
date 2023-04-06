@@ -24,7 +24,7 @@ export default async function forecast(req : VercelRequest, res: VercelResponse)
       // await createForecast(res, commandArray!, req.body.user_id, req.body.team_id, req.body.channel_id)
       break
     case 'get':
-      await getForecasts(res, req.body.user_id, req.body.team_id)
+      await getForecasts(res, req.body.user_id, req.body.team_id, req.body.channel_id)
       break
     default:
       res.send({

@@ -1,10 +1,10 @@
 import { VercelResponse } from '@vercel/node'
 
 import {  buildGetForecastsBlocks } from '../blocks-designs/get_forecasts.js'
-import { createProfile, getGroupIDFromSlackID } from '../_utils.js'
+import { createProfile, getGroupIDFromSlackID, postSlackMessage } from '../_utils.js'
 import prisma from '../_utils.js'
 
-export async function getForecasts(res : VercelResponse, slackUserId : string, slackTeamId : string) {
+export async function getForecasts(res : VercelResponse, slackUserId : string, slackTeamId : string, channelId : string) {
   console.log('getForecasts called')
 
 
@@ -51,14 +51,16 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
   console.log("allUserForecasts:", allUserForecasts)
 
   try {
-    const builtBlocks = buildGetForecastsBlocks(allUserForecasts)
-    console.log('builtBlocks:', builtBlocks)
-    res.send({
-      response_type: 'in_channel',
-      blocks: builtBlocks
+    const forecastsBlocks = buildGetForecastsBlocks(allUserForecasts)
+    console.log('builtBlocks:', forecastsBlocks)
+    await postSlackMessage({
+      channel: channelId,
+      text: `Forecasts requested for profile ID: ${profile!.id}`,
+      blocks: forecastsBlocks,
     })
+
   } catch (err) {
-    console.log('fetch Error:', err)
+    console.log('res send Error:', err)
     res.send({
       response_type: 'ephemeral',
       text: `${err}`,

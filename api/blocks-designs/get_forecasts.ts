@@ -17,6 +17,9 @@ export function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithSlack
 function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number): Blocks {
   let blocks = [
     buildResponseBlock(forecasts.length),
+    {
+      "type": "divider"
+    },
     ...forecasts.map((forecast) => (
       {
 			  "type": "section",
