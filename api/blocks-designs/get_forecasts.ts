@@ -50,11 +50,11 @@ async function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlac
   }
 
   // get the length of the string to represent forecast.forecast as two digit decimal
-  const yourForecastValueStr    = formatDecimalNicely(forecast.forecast.toNumber())
+  const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber())
   const yourForecastValuePadded = 'You:' + padForecastPrettily(yourForecastValueStr, 3, 8)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
-  const commForecastValueStr    = formatDecimalNicely(getCommunityForecast(forecast.question, new Date()))
+  const commForecastValueStr    = formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()))
   const commForecastValuePadded = 'Community:' + padForecastPrettily(commForecastValueStr, 3, 8)
 
   // resolution date

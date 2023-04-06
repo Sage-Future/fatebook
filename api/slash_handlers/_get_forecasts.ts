@@ -57,7 +57,9 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
       channel: channelId,
       text: `Forecasts requested for profile ID: ${profile!.id}`,
       blocks: forecastsBlocks,
+      unfurl_links: false,
     })
+    res.status(200).send({'ok':true})
 
   } catch (err) {
     console.log('res send Error:', err)

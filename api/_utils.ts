@@ -9,6 +9,28 @@ import { token, maxDecmialPlaces } from './_constants.js'
 const prisma = new PrismaClient()
 export default prisma
 
+export type PostMessageAdditionalArgs =  {
+  as_user?         : boolean
+  icon_emoji?      : string
+  icon_url?        : string
+  link_names?      : boolean
+  metadata?        : string
+  mrkdwn?          : boolean
+  parse?           : string
+  reply_broadcast? : boolean
+  thread_ts?       : string
+  unfurl_links?    : boolean
+  unfurl_media?    : boolean
+  username?        : string
+}
+
+export type PostMessagePayload = PostMessageAdditionalArgs & {
+  channel          : string
+  text             : string
+  blocks?          : Blocks
+}
+
+
 // tokenize a string into an array by splitting on sections
 // in the following syntax, with two strings and one number:
 // "forecast" "date" 0.8
@@ -204,22 +226,25 @@ export async function getSlackPermalinkFromChannelAndTS(channel: string, timesta
   return data.permalink
 }
 
-export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = ''){
+export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostMessageAdditionalArgs = {}){
   await postSlackMessage({
     channel,
     text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
-    blocks
+    blocks,
+    ...(additionalArgs && { additionalArgs } )
+    // add the other args here!
   })
 }
 
-export async function postTextMessage(channel : string, payload : string){
+export async function postTextMessage(channel : string, payload : string, additionalArgs : PostMessageAdditionalArgs = {}){
   await postSlackMessage({
     channel,
     text: payload,
+    ...(additionalArgs && { additionalArgs } )
   })
 }
 
-export async function postSlackMessage(message: {channel: string, text: string, blocks?: Blocks}){
+export async function postSlackMessage(message: PostMessagePayload){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
 
   const url = 'https://slack.com/api/chat.postMessage'
@@ -245,7 +270,6 @@ export async function showModal(triggerId: string, view: ModalView) {
 }
 
 async function callSlackApi(message: any, url: string, method = 'POST') {
-  console.log(`Calling Slack API: ${url}, doing ${method} with message: `, JSON.stringify(message))
   const response = await fetch(url, {
     method,
     headers: {
@@ -314,7 +338,7 @@ export function getCommunityForecast(question : QuestionWithForecasts, date : Da
     0
   )
   // divide by number of forecasts
-  return summedForecasts / question.forecasts.length
+  return summedForecasts / uptoDateForecasts.length
 }
 
 
