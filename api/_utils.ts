@@ -196,7 +196,7 @@ export function tokenizeString(instring : string) {
 
 export async function getSlackPermalinkFromChannelAndTS(channel: string, timestamp: string){
   const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
-  const data = await callSlackApi({}, url, 'get') as {ok: boolean, permalink: string}
+  const data = await callSlackApi(null, url, 'get') as {ok: boolean, permalink: string}
   if (data.ok === false) {
     console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
     throw new Error('No message found')
@@ -245,14 +245,14 @@ export async function showModal(triggerId: string, view: ModalView) {
 }
 
 async function callSlackApi(message: any, url: string, method = 'POST') {
-  console.log(`Calling Slack API: ${url}, doing ${method} with message: `, message)
+  console.log(`Calling Slack API: ${url}, doing ${method} with message: `, JSON.stringify(message))
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(message),
+    ...(message && { body: JSON.stringify(message)}),
   })
   let data = await response.json() as {ok: boolean}
   if (data.ok === false) {

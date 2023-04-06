@@ -1,50 +1,49 @@
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { KnownBlock } from '@slack/types'
 import { conciseDateTime, getSlackPermalinkFromChannelAndTS, getCommunityForecast, formatDecimalNicely } from '../_utils.js'
-import { Blocks } from './_block_utils.js'
 import { maxForecastsVisible } from '../_constants.js'
 
-export function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]): Blocks {
-  if(forecasts.length === 0) {
+export async function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
+  if(forecasts.length == 0) {
     return [buildEmptyResponseBlock()]
   } else if (forecasts.length <= maxForecastsVisible) {
-    return buildGetForecastsBlocksPage(forecasts, false, 1)
+    return await buildGetForecastsBlocksPage(forecasts, false, 1)
   }
 
-  return buildGetForecastsBlocksPage(forecasts.slice(0,maxForecastsVisible-1), true, 0)
+  return await buildGetForecastsBlocksPage(forecasts.slice(0,maxForecastsVisible-1), true, 0)
 }
 
-function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number): Blocks {
-  let blocks = [
+async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number) {
+  let blocks = await Promise.all([
     buildResponseBlock(forecasts.length),
     {
       "type": "divider"
     },
-    ...forecasts.map((forecast) => (
+    ...forecasts.map(async (forecast) => (
       {
 			  "type": "section",
 			  "text": {
 			  	"type": "mrkdwn",
-          "text": buildForecastQuestionText(forecast)
+          "text": await buildForecastQuestionText(forecast)
         }
       }
     )),
     {
       "type": "divider"
     }
-  ]
+  ])
   if (pagination)
     console.log(page)
     //maybeGenerateButtonsBlock(forecasts)
   return blocks
 }
 
-function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlackMessagesAndForecasts): string {
+async function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
   // Question title
   let questionTitle = `*${forecast.question.title}*`
   try {
     const slackMessage  = forecast.question.slackMessages[0]!
-    const slackPermalink = getSlackPermalinkFromChannelAndTS(slackMessage.channel, slackMessage.ts)
+    const slackPermalink = await getSlackPermalinkFromChannelAndTS(slackMessage.channel, slackMessage.ts)
     questionTitle = `*<${slackPermalink}|${forecast.question.title}>*`
   } catch (err) {
     console.log('No original forecast message found:', err)

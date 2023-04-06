@@ -51,7 +51,7 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
   console.log("allUserForecasts:", allUserForecasts)
 
   try {
-    const forecastsBlocks = buildGetForecastsBlocks(allUserForecasts)
+    const forecastsBlocks = await buildGetForecastsBlocks(allUserForecasts)
     console.log('builtBlocks:', forecastsBlocks)
     await postSlackMessage({
       channel: channelId,
