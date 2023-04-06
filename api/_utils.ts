@@ -205,7 +205,7 @@ export async function getSlackPermalinkFromChannelAndTS(channel: string, timesta
 }
 
 export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = ''){
-  await postMessage({
+  await postSlackMessage({
     channel,
     text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
     blocks
@@ -213,13 +213,13 @@ export async function postBlockMessage(channel : string, blocks : Blocks, notifi
 }
 
 export async function postTextMessage(channel : string, payload : string){
-  await postMessage({
+  await postSlackMessage({
     channel,
     text: payload,
   })
 }
 
-export async function postMessage(message: {channel: string, text: string, blocks?: Blocks}){
+export async function postSlackMessage(message: {channel: string, text: string, blocks?: Blocks}){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
 
   const url = 'https://slack.com/api/chat.postMessage'
