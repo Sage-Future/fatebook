@@ -7,6 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Workspace {
+  teamId     String   @id
+  teamName   String
+  token      String
+  createdAt  DateTime @default(now())
+}
+
 model Forecast {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
