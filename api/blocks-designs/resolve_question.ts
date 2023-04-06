@@ -1,7 +1,8 @@
 import { QuestionWithAuthor } from "../../prisma/additional"
-import { Blocks, markdownBlock, textBlock, toActionId } from "./_block_utils.js"
+import { Blocks, markdownBlock, textBlock, toActionId, ResolveQuestionActionParts } from "./_block_utils.js"
 
 export function buildResolveQuestionBlocks(question: QuestionWithAuthor): Blocks {
+  const answerLabels = ['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]
   return [
     {
       "type": "section",
@@ -9,13 +10,13 @@ export function buildResolveQuestionBlocks(question: QuestionWithAuthor): Blocks
     },
     {
       "type": "actions",
-      "elements": ["yes", "no", "ambiguous"].map((answer) => ({
+      "elements": answerLabels.map((answer) => ({
         "type": "button",
         "text": textBlock(answer[0].toUpperCase() + answer.slice(1)), // capitalize
         "action_id": toActionId({
           action: "resolve",
           questionId: question.id,
-          answer: "yes"
+          answer: answer
         })
       }))
     }

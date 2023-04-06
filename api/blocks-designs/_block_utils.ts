@@ -22,10 +22,21 @@ export interface UpdateResolutionDateActionParts {
   action: 'updateResolutionDate'
 }
 
-export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | QuestionModalActionParts
+export interface OverflowAccessoryPart {
+  action: 'submitTextForecast'
+  questionId: number
+}
+
+export interface SortForecastsActionParts {
+  action: 'sortForecasts'
+  field : 'date' | 'title' | 'difference from community'
+  order: 'asc' | 'desc'
+}
+
+export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
   | UpdateResolutionDateActionParts
 
-export type Blocks = (KnownBlock | Block)[]
+export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
 export function toActionId(parts: ActionIdParts) {
   const stringified = JSON.stringify(parts)

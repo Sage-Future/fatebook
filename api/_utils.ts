@@ -1,12 +1,35 @@
-import { GroupType, PrismaClient, Profile } from '@prisma/client'
+import { GroupType, PrismaClient, Profile, Forecast } from '@prisma/client'
 import { ModalView } from '@slack/types'
+import { QuestionWithForecasts } from '../prisma/additional'
 import fetch from 'node-fetch'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
-import { token } from './_constants.js'
+import { token, maxDecmialPlaces } from './_constants.js'
 
 const prisma = new PrismaClient()
 export default prisma
+
+export type PostMessageAdditionalArgs =  {
+  as_user?         : boolean
+  icon_emoji?      : string
+  icon_url?        : string
+  link_names?      : boolean
+  metadata?        : string
+  mrkdwn?          : boolean
+  parse?           : string
+  reply_broadcast? : boolean
+  thread_ts?       : string
+  unfurl_links?    : boolean
+  unfurl_media?    : boolean
+  username?        : string
+}
+
+export type PostMessagePayload = PostMessageAdditionalArgs & {
+  channel          : string
+  text             : string
+  blocks?          : Blocks
+}
+
 
 // tokenize a string into an array by splitting on sections
 // in the following syntax, with two strings and one number:
@@ -193,22 +216,35 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = ''){
-  await postMessage({
+export async function getSlackPermalinkFromChannelAndTS(channel: string, timestamp: string){
+  const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
+  const data = await callSlackApi(null, url, 'get') as {ok: boolean, permalink: string}
+  if (data.ok === false) {
+    console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
+    throw new Error('No message found')
+  }
+  return data.permalink
+}
+
+export async function postBlockMessage(channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostMessageAdditionalArgs = {}){
+  await postSlackMessage({
     channel,
     text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
-    blocks
+    blocks,
+    ...(additionalArgs && { additionalArgs } )
+    // add the other args here!
   })
 }
 
-export async function postTextMessage(channel : string, payload : string){
-  await postMessage({
+export async function postTextMessage(channel : string, payload : string, additionalArgs : PostMessageAdditionalArgs = {}){
+  await postSlackMessage({
     channel,
     text: payload,
+    ...(additionalArgs && { additionalArgs } )
   })
 }
 
-export async function postMessage(message: {channel: string, text: string, blocks?: Blocks}){
+export async function postSlackMessage(message: PostMessagePayload){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
 
   const url = 'https://slack.com/api/chat.postMessage'
@@ -233,14 +269,14 @@ export async function showModal(triggerId: string, view: ModalView) {
   return response
 }
 
-async function callSlackApi(message: any, url: string, method = 'post') {
+async function callSlackApi(message: any, url: string, method = 'POST') {
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(message),
+    ...(message && { body: JSON.stringify(message)}),
   })
   let data = await response.json() as {ok: boolean}
   if (data.ok === false) {
@@ -258,6 +294,7 @@ interface ResponseMessage {
   thread_ts?: string
   [key: string]: any
 }
+
 export async function postMessageToResponseUrl(message: ResponseMessage, responseUrl: string) {
   console.log(`\nPosting message to response url: ${responseUrl}: `, JSON.stringify(message, null, 2))
   const response = await fetch(responseUrl, {
@@ -276,8 +313,46 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
   return await response.text()
 }
 
-export function conciseDateTime(date: Date) {
-  return `${date.getHours()}:${date.getMinutes()} on ${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+export function getMostRecentForecastPerProfile(forecasts: Forecast[], date : Date) : [number, Forecast][] {
+  const forecastsPerProfile = new Map<number, Forecast>()
+  for (const forecast of forecasts) {
+    const authorId = forecast.authorId
+    if (forecastsPerProfile.has(authorId) && forecast.createdAt < date) {
+      const existingForecast = forecastsPerProfile.get(authorId)
+      if (existingForecast!.createdAt < forecast.createdAt) {
+        forecastsPerProfile.set(authorId, forecast)
+      }
+    } else if(forecast.createdAt < date){
+      forecastsPerProfile.set(authorId, forecast)
+    }
+  }
+  return Array.from(forecastsPerProfile, ([id, value]) => [id, value])
+}
+
+export function getCommunityForecast(question : QuestionWithForecasts, date : Date) : number {
+  // get all forecasts for this question
+  const uptoDateForecasts : number[] = getMostRecentForecastPerProfile(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
+  // sum each forecast
+  const summedForecasts : number = uptoDateForecasts.reduce(
+    (acc, forecast) => acc + forecast,
+    0
+  )
+  // divide by number of forecasts
+  return summedForecasts / uptoDateForecasts.length
+}
+
+
+export function conciseDateTime(date: Date, includeTime = true) {
+  let timeStr = ''
+  if (includeTime)
+    timeStr = `${date.getHours()}:${date.getMinutes()} on `
+  return `${timeStr}${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+}
+
+export function formatDecimalNicely(num : number) : string {
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxDecmialPlaces,})
 }
 
 export function getDateYYYYMMDD(date: Date) {
