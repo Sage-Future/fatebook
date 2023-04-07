@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionModalActionParts, unpackBlockActionId } from './blocks-designs/_block_utils.js'
-import { questionModalSubmitted } from './interactive_handlers/edit_question_modal.js'
+import { questionModalSubmitted, showEditQuestionModal } from './interactive_handlers/edit_question_modal.js'
 
 import { resolve } from './interactive_handlers/resolve.js'
 import { submitTextForecast } from './interactive_handlers/submit_text_forecast.js'
@@ -25,6 +25,10 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'updateResolutionDate':
         console.log('  updateResolutionDate: user changed resolution date in modal, do nothing')
+        break
+
+      case 'editQuestionBtn':
+        await showEditQuestionModal(actionParts, payload)
         break
 
       default:

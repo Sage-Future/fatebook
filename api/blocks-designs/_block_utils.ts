@@ -13,9 +13,9 @@ export interface SubmitTextForecastActionParts {
 
 export interface QuestionModalActionParts {
   action: 'qModal'
-  questionId?: number // only required for editing
   isCreating: boolean
   channel: string
+  questionId?: number // only required for editing
 }
 
 export interface UpdateResolutionDateActionParts {

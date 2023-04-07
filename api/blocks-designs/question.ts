@@ -11,6 +11,10 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       'type': 'header',
       'text': textBlock(question.title)
     },
+    {
+      'type': 'section',
+      'text': textBlock(`${question.notes}`)
+    },
     ...question.forecasts.map((forecast) => (
       {
         'type': 'context',
@@ -47,7 +51,7 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       elements: [
         {
           'type': 'button',
-          'text': textBlock('Edit (todo)'),
+          'text': textBlock('Edit'),
           'action_id': toActionId({
             action: 'editQuestionBtn',
             questionId: question.id,

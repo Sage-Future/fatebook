@@ -12,8 +12,8 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
       isCreating,
       channel,
     })}`,
-    'title': textBlock(`${isCreating ? "Create" : "Edit"} forecast question`),
-    'submit': textBlock('Submit'),
+    'title': textBlock(`${isCreating ? 'Create' : 'Edit'} forecast question`),
+    'submit': textBlock(isCreating ? 'Submit' : 'Save changes'),
     'close': textBlock('Cancel'),
     'blocks': [
       {
@@ -22,7 +22,8 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
         'element': {
           'type': 'plain_text_input',
           'action_id': 'forecast_question',
-          'placeholder': textBlock('"When will humans walk on Mars?"'),
+          'placeholder': textBlock('"Will humans walk on Mars by 2050?"'),
+          'initial_value': question?.title || '',
         },
       },
       {
@@ -46,8 +47,9 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
         'element': {
           'type': 'plain_text_input',
           'action_id': 'notes',
-          // 'placeholder': textBlock('...'),
+          'placeholder': textBlock(' '),
           'multiline': true,
+          'initial_value': question?.notes || '',
         },
         'optional': true,
       },

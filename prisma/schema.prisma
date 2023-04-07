@@ -51,7 +51,8 @@ model Question {
   resolution          Resolution?
   pingedForResolution Boolean         @default(false)
   questionScores      QuestionScore[]
-  slackMessages      QuestionSlackMessage[]
+  slackMessages       QuestionSlackMessage[]
+  notes               String?
 }
 
 model QuestionSlackMessage {

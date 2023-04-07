@@ -1,8 +1,10 @@
 import { VercelResponse } from '@vercel/node'
+import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
+import { buildQuestionBlocks } from '../blocks-designs/question.js'
 import { buildEditQuestionModalView } from "../blocks-designs/question_modal.js"
-import { QuestionModalActionParts } from "../blocks-designs/_block_utils.js"
+import { EditQuestionBtnActionParts, QuestionModalActionParts } from "../blocks-designs/_block_utils.js"
 import { createForecastingQuestion } from "../slash_handlers/_create_forecast.js"
-import { getGroupIDFromSlackID, getOrCreateProfile, showModal } from "../_utils.js"
+import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from "../_utils.js"
 
 export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string) {
   const view = buildEditQuestionModalView({}, true, channelId)
@@ -10,9 +12,57 @@ export async function showCreateQuestionModal(teamId: string, triggerId: string,
   console.log('showCreateQuestionModal response', response)
 }
 
-export function showEditQuestionModal(triggerId: string, questionId: string) { // todo set async
+export async function showEditQuestionModal(actionParts: EditQuestionBtnActionParts, payload: BlockActionPayload) {
   console.log("todo get question, show modal")
-  console.log({triggerId, questionId})
+
+  if (!payload.response_url || !payload.trigger_id || !payload.team?.id || !payload.user?.id || !payload.channel?.id) {
+    console.error("missing required fields in payload for edit question modal ", payload)
+    throw new Error("missing required fields in payload")
+  }
+
+  const { questionId } = actionParts
+  const question = await prisma.question.findUnique({
+    where: {
+      id: questionId,
+    },
+    include: {
+      profile: {
+        include: {
+          user: {
+            include: {
+              profiles: true
+            }
+          }
+        }
+      }
+    },
+  })
+
+  if (!question) {
+    console.error("Couldn't find question to open edit modal: ", questionId)
+    await postMessageToResponseUrl({
+      text: `Error: Couldn't find question to edit.`,
+      replace_original: false,
+      response_type: 'ephemeral',
+    }, payload.response_url)
+    throw new Error(`Couldn't find question ${questionId}`)
+  }
+
+  if (!question.profile.user.profiles.some((p) => p.slackId === payload.user?.id)) {
+    // user is not the author of the question
+    await postMessageToResponseUrl({
+      text: `Only the question's author <@${question.profile.slackId}> can edit it.`,
+      replace_original: false,
+      response_type: 'ephemeral',
+    }, payload.response_url)
+  } else {
+    // user is question author
+    // WARNING: assumes that the channel where the button was pressed is the same as the channel where the question was asked
+    const view = buildEditQuestionModalView(question, false, payload.channel.id)
+    const response = await showModal(payload.team.id, payload.trigger_id, view)
+    console.log('showEditQuestionModal response', response)
+  }
+
 }
 
 interface ViewStateValues {
@@ -38,14 +88,12 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
   const resolutionDate = getVal('{"action":"updateResolutionDate"}')?.selected_date
   const notes = getVal('notes')?.value
 
-  console.log("Notes not yet implemented, but here they are: ", notes)
-
   if (!question || !resolutionDate) {
     console.error("missing question or resolution date")
     throw new Error("missing question or resolution date")
   }
 
-  if (resolutionDate && new Date(resolutionDate) < new Date()) {
+  if (actionParts.isCreating && resolutionDate && new Date(resolutionDate) < new Date()) {
     res.send({
       response_action: 'errors',
       errors: {
@@ -65,8 +113,51 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       channelId: actionParts.channel,
       groupId,
       profile,
+      notes,
     })
   } else {
-    // edit
+    const updatedQuestion = await prisma.question.update({
+      where: {
+        id: actionParts.questionId,
+      },
+      data: {
+        title: question,
+        resolveBy: new Date(resolutionDate),
+        notes,
+      },
+      include: {
+        forecasts: {
+          include: {
+            profile: {
+              include: {
+                user: true
+              }
+            }
+          }
+        },
+        profile: {
+          include: {
+            user: true
+          }
+        },
+        slackMessages: true
+      }
+    })
+
+    const questionBlocks = buildQuestionBlocks(updatedQuestion)
+
+    for (const slackMessage of updatedQuestion.slackMessages) {
+      const response = await updateMessage(payload.user.team_id, {
+        channel: slackMessage.channel,
+        ts: slackMessage.ts,
+        text: `Question edited: *${updatedQuestion.title}*`,
+        blocks: questionBlocks,
+      })
+      if (!response.ok) {
+        console.error("Error updating question message after edit: ", response)
+      }
+    }
+
+    console.log(`Updated question ${actionParts.questionId} with title: ${question}, resolveBy: ${resolutionDate}, notes: ${notes}`)
   }
 }
