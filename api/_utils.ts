@@ -9,27 +9,41 @@ import { maxDecmialPlaces } from './_constants.js'
 const prisma = new PrismaClient()
 export default prisma
 
-export type PostMessageAdditionalArgs =  {
+export type PostAnyMessageAdditionalArgs =  {
   as_user?         : boolean
   icon_emoji?      : string
   icon_url?        : string
   link_names?      : boolean
-  metadata?        : string
-  mrkdwn?          : boolean
   parse?           : string
-  reply_broadcast? : boolean
   thread_ts?       : string
-  unfurl_links?    : boolean
-  unfurl_media?    : boolean
   username?        : string
 }
 
-export type PostMessagePayload = PostMessageAdditionalArgs & {
+export type PostClearMessageAdditionalArgs = PostAnyMessageAdditionalArgs & {
+  metadata?        : string
+  mrkdwn?          : boolean
+  reply_broadcast? : boolean
+  unfurl_links?    : boolean
+  unfurl_media?    : boolean
+}
+
+export type PostMessagePayload = PostClearMessageAdditionalArgs & {
   channel          : string
   text             : string
   blocks?          : Blocks
 }
 
+export type PostEphemeralMessageAdditionalArgs = PostAnyMessageAdditionalArgs & {
+  attachments?  : string
+}
+
+
+type PostEphemeralMessagePayload =  PostEphemeralMessageAdditionalArgs & {
+  channel          : string
+  text             : string
+  user             : string
+  blocks?          : Blocks
+}
 
 // tokenize a string into an array by splitting on sections
 // in the following syntax, with two strings and one number:
@@ -238,8 +252,8 @@ export async function getSlackPermalinkFromChannelAndTS(teamId: string, channel:
   return data.permalink
 }
 
-export async function postBlockMessage(teamId: string, channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostMessageAdditionalArgs = {}){
-  await postSlackMessage(teamId, {
+export async function postBlockMessage(teamId: string, channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostClearMessageAdditionalArgs = {}){
+  await postSlackMessage({
     channel,
     text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
     blocks,
@@ -248,19 +262,36 @@ export async function postBlockMessage(teamId: string, channel : string, blocks 
   })
 }
 
-export async function postTextMessage(teamId: string, channel : string, payload : string, additionalArgs : PostMessageAdditionalArgs = {}){
+export async function postTextMessage(teamId: string, channel : string, payload : string, additionalArgs : PostClearMessageAdditionalArgs = {}){
   await postSlackMessage(teamId,
-    {
-      channel,
-      text: payload,
-      ...(additionalArgs && { additionalArgs } )
-    })
+  {
+    channel,
+    text: payload,
+    ...(additionalArgs && { additionalArgs } )
+  })
+}
+
+export async function postEphemeralTextMessage(teamId: string, channel : string, payload : string, user : string, additionalArgs : PostEphemeralMessageAdditionalArgs = {}){
+  await postEphemeralSlackMessage(teamId,
+  {
+    channel,
+    text: payload,
+    user,
+    ...(additionalArgs && { additionalArgs } )
+  })
 }
 
 export async function postSlackMessage(teamId: string, message: PostMessagePayload){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
 
   const url = 'https://slack.com/api/chat.postMessage'
+  return await callSlackApi(teamId, message, url) as {ok: boolean, ts: string}
+}
+
+export async function postEphemeralSlackMessage(teamId : string, message: PostEphemeralMessagePayload){
+  console.log(`Posting ephemeral message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
+
+  const url = 'https://slack.com/api/chat.postEphemeral'
   return await callSlackApi(teamId, message, url) as {ok: boolean, ts: string}
 }
 
