@@ -3,7 +3,7 @@ import { Block, KnownBlock } from "@slack/types"
 export interface ResolveQuestionActionParts {
   action: 'resolve'
   questionId: number
-  answer: 'yes' | 'no' | 'ambiguous'
+  answer?: 'yes' | 'no' | 'ambiguous' // can be omitted if answer is in value of dropdown
 }
 
 export interface SubmitTextForecastActionParts {

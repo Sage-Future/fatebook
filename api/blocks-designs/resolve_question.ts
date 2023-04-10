@@ -12,7 +12,7 @@ export function buildResolveQuestionBlocks(question: QuestionWithAuthor): Blocks
       "type": "actions",
       "elements": answerLabels.map((answer) => ({
         "type": "button",
-        "text": textBlock(answer[0].toUpperCase() + answer.slice(1)), // capitalize
+        "text": textBlock(answer![0].toUpperCase() + answer!.slice(1)), // capitalize
         "action_id": toActionId({
           action: "resolve",
           questionId: question.id,

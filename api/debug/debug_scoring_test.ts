@@ -54,7 +54,8 @@ const question : Question = {
   resolveBy: startDate,
   resolved: true,
   pingedForResolution: true,
-  authorId: 0
+  authorId: 0,
+  notes: null,
 }
 
 export default function testScoring(req: VercelRequest, res: VercelResponse) {

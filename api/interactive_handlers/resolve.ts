@@ -2,7 +2,7 @@ import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { Resolution, Question } from '@prisma/client'
 import { relativeBrierScoring, ScoreArray } from '../_scoring.js'
 
-import prisma from '../_utils.js'
+import prisma, { postMessageToResponseUrl } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -57,11 +57,10 @@ async function scoreForecasts(scoreArray : ScoreArray, question : Question) {
 }
 
 async function updateForecasts(questionid : number) {
-  const questionMaybe = await dbGetQuestion(questionid)
-  if(!questionMaybe)
+  const question = await dbGetQuestion(questionid)
+  if(!question)
     throw Error(`Cannot find question with id: ${questionid}`)
 
-  let question = questionMaybe!
   const scores = relativeBrierScoring(question.forecasts, question)
   await scoreForecasts(scores, question)
 }
@@ -74,14 +73,53 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
   await updateForecasts(questionid)
 }
 
-export async function resolve(actionParts: ResolveQuestionActionParts) {
-  if (actionParts.answer === undefined)
-    throw Error('blockActions: payload.actions.answer is undefined')
-  else if (actionParts.questionId === undefined)
+export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string) {
+  // actionParts.answer is set by buttons block in resolution reminder DM, actionValue is set by select block on question
+  const answer = actionParts.answer || actionValue
+  if (!answer)
+    throw Error('blockActions: both payload.actions.answer and actionValue is undefined')
+  else if (actionParts.questionId === undefined || userSlackId === undefined || responseUrl === undefined)
     throw Error('blockActions: missing qID on action_id')
 
-  const { answer, questionId } = actionParts
+  const { questionId } = actionParts
   console.log(`  resolve question ${questionId} to ${answer}`)
+
+  const question = await prisma.question.findUnique({
+    where: {
+      id: questionId,
+    },
+    include: {
+      profile: {
+        include: {
+          user: {
+            include: {
+              profiles: true
+            }
+          }
+        }
+      }
+    },
+  })
+
+  if (!question) {
+    console.error("Couldn't find question to open edit modal: ", questionId)
+    await postMessageToResponseUrl({
+      text: `Error: Couldn't find question to edit.`,
+      replace_original: false,
+      response_type: 'ephemeral',
+    }, responseUrl)
+    throw new Error(`Couldn't find question ${questionId}`)
+  }
+
+  if (!question.profile.user.profiles.some((p) => p.slackId === userSlackId)) {
+    // user is not the author of the question
+    await postMessageToResponseUrl({
+      text: `Only the question's author <@${question.profile.slackId}> can resolve it.`,
+      replace_original: false,
+      response_type: 'ephemeral',
+    }, responseUrl)
+    return
+  }
 
   // TODO:NEAT replace yes/no/ambiguous with enum (with check for resolution template)
   switch (answer) {
@@ -95,8 +133,8 @@ export async function resolve(actionParts: ResolveQuestionActionParts) {
       await handleQuestionResolution(questionId, Resolution.AMBIGUOUS)
       break
     default:
-      console.log('default')
-      break
+      console.error('Unhandled resolution: ', answer)
+      throw new Error('Unhandled resolution')
   }
 }
 

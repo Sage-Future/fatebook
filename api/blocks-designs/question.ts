@@ -2,7 +2,7 @@ import { Question } from '@prisma/client'
 import { ActionsBlock, InputBlock } from '@slack/types'
 import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
 import { conciseDateTime, round } from '../_utils.js'
-import { Blocks, markdownBlock, textBlock, toActionId } from './_block_utils.js'
+import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId } from './_block_utils.js'
 
 export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAuthor): Blocks {
 
@@ -49,6 +49,24 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
     {
       'type': 'actions',
       elements: [
+        {
+          'type': 'static_select',
+          'placeholder': {
+            'type': 'plain_text',
+            'text': 'Resolve question',
+            'emoji': true
+          },
+          'action_id': toActionId({
+            action: 'resolve',
+            questionId: question.id,
+          }),
+          'options': (['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]).map(
+            (answer) => ({
+              'text': textBlock(answer![0].toUpperCase() + answer!.slice(1)), // capitalize,
+              'value': answer
+            })
+          )
+        },
         {
           'type': 'button',
           'text': textBlock('Edit'),
