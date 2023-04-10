@@ -1,10 +1,8 @@
-import { VercelResponse } from '@vercel/node'
-
 import {  buildGetForecastsBlocks } from '../blocks-designs/get_forecasts.js'
-import { createProfile, getGroupIDFromSlackID, postSlackMessage } from '../_utils.js'
+import { createProfile, getGroupIDFromSlackID, postSlackMessage, postEphemeralTextMessage } from '../_utils.js'
 import prisma from '../_utils.js'
 
-export async function getForecasts(res : VercelResponse, slackUserId : string, slackTeamId : string, channelId : string) {
+export async function getForecasts(slackUserId : string, slackTeamId : string, channelId : string) {
   console.log('getForecasts called')
 
 
@@ -27,10 +25,9 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
       profile = await createProfile(slackTeamId, slackUserId, groupId)
     } catch(err){
       console.log(`Error: couldn't create userID or group for slackUserID: ${slackUserId}`)
-      res.send({
-        response_type: 'ephemeral',
-        text: `I couldn't find your userID or group!`,
-      })
+      await postEphemeralTextMessage(channelId,
+                                     slackUserId,
+                                     `I couldn't find your userID or group!`)
       return
     }
   }
@@ -59,13 +56,11 @@ export async function getForecasts(res : VercelResponse, slackUserId : string, s
       blocks: forecastsBlocks,
       unfurl_links: false,
     })
-    res.status(200).send({'ok':true})
 
   } catch (err) {
     console.log('res send Error:', err)
-    res.send({
-      response_type: 'ephemeral',
-      text: `${err}`,
-    })
+    await postEphemeralTextMessage(channelId,
+                                   slackUserId,
+                                   `There was an error displaying your forecasts! Sorry about that!`)
   }
 }
