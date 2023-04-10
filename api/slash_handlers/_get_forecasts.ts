@@ -25,7 +25,8 @@ export async function getForecasts(slackUserId : string, slackTeamId : string, c
       profile = await createProfile(slackTeamId, slackUserId, groupId)
     } catch(err){
       console.log(`Error: couldn't create userID or group for slackUserID: ${slackUserId}`)
-      await postEphemeralTextMessage(channelId,
+      await postEphemeralTextMessage(slackTeamId,
+                                     channelId,
                                      slackUserId,
                                      `I couldn't find your userID or group!`)
       return
@@ -59,7 +60,8 @@ export async function getForecasts(slackUserId : string, slackTeamId : string, c
 
   } catch (err) {
     console.log('res send Error:', err)
-    await postEphemeralTextMessage(channelId,
+    await postEphemeralTextMessage(slackTeamId,
+                                   channelId,
                                    slackUserId,
                                    `There was an error displaying your forecasts! Sorry about that!`)
   }

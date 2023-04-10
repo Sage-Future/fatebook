@@ -253,32 +253,33 @@ export async function getSlackPermalinkFromChannelAndTS(teamId: string, channel:
 }
 
 export async function postBlockMessage(teamId: string, channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostClearMessageAdditionalArgs = {}){
-  await postSlackMessage({
-    channel,
-    text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
-    blocks,
-    ...(additionalArgs && { additionalArgs } )
-    // add the other args here!
-  })
+  await postSlackMessage(teamId,
+                         {
+                           channel,
+                           text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
+                           blocks,
+                           ...(additionalArgs && { additionalArgs } )
+                           // add the other args here!
+                         })
 }
 
 export async function postTextMessage(teamId: string, channel : string, payload : string, additionalArgs : PostClearMessageAdditionalArgs = {}){
   await postSlackMessage(teamId,
-  {
-    channel,
-    text: payload,
-    ...(additionalArgs && { additionalArgs } )
-  })
+                         {
+                           channel,
+                           text: payload,
+                           ...(additionalArgs && { additionalArgs } )
+                         })
 }
 
-export async function postEphemeralTextMessage(teamId: string, channel : string, payload : string, user : string, additionalArgs : PostEphemeralMessageAdditionalArgs = {}){
+export async function postEphemeralTextMessage(teamId: string, channel : string, user : string, payload : string, additionalArgs : PostEphemeralMessageAdditionalArgs = {}){
   await postEphemeralSlackMessage(teamId,
-  {
-    channel,
-    text: payload,
-    user,
-    ...(additionalArgs && { additionalArgs } )
-  })
+                                  {
+                                    channel,
+                                    text: payload,
+                                    user,
+                                    ...(additionalArgs && { additionalArgs } )
+                                  })
 }
 
 export async function postSlackMessage(teamId: string, message: PostMessagePayload){

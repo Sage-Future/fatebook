@@ -17,8 +17,8 @@ export default async function forecast(req : VercelRequest, res : VercelResponse
     console.log("error with commandArray")
     await postEphemeralTextMessage(reqbody?.team_id,
                                    reqbody.channel_id,
-                                   'I think you may have specified the wrong syntax on that command. Please try again!',
-                                   reqbody.user_id)
+                                   reqbody.user_id,
+                                   'I think you may have specified the wrong syntax on that command. Please try again!')
     res.status(200).send(null)
     return
   }
@@ -35,8 +35,8 @@ export default async function forecast(req : VercelRequest, res : VercelResponse
     default:
       await postEphemeralTextMessage(reqbody?.team_id,
                                      reqbody.channel_id,
-                                     'Sorry, I don\'t recognise that command!',
-                                     reqbody.user_id)
+                                     reqbody.user_id,
+                                     'Sorry, I don\'t recognise that command!')
   }
   res.status(200).send(null)
 }
