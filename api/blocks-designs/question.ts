@@ -1,5 +1,5 @@
 import { Question } from '@prisma/client'
-import { ActionsBlock, InputBlock } from '@slack/types'
+import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
 import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
 import { conciseDateTime, round } from '../_utils.js'
 import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId } from './_block_utils.js'
@@ -11,10 +11,10 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       'type': 'header',
       'text': textBlock(question.title)
     },
-    {
+    ...(question.notes ? [{
       'type': 'section',
       'text': textBlock(`${question.notes}`)
-    },
+    } as SectionBlock] : []),
     ...question.forecasts.map((forecast) => (
       {
         'type': 'context',
