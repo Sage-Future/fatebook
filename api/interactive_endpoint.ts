@@ -39,26 +39,21 @@ async function blockActions(payload: BlockActionPayload) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const payload = JSON.parse(req.body.payload)
+  const payload = JSON.parse(JSON.parse(req.body).payload) as BlockActionPayload
   switch (payload.type) {
     case 'block_actions':
       console.log('block_actions')
       await blockActions(payload)
       console.log('block_actions done')
-      if (!res.headersSent) {
-        res.status(200).json({message:'ok'})
-      }
       break
     case 'view_submission':
       console.log('view_submission')
-      if (payload.view.callback_id.startsWith('question_modal')) {
+      if (payload.view?.callback_id?.startsWith('question_modal')) {
+        // should be dealt with in middleware.ts
         // extract callback_id after 'question_modal'
         const actionId = payload.view.callback_id.substring('question_modal'.length)
         const actionParts = unpackBlockActionId(actionId) as QuestionModalActionParts
-        await questionModalSubmitted(payload, actionParts, res)
-      }
-      if (!res.headersSent) {
-        res.status(200).send(null) // close the modal
+        await questionModalSubmitted(payload, actionParts)
       }
       break
     case 'view_closed':
@@ -76,4 +71,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   console.log('handler done')
+  res.status(200).send(null)
 }

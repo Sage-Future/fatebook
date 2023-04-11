@@ -1,4 +1,3 @@
-import { VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
 import { buildEditQuestionModalView } from "../blocks-designs/question_modal.js"
@@ -74,7 +73,8 @@ interface ViewStateValues {
     }
   }
 }
-export async function questionModalSubmitted(payload: any, actionParts: QuestionModalActionParts, res: VercelResponse) {
+
+export async function questionModalSubmitted(payload: any, actionParts: QuestionModalActionParts) {
   function getVal(actionId: string) {
     const blockObj = Object.values(payload.view.state.values as ViewStateValues).find((v) => v[actionId] !== undefined)
     if (!blockObj) {
@@ -92,16 +92,6 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
     console.error("missing question or resolution date")
     throw new Error("missing question or resolution date")
   }
-
-  if (actionParts.isCreating && resolutionDate && new Date(resolutionDate) < new Date()) {
-    res.send({
-      response_action: 'errors',
-      errors: {
-        "resolution_date": 'The date must be in the future',
-      },
-    })
-  }
-
 
   if (actionParts.isCreating) {
     const groupId = await getGroupIDFromSlackID(payload.user.team_id, true)
