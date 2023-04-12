@@ -7,7 +7,7 @@
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --dir api",
+    "lint": "next lint --dir api --dir lib",
     "studio": "prisma studio"
   },
   "dependencies": {

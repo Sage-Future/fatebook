@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import { Forecast, Question, Resolution, Prisma } from '@prisma/client'
-import { relativeBrierScoring } from "../_scoring.js"
+import { relativeBrierScoring } from '../lib/_scoring.js'
 
 let forecastid = 0
 const questionid = 0

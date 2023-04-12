@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import fetch from 'node-fetch'
-import { clientId, clientSecret } from '../_constants.js'
-import prisma from '../_utils.js'
+import { clientId, clientSecret } from '../../lib/_constants.js'
+import prisma from '../../lib/_utils.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // user has approved the app being installed to their workspace, this is the redirect URI

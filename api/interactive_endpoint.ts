@@ -1,10 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionModalActionParts, unpackBlockActionId } from './blocks-designs/_block_utils.js'
-import { questionModalSubmitted, showEditQuestionModal } from './interactive_handlers/edit_question_modal.js'
+import { QuestionModalActionParts, unpackBlockActionId } from '../lib/blocks-designs/_block_utils.js'
+import { questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
 
-import { resolve } from './interactive_handlers/resolve.js'
-import { submitTextForecast } from './interactive_handlers/submit_text_forecast.js'
+import { resolve } from '../lib/interactive_handlers/resolve.js'
+import { submitTextForecast } from '../lib/interactive_handlers/submit_text_forecast.js'
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {

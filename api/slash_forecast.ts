@@ -1,8 +1,8 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { showCreateQuestionModal } from './interactive_handlers/edit_question_modal.js'
-import { getForecasts } from './slash_handlers/_get_forecasts.js'
-import { tokenizeForecastString, postEphemeralTextMessage } from './_utils.js'
+import { showCreateQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
+import { getForecasts } from '../lib/slash_handlers/_get_forecasts.js'
+import { tokenizeForecastString, postEphemeralTextMessage } from '../lib/_utils.js'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
   const reqbody = JSON.parse(req.body)

@@ -1,6 +1,6 @@
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { KnownBlock } from '@slack/types'
-import { conciseDateTime, getSlackPermalinkFromChannelAndTS, getCommunityForecast, formatDecimalNicely } from '../_utils.js'
+import { conciseDateTime, getSlackPermalinkFromChannelAndTS, getCommunityForecast, formatDecimalNicely } from '../../lib/_utils.js'
 import { maxForecastsVisible } from '../_constants.js'
 import { markdownBlock } from './_block_utils.js'
 

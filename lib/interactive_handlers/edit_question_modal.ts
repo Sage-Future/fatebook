@@ -1,9 +1,9 @@
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
-import { buildEditQuestionModalView } from "../blocks-designs/question_modal.js"
-import { EditQuestionBtnActionParts, QuestionModalActionParts } from "../blocks-designs/_block_utils.js"
-import { createForecastingQuestion } from "../slash_handlers/_create_forecast.js"
-import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from "../_utils.js"
+import { buildEditQuestionModalView } from '../blocks-designs/question_modal.js'
+import { EditQuestionBtnActionParts, QuestionModalActionParts } from '../blocks-designs/_block_utils.js'
+import { createForecastingQuestion } from '../slash_handlers/_create_forecast.js'
+import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
 
 export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string) {
   const view = buildEditQuestionModalView({}, true, channelId)

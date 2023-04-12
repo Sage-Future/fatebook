@@ -2,7 +2,7 @@ import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { Resolution, Question } from '@prisma/client'
 import { relativeBrierScoring, ScoreArray } from '../_scoring.js'
 
-import prisma, { postMessageToResponseUrl } from '../_utils.js'
+import prisma, { postMessageToResponseUrl } from '../../lib/_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)

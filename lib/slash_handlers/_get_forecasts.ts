@@ -1,6 +1,6 @@
 import {  buildGetForecastsBlocks } from '../blocks-designs/get_forecasts.js'
-import { createProfile, getGroupIDFromSlackID, postSlackMessage, postEphemeralTextMessage } from '../_utils.js'
-import prisma from '../_utils.js'
+import { createProfile, getGroupIDFromSlackID, postSlackMessage, postEphemeralTextMessage } from '../../lib/_utils.js'
+import prisma from '../../lib/_utils.js'
 
 export async function getForecasts(slackUserId : string, slackTeamId : string, channelId : string) {
   console.log('getForecasts called')
