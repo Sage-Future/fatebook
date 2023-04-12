@@ -9,7 +9,21 @@ export async function buildResolveQuestionBlocks(teamId: string, question: Quest
   return [
     {
       "type": "section",
-      "text": markdownBlock(`Hey ${question?.profile.user?.name || "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`)
+      "text": markdownBlock(`Hey ${question?.profile.user?.name || "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`),
+      "accessory": {
+        "type": "overflow",
+        "options": [
+          {
+            "text": {
+              "type": "plain_text",
+              "emoji": true,
+              "text": "Give feedback about this app"
+            },
+            "value": "value-0",
+            "url": "https://www.quantifiedintuitions.org/"
+          }
+        ]
+      }
     },
     {
       "type": "actions",
