@@ -2,7 +2,7 @@ import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { Resolution, Question } from '@prisma/client'
 import { relativeBrierScoring, ScoreArray } from '../_scoring.js'
 
-import prisma, { postMessageToResponseUrl } from '../../lib/_utils.js'
+import prisma, { postMessageToResponseUrl, postTextMessage } from '../../lib/_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -56,13 +56,63 @@ async function scoreForecasts(scoreArray : ScoreArray, question : Question) {
   await prisma.$transaction(updateArray)
 }
 
-async function updateForecasts(questionid : number) {
+async function messageUsers(scoreArray : ScoreArray, questionid : number) {
+  console.log(`messageUsers for question id: ${questionid}`)
+  const question = await prisma.question.findUnique({
+    where: {
+      id: questionid,
+    },
+    include: {
+      groups: true
+    },
+  })
+  if(!question)
+    throw Error(`Cannot find question with id: ${questionid}`)
+
+  const profiles = await prisma.profile.findMany({
+    where: {
+      id: {
+        in: scoreArray.map(([id, ]) => id)
+      },
+      slackId: {
+        not: null
+      }
+    },
+    include: {
+      groups: {
+        where: {
+          // this is likely overkill, as we should only have one slack group per profile
+          id: {
+            in: question.groups.map(group => group.id)
+          },
+          slackTeamId: {
+            not: null
+          }
+        }
+      }
+    }
+  })
+
+  // go over each profile and send a message to each group they are in which
+  //   are also in the question's groups
+  await Promise.all(profiles.map(async profile => {
+    const score = scoreArray.find(([id, ]) => id === profile.id)
+    if(!score)
+      throw Error(`Cannot find score for profile: ${profile.id}`)
+
+    const message = `Your forecast for question ${questionid} was scored ${score[1]}`
+    return await Promise.all(profile.groups.map(async group => await postTextMessage(group.slackTeamId!, profile.slackId!, message)))
+  }))
+}
+
+async function updateForecastsAndMessageUsers(questionid : number) {
   const question = await dbGetQuestion(questionid)
   if(!question)
     throw Error(`Cannot find question with id: ${questionid}`)
 
   const scores = relativeBrierScoring(question.forecasts, question)
   await scoreForecasts(scores, question)
+  await messageUsers(scores, question.id)
 }
 
 async function handleQuestionResolution(questionid : number, resolution : Resolution) {
@@ -70,7 +120,7 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
   await dbResolveQuestion(questionid, resolution)
   console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
 
-  await updateForecasts(questionid)
+  await updateForecastsAndMessageUsers(questionid)
 }
 
 export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string) {

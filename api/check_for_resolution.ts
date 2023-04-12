@@ -19,6 +19,13 @@ async function getQuestionsToBeResolved()  {
       profile: {
         include: {
           user: true,
+          groups: {
+            where: {
+              slackTeamId:{
+                not: null
+              }
+            }
+          }
         }
       }
     }
@@ -32,8 +39,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   for (const question of allQuestionsToBeNotified) {
     try {
       let resolveQuestionBlock = buildResolveQuestionBlocks(question)
-
-      await postBlockMessage(req.body.team_id, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
+      await Promise.all(question.profile.groups.map(async group => {
+        await postBlockMessage(group.slackTeamId!, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?")
+      }))
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
       await prisma.question.update({
