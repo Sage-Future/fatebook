@@ -1,8 +1,8 @@
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { KnownBlock } from '@slack/types'
-import { conciseDateTime, getSlackPermalinkFromChannelAndTS, getCommunityForecast, formatDecimalNicely } from '../../lib/_utils.js'
+import { conciseDateTime, getCommunityForecast, formatDecimalNicely } from '../../lib/_utils.js'
 import { maxForecastsVisible } from '../_constants.js'
-import { markdownBlock } from './_block_utils.js'
+import { markdownBlock, getQuestionTitleLink } from './_block_utils.js'
 
 export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
   if(forecasts.length == 0) {
@@ -30,7 +30,7 @@ async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWi
       "type": "divider"
     }
   ])
-  if (pagination) { // @FRANCIS - I added these curly brackets for clarity, not sure if maybeGenerateButtonsBlock should be inside or outside!
+  if (pagination) {
     console.log(page)
     //maybeGenerateButtonsBlock(forecasts)
   }
@@ -38,15 +38,7 @@ async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWi
 }
 
 async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
-  // Question title
-  let questionTitle = `*${forecast.question.title}*`
-  try {
-    const slackMessage  = forecast.question.slackMessages[0]!
-    const slackPermalink = await getSlackPermalinkFromChannelAndTS(teamId, slackMessage.channel, slackMessage.ts)
-    questionTitle = `*<${slackPermalink}|${forecast.question.title}>*`
-  } catch (err) {
-    console.log('No original forecast message found:', err)
-  }
+  const questionTitle = await getQuestionTitleLink(teamId, forecast.question)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
   const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber())

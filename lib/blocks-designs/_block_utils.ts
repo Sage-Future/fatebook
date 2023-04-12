@@ -1,4 +1,6 @@
+import { QuestionWithAuthorAndSlackMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { Block, KnownBlock } from "@slack/types"
+import { getSlackPermalinkFromChannelAndTS } from '../_utils.js'
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -73,4 +75,14 @@ export function markdownBlock(content: string) {
     'type': "mrkdwn" as "mrkdwn",
     'text': content,
   }
+}
+
+export async function getQuestionTitleLink(teamId : string, question: QuestionWithAuthorAndSlackMessages | QuestionWithSlackMessagesAndForecasts) {
+  const questionTitle = `*${question.title}*`
+  if (question.slackMessages.length) {
+    const slackMessage = question.slackMessages[0]!
+    const slackPermalink = await getSlackPermalinkFromChannelAndTS(teamId, slackMessage.channel, slackMessage.ts)
+    return `*<${slackPermalink}|${question.title}>*`
+  }
+  return questionTitle
 }

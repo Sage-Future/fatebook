@@ -25,6 +25,10 @@ export type QuestionWithSlackMessagesAndForecasts = QuestionWithForecasts & {
     slackMessages: QuestionSlackMessage[]
 }
 
+export type QuestionWithAuthorAndSlackMessages = QuestionWithAuthor & {
+    slackMessages: QuestionSlackMessage[]
+}
+
 export type ForecastWithQuestionWithSlackMessagesAndForecasts = Forecast & {
     question: QuestionWithSlackMessagesAndForecasts
 }

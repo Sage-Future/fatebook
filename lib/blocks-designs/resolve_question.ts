@@ -1,18 +1,22 @@
-import { QuestionWithAuthor } from "../../prisma/additional"
-import { Blocks, markdownBlock, textBlock, toActionId, ResolveQuestionActionParts } from "./_block_utils.js"
+import { QuestionWithAuthorAndSlackMessages } from "../../prisma/additional"
+import { markdownBlock, textBlock, toActionId, ResolveQuestionActionParts, getQuestionTitleLink } from "./_block_utils.js"
+import { conciseDateTime } from "../_utils.js"
 
-export function buildResolveQuestionBlocks(question: QuestionWithAuthor): Blocks {
+export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndSlackMessages) {
   const answerLabels = ['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]
+  const questionTitle     = await getQuestionTitleLink(teamId, question)
+  const resolutionDateStr = conciseDateTime(question.resolveBy, false)
   return [
     {
       "type": "section",
-      "text": markdownBlock(`Hey ${question?.profile.user?.name || "there"}, you asked:\n ${question.title}\n How should this resolve?`)
+      "text": markdownBlock(`Hey ${question?.profile.user?.name || "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`)
     },
     {
       "type": "actions",
       "elements": answerLabels.map((answer) => ({
         "type": "button",
         "text": textBlock(answer![0].toUpperCase() + answer!.slice(1)), // capitalize
+        ...(answer != 'ambiguous') && {"style": answer == 'yes' ? "primary" : "danger"},
         "action_id": toActionId({
           action: "resolve",
           questionId: question.id,
