@@ -60,16 +60,17 @@ const question : Question = {
 
 export default function testScoring(req: VercelRequest, res: VercelResponse) {
   const score = relativeBrierScoring(testMultiForecasts, question, 8)
-  if (!floatEquality(score[0][1], -0.43) || !floatEquality(score[1][1], 0.7943) || !floatEquality(score[2][1], -0.00137)) {
-    console.log(`score 1 1 is right : ${floatEquality(score[0][1], -0.43)}`)
-    console.log(`score 2 1 is right : ${floatEquality(score[1][1], 0.7943)}`)
-    console.log(`score 3 1 is right : ${floatEquality(score[2][1], -0.00137)}`)
+  console.log(score)
+  if (!floatEquality(score[1].relativeBrierScore, -0.43) || !floatEquality(score[2].relativeBrierScore, 0.7943) || !floatEquality(score[3].relativeBrierScore, -0.00137)) {
+    console.log(`score 1 1 is right : ${floatEquality(score[1].relativeBrierScore, -0.43)}`)
+    console.log(`score 2 1 is right : ${floatEquality(score[2].relativeBrierScore, 0.7943)}`)
+    console.log(`score 3 1 is right : ${floatEquality(score[3].relativeBrierScore, -0.00137)}`)
     res.status(500).send("Multiuser scoring failed: " + JSON.stringify(score))
     return
   }
 
   const scoreSingle = relativeBrierScoring(testSingleForecasts, question, 8)
-  if (!floatEquality(scoreSingle[0][1],	0.0114)){
+  if (!floatEquality(scoreSingle[1].relativeBrierScore,	0.0114)){
     res.status(500).send("Single user scoring failed: " + JSON.stringify(scoreSingle))
     return
   }

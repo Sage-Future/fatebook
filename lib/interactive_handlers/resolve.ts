@@ -1,7 +1,7 @@
 import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
 import { Resolution, Question } from '@prisma/client'
-import { relativeBrierScoring, ScoreArray } from '../_scoring.js'
+import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
 import prisma, { postMessageToResponseUrl, postBlockMessage, conciseDateTime } from '../_utils.js'
 
@@ -32,32 +32,34 @@ async function dbGetQuestion(questionid : number) {
   return questionMaybe
 }
 
-async function scoreForecasts(scoreArray : ScoreArray, question : Question) {
+async function scoreForecasts(scoreArray : ScoreCollection, question : Question) {
   console.log(`updating questionScores for question id: ${question.id}`)
 
   let updateArray : any[] = []
-  for (const [id, score] of scoreArray) {
+  for (const id in scoreArray) {
+    const relativeScore = scoreArray[id].relativeBrierScore
+    //const absoluteScore = scoreArray[id].absoluteBrierScore
     let profileQuestionComboId = parseInt(`${id}${question.id}`)
     updateArray.push(prisma.questionScore.upsert({
       where: {
         profileQuestionComboId: profileQuestionComboId,
       },
       update: {
-        score: score,
+        score: relativeScore,
       },
       create: {
         profileQuestionComboId: profileQuestionComboId,
-        profileId: id,
+        profileId: Number(id),
         questionId: question.id,
-        score: score,
+        score: relativeScore,
       }
     }))
-    console.log(`  user id: ${id} with score: ${score}`)
+    console.log(`  user id: ${id} with relative score ${relativeScore}`)
   }
   await prisma.$transaction(updateArray)
 }
 
-async function messageUsers(scoreArray : ScoreArray, questionid : number) {
+async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
   console.log(`messageUsers for question id: ${questionid}`)
   const question = await prisma.question.findUnique({
     where: {
@@ -79,7 +81,7 @@ async function messageUsers(scoreArray : ScoreArray, questionid : number) {
   const profiles = await prisma.profile.findMany({
     where: {
       id: {
-        in: scoreArray.map(([id, ]) => id)
+        in: Object.keys(scoreArray).map(id => Number(id))
       },
       slackId: {
         not: null
@@ -103,23 +105,18 @@ async function messageUsers(scoreArray : ScoreArray, questionid : number) {
   // go over each profile and send a message to each group they are in which
   //   are also in the question's groups
   await Promise.all(profiles.map(async profile => {
-    const score = scoreArray.find(([id, ]) => id === profile.id)
-    if(!score){
-      throw Error(`Cannot find score for profile: ${profile.id}`)
+    const scoreDetails = {
+      brierScore:  scoreArray[profile.id].absoluteBrierScore,
+      rBrierScore: scoreArray[profile.id].relativeBrierScore,
+      ranking: 2,
+      totalParticipants: Object.keys(scoreArray).length,
+      lastForecast: 20,
+      lastForecastDate: conciseDateTime(new Date(), false),
+      overallBrierScore: 0.00002,
+      overallRBrierScore: 0.002
     }
-
-    const message = `Your forecast for question ${questionid} was scored ${score[1]}`
+    const message = `Your forecast for question ${question.title} was scored ${scoreArray[profile.id].relativeBrierScore}`
     return await Promise.all(profile.groups.map(async group => {
-      const scoreDetails = {
-        brierScore: 0.00002,
-        rBrierScore: score[1],
-        ranking: 2,
-        totalParticipants: 4,
-        lastForecast: 20,
-        lastForecastDate: conciseDateTime(new Date(), false),
-        overallBrierScore: 0.00002,
-        overallRBrierScore: score[1]
-      }
       const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,
                                                        question,
                                                        scoreDetails)

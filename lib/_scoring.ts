@@ -4,9 +4,16 @@ type ScoreTimeSeries = {
     [id: number]: number[]
 }
 
-export type ScoreArray = [number, number][]
+export type ScoreTuple = {
+  relativeBrierScore: number
+  absoluteBrierScore: number
+}
 
-export function relativeBrierScoring(forecasts : Forecast[], question : Question, scoreResolution : number = 101) : ScoreArray {
+export type ScoreCollection = {
+  [key: number]: ScoreTuple
+}
+
+export function relativeBrierScoring(forecasts : Forecast[], question : Question, scoreResolution : number = 101) : ScoreCollection {
   let uniqueIds = Array.from(new Set(forecasts.map(f => f.authorId)))
 
   if (uniqueIds.length == 1) {
@@ -17,7 +24,8 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   //   resolution datetimes
   const dateInterval = question.resolvedAt!.getTime() - question.createdAt.getTime()
   const interval = dateInterval / scoreResolution
-  let scoreArray : ScoreTimeSeries = {}
+  let relativeScoreTimeSeries : ScoreTimeSeries = {}
+  let absoluteScoreTimeSeries : ScoreTimeSeries = {}
 
   const startInterval = question.createdAt.getTime() + interval
   const sortedForecastsById : [number, Forecast[]][] = uniqueIds.map(id => {
@@ -37,14 +45,16 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
       }
     })
 
-    // get the median brier score for this time interval
-    let medianBrierScore : number = median(idForecastValueTuples.map(([, forecast]) => {
+    let absoluteBrierScores : [number, number | undefined][] = idForecastValueTuples.map(([id, forecast]) => {
       if (forecast === undefined) {
-        return undefined
+        return [id, undefined]
       }else{
-        return brierScore(forecast, question.resolution!)
+        return [id, brierScore(forecast, question.resolution!)]
       }
-    }).filter(v => v !== undefined) as number[])
+    })
+
+    // get the median brier score for this time interval
+    let medianBrierScore : number = median(absoluteBrierScores.map(([,score]) => score).filter(v => v !== undefined) as number[])
 
 
     // subtract the median brier score from the brier score from each user's forecast
@@ -56,28 +66,40 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
       }
     })
 
+    if(relativeBrierScores.length != absoluteBrierScores.length){
+      throw new Error("relative and absolute brier scores are not the same length")
+    }
+
     // add the score to the user score array
     for (let i = 0; i < relativeBrierScores.length; i++) {
-      const [id, score]  = <[number, number | undefined]> relativeBrierScores[i]
-      if (scoreArray[id] === undefined && score !== undefined)
-        scoreArray[id] = [score!]
-      else if (score !== undefined)
-        scoreArray[id].push(score!)
+      const [id,  relativeScore]  = <[number, number | undefined]> relativeBrierScores[i]
+      const [, absoluteScore]  = <[number, number | undefined]> absoluteBrierScores[i]
+      if (relativeScoreTimeSeries[id] === undefined && relativeScore !== undefined){
+        relativeScoreTimeSeries[id] = [relativeScore!]
+        if (absoluteScore === undefined) throw new Error("absolute score is undefined")
+        absoluteScoreTimeSeries[id] = [absoluteScore!]
+      }
+      else if (relativeScore !== undefined){
+        relativeScoreTimeSeries[id].push(relativeScore!)
+        if (absoluteScore === undefined) throw new Error("absolute score is undefined")
+        absoluteScoreTimeSeries[id].push(absoluteScore!)
+      }
     }
   }
 
-
   // average the scores for each user
-  const avgScoresPerUser : [number, number][] = uniqueIds.map(id => {
-    let scores = scoreArray[id]
-    let sum = scores.reduce((a, b) => a + b, 0)
-    return [id, sum / (scoreResolution-1)]
-  })
+  let avgScoresPerUser : ScoreCollection = {}
+  for(const id of Object.keys(relativeScoreTimeSeries).map(id => parseInt(id))){
+    avgScoresPerUser[id] = {
+      relativeBrierScore : averageForScoreResolution(relativeScoreTimeSeries[id], scoreResolution),
+      absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], scoreResolution)
+    }
+  }
 
   return avgScoresPerUser
 }
 
-function oneUserScoring(forecasts : Forecast[], question : Question, id : number, scoreResolution : number = 101) : ScoreArray {
+function oneUserScoring(forecasts : Forecast[], question : Question, id : number, scoreResolution : number = 101) : ScoreCollection {
   // iterate over each time interval from start of question to
   //   resolution datetimes
   const dateInterval = question.resolvedAt!.getTime() - question.createdAt.getTime()
@@ -95,7 +117,12 @@ function oneUserScoring(forecasts : Forecast[], question : Question, id : number
     }
   }
   const avgScore = scores.reduce((a, b) => a + b, 0) / (scoreResolution-1)
-  return [[id, avgScore]]
+  return {
+    [id]: {
+      relativeBrierScore: avgScore,
+      absoluteBrierScore: avgScore
+    }
+  }
 }
 
 function median(values : number[]) : number {
@@ -110,6 +137,11 @@ function median(values : number[]) : number {
   } else {
     return (numValues[halfIndex - 1] + numValues[halfIndex]) / 2.0
   }
+}
+
+function averageForScoreResolution(scores : number[], scoreResolution: number) : number{
+  let sum = scores.reduce((a, b) => a + b, 0)
+  return sum / (scoreResolution-1)
 }
 
 function brierScore(forecast : number, resolution : Resolution) : number {
