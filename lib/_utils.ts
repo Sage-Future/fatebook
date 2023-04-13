@@ -5,7 +5,7 @@ import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMe
 import { buildQuestionBlocks } from './blocks-designs/question.js'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
-import { maxDecmialPlaces } from './_constants.js'
+import { maxDecimalPlaces } from './_constants.js'
 
 const prisma = new PrismaClient()
 export default prisma
@@ -411,10 +411,10 @@ export function conciseDateTime(date: Date, includeTime = true) {
   return `${timeStr}${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
 }
 
-export function formatDecimalNicely(num : number) : string {
+export function formatDecimalNicely(num : number, decimalPlaces : number = maxDecimalPlaces) : string {
   return num.toLocaleString('en-US', {
     minimumFractionDigits: 0,
-    maximumFractionDigits: maxDecmialPlaces,})
+    maximumFractionDigits: decimalPlaces,})
 }
 
 export function getDateYYYYMMDD(date: Date) {

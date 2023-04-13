@@ -2,7 +2,7 @@ import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndSlackMessages } from '../../prisma/additional'
 import { markdownBlock, textBlock, divider, feedbackOverflow, getQuestionTitleLink } from './_block_utils.js'
 import type { Blocks } from './_block_utils.js'
-import { resolutionToString } from '../_utils.js'
+import { resolutionToString, formatDecimalNicely } from '../_utils.js'
 
 type ResolveQuestionDetails = {
   brierScore: number
@@ -44,18 +44,18 @@ function generateNonAmbiguousResolution(details : ResolveQuestionDetails) : Bloc
     {
       'type': 'section',
       'fields': [
-        markdownBlock(`*Brier score:*\n ${details.brierScore}`),
-        markdownBlock(`*Relative Brier score:*\n ${details.rBrierScore}`),
-        markdownBlock(`*Ranking:*\n *${details.ranking}*/${details.totalParticipants}`),
-        markdownBlock(`*Last forecast:*\n ${details.lastForecast} on ${details.lastForecastDate}`)
+        markdownBlock(`*Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatDecimalNicely(details.brierScore, 6)}`),
+        markdownBlock(`*Relative Brier score*\n ${formatDecimalNicely(details.rBrierScore, 6)}`),
+        markdownBlock(`*Ranking*\n *${details.ranking}*/${details.totalParticipants}`),
+        markdownBlock(`*Your last forecast*\n ${details.lastForecast}% on ${details.lastForecastDate}`)
       ]
     },
     divider(),
     {
       'type': 'section',
       'fields': [
-        markdownBlock(`*Brier score across all questions:*\n ${details.overallBrierScore}`),
-        markdownBlock(`*Relative Brier score across all questions:*\n ${details.overallRBrierScore}`)
+        markdownBlock(`*Brier score across all questions:*\n ${formatDecimalNicely(details.overallBrierScore, 6)}`),
+        markdownBlock(`*Relative Brier score across all questions:*\n ${formatDecimalNicely(details.overallRBrierScore, 6)}`)
       ]
     }
   ]
