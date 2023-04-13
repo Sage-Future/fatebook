@@ -26,13 +26,15 @@ model Forecast {
 }
 
 model QuestionScore {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
-  score      Decimal
-  profileId  Int
-  questionId Int
-  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  relativeScore Decimal
+  absoluteScore Decimal
+  rank          Int
+  profileId     Int
+  questionId    Int
+  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  question      Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   profileQuestionComboId Int @unique
 }
 

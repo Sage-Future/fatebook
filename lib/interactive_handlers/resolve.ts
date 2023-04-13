@@ -38,20 +38,22 @@ async function scoreForecasts(scoreArray : ScoreCollection, question : Question)
   let updateArray : any[] = []
   for (const id in scoreArray) {
     const relativeScore = scoreArray[id].relativeBrierScore
-    //const absoluteScore = scoreArray[id].absoluteBrierScore
+    const absoluteScore = scoreArray[id].absoluteBrierScore
     let profileQuestionComboId = parseInt(`${id}${question.id}`)
     updateArray.push(prisma.questionScore.upsert({
       where: {
         profileQuestionComboId: profileQuestionComboId,
       },
       update: {
-        score: relativeScore,
+        relativeScore: relativeScore,
       },
       create: {
         profileQuestionComboId: profileQuestionComboId,
         profileId: Number(id),
         questionId: question.id,
-        score: relativeScore,
+        relativeScore: relativeScore,
+        absoluteScore: absoluteScore,
+        rank: 0
       }
     }))
     console.log(`  user id: ${id} with relative score ${relativeScore}`)
