@@ -7,6 +7,7 @@ type ScoreTimeSeries = {
 export type ScoreTuple = {
   relativeBrierScore: number
   absoluteBrierScore: number
+  rank              : number
 }
 
 export type ScoreCollection = {
@@ -76,12 +77,10 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
       const [, absoluteScore]  = <[number, number | undefined]> absoluteBrierScores[i]
       if (relativeScoreTimeSeries[id] === undefined && relativeScore !== undefined){
         relativeScoreTimeSeries[id] = [relativeScore!]
-        if (absoluteScore === undefined) throw new Error("absolute score is undefined")
         absoluteScoreTimeSeries[id] = [absoluteScore!]
       }
       else if (relativeScore !== undefined){
         relativeScoreTimeSeries[id].push(relativeScore!)
-        if (absoluteScore === undefined) throw new Error("absolute score is undefined")
         absoluteScoreTimeSeries[id].push(absoluteScore!)
       }
     }
@@ -92,8 +91,16 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   for(const id of Object.keys(relativeScoreTimeSeries).map(id => parseInt(id))){
     avgScoresPerUser[id] = {
       relativeBrierScore : averageForScoreResolution(relativeScoreTimeSeries[id], scoreResolution),
-      absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], scoreResolution)
+      absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], scoreResolution),
+      rank               : -1 //reassigned below
     }
+  }
+
+  //sort the user id's of avgScoresPerUser by their relative brier score
+  let sortedIds = Object.keys(avgScoresPerUser).map(id => parseInt(id)).sort((a, b) => avgScoresPerUser[a].relativeBrierScore - avgScoresPerUser[b].relativeBrierScore)
+
+  for (let i = 0; i < sortedIds.length; i++) {
+    avgScoresPerUser[sortedIds[i]].rank = i+1
   }
 
   return avgScoresPerUser
@@ -120,7 +127,8 @@ function oneUserScoring(forecasts : Forecast[], question : Question, id : number
   return {
     [id]: {
       relativeBrierScore: avgScore,
-      absoluteBrierScore: avgScore
+      absoluteBrierScore: avgScore,
+      rank              : 1
     }
   }
 }

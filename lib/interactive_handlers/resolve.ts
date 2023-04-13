@@ -59,6 +59,7 @@ async function scoreForecasts(scoreArray : ScoreCollection, question : Question)
   for (const id in scoreArray) {
     const relativeScore = scoreArray[id].relativeBrierScore
     const absoluteScore = scoreArray[id].absoluteBrierScore
+    const rank          = scoreArray[id].rank
     let profileQuestionComboId = parseInt(`${id}${question.id}`)
     updateArray.push(prisma.questionScore.upsert({
       where: {
@@ -66,6 +67,8 @@ async function scoreForecasts(scoreArray : ScoreCollection, question : Question)
       },
       update: {
         relativeScore: relativeScore,
+        absoluteScore: absoluteScore,
+        rank: rank
       },
       create: {
         profileQuestionComboId: profileQuestionComboId,
@@ -73,7 +76,7 @@ async function scoreForecasts(scoreArray : ScoreCollection, question : Question)
         questionId: question.id,
         relativeScore: relativeScore,
         absoluteScore: absoluteScore,
-        rank: 0
+        rank: rank
       }
     }))
     console.log(`  user id: ${id} with relative score ${relativeScore}`)
@@ -120,6 +123,11 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
             not: null
           }
         }
+      },
+      forecasts: {
+        where: {
+          questionId: question.id
+        }
       }
     }
   })
@@ -127,13 +135,16 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
   // go over each profile and send a message to each group they are in which
   //   are also in the question's groups
   await Promise.all(profiles.map(async profile => {
+    // sort the foreacsts
+    const sortedProfileForecasts = profile.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    const lastForecast = sortedProfileForecasts[0]
     const scoreDetails = {
       brierScore:  scoreArray[profile.id].absoluteBrierScore,
       rBrierScore: scoreArray[profile.id].relativeBrierScore,
-      ranking: 2,
+      ranking:     scoreArray[profile.id].rank,
       totalParticipants: Object.keys(scoreArray).length,
-      lastForecast: 20,
-      lastForecastDate: conciseDateTime(new Date(), false),
+      lastForecast: lastForecast.forecast.toNumber()*100,
+      lastForecastDate: conciseDateTime(lastForecast.createdAt, true),
       overallBrierScore: 0.00002,
       overallRBrierScore: 0.002
     }
