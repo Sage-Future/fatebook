@@ -1,5 +1,5 @@
 import { QuestionWithAuthorAndSlackMessages } from "../../prisma/additional"
-import { markdownBlock, textBlock, toActionId, ResolveQuestionActionParts, getQuestionTitleLink } from "./_block_utils.js"
+import { markdownBlock, textBlock, toActionId, ResolveQuestionActionParts, getQuestionTitleLink, feedbackOverflow } from "./_block_utils.js"
 import { conciseDateTime } from "../_utils.js"
 
 export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndSlackMessages) {
@@ -10,20 +10,7 @@ export async function buildResolveQuestionBlocks(teamId: string, question: Quest
     {
       "type": "section",
       "text": markdownBlock(`Hey ${question?.profile.user?.name || "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`),
-      "accessory": {
-        "type": "overflow",
-        "options": [
-          {
-            "text": {
-              "type": "plain_text",
-              "emoji": true,
-              "text": "Give feedback about this app"
-            },
-            "value": "value-0",
-            "url": "https://www.quantifiedintuitions.org/"
-          }
-        ]
-      }
+      "accessory": feedbackOverflow()
     },
     {
       "type": "actions",

@@ -1,4 +1,4 @@
-import { Forecast, GroupType, PrismaClient, Profile } from '@prisma/client'
+import { Forecast, GroupType, PrismaClient, Profile, Resolution } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
 import { QuestionWithForecasts } from '../prisma/additional'
@@ -411,4 +411,8 @@ export function zeroPad(num: number) {
 export function round(number: number, places = 2) {
   // @ts-ignore
   return +(Math.round(number + "e+" + places)  + "e-" + places)
+}
+
+export function resolutionToString(resolution: Resolution) {
+  return resolution.toString().charAt(0).toUpperCase() + resolution.toString().slice(1).toLowerCase()
 }

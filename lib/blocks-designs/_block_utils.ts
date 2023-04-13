@@ -70,10 +70,33 @@ export function textBlock(content: string, emoji = true) {
   }
 }
 
+export function divider() {
+  return {
+    'type': 'divider'
+  }
+}
+
 export function markdownBlock(content: string) {
   return {
     'type': "mrkdwn" as "mrkdwn",
     'text': content,
+  }
+}
+
+export function feedbackOverflow(){
+  return {
+    "type": "overflow",
+    "options": [
+      {
+        "text": {
+          "type": "plain_text",
+          "emoji": true,
+          "text": "Give feedback about this app"
+        },
+        "value": "value-0",
+        "url": "https://www.quantifiedintuitions.org/"
+      }
+    ]
   }
 }
 

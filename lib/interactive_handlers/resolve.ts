@@ -1,8 +1,9 @@
 import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
+import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
 import { Resolution, Question } from '@prisma/client'
 import { relativeBrierScoring, ScoreArray } from '../_scoring.js'
 
-import prisma, { postMessageToResponseUrl, postTextMessage } from '../../lib/_utils.js'
+import prisma, { postMessageToResponseUrl, postBlockMessage, conciseDateTime } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -63,7 +64,13 @@ async function messageUsers(scoreArray : ScoreArray, questionid : number) {
       id: questionid,
     },
     include: {
-      groups: true
+      groups: true,
+      profile: {
+        include: {
+          user: true
+        }
+      },
+      slackMessages: true,
     },
   })
   if(!question)
@@ -97,11 +104,27 @@ async function messageUsers(scoreArray : ScoreArray, questionid : number) {
   //   are also in the question's groups
   await Promise.all(profiles.map(async profile => {
     const score = scoreArray.find(([id, ]) => id === profile.id)
-    if(!score)
+    if(!score){
       throw Error(`Cannot find score for profile: ${profile.id}`)
+    }
 
     const message = `Your forecast for question ${questionid} was scored ${score[1]}`
-    return await Promise.all(profile.groups.map(async group => await postTextMessage(group.slackTeamId!, profile.slackId!, message)))
+    return await Promise.all(profile.groups.map(async group => {
+      const scoreDetails = {
+        brierScore: 0.00002,
+        rBrierScore: score[1],
+        ranking: 2,
+        totalParticipants: 4,
+        lastForecast: 20,
+        lastForecastDate: conciseDateTime(new Date(), false),
+        overallBrierScore: 0.00002,
+        overallRBrierScore: score[1]
+      }
+      const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,
+                                                       question,
+                                                       scoreDetails)
+      await postBlockMessage(group.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false})
+    }))
   }))
 }
 
