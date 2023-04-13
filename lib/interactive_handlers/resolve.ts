@@ -3,11 +3,11 @@ import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved
 import { Resolution, Question } from '@prisma/client'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
-import prisma, { postMessageToResponseUrl, postBlockMessage, conciseDateTime } from '../_utils.js'
+import prisma, { postMessageToResponseUrl, updateForecastQuestionMessages, postBlockMessage, conciseDateTime } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
-  await prisma.question.update({
+  return await prisma.question.update({
     where: {
       id: questionid,
     },
@@ -16,8 +16,28 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
       resolution: resolution,
       resolvedAt: new Date()
     },
+    include: {
+      forecasts: {
+        include: {
+          profile: {
+            include: {
+              user: true
+            }
+          }
+        }
+      },
+      profile: {
+        include: {
+          user: {
+            include: {
+              profiles: true
+            }
+          }
+        }
+      },
+      slackMessages: true,
+    }
   })
-  console.log(`      dbResolveQuestion return`)
 }
 
 async function dbGetQuestion(questionid : number) {
@@ -137,21 +157,22 @@ async function updateForecastsAndMessageUsers(questionid : number) {
   await messageUsers(scores, question.id)
 }
 
-async function handleQuestionResolution(questionid : number, resolution : Resolution) {
+async function handleQuestionResolution(questionid : number, resolution : Resolution, teamId : string) {
   console.log(`    handleQuestionResolution: ${questionid} ${resolution}`)
-  await dbResolveQuestion(questionid, resolution)
+  const question = await dbResolveQuestion(questionid, resolution)
   console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
 
   await updateForecastsAndMessageUsers(questionid)
+  await updateForecastQuestionMessages(question, teamId, "Question resolved!")
 }
 
-export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string) {
+export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, teamId?: string) {
   // actionParts.answer is set by buttons block in resolution reminder DM, actionValue is set by select block on question
   const answer = actionParts.answer || actionValue
   if (!answer)
     throw Error('blockActions: both payload.actions.answer and actionValue is undefined')
-  else if (actionParts.questionId === undefined || userSlackId === undefined || responseUrl === undefined)
-    throw Error('blockActions: missing qID on action_id')
+  else if (actionParts.questionId === undefined || userSlackId === undefined || teamId === undefined || responseUrl === undefined)
+    throw Error('blockActions: missing param')
 
   const { questionId } = actionParts
   console.log(`  resolve question ${questionId} to ${answer}`)
@@ -196,13 +217,13 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
   // TODO:NEAT replace yes/no/ambiguous with enum (with check for resolution template)
   switch (answer) {
     case 'yes':
-      await handleQuestionResolution(questionId, Resolution.YES)
+      await handleQuestionResolution(questionId, Resolution.YES, teamId)
       break
     case 'no':
-      await handleQuestionResolution(questionId, Resolution.NO)
+      await handleQuestionResolution(questionId, Resolution.NO, teamId)
       break
     case 'ambiguous':
-      await handleQuestionResolution(questionId, Resolution.AMBIGUOUS)
+      await handleQuestionResolution(questionId, Resolution.AMBIGUOUS, teamId)
       break
     default:
       console.error('Unhandled resolution: ', answer)

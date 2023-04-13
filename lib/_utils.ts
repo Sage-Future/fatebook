@@ -1,7 +1,8 @@
 import { Forecast, GroupType, PrismaClient, Profile, Resolution } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { QuestionWithForecasts } from '../prisma/additional'
+import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessages } from '../prisma/additional'
+import { buildQuestionBlocks } from './blocks-designs/question.js'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
 import { maxDecmialPlaces } from './_constants.js'
@@ -297,7 +298,7 @@ export async function postEphemeralSlackMessage(teamId : string, message: PostEp
 }
 
 export async function updateMessage(teamId: string, message: {channel: string, ts: string, text: string, blocks?: Blocks}){
-  console.log(`Updating message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
+  console.log(`Updating message to channel: ${message.channel}, text: ${message.text}`)
 
   const url = 'https://slack.com/api/chat.update'
   return await callSlackApi(teamId, message, url) as {ok: boolean}
@@ -358,6 +359,22 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
   return await response.text()
 }
 
+export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, teamId: string, notificationMessage: string) {
+  const questionBlocks = buildQuestionBlocks(question)
+
+  for (const slackMessage of question.slackMessages) {
+    const response = await updateMessage(teamId, {
+      channel: slackMessage.channel,
+      ts: slackMessage.ts,
+      text: notificationMessage,
+      blocks: questionBlocks,
+    })
+    if (!response.ok) {
+      console.error("Error updating question message: ", response)
+    }
+  }
+}
+
 export function getMostRecentForecastPerProfile(forecasts: Forecast[], date : Date) : [number, Forecast][] {
   const forecastsPerProfile = new Map<number, Forecast>()
   for (const forecast of forecasts) {
@@ -415,4 +432,17 @@ export function round(number: number, places = 2) {
 
 export function resolutionToString(resolution: Resolution) {
   return resolution.toString().charAt(0).toUpperCase() + resolution.toString().slice(1).toLowerCase()
+}
+
+export function getResolutionEmoji(resolution: Resolution) {
+  switch (resolution) {
+    case Resolution.YES:
+      return '👍'
+    case Resolution.NO:
+      return '👎'
+    case Resolution.AMBIGUOUS:
+      return '❔'
+    default:
+      return ''
+  }
 }

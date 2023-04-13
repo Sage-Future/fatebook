@@ -3,10 +3,10 @@ import type { NextFetchEvent, NextRequest } from 'next/server'
 
 const redirectUrl               : string = "/api/success_response"
 const failedValidateRedirectUrl : string = "/api/failed_validation"
- 
+
 export const config = {
   matcher: ['/incoming/slash_forecast',
-            '/incoming/interactive_endpoint']
+    '/incoming/interactive_endpoint']
 }
 
 function dateValid(payload: any){
@@ -25,7 +25,7 @@ function dateValid(payload: any){
     return true
   }
 }
- 
+
 export default async function middleware(req: NextRequest, context: NextFetchEvent) {
   const path = req.url
   const asyncFetchPath = path!.replace('/incoming', '/api')

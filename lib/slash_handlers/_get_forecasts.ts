@@ -53,7 +53,7 @@ export async function getForecasts(slackUserId : string, slackTeamId : string, c
     console.log('builtBlocks:', forecastsBlocks)
     await postSlackMessage(slackTeamId, {
       channel: channelId,
-      text: `Forecasts requested for profile ID: ${profile!.id}`,
+      text: `Your forecasts...`,
       blocks: forecastsBlocks,
       unfurl_links: false,
     })

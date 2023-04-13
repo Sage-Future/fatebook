@@ -40,16 +40,21 @@ export interface EditQuestionBtnActionParts {
   questionId: number
 }
 
+export interface UndoResolveActionParts {
+  action: 'undoResolve'
+  questionId: number
+}
+
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
 export function toActionId(parts: ActionIdParts) {
   const stringified = JSON.stringify(parts)
   if (stringified.length >= 255) {
-    throw new Error(`ActionIdParts too long - Slack limits actionId to 255 chars. ${parts}`)
+    throw new Error(`ActionIdParts too long - Slack limits actionId to 255 chars. ${stringified}`)
   }
   return stringified
 }
