@@ -1,6 +1,6 @@
 import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
-import { Resolution, Question } from '@prisma/client'
+import { Resolution, Question, QuestionScore } from '@prisma/client'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
 import prisma, { postMessageToResponseUrl, updateForecastQuestionMessages, postBlockMessage, conciseDateTime } from '../_utils.js'
@@ -84,6 +84,15 @@ async function scoreForecasts(scoreArray : ScoreCollection, question : Question)
   await prisma.$transaction(updateArray)
 }
 
+function getAverageScores(questionScores : QuestionScore[]) {
+  const avgRelativeScore = questionScores.map(score => score.relativeScore.toNumber()).reduce((a, b) => a + b, 0) / questionScores.length
+  const avgAbsoluteScore = questionScores.map(score => score.absoluteScore.toNumber()).reduce((a, b) => a + b, 0) / questionScores.length
+  return {
+    avgRelativeScore: avgRelativeScore,
+    avgAbsoluteScore: avgAbsoluteScore
+  }
+}
+
 async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
   console.log(`messageUsers for question id: ${questionid}`)
   const question = await prisma.question.findUnique({
@@ -128,7 +137,8 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
         where: {
           questionId: question.id
         }
-      }
+      },
+      questionScores: true
     }
   })
 
@@ -137,7 +147,8 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
   await Promise.all(profiles.map(async profile => {
     // sort the foreacsts
     const sortedProfileForecasts = profile.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    const lastForecast = sortedProfileForecasts[0]
+    const lastForecast           = sortedProfileForecasts[0]
+    const averageScores          = getAverageScores(profile.questionScores)
     const scoreDetails = {
       brierScore:  scoreArray[profile.id].absoluteBrierScore,
       rBrierScore: scoreArray[profile.id].relativeBrierScore,
@@ -145,8 +156,8 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
       totalParticipants: Object.keys(scoreArray).length,
       lastForecast: lastForecast.forecast.toNumber()*100,
       lastForecastDate: conciseDateTime(lastForecast.createdAt, true),
-      overallBrierScore: 0.00002,
-      overallRBrierScore: 0.002
+      overallBrierScore: averageScores.avgAbsoluteScore,
+      overallRBrierScore: averageScores.avgRelativeScore
     }
     const message = `Your forecast for question ${question.title} was scored ${scoreArray[profile.id].relativeBrierScore}`
     return await Promise.all(profile.groups.map(async group => {
