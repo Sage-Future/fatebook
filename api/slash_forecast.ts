@@ -2,41 +2,14 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 
 import { showCreateQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
 import { getForecasts } from '../lib/slash_handlers/_get_forecasts.js'
-import { tokenizeForecastString, postEphemeralTextMessage } from '../lib/_utils.js'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
   const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body
 
-  if(reqbody.text === undefined){
-    res.status(200).send(null)
-    return
-  }
-
-  const commandArray : string[] | null = tokenizeForecastString(reqbody.text as string)
-  if (commandArray === null) {
-    console.log("error with commandArray")
-    await postEphemeralTextMessage(reqbody?.team_id,
-                                   reqbody.channel_id,
-                                   reqbody.user_id,
-                                   'I think you may have specified the wrong syntax on that command. Please try again!')
-    res.status(200).send(null)
-    return
-  }
-
-  const action : string = commandArray![1]!
-
-  switch (action) {
-    case 'set':
-      await showCreateQuestionModal(reqbody?.team_id, reqbody?.trigger_id, reqbody.channel_id)
-      break
-    case 'get':
-      await getForecasts(reqbody.user_id, reqbody.team_id, reqbody.channel_id)
-      break
-    default:
-      await postEphemeralTextMessage(reqbody?.team_id,
-                                     reqbody.channel_id,
-                                     reqbody.user_id,
-                                     'Sorry, I don\'t recognise that command!')
+  if (reqbody.text === "get") {
+    await getForecasts(reqbody.user_id, reqbody.team_id, reqbody.channel_id)
+  } else {
+    await showCreateQuestionModal(reqbody?.team_id, reqbody?.trigger_id, reqbody.channel_id, reqbody.text)
   }
   res.status(200).send(null)
 }

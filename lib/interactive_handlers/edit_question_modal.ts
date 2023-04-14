@@ -5,15 +5,13 @@ import { EditQuestionBtnActionParts, QuestionModalActionParts } from '../blocks-
 import { createForecastingQuestion } from '../slash_handlers/_create_forecast.js'
 import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
 
-export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string) {
-  const view = buildEditQuestionModalView({}, true, channelId)
+export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string, questionInput: string) {
+  const view = buildEditQuestionModalView({title: questionInput.trim()}, true, channelId)
   const response = await showModal(teamId, triggerId, view)
   console.log('showCreateQuestionModal response', response)
 }
 
 export async function showEditQuestionModal(actionParts: EditQuestionBtnActionParts, payload: BlockActionPayload) {
-  console.log("todo get question, show modal")
-
   if (!payload.response_url || !payload.trigger_id || !payload.team?.id || !payload.user?.id || !payload.channel?.id) {
     console.error("missing required fields in payload for edit question modal ", payload)
     throw new Error("missing required fields in payload")
