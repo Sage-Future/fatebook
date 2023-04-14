@@ -48,8 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           id: question.id,
         },
         data: {
-          //TODO change to true
-          pingedForResolution: false,
+          pingedForResolution: true,
         },
       })
       console.log(`Updated question ${question.id} to pingedForResolution`)
