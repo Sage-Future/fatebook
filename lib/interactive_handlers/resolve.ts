@@ -1,9 +1,9 @@
-import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
+import { Question, Resolution, QuestionScore } from '@prisma/client'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
-import { Resolution, Question, QuestionScore } from '@prisma/client'
+import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
-import prisma, { postMessageToResponseUrl, updateForecastQuestionMessages, postBlockMessage, conciseDateTime } from '../_utils.js'
+import prisma, { conciseDateTime, postBlockMessage, postMessageToResponseUrl, updateForecastQuestionMessages } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -251,5 +251,55 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
       console.error('Unhandled resolution: ', answer)
       throw new Error('Unhandled resolution')
   }
+}
+
+export async function undoQuestionResolution(questionId: number, groupId: string) {
+  await prisma.$transaction([
+    prisma.question.update({
+      where: {
+        id: questionId,
+      },
+      data: {
+        resolution: null,
+        resolvedAt: null,
+      },
+    }),
+    prisma.questionScore.deleteMany({
+      where: {
+        questionId: questionId,
+      }
+    })
+  ])
+
+  const questionUpdated = await prisma.question.findUnique({
+    where: {
+      id: questionId,
+    },
+    include: {
+      forecasts: {
+        include: {
+          profile: {
+            include: {
+              user: true
+            }
+          }
+        }
+      },
+      profile: {
+        include: {
+          user: {
+            include: {
+              profiles: true
+            }
+          }
+        }
+      },
+      slackMessages: true,
+    }
+  })
+  if (!questionUpdated) {
+    throw Error(`Cannot find question with id: ${questionId}`)
+  }
+  await updateForecastQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
 }
 

@@ -1,15 +1,49 @@
-import { Question } from '@prisma/client'
+import { Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
 import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
 import { conciseDateTime, getDateYYYYMMDD, getResolutionEmoji, round } from '../../lib/_utils.js'
 import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId } from './_block_utils.js'
+import { feedbackFormUrl } from '../_constants.js'
 
 export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAuthor): Blocks {
 
   return [
     {
-      'type': 'header',
-      'text': textBlock(question.title)
+      'type': 'section',
+      'text': markdownBlock(`*${question.title}*`),
+      'accessory': {
+        'type': 'overflow',
+        'action_id': toActionId({
+          action: 'questionOverflow',
+          questionId: question.id,
+        }),
+        'options': [
+          ...(question.resolution ?
+            [
+              {
+                'text': textBlock('Undo resolve'),
+                'value': 'undo_resolve',
+              }
+            ]
+            :
+            (['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]).map(
+              (answer) => ({
+                'text': textBlock(`${getResolutionEmoji(answer?.toUpperCase() as Resolution)} Resolve ${answer}`),
+                'value': `resolve_${answer}`
+              })
+            )
+          ),
+          {
+            'text': textBlock('Edit question'),
+            'value': 'edit_question',
+          },
+          {
+            'text': textBlock('Give feedback on this bot'),
+            'value': 'give_feedback',
+            'url': feedbackFormUrl
+          },
+        ]
+      }
     },
     ...(question.resolution ? [{
       'type': 'section',
@@ -33,9 +67,8 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
             'image_url': forecast.profile.user.imageUrl || 'https://camo.githubusercontent.com/eb6a385e0a1f0f787d72c0b0e0275bc4516a261b96a749f1cd1aa4cb8736daba/68747470733a2f2f612e736c61636b2d656467652e636f6d2f64663130642f696d672f617661746172732f6176615f303032322d3531322e706e67',
             'alt_text': 'profile picture'
           },
-          // todo update this for non-slack profiles or profiles from other workspaces (can't mention them)
           markdownBlock(
-            `*${`<@${forecast.profile.slackId}>` || 'Unknown user'}* ` +
+            `*${forecast.profile.slackId ? `<@${forecast.profile.slackId}>` : forecast.profile.user.name}* ` +
             `${(round(forecast.forecast.toNumber() * 100))}%` +
             ` - _submitted at ${conciseDateTime(forecast.createdAt)}_`
           )
@@ -54,43 +87,7 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       'elements': [
         markdownBlock(`_Created by <@${question.profile.slackId}> using /forecast_`)
       ]
-    },
-    {
-      'type': 'actions',
-      elements: [
-        (!question.resolution ?
-          {
-            'type': 'static_select',
-            'placeholder': textBlock('Resolve question'),
-            'action_id': toActionId({
-              action: 'resolve',
-              questionId: question.id,
-            }),
-            'options': (['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]).map(
-              (answer) => ({
-                'text': textBlock(answer![0].toUpperCase() + answer!.slice(1)), // capitalize,
-                'value': answer
-              })
-            )
-          } : {
-            'type': 'button',
-            'text': textBlock('Undo resolve question'),
-            'action_id': toActionId({
-              action: 'undoResolve',
-              questionId: question.id,
-            }),
-          }
-        ),
-        {
-          'type': 'button',
-          'text': textBlock('Edit'),
-          'action_id': toActionId({
-            action: 'editQuestionBtn',
-            questionId: question.id,
-          })
-        }
-      ]
-    },
+    }
   ]
 }
 

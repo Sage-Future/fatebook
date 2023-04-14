@@ -5,7 +5,7 @@ import { getForecasts } from '../lib/slash_handlers/_get_forecasts.js'
 import { tokenizeForecastString, postEphemeralTextMessage } from '../lib/_utils.js'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
-  const reqbody = JSON.parse(req.body)
+  const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body
 
   if(reqbody.text === undefined){
     res.status(200).send(null)

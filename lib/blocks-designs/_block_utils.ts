@@ -45,9 +45,14 @@ export interface UndoResolveActionParts {
   questionId: number
 }
 
+export interface QuestionOverflowActionParts {
+  action: 'questionOverflow'
+  questionId: number
+}
+
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 

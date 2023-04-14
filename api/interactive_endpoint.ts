@@ -2,6 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionModalActionParts, unpackBlockActionId } from '../lib/blocks-designs/_block_utils.js'
 import { questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
+import { questionOverflowAction } from '../lib/interactive_handlers/question_overflow.js'
 
 import { resolve } from '../lib/interactive_handlers/resolve.js'
 import { submitTextForecast } from '../lib/interactive_handlers/submit_text_forecast.js'
@@ -31,6 +32,10 @@ async function blockActions(payload: BlockActionPayload) {
         await showEditQuestionModal(actionParts, payload)
         break
 
+      case 'questionOverflow':
+        await questionOverflowAction(actionParts, action, payload)
+        break
+
       default:
         console.warn(`Unknown action: ${actionParts}`)
         break
@@ -39,7 +44,7 @@ async function blockActions(payload: BlockActionPayload) {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const reqbody = JSON.parse(req.body)
+  const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body
   const payload = JSON.parse(reqbody.payload) as BlockActionPayload
   switch (payload.type) {
     case 'block_actions':

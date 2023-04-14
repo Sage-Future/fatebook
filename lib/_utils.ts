@@ -408,7 +408,7 @@ export function conciseDateTime(date: Date, includeTime = true) {
   let timeStr = ''
   if (includeTime)
     timeStr = `${date.getHours()}:${date.getMinutes()} on `
-  return `${timeStr}${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}`
+  return `${timeStr}${getDateYYYYMMDD(date)}`
 }
 
 export function formatDecimalNicely(num : number, decimalPlaces : number = maxDecimalPlaces) : string {
@@ -437,9 +437,9 @@ export function resolutionToString(resolution: Resolution) {
 export function getResolutionEmoji(resolution: Resolution) {
   switch (resolution) {
     case Resolution.YES:
-      return '👍'
+      return '✅'
     case Resolution.NO:
-      return '👎'
+      return '❎'
     case Resolution.AMBIGUOUS:
       return '❔'
     default:
