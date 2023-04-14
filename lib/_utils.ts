@@ -259,7 +259,7 @@ export async function postBlockMessage(teamId: string, channel : string, blocks 
                            channel,
                            text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
                            blocks,
-                           ...(additionalArgs && { additionalArgs } )
+                           ...(additionalArgs && { ...additionalArgs } )
                            // add the other args here!
                          })
 }
@@ -269,7 +269,7 @@ export async function postTextMessage(teamId: string, channel : string, payload 
                          {
                            channel,
                            text: payload,
-                           ...(additionalArgs && { additionalArgs } )
+                           ...(additionalArgs && { ...additionalArgs } )
                          })
 }
 
@@ -279,7 +279,7 @@ export async function postEphemeralTextMessage(teamId: string, channel : string,
                                     channel,
                                     text: payload,
                                     user,
-                                    ...(additionalArgs && { additionalArgs } )
+                                    ...(additionalArgs && { ...additionalArgs } )
                                   })
 }
 

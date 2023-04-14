@@ -39,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
       await Promise.all(question.profile.groups.map(async group => {
         const resolveQuestionBlock = await buildResolveQuestionBlocks(group.slackTeamId!, question)
-        await postBlockMessage(group.slackTeamId!, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?", {unfurl_links: false})
+        await postBlockMessage(group.slackTeamId!, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?", {unfurl_links: false, unfurl_media:false})
       }))
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 

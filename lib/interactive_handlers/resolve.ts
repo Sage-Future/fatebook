@@ -164,7 +164,7 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
       const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,
                                                        question,
                                                        scoreDetails)
-      await postBlockMessage(group.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false})
+      await postBlockMessage(group.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})
     }))
   }))
 }

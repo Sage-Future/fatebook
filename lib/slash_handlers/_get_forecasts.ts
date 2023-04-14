@@ -56,6 +56,7 @@ export async function getForecasts(slackUserId : string, slackTeamId : string, c
       text: `Your forecasts...`,
       blocks: forecastsBlocks,
       unfurl_links: false,
+      unfurl_media: false,
     })
 
   } catch (err) {
