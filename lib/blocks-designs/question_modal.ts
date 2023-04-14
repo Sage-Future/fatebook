@@ -1,7 +1,7 @@
 import { Question } from '@prisma/client'
-import { ActionsBlock, ModalView } from '@slack/types'
+import { ActionsBlock, ModalView, SectionBlock } from '@slack/types'
 import { getDateYYYYMMDD } from '../../lib/_utils.js'
-import { textBlock, toActionId } from './_block_utils.js'
+import { markdownBlock, textBlock, toActionId } from './_block_utils.js'
 
 export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string): ModalView {
   return {
@@ -80,6 +80,24 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
           },
         ]
       } as ActionsBlock]),
+      ...(isCreating ? [
+        {
+          "type": "section",
+          "block_id": "channel_select",
+          "text": markdownBlock("*Which channel should I post this question in?*"),
+          "accessory": {
+            "action_id": toActionId({
+              action: 'selectChannelInQuestionModal',
+            }),
+            "type": "conversations_select",
+            "placeholder": {
+              "type": "plain_text",
+              "text": "Select a channel"
+            },
+            'default_to_current_conversation': true,
+          }
+        } as SectionBlock
+      ] : []),
     ]
   }
 }

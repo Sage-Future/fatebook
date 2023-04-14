@@ -51,9 +51,13 @@ export interface QuestionOverflowActionParts {
   questionId: number
 }
 
+export interface SelectChannelInQuestionModal {
+  action: 'selectChannelInQuestionModal'
+}
+
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | SelectChannelInQuestionModal
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 

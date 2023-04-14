@@ -1,7 +1,7 @@
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
 import { buildEditQuestionModalView } from '../blocks-designs/question_modal.js'
-import { EditQuestionBtnActionParts, QuestionModalActionParts } from '../blocks-designs/_block_utils.js'
+import { EditQuestionBtnActionParts, QuestionModalActionParts, toActionId } from '../blocks-designs/_block_utils.js'
 import { createForecastingQuestion } from '../slash_handlers/_create_forecast.js'
 import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
 
@@ -69,7 +69,8 @@ interface ViewStateValues {
     [actionId: string]: {
       type: string,
       value?: string,
-      selected_date?: string
+      selected_date?: string,
+      selected_conversation?: string,
     }
   }
 }
@@ -87,10 +88,15 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
   const question = getVal('forecast_question')?.value
   const resolutionDate = getVal('{"action":"updateResolutionDate"}')?.selected_date
   const notes = getVal('notes')?.value
+  const channelId = getVal(toActionId({
+    action: 'selectChannelInQuestionModal',
+  }))?.selected_conversation
 
-  if (!question || !resolutionDate) {
-    console.error("missing question or resolution date")
-    throw new Error("missing question or resolution date")
+  console.log(payload.view.state.values)
+
+  if (!question || !resolutionDate || !channelId) {
+    console.error("missing question or resolution date or channelId", question, resolutionDate, channelId)
+    throw new Error("missing question or resolution date or channelId")
   }
 
   if (actionParts.isCreating) {
@@ -100,7 +106,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
     await createForecastingQuestion(payload.user.team_id, {
       question: question,
       date: new Date(resolutionDate),
-      channelId: actionParts.channel,
+      channelId: channelId,
       groupId,
       profile,
       notes,

@@ -21,7 +21,7 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
           ...(question.resolution ?
             [
               {
-                'text': textBlock('Undo resolve'),
+                'text': textBlock('Undo resolve question'),
                 'value': 'undo_resolve',
               }
             ]
