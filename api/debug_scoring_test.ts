@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import { Forecast, Question, Resolution, Prisma } from '@prisma/client'
 import { relativeBrierScoring } from '../lib/_scoring.js'
+import { floatEquality } from '../lib/_utils.js'
 
 let forecastid = 0
 const questionid = 0
@@ -11,11 +12,6 @@ function addDays(date : Date, days : number) {
   result.setDate(result.getDate() + days)
   return result
 }
-
-function floatEquality(a : number, b : number, tolerance : number = 0.0001) {
-  return Math.abs(a - b) < tolerance
-}
-
 
 function createForecast(authorid : number, forecastValue : number, dateOffset : number)
 {
@@ -59,7 +55,7 @@ const question : Question = {
 }
 
 export default function testScoring(req: VercelRequest, res: VercelResponse) {
-  const score = relativeBrierScoring(testMultiForecasts, question, 8)
+  const score = relativeBrierScoring(testMultiForecasts, question)
   console.log(score)
   if (!floatEquality(score[1].relativeBrierScore, -0.43) || !floatEquality(score[2].relativeBrierScore, 0.7943) || !floatEquality(score[3].relativeBrierScore, -0.00137)) {
     console.log(`score 1 1 is right : ${floatEquality(score[1].relativeBrierScore, -0.43)}`)
@@ -69,7 +65,7 @@ export default function testScoring(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const scoreSingle = relativeBrierScoring(testSingleForecasts, question, 8)
+  const scoreSingle = relativeBrierScoring(testSingleForecasts, question)
   if (!floatEquality(scoreSingle[1].relativeBrierScore,	0.0114)){
     res.status(500).send("Single user scoring failed: " + JSON.stringify(scoreSingle))
     return

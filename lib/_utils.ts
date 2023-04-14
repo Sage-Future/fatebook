@@ -458,3 +458,7 @@ export function getResolutionEmoji(resolution: Resolution) {
       return ''
   }
 }
+
+export function floatEquality(a : number, b : number, tolerance : number = 0.0001) {
+  return Math.abs(a - b) < tolerance
+}
