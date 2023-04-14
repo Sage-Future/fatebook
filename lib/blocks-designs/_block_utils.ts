@@ -1,6 +1,7 @@
 import { QuestionWithAuthorAndSlackMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { Block, KnownBlock } from "@slack/types"
 import { getSlackPermalinkFromChannelAndTS } from '../_utils.js'
+import { feedbackFormUrl } from '../_constants.js'
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -104,7 +105,7 @@ export function feedbackOverflow(){
           "text": "Give feedback about this app"
         },
         "value": "value-0",
-        "url": "https://www.quantifiedintuitions.org/"
+        "url": feedbackFormUrl
       }
     ]
   }

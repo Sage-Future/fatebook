@@ -9,4 +9,4 @@ export const baseUrl       : string = process.env.SLACKBOT_BASE_URL!
 export const maxDecimalPlaces    : number = 1
 export const maxForecastsVisible : number = 50
 
-export const feedbackFormUrl = 'https://quantifiedintuitions.org'
+export const feedbackFormUrl = 'https://forms.gle/nHkwvMFCjtNBHAT69'

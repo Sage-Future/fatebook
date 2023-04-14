@@ -3,6 +3,7 @@ import { QuestionWithAuthorAndSlackMessages } from '../../prisma/additional'
 import { markdownBlock, textBlock, divider, feedbackOverflow, getQuestionTitleLink } from './_block_utils.js'
 import type { Blocks } from './_block_utils.js'
 import { resolutionToString, formatDecimalNicely } from '../_utils.js'
+import { feedbackFormUrl } from '../_constants.js'
 
 type ResolveQuestionDetails = {
   brierScore: number
@@ -34,7 +35,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
     divider(),
     {
       'type': 'section',
-      'text': markdownBlock(`_Are you enjoying using this bot? Let us know <https://www.quantifiedintuitions.org/|here>_`)
+      'text': markdownBlock(`_Are you enjoying using this bot? Let us know <${feedbackFormUrl}/|here>_`)
     }
   ]
 }
