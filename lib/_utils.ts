@@ -283,11 +283,23 @@ export async function postEphemeralTextMessage(teamId: string, channel : string,
                                   })
 }
 
-export async function postSlackMessage(teamId: string, message: PostMessagePayload){
+export async function postSlackMessage(teamId: string, message: PostMessagePayload, userId?: string){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
-
+  console.log({userId})
   const url = 'https://slack.com/api/chat.postMessage'
-  return await callSlackApi(teamId, message, url) as {ok: boolean, ts: string}
+  const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
+  if (response.ok === false) {
+    if (userId && response.error === "channel_not_found") {
+      await postEphemeralSlackMessage(teamId, {
+        channel: userId, // DM the user
+        user: userId,
+        text: `Oops, this bot is not in that channel. Invite me to the channel first by tagging me, or use a public channel.`,
+      })
+    } else {
+      throw new Error(`Error posting Slack message: ${response.error}`)
+    }
+  }
+  return response
 }
 
 export async function postEphemeralSlackMessage(teamId : string, message: PostEphemeralMessagePayload){
@@ -315,7 +327,7 @@ export async function showModal(teamId: string, triggerId: string, view: ModalVi
   return response
 }
 
-async function callSlackApi(teamId: string, message: any, url: string, method = 'POST') {
+async function callSlackApi(teamId: string, message: any, url: string, method = 'POST', throwOnError = true) {
   const response = await fetch(url, {
     method,
     headers: {
@@ -324,10 +336,10 @@ async function callSlackApi(teamId: string, message: any, url: string, method = 
     },
     ...(message && { body: JSON.stringify(message)}),
   })
-  let data = await response.json() as {ok: boolean}
+  let data = await response.json() as {ok: boolean, error?: string}
   if (data.ok === false) {
     console.error('Error calling Slack API:', data)
-    throw new Error('Error calling Slack API')
+    if (throwOnError) throw new Error('Error calling Slack API')
   }
   return data
 }

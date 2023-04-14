@@ -85,7 +85,7 @@ export async function createForecastingQuestion(teamId: string, { question, date
     channel: channelId,
     text: `Forecasting question created: ${question}`,
     blocks: questionBlocks,
-  })
+  }, createdQuestion.profile.slackId || undefined)
 
   if (!data?.ts) {
     console.error(`Missing message.ts in response ${JSON.stringify(data)}`)

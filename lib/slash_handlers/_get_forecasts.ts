@@ -57,7 +57,7 @@ export async function getForecasts(slackUserId : string, slackTeamId : string, c
       blocks: forecastsBlocks,
       unfurl_links: false,
       unfurl_media: false,
-    })
+    }, slackUserId)
 
   } catch (err) {
     console.log('res send Error:', err)
