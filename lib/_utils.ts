@@ -327,7 +327,7 @@ export async function showModal(teamId: string, triggerId: string, view: ModalVi
   return response
 }
 
-async function callSlackApi(teamId: string, message: any, url: string, method = 'POST', throwOnError = true) {
+export async function callSlackApi(teamId: string, message: any, url: string, method = 'POST', throwOnError = true) {
   const response = await fetch(url, {
     method,
     headers: {
@@ -336,7 +336,7 @@ async function callSlackApi(teamId: string, message: any, url: string, method = 
     },
     ...(message && { body: JSON.stringify(message)}),
   })
-  let data = await response.json() as {ok: boolean, error?: string}
+  let data = await response.json() as {ok: boolean, error?: string, ts?: string}
   if (data.ok === false) {
     console.error('Error calling Slack API:', data)
     if (throwOnError) throw new Error('Error calling Slack API')

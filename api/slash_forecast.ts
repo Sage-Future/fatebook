@@ -1,5 +1,4 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-
 import { showCreateQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
 import { getForecasts } from '../lib/slash_handlers/_get_forecasts.js'
 

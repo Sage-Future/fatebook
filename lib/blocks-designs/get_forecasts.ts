@@ -1,40 +1,43 @@
+import { ContextBlock, KnownBlock } from '@slack/types'
+import { conciseDateTime, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils.js'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { KnownBlock } from '@slack/types'
-import { conciseDateTime, getCommunityForecast, formatDecimalNicely } from '../../lib/_utils.js'
 import { maxForecastsVisible } from '../_constants.js'
-import { markdownBlock, getQuestionTitleLink } from './_block_utils.js'
+import { Blocks, divider, getQuestionTitleLink, markdownBlock, textBlock } from './_block_utils.js'
 
 export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
-  if(forecasts.length == 0) {
+  const latestForecasts = getLatestForecastPerQuestion(forecasts)
+
+  if(latestForecasts.length == 0) {
     return [buildEmptyResponseBlock()]
-  } else if (forecasts.length <= maxForecastsVisible) {
-    return await buildGetForecastsBlocksPage(teamId, forecasts, false, 1)
+  } else if (latestForecasts.length <= maxForecastsVisible) {
+    return await buildGetForecastsBlocksPage(teamId, latestForecasts, false, 1)
   }
 
-  return await buildGetForecastsBlocksPage(teamId, forecasts.slice(0,maxForecastsVisible-1), true, 0)
+  return await buildGetForecastsBlocksPage(teamId, latestForecasts.slice(0,maxForecastsVisible-1), true, 0)
 }
 
-async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number) {
+async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number) : Promise<Blocks> {
   let blocks = await Promise.all([
-    buildResponseBlock(forecasts.length),
+    divider(),
     {
-      "type": "divider"
+      "type": "header",
+      "text": textBlock(`Your forecasts`)
     },
     ...forecasts.map(async (forecast) => (
       {
-			  "type": "section",
-			  "text": markdownBlock((await buildForecastQuestionText(teamId, forecast)))
-      }
+			  "type": "context",
+        "elements": [
+          markdownBlock((await buildForecastQuestionText(teamId, forecast))),
+        ]
+      } as ContextBlock
     )),
-    {
-      "type": "divider"
-    }
+    divider()
   ])
   if (pagination) {
     console.log(page)
     //maybeGenerateButtonsBlock(forecasts)
   }
-  return blocks
+  return blocks as Blocks
 }
 
 async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
@@ -49,9 +52,12 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
   const commForecastValuePadded = 'Community:' + padForecastPrettily(commForecastValueStr, 3, 8)
 
   // resolution date
-  const resolutionDateStr       = 'Resolves: ' + conciseDateTime(forecast.question.resolveBy, false)
+  const resolutionStr = forecast.question.resolution ?
+    `Resolved: ${getResolutionEmoji(forecast.question.resolution)} ${forecast.question.resolution}`
+    :
+    `Resolves: ${conciseDateTime(forecast.question.resolveBy, false)}`
 
-  return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionDateStr
+  return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionStr
 }
 
 // function used to align decimal places, even when no decimal places are present
@@ -73,25 +79,23 @@ function padForecastPrettily(forecast : string, maxprepad : number , maxpostpad 
 function buildEmptyResponseBlock(): KnownBlock {
   return {
     "type": "section",
-    "text": {
-      "type": "mrkdwn",
-      "text": `We found *0 open forecasts*! Time to start making some?`
-    }
+    "text": markdownBlock('_Time to make your first prediction! Create a question by typing `/forecast` in any channel._')
   }
 }
 
-function buildResponseBlock(numForecasts : number): KnownBlock {
-  return {
-    "type": "section",
-    "text": {
-      "type": "mrkdwn",
-      "text": `We found *${numForecasts} open forecasts*`
+function getLatestForecastPerQuestion(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
+  const latestForecasts = new Map<number, ForecastWithQuestionWithSlackMessagesAndForecasts>()
+  for (const forecast of forecasts) {
+    if (!latestForecasts.has(forecast.questionId)) {
+      latestForecasts.set(forecast.questionId, forecast)
+    } else {
+      const latestForecast = latestForecasts.get(forecast.questionId)
+      if (latestForecast!.createdAt < forecast.createdAt) {
+        latestForecasts.set(forecast.questionId, forecast)
+      }
     }
   }
-  //"accessory": {
-  //  "type": "overflow",
-  //	"options": buildSortingOptionsBlocks()
-  //}
+  return Array.from(latestForecasts.values())
 }
 
 //function buildSortingAccessory(): Overflow {

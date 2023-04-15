@@ -1,5 +1,5 @@
 import { QuestionWithAuthorAndSlackMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { Block, KnownBlock } from "@slack/types"
+import { Block, DividerBlock, KnownBlock } from "@slack/types"
 import { getSlackPermalinkFromChannelAndTS } from '../_utils.js'
 import { feedbackFormUrl } from '../_constants.js'
 
@@ -84,7 +84,7 @@ export function textBlock(content: string, emoji = true) {
 export function divider() {
   return {
     'type': 'divider'
-  }
+  } as DividerBlock
 }
 
 export function markdownBlock(content: string) {

@@ -5,8 +5,60 @@ const redirectUrl               : string = "/api/success_response"
 const failedValidateRedirectUrl : string = "/api/failed_validation"
 
 export const config = {
-  matcher: ['/incoming/slash_forecast',
-    '/incoming/interactive_endpoint']
+  matcher: [
+    '/incoming/slash_forecast',
+    '/incoming/interactive_endpoint',
+    '/incoming/events_endpoint'
+  ]
+}
+
+export default async function middleware(req: NextRequest, context: NextFetchEvent) {
+  const path = req.url
+  const asyncFetchPath = path.replace('/incoming', '/api')
+
+  const reqbodyParsed : any = Object.fromEntries(await req.formData())
+
+  let payload :any = {}
+  if (reqbodyParsed.payload){
+    payload = JSON.parse(reqbodyParsed.payload)
+    console.log('payload', payload)
+  }
+
+  const specialCaseHandled = checkSpecialCases(payload, req)
+  if (!specialCaseHandled) {
+    context.waitUntil(
+      fetch(asyncFetchPath, {
+        method: "POST",
+        body: JSON.stringify(reqbodyParsed),
+      })
+    )
+    // redirect to success response
+    return NextResponse.redirect(new URL(redirectUrl, req.url))
+  }
+}
+
+// Returns true iff the request was handled by this function
+function checkSpecialCases(payload: any, req: NextRequest) {
+  if (!payload.type) {
+    return false
+  }
+
+  switch (payload.type) {
+    case 'view_submission':
+      if (payload.view.callback_id.startsWith('question_modal') && !dateValid(payload)) {
+        console.log('date is invalid, redirecting to failed validation')
+        NextResponse.redirect(new URL(failedValidateRedirectUrl, req.url))
+        return true
+      }
+      break
+
+    case 'url_verification':
+      console.log("Handling url_verification for events API. ", payload)
+      NextResponse.json({ challenge: payload.challenge })
+      return true
+  }
+
+  return false
 }
 
 function dateValid(payload: any){
@@ -23,35 +75,5 @@ function dateValid(payload: any){
     return false
   } else {
     return true
-  }
-}
-
-export default async function middleware(req: NextRequest, context: NextFetchEvent) {
-  const path = req.url
-  const asyncFetchPath = path!.replace('/incoming', '/api')
-
-  const reqbodyParsed : any = Object.fromEntries(await req.formData())
-
-  let payload :any = {}
-  if (reqbodyParsed.payload){
-    payload = JSON.parse(reqbodyParsed.payload)
-    console.log('payload', payload)
-  }
-
-  if(payload.type &&
-     payload.type == 'view_submission' &&
-     payload.view.callback_id.startsWith('question_modal') &&
-     !dateValid(payload)){
-    console.log('date is invalid, redirecting to failed validation')
-    return NextResponse.redirect(new URL(failedValidateRedirectUrl, req.url))
-  } else {
-    context.waitUntil(
-      fetch(asyncFetchPath, {
-        method: "POST",
-        body: JSON.stringify(reqbodyParsed),
-      })
-    )
-    // redirect to success response
-    return NextResponse.redirect(new URL(redirectUrl, req.url))
   }
 }
