@@ -81,8 +81,10 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
       questionMessages: {
         some: {
           AND: {
-            ts: questionTs,
-            channel: channel,
+            message: {
+              ts: questionTs,
+              channel: channel,
+            }
           }
         }
       }

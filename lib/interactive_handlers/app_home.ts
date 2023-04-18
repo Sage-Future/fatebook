@@ -18,7 +18,11 @@ export async function refreshAppHome(event: any, teamId: string) {
       question: {
         include: {
           forecasts: true,
-          questionMessages: true
+          questionMessages: {
+            include: {
+              message: true
+            }
+          }
         }
       }
     },

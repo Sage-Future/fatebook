@@ -115,7 +115,7 @@ export async function getQuestionTitleLink(teamId : string, question: QuestionWi
   const questionTitle = `*${question.title}*`
   if (question.questionMessages.length) {
     const slackMessage = question.questionMessages[0]!
-    const slackPermalink = await getSlackPermalinkFromChannelAndTS(teamId, slackMessage.channel, slackMessage.ts)
+    const slackPermalink = await getSlackPermalinkFromChannelAndTS(teamId, slackMessage.message.channel, slackMessage.message.ts)
     return `*<${slackPermalink}|${question.title}>*`
   }
   return questionTitle

@@ -376,8 +376,8 @@ export async function updateForecastQuestionMessages(question: QuestionWithForec
 
   for (const slackMessage of question.questionMessages) {
     const response = await updateMessage(teamId, {
-      channel: slackMessage.channel,
-      ts: slackMessage.ts,
+      channel: slackMessage.message.channel,
+      ts: slackMessage.message.ts,
       text: notificationMessage,
       blocks: questionBlocks,
     })

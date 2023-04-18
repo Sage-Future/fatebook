@@ -128,7 +128,11 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
             user: true
           }
         },
-        questionMessages: true
+        questionMessages: {
+          include: {
+            message: true
+          }
+        }
       }
     })
 
@@ -136,8 +140,8 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
 
     for (const slackMessage of updatedQuestion.questionMessages) {
       const response = await updateMessage(payload.user.team_id, {
-        channel: slackMessage.channel,
-        ts: slackMessage.ts,
+        channel: slackMessage.message.channel,
+        ts: slackMessage.message.ts,
         text: `Question edited: *${updatedQuestion.title}*`,
         blocks: questionBlocks,
       })

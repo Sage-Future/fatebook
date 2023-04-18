@@ -35,7 +35,11 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
           }
         }
       },
-      questionMessages: true,
+      questionMessages: {
+        include: {
+          message: true
+        }
+      }
     }
   })
 }
@@ -106,7 +110,11 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
           user: true
         }
       },
-      questionMessages: true,
+      questionMessages: {
+        include: {
+          message: true
+        }
+      }
     },
   })
   if(!question)
@@ -294,7 +302,11 @@ export async function undoQuestionResolution(questionId: number, groupId: string
           }
         }
       },
-      questionMessages: true,
+      questionMessages: {
+        include: {
+          message: true
+        }
+      }
     }
   })
   if (!questionUpdated) {

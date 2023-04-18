@@ -41,7 +41,11 @@ export async function getForecasts(slackUserId : string, slackTeamId : string, c
       question: {
         include: {
           forecasts: true,
-          questionMessages: true
+          questionMessages: {
+            include: {
+              message: true
+            }
+          }
         }
       }
     },

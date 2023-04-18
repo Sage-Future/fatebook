@@ -26,7 +26,11 @@ async function getQuestionsToBeResolved()  {
           }
         }
       },
-      questionMessages: true
+      questionMessages: {
+        include: {
+          message: true
+        }
+      }
     }
   })
   return allQuestionsToBeNotified

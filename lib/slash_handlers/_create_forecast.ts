@@ -99,8 +99,13 @@ export async function createForecastingQuestion(teamId: string, { question, date
     data: {
       questionMessages: {
         create: {
-          ts: data.ts,
-          channel: channelId,
+          message: {
+            create: {
+              ts: data.ts,
+              channel: channelId,
+              teamId: teamId,
+            }
+          }
         }
       }
     }
