@@ -1,7 +1,7 @@
 import { Forecast, Profile, Question, QuestionSlackMessage, User } from "@prisma/client"
 
 export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessages = QuestionWithForecastsAndUsersAndAuthor & {
-    slackMessages: QuestionSlackMessage[]
+    questionMessages: QuestionSlackMessage[]
 }
 
 export type QuestionWithForecastsAndUsersAndAuthor = Question & {
@@ -26,11 +26,11 @@ export type ForecastWithProfileAndUser = Forecast & {
 }
 
 export type QuestionWithSlackMessagesAndForecasts = QuestionWithForecasts & {
-    slackMessages: QuestionSlackMessage[]
+    questionMessages: QuestionSlackMessage[]
 }
 
 export type QuestionWithAuthorAndSlackMessages = QuestionWithAuthor & {
-    slackMessages: QuestionSlackMessage[]
+    questionMessages: QuestionSlackMessage[]
 }
 
 export type ForecastWithQuestionWithSlackMessagesAndForecasts = Forecast & {

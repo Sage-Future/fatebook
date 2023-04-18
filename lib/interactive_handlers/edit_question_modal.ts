@@ -128,13 +128,13 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
             user: true
           }
         },
-        slackMessages: true
+        questionMessages: true
       }
     })
 
     const questionBlocks = buildQuestionBlocks(updatedQuestion)
 
-    for (const slackMessage of updatedQuestion.slackMessages) {
+    for (const slackMessage of updatedQuestion.questionMessages) {
       const response = await updateMessage(payload.user.team_id, {
         channel: slackMessage.channel,
         ts: slackMessage.ts,

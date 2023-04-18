@@ -35,7 +35,7 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
           }
         }
       },
-      slackMessages: true,
+      questionMessages: true,
     }
   })
 }
@@ -106,7 +106,7 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
           user: true
         }
       },
-      slackMessages: true,
+      questionMessages: true,
     },
   })
   if(!question)
@@ -294,7 +294,7 @@ export async function undoQuestionResolution(questionId: number, groupId: string
           }
         }
       },
-      slackMessages: true,
+      questionMessages: true,
     }
   })
   if (!questionUpdated) {

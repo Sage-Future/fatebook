@@ -113,8 +113,8 @@ export function feedbackOverflow(){
 
 export async function getQuestionTitleLink(teamId : string, question: QuestionWithAuthorAndSlackMessages | QuestionWithSlackMessagesAndForecasts) {
   const questionTitle = `*${question.title}*`
-  if (question.slackMessages.length) {
-    const slackMessage = question.slackMessages[0]!
+  if (question.questionMessages.length) {
+    const slackMessage = question.questionMessages[0]!
     const slackPermalink = await getSlackPermalinkFromChannelAndTS(teamId, slackMessage.channel, slackMessage.ts)
     return `*<${slackPermalink}|${question.title}>*`
   }

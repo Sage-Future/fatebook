@@ -53,7 +53,7 @@ model Question {
   resolution          Resolution?
   pingedForResolution Boolean         @default(false)
   questionScores      QuestionScore[]
-  slackMessages       QuestionSlackMessage[]
+  questionMessages    QuestionSlackMessage[]
   notes               String?
 }
 
@@ -64,10 +64,10 @@ model QuestionSlackMessage {
   ts           String // Slack timestamp identifier for messages
   channel      String
   detailsId    Int?  @unique
-  slackDetails SlackMessageDetails? @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  messageInfo  SlackMessage? @relation(fields: [detailsId], references: [id], onDelete: Cascade)
 }
 
-model SlackMessageDetails {
+model SlackMessage {
   id          Int @id @default(autoincrement())
   ts          String // Slack timestamp identifier for messages
   channel     String

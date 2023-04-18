@@ -78,7 +78,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 async function updateQuestionMessages(teamId: string, questionTs: string, channel: string) {
   const questions = await prisma.question.findMany({
     where: {
-      slackMessages: {
+      questionMessages: {
         some: {
           AND: {
             ts: questionTs,

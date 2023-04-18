@@ -97,7 +97,7 @@ export async function createForecastingQuestion(teamId: string, { question, date
       id: createdQuestion.id
     },
     data: {
-      slackMessages: {
+      questionMessages: {
         create: {
           ts: data.ts,
           channel: channelId,

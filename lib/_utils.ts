@@ -374,7 +374,7 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
 export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, teamId: string, notificationMessage: string) {
   const questionBlocks = buildQuestionBlocks(question)
 
-  for (const slackMessage of question.slackMessages) {
+  for (const slackMessage of question.questionMessages) {
     const response = await updateMessage(teamId, {
       channel: slackMessage.channel,
       ts: slackMessage.ts,

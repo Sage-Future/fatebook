@@ -26,7 +26,7 @@ async function getQuestionsToBeResolved()  {
           }
         }
       },
-      slackMessages: true
+      questionMessages: true
     }
   })
   return allQuestionsToBeNotified
