@@ -37,12 +37,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   for (const question of allQuestionsToBeNotified) {
     try {
-      await Promise.all(question.profile.groups.map(async group => {
+      // send message to all of the groups listed
+      //   due to the prisma select, will only be relevae groups
+      const timestamps = await Promise.all(question.profile.groups.map(async group => {
         const resolveQuestionBlock = await buildResolveQuestionBlocks(group.slackTeamId!, question)
-        await postBlockMessage(group.slackTeamId!, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?", {unfurl_links: false, unfurl_media:false})
+        const data await postBlockMessage(group.slackTeamId!, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?", {unfurl_links: false, unfurl_media:false})
+        if (!data?.ts) {
+          console.error(`Missing message.ts in response ${JSON.stringify(data)}`)
+          throw new Error("Missing message.ts in response")
+        }
       }))
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
+      // OPTIMISATION:: move these intro a transaction
       await prisma.question.update({
         where: {
           id: question.id,

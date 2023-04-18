@@ -14,16 +14,30 @@ export async function buildResolveQuestionBlocks(teamId: string, question: Quest
     },
     {
       "type": "actions",
-      "elements": answerLabels.map((answer) => ({
-        "type": "button",
-        "text": textBlock(answer![0].toUpperCase() + answer!.slice(1)), // capitalize
-        ...(answer != 'ambiguous') && {"style": answer == 'yes' ? "primary" : "danger"},
-        "action_id": toActionId({
-          action: "resolve",
-          questionId: question.id,
-          answer: answer
-        })
-      }))
+      "elements": ...(question.resolvedAt == null ?
+          ...(answerLabels.map((answer) => ({
+            "type": "button",
+            "text": textBlock(answer![0].toUpperCase() + answer!.slice(1)), // capitalize
+            ...(answer != 'ambiguous') && {"style": answer == 'yes' ? "primary" : "danger"},
+            "action_id": toActionId({
+              action: "resolve",
+              questionId: question.id,
+              answer: answer
+            })
+          })))
+        :
+          [
+            {
+              "type":"button",
+              "text": textBlock("Undo resolution"),
+              "style": "danger",
+              "action_id": toActionId({
+                action: "undo_resolve",
+                questionId: question.id
+              })
+            }
+          ]
+        )
     }
   ]
 }

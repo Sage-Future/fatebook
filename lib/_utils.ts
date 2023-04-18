@@ -371,20 +371,29 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
   return await response.text()
 }
 
-export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, teamId: string, notificationMessage: string) {
-  const questionBlocks = buildQuestionBlocks(question)
-
-  for (const slackMessage of question.slackMessages) {
+async function updateSlackMessages(slackMessages: SlackMessage[], teamId: string, notificationMessage: string, updateBlocks : Blocks) {
+  for (const slackMessage of slackMessages) {
     const response = await updateMessage(teamId, {
       channel: slackMessage.channel,
       ts: slackMessage.ts,
       text: notificationMessage,
-      blocks: questionBlocks,
+      blocks: updateBlocks,
     })
     if (!response.ok) {
-      console.error("Error updating question message: ", response)
+      console.error("Error updating message: ", response)
     }
   }
+}
+
+
+export async function updateResolvePingQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndResolvePingMessages, teamId: string, notificationMessage: string) {
+  const updateBlocks = buildResolveQuestionBlocks(teamId, question)
+  await updateSlackMessages(question.resolvePingMessages, teamId, notificationMessage, updateBlocks)
+}
+
+export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, teamId: string, notificationMessage: string) {
+  const updateBlocks = buildQuestionBlocks(question)
+  await updateSlackMessages(question.slackMessages, teamId, notificationMessage, updateBlocks)
 }
 
 export function getMostRecentForecastPerProfile(forecasts: Forecast[], date : Date) : [number, Forecast][] {

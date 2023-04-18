@@ -33,6 +33,10 @@ export type QuestionWithAuthorAndSlackMessages = QuestionWithAuthor & {
     slackMessages: QuestionSlackMessage[]
 }
 
+export type QuestionWithAuthorAndSlackMessagesAndResolvePingMessages = QuestionWithAuthorAndSlackMessages & {
+    resolvePingMessages: QuestionSlackMessage[]
+}
+
 export type ForecastWithQuestionWithSlackMessagesAndForecasts = Forecast & {
     question: QuestionWithSlackMessagesAndForecasts
 }
