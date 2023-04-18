@@ -58,12 +58,22 @@ model Question {
 }
 
 model QuestionSlackMessage {
+  id           Int @id @default(autoincrement())
+  questionId   Int
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  ts           String // Slack timestamp identifier for messages
+  channel      String
+  detailsId    Int?  @unique
+  slackDetails SlackMessageDetails? @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+}
+
+model SlackMessageDetails {
   id          Int @id @default(autoincrement())
-  questionId  Int
-  question    Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   ts          String // Slack timestamp identifier for messages
   channel     String
+  teamId      String
   // could store threadts here
+  questionSlackMessage QuestionSlackMessage?
 }
 
 model User {
