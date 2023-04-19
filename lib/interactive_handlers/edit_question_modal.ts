@@ -4,11 +4,26 @@ import { buildEditQuestionModalView } from '../blocks-designs/question_modal.js'
 import { EditQuestionBtnActionParts, QuestionModalActionParts } from '../blocks-designs/_block_utils.js'
 import { createForecastingQuestion } from '../slash_handlers/_create_forecast.js'
 import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
+import { Question } from '@prisma/client'
+import * as chrono from 'chrono-node'
 
 export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string, questionInput: string) {
-  const view = buildEditQuestionModalView({title: questionInput.trim()}, true, channelId)
+  const view = buildEditQuestionModalView(parseQuestion(questionInput), true, channelId)
   const response = await showModal(teamId, triggerId, view)
   console.log('showCreateQuestionModal response', response)
+}
+
+function parseQuestion(str: string): Partial<Question> {
+  // todo parse date relative to user timezone
+  const dateResult = chrono.parse(str)
+  const resolveBy = (dateResult.length === 1 && dateResult[0].date()) ? dateResult[0].date() : undefined
+
+  console.log("Parsed question: ", str, "resolveBy: ", resolveBy, " dateResult: ", dateResult)
+
+  return {
+    title: str.trim(),
+    resolveBy,
+  }
 }
 
 export async function showEditQuestionModal(actionParts: EditQuestionBtnActionParts, payload: BlockActionPayload) {
