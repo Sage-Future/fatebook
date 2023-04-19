@@ -102,7 +102,7 @@ export function feedbackOverflow(){
         "text": {
           "type": "plain_text",
           "emoji": true,
-          "text": "Give feedback about this app"
+          "text": "Give feedback on this bot"
         },
         "value": "value-0",
         "url": feedbackFormUrl
