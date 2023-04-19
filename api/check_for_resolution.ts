@@ -40,11 +40,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const allQuestionsToBeNotified  = await getQuestionsToBeResolved()
 
   for (const question of allQuestionsToBeNotified) {
+    // there should only be one slack group per profile
+    const group   = question.profile.groups[0]
+    const slackId = question.profile.slackId!
+    const teamId  = group.slackTeamId!
     try {
-      await Promise.all(question.profile.groups.map(async group => {
-        const resolveQuestionBlock = await buildResolveQuestionBlocks(group.slackTeamId!, question)
-        await postBlockMessage(group.slackTeamId!, question.profile.slackId!, resolveQuestionBlock, "Ready to resolve your question?", {unfurl_links: false, unfurl_media:false})
-      }))
+      const resolveQuestionBlock = await buildResolveQuestionBlocks(group.slackTeamId!, question)
+      const data = await postBlockMessage(teamId,
+                                          slackId,
+                                          resolveQuestionBlock,
+                                          "Ready to resolve your question?",
+                                          {unfurl_links: false, unfurl_media:false})
+
+      if (!data?.ts) {
+        console.error(`Missing message.ts in response ${JSON.stringify(data)}`)
+        throw new Error("Missing message.ts in response")
+      }
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
       await prisma.question.update({
@@ -53,8 +64,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         },
         data: {
           pingedForResolution: true,
+          pingResolveMessages: {
+            create: {
+              message: {
+                create: {
+                  ts: data.ts,
+                  teamId: teamId,
+                  channel: slackId
+                }
+              }
+            }
+          }
         },
       })
+
       console.log(`Updated question ${question.id} to pingedForResolution`)
     } catch (err) {
       console.error(`Error sending message on question ${question.id}: \n${err}`)
