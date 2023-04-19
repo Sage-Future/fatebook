@@ -15,7 +15,7 @@ export async function showCreateQuestionModal(teamId: string, triggerId: string,
 
 function parseQuestion(str: string): Partial<Question> {
   // todo parse date relative to user timezone
-  const dateResult = chrono.parse(str)
+  const dateResult = chrono.parse(str, new Date(), { forwardDate: true })
   const resolveBy = (dateResult.length === 1 && dateResult[0].date()) ? dateResult[0].date() : undefined
 
   console.log("Parsed question: ", str, "resolveBy: ", resolveBy, " dateResult: ", dateResult)
