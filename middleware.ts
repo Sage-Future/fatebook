@@ -32,6 +32,11 @@ export default async function middleware(req: NextRequest, context: NextFetchEve
         body: JSON.stringify(reqbodyParsed),
       })
     )
+
+    // wait for 800ms so the Slack loading spinner displays for the user
+    // (because we expect our functions to take >= 800ms to run)
+    await new Promise((resolve) => setTimeout(resolve, 800))
+
     // redirect to success response
     return NextResponse.redirect(new URL(redirectUrl, req.url))
   }
