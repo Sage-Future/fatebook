@@ -1,6 +1,7 @@
 import { Question, Resolution, QuestionScore } from '@prisma/client'
+import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
-import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
+import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils.js'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
 import prisma, { conciseDateTime, postBlockMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
@@ -36,6 +37,11 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
         }
       },
       questionMessages: {
+        include: {
+          message: true
+        }
+      },
+      pingResolveMessages: {
         include: {
           message: true
         }
@@ -194,6 +200,7 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
 
   await updateForecastsAndMessageUsers(questionid)
   await updateForecastQuestionMessages(question, teamId, "Question resolved!")
+  await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
 }
 
 export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, teamId?: string) {
@@ -261,6 +268,17 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
   }
 }
 
+export async function buttonUndoResolution(actionParts: UndoResolveActionParts, payload: BlockActionPayload){
+  const questionId = actionParts.questionId
+  if (!questionId){
+    throw Error('blockActions: payload.actions.questionId is undefined')
+  }
+  if (!payload.team?.id) {
+    throw new Error('Missing team id on question overflow > undo_resolve')
+  }
+  await undoQuestionResolution(questionId, payload.team?.id)
+}
+
 export async function undoQuestionResolution(questionId: number, groupId: string) {
   await prisma.$transaction([
     prisma.question.update({
@@ -270,6 +288,7 @@ export async function undoQuestionResolution(questionId: number, groupId: string
       data: {
         resolution: null,
         resolvedAt: null,
+        resolved: false,
       },
     }),
     prisma.questionScore.deleteMany({

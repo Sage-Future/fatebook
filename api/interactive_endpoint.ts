@@ -4,7 +4,7 @@ import { QuestionModalActionParts, unpackBlockActionId } from '../lib/blocks-des
 import { questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
 import { questionOverflowAction } from '../lib/interactive_handlers/question_overflow.js'
 
-import { resolve } from '../lib/interactive_handlers/resolve.js'
+import { resolve, buttonUndoResolution } from '../lib/interactive_handlers/resolve.js'
 import { submitTextForecast } from '../lib/interactive_handlers/submit_text_forecast.js'
 
 async function blockActions(payload: BlockActionPayload) {
@@ -34,6 +34,10 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'questionOverflow':
         await questionOverflowAction(actionParts, action, payload)
+        break
+
+      case 'undoResolve':
+        await buttonUndoResolution(actionParts, payload)
         break
 
       default:

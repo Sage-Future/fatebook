@@ -261,7 +261,6 @@ export async function postBlockMessage(teamId: string, channel : string, blocks 
                                   text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
                                   blocks,
                                   ...(additionalArgs && { ...additionalArgs } )
-                                  // add the other args here!
                                 })
 }
 
@@ -337,7 +336,7 @@ export async function callSlackApi(teamId: string, message: any, url: string, me
     },
     ...(message && { body: JSON.stringify(message)}),
   })
-  let data = await response.json() as {ok: boolean, error?: string, ts?: string}
+  let data = await response.json() as {ok: boolean, error?: string, ts?: string, channel? :string}
   if (data.ok === false) {
     console.error('Error calling Slack API:', data)
     if (throwOnError) throw new Error('Error calling Slack API')

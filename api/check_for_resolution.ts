@@ -52,9 +52,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                                           "Ready to resolve your question?",
                                           {unfurl_links: false, unfurl_media:false})
 
-      if (!data?.ts) {
-        console.error(`Missing message.ts in response ${JSON.stringify(data)}`)
-        throw new Error("Missing message.ts in response")
+      if (!data?.ts || !data?.channel) {
+        console.error(`Missing message.ts or channel in response ${JSON.stringify(data)}`)
+        throw new Error("Missing message.ts or channel in response")
       }
 
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
@@ -72,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 create: {
                   ts: data.ts,
                   teamId: teamId,
-                  channel: slackId
+                  channel: data.channel,
                 }
               }
             }
