@@ -3,7 +3,7 @@ import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved
 import { ResolveQuestionActionParts } from '../blocks-designs/_block_utils.js'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
-import prisma, { conciseDateTime, postBlockMessage, postMessageToResponseUrl, updateForecastQuestionMessages } from '../_utils.js'
+import prisma, { conciseDateTime, postBlockMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -306,12 +306,19 @@ export async function undoQuestionResolution(questionId: number, groupId: string
         include: {
           message: true
         }
+      },
+      pingResolveMessages: {
+        include: {
+          message: true
+        }
       }
+
     }
   })
   if (!questionUpdated) {
     throw Error(`Cannot find question with id: ${questionId}`)
   }
   await updateForecastQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
+  await updateResolvePingQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
 }
 

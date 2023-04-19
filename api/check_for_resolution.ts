@@ -56,8 +56,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.error(`Missing message.ts in response ${JSON.stringify(data)}`)
         throw new Error("Missing message.ts in response")
       }
+
       console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
 
+      // OPTIMISATION:: move these intro a transaction
       await prisma.question.update({
         where: {
           id: question.id,
