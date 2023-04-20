@@ -11,7 +11,7 @@ export async function buildGetForecastsBlocks(teamId: string, forecasts: Forecas
 
   const pagination = latestForecasts.length > maxForecastsVisible
   const firstPage  = page == 0
-  const lastPage   = page == Math.floor(latestForecasts.length / maxForecastsVisible)
+  const lastPage   = page == (Math.ceil(latestForecasts.length / maxForecastsVisible) -1)
 
   if(latestForecasts.length == 0) {
     return [buildEmptyResponseBlock()]
