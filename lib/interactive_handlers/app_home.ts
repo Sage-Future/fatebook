@@ -33,7 +33,13 @@ async function refreshUserAppHome(userId: string, teamId: string, activePage : n
     },
   })
 
-  const blocks = await buildHomeTabBlocks(teamId, allUserForecasts, activePage, closedPage)
+  const allUserQuestionScores = await prisma.questionScore.findMany({
+    where: {
+      profileId: profile!.id
+    },
+  })
+
+  const blocks = await buildHomeTabBlocks(teamId, allUserForecasts, allUserQuestionScores, activePage, closedPage)
 
   console.log(`App home refreshed for user ${userId}, blocks `, JSON.stringify(blocks, null, 2))
   await callSlackApi(teamId, {
