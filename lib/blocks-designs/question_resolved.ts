@@ -1,9 +1,9 @@
 import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndSlackMessages } from '../../prisma/additional'
+import { markdownBlock, dividerBlock, feedbackOverflow, getQuestionTitleLink } from './_block_utils.js'
 import { feedbackFormUrl, slackAppId } from '../_constants.js'
 import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from '../_utils.js'
 import type { Blocks } from './_block_utils.js'
-import { divider, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils.js'
 
 type ResolveQuestionDetails = {
   brierScore: number
@@ -32,9 +32,9 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
       ],
       // 'accessory': feedbackOverflow()
     },
-    divider(),
+    dividerBlock(),
     ...(((question.resolution!) != Resolution.AMBIGUOUS) ? generateNonAmbiguousResolution(details) : generateAmbiguousResolution()),
-    divider(),
+    dividerBlock(),
     {
       'type': 'context',
       'elements': [
@@ -56,7 +56,7 @@ function generateNonAmbiguousResolution(details : ResolveQuestionDetails) : Bloc
         markdownBlock(`*Your last forecast*\n ${details.lastForecast}% _at ${details.lastForecastDate}_`)
       ]
     },
-    divider(),
+    dividerBlock(),
     {
       'type': 'section',
       'fields': [

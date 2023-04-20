@@ -1,42 +1,72 @@
-import { ContextBlock, KnownBlock } from '@slack/types'
+import { ContextBlock, KnownBlock, Block } from '@slack/types'
 import { conciseDateTime, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils.js'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { maxForecastsVisible } from '../_constants.js'
-import { Blocks, divider, getQuestionTitleLink, markdownBlock, textBlock } from './_block_utils.js'
+import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils.js'
 
-export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
+export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)
+
+  const page = activeForecast ? activePage : closedPage
+
+  const pagination = latestForecasts.length > maxForecastsVisible
+  const firstPage  = page == 0
+  const lastPage   = page == Math.floor(latestForecasts.length / maxForecastsVisible)
 
   if(latestForecasts.length == 0) {
     return [buildEmptyResponseBlock()]
-  } else if (latestForecasts.length <= maxForecastsVisible) {
-    return await buildGetForecastsBlocksPage(teamId, latestForecasts, false, 1)
   }
 
-  return await buildGetForecastsBlocksPage(teamId, latestForecasts.slice(0,maxForecastsVisible-1), true, 0)
+  return await Promise.all([
+    // slice latestForecasts to get the forecasts for the current page
+    ...(await buildGetForecastsBlocksPage(teamId, latestForecasts.slice(page * maxForecastsVisible, (page + 1) * maxForecastsVisible))),
+    ...(pagination ? [generateButtonsBlock(pagination, firstPage, lastPage, activePage, closedPage, activeForecast)]:[])
+  ])
 }
 
-async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], pagination : boolean, page: number) : Promise<Blocks> {
+function generateButtonsBlock(pagination: boolean, firstPage: boolean, lastPage: boolean, activePage: number, closedPage : number, activeForecast : boolean) : Block {
+  return {
+    'type': 'actions',
+    'elements': [
+      ...(!firstPage ? [{
+        'type': 'button',
+        'text': textBlock('Previous Page'),
+        'value': 'previous_page',
+        'action_id': toActionId({
+          'action': 'homeAppPageNavigation',
+          'direction': 'previous',
+          'activePage': activePage,
+          'closedPage': closedPage,
+          'isForActiveForecasts': activeForecast,
+        })
+      }] : []),
+      ...(!lastPage ? [{
+        'type': 'button',
+        'text': textBlock('Next Page'),
+        'value': 'next_page',
+        'action_id': toActionId({
+          'action': 'homeAppPageNavigation',
+          'direction': 'next',
+          'activePage': activePage,
+          'closedPage': closedPage,
+          'isForActiveForecasts': activeForecast,
+        })
+      }] : [])
+    ]
+  } as KnownBlock
+}
+
+async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) : Promise<Blocks> {
   let blocks = await Promise.all([
-    divider(),
-    {
-      "type": "header",
-      "text": textBlock(`Your forecasts`)
-    },
     ...forecasts.map(async (forecast) => (
       {
-			  "type": "context",
-        "elements": [
+			  'type': 'context',
+        'elements': [
           markdownBlock((await buildForecastQuestionText(teamId, forecast))),
         ]
       } as ContextBlock
-    )),
-    divider()
+    ))
   ])
-  if (pagination) {
-    console.log(page)
-    //maybeGenerateButtonsBlock(forecasts)
-  }
   return blocks as Blocks
 }
 
@@ -78,8 +108,8 @@ function padForecastPrettily(forecast : string, maxprepad : number , maxpostpad 
 
 function buildEmptyResponseBlock(): KnownBlock {
   return {
-    "type": "section",
-    "text": markdownBlock('_Time to make your first prediction! Create a question by typing `/forecast` in any channel._')
+    'type': 'section',
+    'text': markdownBlock('_Time to make your first prediction! Create a question by typing `/forecast` in any channel._')
   }
 }
 
@@ -102,17 +132,17 @@ function getLatestForecastPerQuestion(forecasts: ForecastWithQuestionWithSlackMe
 //  const options  = [ 'date', 'title', 'difference from community' ] as SortForecastsActionParts['field'][]
 //  const ordering = [ 'asc', 'desc' ]  as SortForecastsActionParts['order'][]
 //  return {
-//    "type": "overflow",
+//    'type': 'overflow',
 //    options: options.flatMap((option) => {
 //      //map for each ordering
 //      return ordering.map((order) => (
 //        {
-//	  		"text": {
-//	  			"type": "plain_text",
-//	  			"text": `${option[0].toUpperCase() + option.slice(1)} ${order}`,
-//	  			"emoji": true
+//	  		'text': {
+//	  			'type': 'plain_text',
+//	  			'text': `${option[0].toUpperCase() + option.slice(1)} ${order}`,
+//	  			'emoji': true
 //	  		},
-//	  		"value": toActionId({action: 'sortforecasts',
+//	  		'value': toActionId({action: 'sortforecasts',
 //            field: option,
 //            order: order})
 //	  	  }

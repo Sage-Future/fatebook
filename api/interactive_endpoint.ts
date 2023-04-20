@@ -3,6 +3,7 @@ import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-
 import { QuestionModalActionParts, unpackBlockActionId } from '../lib/blocks-designs/_block_utils.js'
 import { deleteQuestion, questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
 import { questionOverflowAction } from '../lib/interactive_handlers/question_overflow.js'
+import { buttonHomeAppPageNavigation } from '../lib/interactive_handlers/app_home.js'
 
 import { resolve, buttonUndoResolution } from '../lib/interactive_handlers/resolve.js'
 import { submitTextForecast } from '../lib/interactive_handlers/submit_text_forecast.js'
@@ -42,6 +43,10 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'deleteQuestion':
         await deleteQuestion(actionParts, payload)
+        break
+
+      case 'homeAppPageNavigation':
+        await buttonHomeAppPageNavigation(actionParts, payload)
         break
 
       default:

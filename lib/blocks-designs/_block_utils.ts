@@ -1,5 +1,5 @@
 import { QuestionWithAuthorAndSlackMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { Block, DividerBlock, KnownBlock } from "@slack/types"
+import { Block, DividerBlock, KnownBlock, MrkdwnElement } from "@slack/types"
 import { getSlackPermalinkFromChannelAndTS } from '../_utils.js'
 import { feedbackFormUrl } from '../_constants.js'
 
@@ -56,9 +56,17 @@ export interface DeleteQuestionActionParts {
   questionId: number
 }
 
+export interface HomeAppPageNavigationActionParts {
+  action: 'homeAppPageNavigation'
+  direction: 'next' | 'previous'
+  activePage: number
+  closedPage: number
+  isForActiveForecasts: boolean
+}
+
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts | HomeAppPageNavigationActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
@@ -86,9 +94,9 @@ export function textBlock(content: string, emoji = true) {
   }
 }
 
-export function divider() {
+export function dividerBlock() {
   return {
-    'type': 'divider'
+    'type': 'divider' as 'divider',
   } as DividerBlock
 }
 
@@ -96,7 +104,14 @@ export function markdownBlock(content: string) {
   return {
     'type': "mrkdwn" as "mrkdwn",
     'text': content,
-  }
+  } as MrkdwnElement
+}
+
+export function headerBlock(content: string) {
+  return {
+    'type': 'header' as 'header',
+    'text': textBlock(content),
+  } as Block
 }
 
 export function feedbackOverflow(){
