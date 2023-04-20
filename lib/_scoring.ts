@@ -37,14 +37,9 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 
   let uniqueIds = Array.from(new Set(forecasts.map(f => f.authorId)))
 
-  if (uniqueIds.length == 1) {
-    return oneUserScoring(forecasts, question, uniqueIds[0], days)
-  }
-
   // iterate over each time interval from start of question to
   //   resolution datetimes
   const day = (1000 * 60 * 60 * 24)
-  const startInterval = question.createdAt.getTime() + day
   const endDay = question.createdAt.getTime() + (Math.ceil(days) * day)
 
   let relativeScoreTimeSeries : ScoreTimeSeries = {}
@@ -54,10 +49,10 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
     return [id, forecasts.filter(f => f.authorId == id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())]
   })
 
-  for (let j = startInterval; j < endDay; j = j + day) {
+  for (let j = question.createdAt.getTime(); j < endDay; j = j + day) {
     // dealing with fractional part of day at the end
-    const currentInterval = j < question.resolvedAt!.getTime() ? j       : question.resolvedAt!.getTime()
-    const startOfInterval = j < question.resolvedAt!.getTime() ? j - day : question.resolvedAt!.getTime()
+    const currentInterval = j + day < question.resolvedAt!.getTime() ? j + day : question.resolvedAt!.getTime()
+    const startOfInterval = j < question.resolvedAt!.getTime() ? j       : question.resolvedAt!.getTime()
 
     // get the most up to date forecast for each profile before this time period
     const mostRecentForecastBeforeThisIntervalById : ForecastArray = getMostRecentForecasts(sortedForecastsById, startOfInterval)
@@ -66,7 +61,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
     const forecastsOfCurrentIntervalbyId : DaysForecasts[] = sortedForecastsById.map(([id, sortedForecasts]) => {
       return {
         id: id,
-        forecasts: sortedForecasts.filter(f => f.createdAt.getTime() <= currentInterval && f.createdAt.getTime() > startOfInterval),
+        forecasts: sortedForecasts.filter(f => f.createdAt.getTime() < currentInterval && f.createdAt.getTime() >= startOfInterval),
         mostRecentForecast: mostRecentForecastBeforeThisIntervalById[id]
       }
     })
@@ -118,9 +113,18 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 
   // average the scores for each user
   let avgScoresPerUser : ScoreCollection = {}
-  for(const id of Object.keys(relativeScoreTimeSeries).map(id => parseInt(id))){
+  if (uniqueIds.length != 1) {
+    for(const id of Object.keys(relativeScoreTimeSeries).map(id => parseInt(id))){
+      avgScoresPerUser[id] = {
+        relativeBrierScore : averageForScoreResolution(relativeScoreTimeSeries[id], Math.floor(days), fractionalDay),
+        absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
+        rank               : -1 //reassigned below
+      }
+    }
+  } else {
+    const id = uniqueIds[0]
     avgScoresPerUser[id] = {
-      relativeBrierScore : averageForScoreResolution(relativeScoreTimeSeries[id], Math.floor(days), fractionalDay),
+      relativeBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
       absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
       rank               : -1 //reassigned below
     }
@@ -134,33 +138,6 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   }
 
   return avgScoresPerUser
-}
-
-function oneUserScoring(forecasts : Forecast[], question : Question, id : number, days : number) : ScoreCollection {
-  // iterate over each time interval from start of question to
-  //   resolution datetimes
-  const dateInterval = question.resolvedAt!.getTime() - question.createdAt.getTime()
-  const interval = dateInterval / days
-  let scores = []
-  const startInterval = question.createdAt.getTime() + interval
-
-  const sortedForecasts = forecasts.filter(f => f.authorId == id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-
-  for (let i = startInterval; i < question.resolvedAt!.getTime(); i = i + interval) {
-    const forecastsBeforeCurrentInterval = sortedForecasts.filter(f => f.createdAt.getTime() <= i)
-
-    if (forecastsBeforeCurrentInterval.length > 0) {
-      scores.push(brierScore(forecastsBeforeCurrentInterval[0].forecast.toNumber(), question.resolution!))
-    }
-  }
-  const avgScore = scores.reduce((a, b) => a + b, 0) / (days-1)
-  return {
-    [id]: {
-      relativeBrierScore: avgScore,
-      absoluteBrierScore: avgScore,
-      rank              : 1
-    }
-  }
 }
 
 function getWeightedAverageForecastOfInterval(forecastsOfCurrentIntervalbyId : DaysForecasts[], startOfInterval : number, day : number)  : DayAvgForecast[]{
@@ -225,13 +202,16 @@ function median(values : number[]) : number {
 
 function averageForScoreResolution(scores : number[], days : number, fractionalDay : number) : number{
   let sum = 0
-  let divisor = days + fractionalDay - 1
+  let divisor = days + fractionalDay
 
-  if(!floatEquality(fractionalDay, 0)){
+  if(days == 0){
+    sum = scores.reduce((a, b) => a + b, 0)
+    divisor = 1
+  } else if(!floatEquality(fractionalDay, 0)){
     // all days are weighted as equal, except last fractional day
     sum = scores.slice(0,-1).reduce((a,b) => a + b,0) + (scores.slice(-1)[0] * fractionalDay)
   } else {
-    divisor = days - 1
+    divisor = days
     sum = scores.reduce((a, b) => a + b, 0)
   }
   return sum / divisor

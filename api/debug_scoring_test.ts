@@ -8,9 +8,7 @@ const questionid = 0
 const startDate = new Date(Date.now())
 
 function addDays(date : Date, days : number) {
-  var result = new Date(date)
-  result.setDate(result.getDate() + days)
-  return result
+  return new Date(date.getTime() + (days * 1000 * 60 * 60 * 24))
 }
 
 function createForecast(authorid : number, forecastValue : number, dateOffset : number)
@@ -28,30 +26,39 @@ function createForecast(authorid : number, forecastValue : number, dateOffset : 
 }
 
 const testMultiForecasts : Forecast[] = [
-  createForecast(1, 0.9,  1),
-  createForecast(1, 0.95, 4),
-  createForecast(2, 0.25, 1),
-  createForecast(2, 0.2,  3),
-  createForecast(3, 0.99, 6)
+  createForecast(1, 0.9,  0),
+  createForecast(1, 0.95, 3),
+  createForecast(2, 0.25, 0),
+  createForecast(2, 0.2,  2),
+  createForecast(3, 0.99, 5)
 ]
 
 const testSingleForecasts : Forecast[] = [
-  createForecast(1, 0.9,  1),
-  createForecast(1, 0.95, 4)
+  createForecast(1, 0.9,  0),
+  createForecast(1, 0.95, 3)
 ]
 
-const question : Question = {
-  id: questionid,
-  title: "Will cubs win?",
-  resolution: Resolution.YES,
-  createdAt: startDate,
-  resolvedAt: addDays(startDate, 8),
-  comment: "test",
-  resolveBy: startDate,
-  resolved: true,
-  pingedForResolution: true,
-  authorId: 0,
-  notes: null,
+const testSinglePartForecasts : Forecast[] = [
+  createForecast(1, 0.9,  0.2)
+]
+
+const question = getQuestion(7)
+const quickQuestion = getQuestion(0.8)
+
+function getQuestion(days : number) : Question {
+  return {
+    id: questionid,
+    title: "Will cubs win?",
+    resolution: Resolution.YES,
+    createdAt: startDate,
+    resolvedAt: addDays(startDate, days),
+    comment: "test",
+    resolveBy: startDate,
+    resolved: true,
+    pingedForResolution: true,
+    authorId: 0,
+    notes: null,
+  }
 }
 
 export default function testScoring(req: VercelRequest, res: VercelResponse) {
@@ -71,9 +78,16 @@ export default function testScoring(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  const scoreSinglePartDay = relativeBrierScoring(testSinglePartForecasts, quickQuestion)
+  if (!floatEquality(scoreSinglePartDay[1].relativeBrierScore,	0.02)){
+    res.status(500).send("Single user part day scoring failed: " + JSON.stringify(scoreSinglePartDay))
+    return
+  }
+
   const combinedScores = {
     scoreMulti : score,
-    scoreSingle : scoreSingle
+    scoreSingle : scoreSingle,
+    scoreSinglePartDay : scoreSinglePartDay
   }
   res.status(200).send("ok!\n" + JSON.stringify(combinedScores) + "\n")
 }
