@@ -27,4 +27,6 @@ export default async function eventsApiHandler(req: VercelRequest, res: VercelRe
     default:
       console.log("Unhandled event type: ", reqbody.type)
   }
+
+  res.status(200).send(null)
 }
