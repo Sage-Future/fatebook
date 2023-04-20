@@ -20,7 +20,7 @@
     "node-fetch": "^3.3.1",
     "react": "^18.2.0",
     "seratch-slack-types": "^0.8.0",
-    "vercel": "^28.16.15"
+    "vercel": "^28.19.0"
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^12.3.1",
