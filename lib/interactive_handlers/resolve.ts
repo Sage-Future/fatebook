@@ -4,7 +4,7 @@ import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils.js'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
-import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
+import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -267,13 +267,35 @@ export async function buttonUndoResolution(actionParts: UndoResolveActionParts, 
   if (!questionId){
     throw Error('blockActions: payload.actions.questionId is undefined')
   }
-  if (!payload.team?.id) {
-    throw new Error('Missing team id on question overflow > undo_resolve')
+  if (!payload.team?.id || !payload.user?.id || !payload.channel?.id) {
+    throw new Error('Missing team or user or channel id on question overflow > undo_resolve')
   }
-  await undoQuestionResolution(questionId, payload.team?.id)
+  await undoQuestionResolution(questionId, payload.team.id, payload.user.id, payload.channel.id)
 }
 
-export async function undoQuestionResolution(questionId: number, groupId: string) {
+export async function undoQuestionResolution(questionId: number, groupId: string, userSlackId: string, channelId: string) {
+  const questionPreUpdate = await prisma.question.findUnique({
+    where: {
+      id: questionId,
+    },
+    include: {
+      profile: true
+    }
+  })
+
+  if (questionPreUpdate?.profile.slackId !== userSlackId) {
+    console.log("Can't undo resolution, not author")
+    await postEphemeralSlackMessage(groupId, {
+      text: `Only the question's author${
+        (questionPreUpdate?.profile.slackId ? ' <@' + questionPreUpdate?.profile.slackId + '> ' : '')
+      }can undo a resolution.`,
+      channel: channelId,
+      user: userSlackId,
+    }
+    )
+    return
+  }
+
   await prisma.$transaction([
     prisma.question.update({
       where: {

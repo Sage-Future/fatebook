@@ -18,10 +18,10 @@ export async function questionOverflowAction(actionParts: QuestionOverflowAction
   }
   switch (selected) {
     case 'undo_resolve':
-      if (!payload.team?.id) {
-        throw new Error('Missing team id on question overflow > undo_resolve')
+      if (!payload.team?.id || !payload.user?.id || !payload.channel?.id) {
+        throw new Error('Missing team or user or channel id on question overflow > undo_resolve')
       }
-      await undoQuestionResolution(actionParts.questionId, payload.team?.id)
+      await undoQuestionResolution(actionParts.questionId, payload.team?.id, payload.user?.id, payload.channel?.id)
       break
 
     case 'edit_question':
