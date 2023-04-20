@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import type { NextFetchEvent, NextRequest } from 'next/server'
 
-const redirectUrl               : string = "/api/success_response"
-const failedValidateRedirectUrl : string = "/api/failed_validation"
+const redirectUrl            : string = "/api/success_response"
+const dateInvalidRedirectUrl : string = "/api/failed_validation"
+const urlInvalidRedirectUrl  : string = "/api/failed_url_verification"
+
+enum ValidationRedirect {
+  InvalidDate = 1,
+  InvalidURL
+}
 
 export const config = {
   matcher: [
@@ -39,31 +45,35 @@ export default async function middleware(req: NextRequest, context: NextFetchEve
 
     // redirect to success response
     return NextResponse.redirect(new URL(redirectUrl, req.url))
+  } else {
+    switch (specialCaseHandled) {
+      case ValidationRedirect.InvalidDate:
+        return NextResponse.redirect(new URL(dateInvalidRedirectUrl, req.url))
+      case ValidationRedirect.InvalidURL:
+        return NextResponse.redirect(new URL(urlInvalidRedirectUrl, req.url))
+    }
   }
 }
 
 // Returns true iff the request was handled by this function
 function checkSpecialCases(payload: any, req: NextRequest) {
   if (!payload.type) {
-    return false
+    return null
   }
 
   switch (payload.type) {
     case 'view_submission':
       if (payload.view.callback_id.startsWith('question_modal') && !dateValid(payload)) {
         console.log('date is invalid, redirecting to failed validation')
-        NextResponse.redirect(new URL(failedValidateRedirectUrl, req.url))
-        return true
+        return ValidationRedirect.InvalidDate
       }
       break
-
     case 'url_verification':
       console.log("Handling url_verification for events API. ", payload)
-      NextResponse.json({ challenge: payload.challenge })
-      return true
+      return ValidationRedirect.InvalidURL
   }
 
-  return false
+  return null
 }
 
 function dateValid(payload: any){
