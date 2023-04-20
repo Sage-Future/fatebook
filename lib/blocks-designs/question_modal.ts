@@ -74,9 +74,18 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
           {
             'type': 'button',
             'style': 'danger',
-            'text': textBlock('Permanently delete question'),
-            'value': 'click_me_123',
-            'action_id': 'actionId-0'
+            'text': textBlock('Delete question'),
+            confirm: {
+              title: textBlock("Delete question?"),
+              text: textBlock("Are you sure you want to delete this question?"),
+              confirm: textBlock("Delete"),
+              deny: textBlock("Cancel"),
+              style: "danger",
+            },
+            'action_id': toActionId({
+              action: 'deleteQuestion',
+              questionId: question.id || 0,
+            })
           },
         ]
       } as ActionsBlock]),

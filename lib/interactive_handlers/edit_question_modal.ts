@@ -1,9 +1,9 @@
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
 import { buildQuestionBlocks } from '../blocks-designs/question.js'
 import { buildEditQuestionModalView } from '../blocks-designs/question_modal.js'
-import { EditQuestionBtnActionParts, QuestionModalActionParts } from '../blocks-designs/_block_utils.js'
+import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, textBlock } from '../blocks-designs/_block_utils.js'
 import { createForecastingQuestion } from '../slash_handlers/_create_forecast.js'
-import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
+import prisma, { callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
 import { Question } from '@prisma/client'
 import * as chrono from 'chrono-node'
 
@@ -167,4 +167,56 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
 
     console.log(`Updated question ${actionParts.questionId} with title: ${question}, resolveBy: ${resolutionDate}, notes: ${notes}`)
   }
+}
+
+export async function deleteQuestion(actionParts: DeleteQuestionActionParts, payload: any) {
+  console.log({payload})
+
+  // we can't close a modal from a button click, so update the modal to say the question was deleted
+  await callSlackApi(payload.view.team_id, {
+    view_id: payload.view.id,
+    view: {
+      type: 'modal',
+      callback_id: 'question_deleted',
+      title: textBlock('Question deleted'),
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Your question has been deleted. Forecasts on it will not affect anyone's score.`
+          }
+        }
+      ],
+      "submit": textBlock('Ok')
+    }
+  }, 'https://slack.com/api/views.update')
+
+  const question = await prisma.question.delete({
+    where: {
+      id: actionParts.questionId,
+    },
+    include: {
+      questionMessages: {
+        include: {
+          message: true
+        }
+      },
+      pingResolveMessages: {
+        include: {
+          message: true
+        }
+      }
+    }
+  })
+
+  const messagesToDelete = [...question.questionMessages, ...question.pingResolveMessages].map((m) => m.message)
+  for (const slackMessage of messagesToDelete) {
+    const response = await deleteMessage(slackMessage.teamId, slackMessage.channel, slackMessage.ts)
+    if (!response.ok) {
+      console.error("Error deleting question message after delete: ", response)
+    }
+  }
+
+  console.log("Deleted question ", actionParts.questionId, " and ", messagesToDelete.length, " Slack messages")
 }

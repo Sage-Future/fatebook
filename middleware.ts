@@ -1,12 +1,15 @@
-import { NextResponse } from 'next/server'
 import type { NextFetchEvent, NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 const redirectUrl            : string = "/api/success_response"
 const dateInvalidRedirectUrl : string = "/api/failed_validation"
 const urlInvalidRedirectUrl  : string = "/api/failed_url_verification"
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 enum ValidationRedirect {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   InvalidDate = 1,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   InvalidURL
 }
 
@@ -30,7 +33,7 @@ export default async function middleware(req: NextRequest, context: NextFetchEve
     console.log('payload', payload)
   }
 
-  const specialCaseHandled = checkSpecialCases(payload, req)
+  const specialCaseHandled = checkSpecialCases(payload)
   if (!specialCaseHandled) {
     context.waitUntil(
       fetch(asyncFetchPath, {
@@ -56,7 +59,7 @@ export default async function middleware(req: NextRequest, context: NextFetchEve
 }
 
 // Returns true iff the request was handled by this function
-function checkSpecialCases(payload: any, req: NextRequest) {
+function checkSpecialCases(payload: any) {
   if (!payload.type) {
     return null
   }
@@ -68,6 +71,7 @@ function checkSpecialCases(payload: any, req: NextRequest) {
         return ValidationRedirect.InvalidDate
       }
       break
+
     case 'url_verification':
       console.log("Handling url_verification for events API. ", payload)
       return ValidationRedirect.InvalidURL

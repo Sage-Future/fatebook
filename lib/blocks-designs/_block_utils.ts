@@ -51,9 +51,14 @@ export interface QuestionOverflowActionParts {
   questionId: number
 }
 
+export interface DeleteQuestionActionParts {
+  action: 'deleteQuestion'
+  questionId: number
+}
+
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 

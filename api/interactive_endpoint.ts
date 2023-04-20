@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionModalActionParts, unpackBlockActionId } from '../lib/blocks-designs/_block_utils.js'
-import { questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
+import { deleteQuestion, questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
 import { questionOverflowAction } from '../lib/interactive_handlers/question_overflow.js'
 
 import { resolve, buttonUndoResolution } from '../lib/interactive_handlers/resolve.js'
@@ -40,8 +40,12 @@ async function blockActions(payload: BlockActionPayload) {
         await buttonUndoResolution(actionParts, payload)
         break
 
+      case 'deleteQuestion':
+        await deleteQuestion(actionParts, payload)
+        break
+
       default:
-        console.warn(`Unknown action: ${actionParts}`)
+        console.warn('Unknown action: ', actionParts)
         break
     }
   }

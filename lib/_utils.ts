@@ -316,6 +316,13 @@ export async function updateMessage(teamId: string, message: {channel: string, t
   return await callSlackApi(teamId, message, url) as {ok: boolean}
 }
 
+export async function deleteMessage(teamId: string, channel: string, ts: string){
+  console.log(`Deleting message from channel: ${channel}, ts: ${ts}`)
+
+  const url = 'https://slack.com/api/chat.delete'
+  return await callSlackApi(teamId, {channel, ts}, url) as {ok: boolean}
+}
+
 export async function showModal(teamId: string, triggerId: string, view: ModalView) {
   console.log('Showing modal view: ', view)
 
