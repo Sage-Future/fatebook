@@ -64,8 +64,8 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
     }
   ] as Blocks
 
-  const activeForecasts = allUserForecasts.filter(f => f.question.resolution == null)
-  const closedForecasts = allUserForecasts.filter(f => f.question.resolution != null)
+  const activeForecasts = allUserForecasts.filter(f => f.question.resolution == null).sort((a, b) => b.question.createdAt.getTime() - a.question.createdAt.getTime())
+  const closedForecasts = allUserForecasts.filter(f => f.question.resolution != null).sort((a, b) => b.question.createdAt.getTime() - a.question.createdAt.getTime())
 
   const myActiveForecastsBlock : Blocks = await buildGetForecastsBlocks(teamId, activeForecasts, activePage, closedPage, true)
   const myClosedForecastsBlock : Blocks = await buildGetForecastsBlocks(teamId, closedForecasts, activePage, closedPage, false)
