@@ -70,16 +70,16 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
   const myActiveForecastsBlock : Blocks = await buildGetForecastsBlocks(teamId, activeForecasts, activePage, closedPage, true)
   const myClosedForecastsBlock : Blocks = await buildGetForecastsBlocks(teamId, closedForecasts, activePage, closedPage, false)
   return [
-    headerBlock('Your Score for the Last 3 Months'),
+    headerBlock('Your score for the last 3 months'),
     ...(myRecentScoreBlock),
     dividerBlock(),
-    headerBlock('Your Active Forecasts'),
+    headerBlock('Your active forecasts'),
     ...(myActiveForecastsBlock),
     dividerBlock(),
-    headerBlock('Your Resolved Forecasts'),
+    headerBlock('Your resolved forecasts'),
     ...(myClosedForecastsBlock),
     dividerBlock(),
-    headerBlock('Your Overall Score'),
+    headerBlock('Your all-time overall score'),
     ...(myOverallScoreBlock),
     dividerBlock(),
     headerBlock('How to use this app'),
