@@ -14,6 +14,7 @@ export async function questionOverflowAction(actionParts: QuestionOverflowAction
       questionId: actionParts.questionId,
       answer: answer as 'yes' | 'no' | 'ambiguous',
     }, payload.response_url, payload.user?.id, undefined, payload.team?.id)
+    return
   }
   switch (selected) {
     case 'undo_resolve':

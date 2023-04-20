@@ -285,7 +285,6 @@ export async function postEphemeralTextMessage(teamId: string, channel : string,
 
 export async function postSlackMessage(teamId: string, message: PostMessagePayload, userId?: string){
   console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
-  console.log({userId})
   const url = 'https://slack.com/api/chat.postMessage'
   const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
   if (response.ok === false) {
@@ -295,7 +294,9 @@ export async function postSlackMessage(teamId: string, message: PostMessagePaylo
         user: userId,
         text: `Oops, this bot is not in that channel. Invite me to the channel first by tagging me, or use a public channel.`,
       })
+      console.log("Notified user about error posting Slack message channel_not_found (Bot is not in that channel).")
     } else {
+      console.error(`Error posting Slack message:`, response.error)
       throw new Error(`Error posting Slack message: ${response.error}`)
     }
   }
@@ -435,7 +436,7 @@ export function getCommunityForecast(question : QuestionWithForecasts, date : Da
 export function conciseDateTime(date: Date, includeTime = true) {
   let timeStr = ''
   if (includeTime)
-    timeStr = `${date.getHours()}:${date.getMinutes()} on `
+    timeStr = `${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())} on `
   return `${timeStr}${getDateYYYYMMDD(date)}`
 }
 
@@ -462,7 +463,7 @@ export function resolutionToString(resolution: Resolution) {
   return resolution.toString().charAt(0).toUpperCase() + resolution.toString().slice(1).toLowerCase()
 }
 
-export function getResolutionEmoji(resolution: Resolution) {
+export function getResolutionEmoji(resolution: Resolution | null) {
   switch (resolution) {
     case Resolution.YES:
       return '✅'

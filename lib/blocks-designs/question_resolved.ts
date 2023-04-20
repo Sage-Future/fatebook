@@ -1,9 +1,9 @@
 import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndSlackMessages } from '../../prisma/additional'
-import { markdownBlock, textBlock, divider, feedbackOverflow, getQuestionTitleLink } from './_block_utils.js'
-import type { Blocks } from './_block_utils.js'
-import { resolutionToString, formatDecimalNicely } from '../_utils.js'
 import { feedbackFormUrl, slackAppId } from '../_constants.js'
+import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from '../_utils.js'
+import type { Blocks } from './_block_utils.js'
+import { divider, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils.js'
 
 type ResolveQuestionDetails = {
   brierScore: number
@@ -18,28 +18,29 @@ type ResolveQuestionDetails = {
 
 export async function buildQuestionResolvedBlocks(teamId: string, question: QuestionWithAuthorAndSlackMessages, details : ResolveQuestionDetails) {
   const questionResolution = resolutionToString(question.resolution!)
-  const questionTitle      = question.title + ' Resolved ' + questionResolution
   const questionLink       = await getQuestionTitleLink(teamId, question)
   return [
     {
-      'type': 'header',
-      'text': textBlock(questionTitle)
+      'type': 'section',
+      'text': markdownBlock(`${questionLink} *resolved ${questionResolution} ${getResolutionEmoji(question.resolution)}*`),
+      'accessory': feedbackOverflow()
     },
     {
-      'type': 'section',
-      'text': markdownBlock(`A question you forecasted on has been resolved!\n ${question.profile.user.name} resolved: ${questionLink} as *${questionResolution}*`),
-      'accessory': feedbackOverflow()
+      'type': 'context',
+      'elements': [
+        markdownBlock(`Resolved by <@${question.profile.slackId}>`)
+      ],
+      // 'accessory': feedbackOverflow()
     },
     divider(),
     ...(((question.resolution!) != Resolution.AMBIGUOUS) ? generateNonAmbiguousResolution(details) : generateAmbiguousResolution()),
     divider(),
     {
-      'type': 'section',
-      'text': markdownBlock(`You can check out <slack://app?team=${teamId}&id=${slackAppId}&tab=home|your forecasting history> - why not see how this question compares!`)
-    },
-    {
-      'type': 'section',
-      'text': markdownBlock(`_Are you enjoying using this bot? Let us know <${feedbackFormUrl}/|here>_`)
+      'type': 'context',
+      'elements': [
+        markdownBlock(`<slack://app?team=${teamId}&id=${slackAppId}&tab=home|See your full forecasting history.>`),
+        markdownBlock(`_Thanks for using our bot! We'd love to <${feedbackFormUrl}/|hear your feedback>_`)
+      ]
     }
   ]
 }
@@ -52,7 +53,7 @@ function generateNonAmbiguousResolution(details : ResolveQuestionDetails) : Bloc
         markdownBlock(`*Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatDecimalNicely(details.brierScore, 6)}`),
         markdownBlock(`*Relative Brier score*\n ${formatDecimalNicely(details.rBrierScore, 6)}`),
         markdownBlock(`*Ranking*\n *${details.ranking}*/${details.totalParticipants}`),
-        markdownBlock(`*Your last forecast*\n ${details.lastForecast}% on ${details.lastForecastDate}`)
+        markdownBlock(`*Your last forecast*\n ${details.lastForecast}% _at ${details.lastForecastDate}_`)
       ]
     },
     divider(),

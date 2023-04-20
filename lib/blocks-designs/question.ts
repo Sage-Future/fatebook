@@ -1,11 +1,13 @@
 import { Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
-import { conciseDateTime, getDateYYYYMMDD, getResolutionEmoji, round } from '../../lib/_utils.js'
+import { conciseDateTime, getCommunityForecast, getDateYYYYMMDD, getResolutionEmoji, round } from '../../lib/_utils.js'
 import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
 import { feedbackFormUrl } from '../_constants.js'
 import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId } from './_block_utils.js'
 
 export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAuthor): Blocks {
+
+  const numUniqueForecasters = new Set(question.forecasts.map(f => f.authorId)).size
 
   return [
     {
@@ -50,10 +52,22 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       // NB: this assumes that the author resolved the question
       'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by <@${question.profile.slackId}>`
         + (question.resolvedAt ? ` on ${getDateYYYYMMDD(question.resolvedAt)}` : '')),
-    } as SectionBlock] : [{
-      'type': 'section',
-      'text': markdownBlock(`Resolves on ${getDateYYYYMMDD(question.resolveBy)}`)
-    } as SectionBlock]),
+    } as SectionBlock] : []),
+    {
+      'type': 'context',
+      'elements': [
+        ...(question.resolution ? [] : [
+          markdownBlock(`Resolves on *${getDateYYYYMMDD(question.resolveBy)}*`)
+        ]),
+        ...(numUniqueForecasters > 0 ? [
+          markdownBlock(`*${
+            round(getCommunityForecast(question, new Date()) * 100, 1)
+          }%* average`)
+        ] : []),
+        markdownBlock(`*${question.forecasts.length}* forecast${question.forecasts.length === 1 ? '' : 's'}`),
+        markdownBlock(`*${numUniqueForecasters}* forecaster${numUniqueForecasters === 1 ? '' : 's'}`),
+      ]
+    },
     ...(question.notes ? [{
       'type': 'section',
       'text': textBlock(`${question.notes}`)
@@ -68,8 +82,8 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
             'alt_text': 'profile picture'
           },
           markdownBlock(
-            `*${forecast.profile.slackId ? `<@${forecast.profile.slackId}>` : forecast.profile.user.name}* ` +
-            `${(round(forecast.forecast.toNumber() * 100))}%` +
+            `${forecast.profile.slackId ? `<@${forecast.profile.slackId}>` : forecast.profile.user.name} ` +
+            `*${(round(forecast.forecast.toNumber() * 100))}%*` +
             ` - _submitted at ${conciseDateTime(forecast.createdAt)}_`
           )
         ]

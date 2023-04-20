@@ -1,10 +1,10 @@
-import { Question, Resolution, QuestionScore } from '@prisma/client'
+import { Question, QuestionScore, Resolution } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils.js'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
-import prisma, { conciseDateTime, postBlockMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
+import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -48,18 +48,6 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
       }
     }
   })
-}
-
-async function dbGetQuestion(questionid : number) {
-  const questionMaybe = await prisma.question.findUnique({
-    where: {
-      id: questionid,
-    },
-    include: {
-      forecasts: true,
-    },
-  })
-  return questionMaybe
 }
 
 async function scoreForecasts(scoreArray : ScoreCollection, question : Question) {
@@ -120,11 +108,19 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
         include: {
           message: true
         }
+      },
+      forecasts: {
+        include: {
+          profile: true
+        }
       }
     },
   })
-  if(!question)
+  if(!question) {
     throw Error(`Cannot find question with id: ${questionid}`)
+  }
+
+  console.log("get profiles")
 
   const profiles = await prisma.profile.findMany({
     where: {
@@ -156,6 +152,8 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
     }
   })
 
+  console.log('Messaging profiles ', profiles)
+
   // go over each profile and send a message to each group they are in which
   //   are also in the question's groups
   await Promise.all(profiles.map(async profile => {
@@ -173,7 +171,8 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
       overallBrierScore: averageScores.avgAbsoluteScore,
       overallRBrierScore: averageScores.avgRelativeScore
     }
-    const message = `Your forecast for question ${question.title} was scored ${scoreArray[profile.id].relativeBrierScore}`
+    const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. Your Brier score is ${round(scoreArray[profile.id].relativeBrierScore, 4)}`
+    console.log({message})
     return await Promise.all(profile.groups.map(async group => {
       const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,
                                                        question,
@@ -183,23 +182,18 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
   }))
 }
 
-async function updateForecastsAndMessageUsers(questionid : number) {
-  const question = await dbGetQuestion(questionid)
-  if(!question)
-    throw Error(`Cannot find question with id: ${questionid}`)
-
-  const scores = relativeBrierScoring(question.forecasts, question)
-  await scoreForecasts(scores, question)
-  await messageUsers(scores, question.id)
-}
-
 async function handleQuestionResolution(questionid : number, resolution : Resolution, teamId : string) {
   console.log(`    handleQuestionResolution: ${questionid} ${resolution}`)
   const question = await dbResolveQuestion(questionid, resolution)
   console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
 
-  await updateForecastsAndMessageUsers(questionid)
+  // message users first for responsiveness
   await updateForecastQuestionMessages(question, teamId, "Question resolved!")
+
+  const scores = relativeBrierScoring(question.forecasts, question)
+  await scoreForecasts(scores, question)
+  await messageUsers(scores, question.id)
+
   await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
 }
 
