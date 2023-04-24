@@ -3,7 +3,7 @@ import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/
 import { buildGetForecastsBlocks } from "./get_forecasts.js"
 import { Blocks, textBlock, dividerBlock, headerBlock, markdownBlock } from "./_block_utils.js"
 import { formatDecimalNicely } from '../../lib/_utils.js'
-import { numberOfDaysInRecentPeriod } from '../_constants.js'
+import { numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants.js'
 
 type ScoreDetails = {
   brierScore: number
@@ -92,5 +92,13 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
         '4. Check back here to see your scores and watch your prediction skills improve over time!'
       )
     },
+    dividerBlock(),
+    {
+      'type': 'context',
+      'elements': [
+        markdownBlock(`_Built by Sage to help impactful teams seek the truth. Find our other tools on <${quantifiedIntuitionsUrl}|Quantified Intuitions>_`)
+      ]
+    }
+
   ]
 }

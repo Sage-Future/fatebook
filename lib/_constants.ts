@@ -15,3 +15,4 @@ export const numberOfDaysInRecentPeriod : number = 91
 export const forecastListColumnSpacing  : number = 14
 
 export const feedbackFormUrl = 'https://forms.gle/nHkwvMFCjtNBHAT69'
+export const quantifiedIntuitionsUrl = 'https://quantifiedintuitions.org/'
