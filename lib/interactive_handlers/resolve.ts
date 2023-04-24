@@ -1,4 +1,5 @@
-import { Question, QuestionScore, Resolution } from '@prisma/client'
+import { Question, QuestionScore, Resolution, Group } from '@prisma/client'
+import { QuestionWithAuthorAndSlackMessagesAndGroups } from '../../prisma/additional'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils.js'
@@ -18,6 +19,7 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
       resolvedAt: new Date()
     },
     include: {
+      groups: true,
       forecasts: {
         include: {
           profile: {
@@ -91,37 +93,10 @@ function getAverageScores(questionScores : QuestionScore[]) {
   }
 }
 
-async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
-  console.log(`messageUsers for question id: ${questionid}`)
-  const question = await prisma.question.findUnique({
-    where: {
-      id: questionid,
-    },
-    include: {
-      groups: true,
-      profile: {
-        include: {
-          user: true
-        }
-      },
-      questionMessages: {
-        include: {
-          message: true
-        }
-      },
-      forecasts: {
-        include: {
-          profile: true
-        }
-      }
-    },
-  })
-  if(!question) {
-    throw Error(`Cannot find question with id: ${questionid}`)
-  }
+async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithAuthorAndSlackMessagesAndGroups) {
+  console.log(`messageUsers for question id: ${question.id}`)
 
   console.log("get profiles")
-
   const profiles = await prisma.profile.findMany({
     where: {
       id: {
@@ -136,7 +111,7 @@ async function messageUsers(scoreArray : ScoreCollection, questionid : number) {
         where: {
           // this is likely overkill, as we should only have one slack group per profile
           id: {
-            in: question.groups.map(group => group.id)
+            in: question.groups.map((group : Group) => group.id)
           },
           slackTeamId: {
             not: null
@@ -192,7 +167,7 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
 
   const scores = relativeBrierScoring(question.forecasts, question)
   await scoreForecasts(scores, question)
-  await messageUsers(scores, question.id)
+  await messageUsers(scores, question)
 
   await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
 }

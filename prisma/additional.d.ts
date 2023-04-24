@@ -1,4 +1,4 @@
-import { Forecast, Profile, Question, QuestionSlackMessage, User, SlackMessage, PingSlackMessage } from "@prisma/client"
+import { Forecast, Profile, Question, QuestionSlackMessage, User, SlackMessage, PingSlackMessage, Group } from "@prisma/client"
 
 export type QuestionSlackMessageWithMessage = QuestionSlackMessage & {
     message: SlackMessage
@@ -39,6 +39,11 @@ export type QuestionWithSlackMessagesAndForecasts = QuestionWithForecasts & {
 
 export type QuestionWithAuthorAndSlackMessages = QuestionWithAuthor & {
     questionMessages: QuestionSlackMessageWithMessage[]
+}
+
+
+export type QuestionWithAuthorAndSlackMessagesAndGroups = QuestionWithAuthorAndSlackMessages & {
+    groups: Group[]
 }
 
 export type QuestionWithAuthorAndSlackMessagesAndResolvePingMessages = QuestionWithAuthorAndSlackMessages & {
