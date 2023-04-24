@@ -8,7 +8,10 @@ export const baseUrl       : string = process.env.SLACKBOT_BASE_URL!
 export const slackAppId    : string = process.env.SLACKBOT_APP_ID!
 
 export const maxDecimalPlaces    : number = 1
-export const maxForecastsVisible : number = 5
+
+// Home Tab View
+export const maxForecastsVisible        : number = 5
 export const numberOfDaysInRecentPeriod : number = 91
+export const forecastListColumnSpacing  : number = 14
 
 export const feedbackFormUrl = 'https://forms.gle/nHkwvMFCjtNBHAT69'

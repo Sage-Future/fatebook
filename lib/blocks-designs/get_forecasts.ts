@@ -1,7 +1,7 @@
 import { ContextBlock, KnownBlock, Block } from '@slack/types'
 import { conciseDateTime, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils.js'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { maxForecastsVisible } from '../_constants.js'
+import { maxForecastsVisible, forecastListColumnSpacing } from '../_constants.js'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils.js'
 
 export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean) : Promise<Blocks> {
@@ -75,11 +75,11 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
 
   // get the length of the string to represent forecast.forecast as two digit decimal
   const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber())
-  const yourForecastValuePadded = 'You:' + padForecastPrettily(yourForecastValueStr, 3, 8)
+  const yourForecastValuePadded = 'You:' + padForecastPrettily(yourForecastValueStr, 3, forecastListColumnSpacing)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
   const commForecastValueStr    = formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()))
-  const commForecastValuePadded = 'Community:' + padForecastPrettily(commForecastValueStr, 3, 8)
+  const commForecastValuePadded = 'Community:' + padForecastPrettily(commForecastValueStr, 3, forecastListColumnSpacing)
 
   // resolution date
   const resolutionStr = forecast.question.resolution ?
