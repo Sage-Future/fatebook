@@ -1,4 +1,4 @@
-import { QuestionWithAuthorAndSlackMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { Block, DividerBlock, KnownBlock, MrkdwnElement } from "@slack/types"
 import { getSlackPermalinkFromChannelAndTS } from '../_utils.js'
 import { feedbackFormUrl } from '../_constants.js'
@@ -131,7 +131,7 @@ export function feedbackOverflow(){
   }
 }
 
-export async function getQuestionTitleLink(teamId : string, question: QuestionWithAuthorAndSlackMessages | QuestionWithSlackMessagesAndForecasts) {
+export async function getQuestionTitleLink(teamId : string, question: QuestionWithAuthorAndQuestionMessages | QuestionWithSlackMessagesAndForecasts) {
   const questionTitle = `*${question.title}*`
   if (question.questionMessages.length) {
     const slackMessage = question.questionMessages[0]!

@@ -55,7 +55,16 @@ model Question {
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
   pingResolveMessages PingSlackMessage[]
+  resolutionMessages  ResolutionSlackMessage[]
   notes               String?
+}
+
+model ResolutionSlackMessage {
+  id           Int @id @default(autoincrement())
+  questionId   Int
+  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  detailsId    Int  @unique
+  message      SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
 }
 
 model PingSlackMessage {
@@ -80,8 +89,9 @@ model SlackMessage {
   channel     String
   teamId      String
   // could store threadts here
-  questionSlackMessage QuestionSlackMessage?
-  pingSlackMessage     PingSlackMessage?
+  questionSlackMessage   QuestionSlackMessage?
+  pingSlackMessage       PingSlackMessage?
+  resolutionSlackMessage ResolutionSlackMessage?
 }
 
 model User {

@@ -1,8 +1,8 @@
-import { QuestionWithAuthorAndSlackMessages } from "../../prisma/additional"
+import { QuestionWithAuthorAndQuestionMessages } from "../../prisma/additional"
 import { markdownBlock, textBlock, toActionId, ResolveQuestionActionParts, getQuestionTitleLink, feedbackOverflow } from "./_block_utils.js"
 import { conciseDateTime } from "../_utils.js"
 
-export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndSlackMessages) {
+export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages) {
   const answerLabels = ['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]
   const questionTitle     = await getQuestionTitleLink(teamId, question)
   const resolutionDateStr = conciseDateTime(question.resolveBy, false)

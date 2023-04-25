@@ -1,5 +1,5 @@
 import { Resolution } from '@prisma/client'
-import { QuestionWithAuthorAndSlackMessages } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages } from '../../prisma/additional'
 import { markdownBlock, dividerBlock, feedbackOverflow, getQuestionTitleLink } from './_block_utils.js'
 import { feedbackFormUrl, slackAppId } from '../_constants.js'
 import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from '../_utils.js'
@@ -16,9 +16,24 @@ type ResolveQuestionDetails = {
   overallRBrierScore: number
 }
 
-export async function buildQuestionResolvedBlocks(teamId: string, question: QuestionWithAuthorAndSlackMessages, details : ResolveQuestionDetails) {
-  const questionResolution = resolutionToString(question.resolution!)
+export async function buildQuestionResolvedBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages, details : ResolveQuestionDetails | undefined = undefined) {
   const questionLink       = await getQuestionTitleLink(teamId, question)
+  if(question.resolution == null){
+    return [
+      {
+        'type': 'section',
+        'text': markdownBlock(`${questionLink} *resolution has been undone!*`),
+      },
+      {
+        'type': 'context',
+        'elements': [
+          markdownBlock(`Unresolved by <@${question.profile.slackId}>`)
+        ],
+        // 'accessory': feedbackOverflow()
+      },
+    ]
+  }
+  const questionResolution = resolutionToString(question.resolution!)
   return [
     {
       'type': 'section',
@@ -33,7 +48,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
       // 'accessory': feedbackOverflow()
     },
     dividerBlock(),
-    ...(((question.resolution!) != Resolution.AMBIGUOUS) ? generateNonAmbiguousResolution(details) : generateAmbiguousResolution()),
+    ...(((question.resolution!) != Resolution.AMBIGUOUS) ? generateNonAmbiguousResolution(details!) : generateAmbiguousResolution()),
     dividerBlock(),
     {
       'type': 'context',

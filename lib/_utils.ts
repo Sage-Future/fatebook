@@ -1,9 +1,10 @@
 import { Forecast, GroupType, PrismaClient, Profile, Resolution, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, QuestionWithAuthorAndSlackMessagesAndResolvePingMessages, QuestionSlackMessageWithMessage, PingSlackMessageWithMessage } from '../prisma/additional'
+import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, QuestionWithAuthorAndAllMessages, QuestionSlackMessageWithMessage, PingSlackMessageWithMessage, ResolutionSlackMessageWithMessage } from '../prisma/additional'
 import { buildQuestionBlocks } from './blocks-designs/question.js'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question.js'
+import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved.js'
 
 import { Blocks } from './blocks-designs/_block_utils.js'
 import { maxDecimalPlaces } from './_constants.js'
@@ -393,8 +394,12 @@ async function updateSlackMessages(slackMessages: SlackMessage[], teamId: string
   }
 }
 
+export async function updateResolutionQuestionMessages(question: QuestionWithAuthorAndAllMessages, teamId: string, notificationMessage: string) {
+  const updateBlocks = await buildQuestionResolvedBlocks(teamId, question)
+  await updateSlackMessages(question.resolutionMessages.map((x : ResolutionSlackMessageWithMessage) => x.message ), teamId, notificationMessage, updateBlocks)
+}
 
-export async function updateResolvePingQuestionMessages(question: QuestionWithAuthorAndSlackMessagesAndResolvePingMessages, teamId: string, notificationMessage: string) {
+export async function updateResolvePingQuestionMessages(question: QuestionWithAuthorAndAllMessages, teamId: string, notificationMessage: string) {
   const updateBlocks = await buildResolveQuestionBlocks(teamId, question)
   await updateSlackMessages(question.pingResolveMessages.map((x : PingSlackMessageWithMessage) => x.message ), teamId, notificationMessage, updateBlocks)
 }

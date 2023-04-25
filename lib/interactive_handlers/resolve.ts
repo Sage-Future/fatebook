@@ -1,11 +1,11 @@
-import { Question, QuestionScore, Resolution, Group } from '@prisma/client'
-import { QuestionWithAuthorAndSlackMessagesAndGroups } from '../../prisma/additional'
+import { Question, QuestionScore, Resolution, Group, SlackMessage } from '@prisma/client'
+import { QuestionWithAuthorAndQuestionMessagesAndGroups } from '../../prisma/additional'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils.js'
 import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
 
-import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolvePingQuestionMessages } from '../_utils.js'
+import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolvePingQuestionMessages, updateResolutionQuestionMessages } from '../_utils.js'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -39,6 +39,11 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
         }
       },
       questionMessages: {
+        include: {
+          message: true
+        }
+      },
+      resolutionMessages: {
         include: {
           message: true
         }
@@ -93,7 +98,7 @@ function getAverageScores(questionScores : QuestionScore[]) {
   }
 }
 
-async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithAuthorAndSlackMessagesAndGroups) {
+async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithAuthorAndQuestionMessagesAndGroups) {
   console.log(`messageUsers for question id: ${question.id}`)
 
   console.log("get profiles")
@@ -131,7 +136,7 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
 
   // go over each profile and send a message to each group they are in which
   //   are also in the question's groups
-  await Promise.all(profiles.map(async profile => {
+  const newMessageDetails = await Promise.all(profiles.map(async profile => {
     // sort the foreacsts
     const sortedProfileForecasts = profile.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     const lastForecast           = sortedProfileForecasts[0]
@@ -152,9 +157,45 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,
                                                        question,
                                                        scoreDetails)
-      await postBlockMessage(group.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})
+      const data = await postBlockMessage(group.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})
+      if (!data?.ts || !data?.channel) {
+        console.error(`Missing message.ts or message.channel in response ${JSON.stringify(data)}`)
+        throw new Error("Missing message.ts or message.channel in response")
+      }
+      return {
+        id:      -1,
+        ts:      data.ts,
+        channel: data.channel!,
+        teamId:  group.slackTeamId!
+      }
     }))
   }))
+
+  await replaceQuestionResolveMessages(question, newMessageDetails.flat())
+}
+
+async function replaceQuestionResolveMessages(question : Question, newMessageDetails : SlackMessage[]) {
+  console.log(`addQuestionResolveMessages for question id: ${question.id}`)
+  await prisma.question.update({
+    where: {
+      id: question.id
+    },
+    data: {
+      resolutionMessages: {
+        create: newMessageDetails.map(message => {
+          return {
+            message: {
+              create: {
+                ts:      message.ts,
+                channel: message.channel,
+                teamId:  message.teamId
+              }
+            }
+          }
+        })
+      }
+    }
+  })
 }
 
 async function handleQuestionResolution(questionid : number, resolution : Resolution, teamId : string) {
@@ -317,6 +358,11 @@ export async function undoQuestionResolution(questionId: number, groupId: string
           message: true
         }
       },
+      resolutionMessages: {
+        include: {
+          message: true
+        }
+      },
       pingResolveMessages: {
         include: {
           message: true
@@ -330,5 +376,6 @@ export async function undoQuestionResolution(questionId: number, groupId: string
   }
   await updateForecastQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
   await updateResolvePingQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
+  await updateResolutionQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
 }
 
