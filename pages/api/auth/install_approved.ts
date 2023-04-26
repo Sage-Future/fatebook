@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import fetch from 'node-fetch'
-import { clientId, clientSecret } from '../../lib/_constants.js'
-import prisma from '../../lib/_utils.js'
+import { clientId, clientSecret } from '../../../lib/_constants'
+import prisma from '../../../lib/_utils'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // user has approved the app being installed to their workspace, this is the redirect URI
@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let data = await response.json() as {ok: boolean, access_token: string, team: { id: string, name: string }, scope: string}
   console.log({data})
   if (data.ok === false) {
-    console.error('Error getting permanent token:', data)
+    console.error('Error getting permanent token:', data, ' for temp code: ', tempCode, ' and client id: ', clientId)
     throw new Error('Error getting permanent token')
   }
 

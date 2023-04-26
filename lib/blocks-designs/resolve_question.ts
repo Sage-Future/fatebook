@@ -1,6 +1,6 @@
 import { QuestionWithAuthorAndQuestionMessages } from "../../prisma/additional"
-import { markdownBlock, textBlock, toActionId, ResolveQuestionActionParts, getQuestionTitleLink, feedbackOverflow } from "./_block_utils.js"
-import { conciseDateTime } from "../_utils.js"
+import { conciseDateTime } from "../_utils"
+import { ResolveQuestionActionParts, feedbackOverflow, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from "./_block_utils"
 
 export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages) {
   const answerLabels = ['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]

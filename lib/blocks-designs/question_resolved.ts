@@ -1,9 +1,9 @@
 import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndQuestionMessages } from '../../prisma/additional'
-import { markdownBlock, dividerBlock, feedbackOverflow, getQuestionTitleLink } from './_block_utils.js'
-import { feedbackFormUrl, slackAppId } from '../_constants.js'
-import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from '../_utils.js'
-import type { Blocks } from './_block_utils.js'
+import { feedbackFormUrl, slackAppId } from '../_constants'
+import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from '../_utils'
+import type { Blocks } from './_block_utils'
+import { dividerBlock, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils'
 
 type ResolveQuestionDetails = {
   brierScore: number

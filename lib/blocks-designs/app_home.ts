@@ -1,9 +1,9 @@
 import { QuestionScore } from '@prisma/client'
-import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional.js"
-import { buildGetForecastsBlocks } from "./get_forecasts.js"
-import { Blocks, textBlock, dividerBlock, headerBlock, markdownBlock } from "./_block_utils.js"
-import { formatDecimalNicely } from '../../lib/_utils.js'
-import { numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants.js'
+import { formatDecimalNicely } from '../../lib/_utils'
+import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional"
+import { numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants'
+import { Blocks, dividerBlock, headerBlock, markdownBlock, textBlock } from "./_block_utils"
+import { buildGetForecastsBlocks } from "./get_forecasts"
 
 type ScoreDetails = {
   brierScore: number

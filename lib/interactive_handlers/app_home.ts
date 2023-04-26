@@ -1,6 +1,6 @@
-import { buildHomeTabBlocks } from "../blocks-designs/app_home.js"
-import { HomeAppPageNavigationActionParts } from "../blocks-designs/_block_utils.js"
-import prisma, { callSlackApi, getGroupIDFromSlackID, getOrCreateProfile } from "../_utils.js"
+import prisma, { callSlackApi, getGroupIDFromSlackID, getOrCreateProfile } from "../_utils"
+import { HomeAppPageNavigationActionParts } from "../blocks-designs/_block_utils"
+import { buildHomeTabBlocks } from "../blocks-designs/app_home"
 
 export async function refreshAppHome(event: any, teamId: string) {
   await refreshUserAppHome(event.user, teamId)

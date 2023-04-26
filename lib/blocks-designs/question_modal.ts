@@ -1,7 +1,7 @@
 import { Question } from '@prisma/client'
 import { ActionsBlock, ModalView } from '@slack/types'
-import { getDateYYYYMMDD } from '../../lib/_utils.js'
-import { textBlock, toActionId } from './_block_utils.js'
+import { getDateYYYYMMDD } from '../../lib/_utils'
+import { textBlock, toActionId } from './_block_utils'
 
 export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string): ModalView {
   return {

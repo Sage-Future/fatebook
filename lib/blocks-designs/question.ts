@@ -1,9 +1,9 @@
 import { Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
-import { conciseDateTime, getCommunityForecast, getDateYYYYMMDD, getResolutionEmoji, round } from '../../lib/_utils.js'
+import { conciseDateTime, getCommunityForecast, getDateYYYYMMDD, getResolutionEmoji, round } from '../../lib/_utils'
 import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
-import { feedbackFormUrl } from '../_constants.js'
-import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId } from './_block_utils.js'
+import { feedbackFormUrl } from '../_constants'
+import { Blocks, ResolveQuestionActionParts, markdownBlock, textBlock, toActionId } from './_block_utils'
 
 export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAuthor): Blocks {
 

@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { clientId, baseUrl } from '../../lib/_constants.js'
+import { baseUrl, clientId } from '../../../lib/_constants'
 
 export default function handler(req: VercelRequest, res: VercelResponse){
   const redirectUrl = baseUrl + "/api/auth/install_approved"

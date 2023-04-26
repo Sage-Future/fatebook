@@ -1,7 +1,7 @@
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { Block, DividerBlock, KnownBlock, MrkdwnElement } from "@slack/types"
-import { getSlackPermalinkFromChannelAndTS } from '../_utils.js'
-import { feedbackFormUrl } from '../_constants.js'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { feedbackFormUrl } from '../_constants'
+import { getSlackPermalinkFromChannelAndTS } from '../_utils'
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'

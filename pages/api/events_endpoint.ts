@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { refreshAppHome } from '../lib/interactive_handlers/app_home.js'
+import { refreshAppHome } from '../../lib/interactive_handlers/app_home'
 
 export default async function eventsApiHandler(req: VercelRequest, res: VercelResponse) {
   console.log(req.body)

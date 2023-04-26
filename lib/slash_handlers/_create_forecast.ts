@@ -1,8 +1,8 @@
 import { Profile } from '@prisma/client'
 import { VercelResponse } from '@vercel/node'
 
-import { buildQuestionBlocks } from '../blocks-designs/question.js'
-import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postSlackMessage } from '../../lib/_utils.js'
+import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postSlackMessage } from '../../lib/_utils'
+import { buildQuestionBlocks } from '../blocks-designs/question'
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {
   let question : string = commandArray[2]

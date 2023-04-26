@@ -1,11 +1,11 @@
-import { Question, QuestionScore, Resolution, Group, SlackMessage } from '@prisma/client'
-import { QuestionWithAuthorAndQuestionMessagesAndGroups } from '../../prisma/additional'
+import { Group, Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved.js'
-import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils.js'
-import { relativeBrierScoring, ScoreCollection } from '../_scoring.js'
+import { QuestionWithAuthorAndQuestionMessagesAndGroups } from '../../prisma/additional'
+import { ScoreCollection, relativeBrierScoring } from '../_scoring'
+import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
+import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
-import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolvePingQuestionMessages, updateResolutionQuestionMessages } from '../_utils.js'
+import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)

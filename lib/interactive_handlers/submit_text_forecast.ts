@@ -1,8 +1,8 @@
-import { Decimal } from "@prisma/client/runtime/library.js"
+import { Decimal } from "@prisma/client/runtime/library"
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import { buildQuestionBlocks } from "../blocks-designs/question.js"
+import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils"
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
-import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils.js"
+import { buildQuestionBlocks } from "../blocks-designs/question"
 
 export async function submitTextForecast(actionParts: SubmitTextForecastActionParts, action: BlockActionPayloadAction, payload: BlockActionPayload) {
   if (actionParts.questionId === undefined)

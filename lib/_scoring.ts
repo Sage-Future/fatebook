@@ -1,5 +1,5 @@
 import { Forecast, Question, Resolution } from '@prisma/client'
-import { floatEquality } from './_utils.js'
+import { floatEquality } from './_utils'
 
 type ScoreTimeSeries = {
     [id: number]: number[]

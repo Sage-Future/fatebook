@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { buildResolveQuestionBlocks } from '../lib/blocks-designs/resolve_question.js'
-import prisma, { postBlockMessage } from '../lib/_utils.js'
+import prisma, { postBlockMessage } from '../../lib/_utils'
+import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 
 async function getQuestionsToBeResolved()  {
   // check if any questions need to be resolved by time

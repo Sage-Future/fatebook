@@ -1,11 +1,11 @@
-import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
-import { buildQuestionBlocks } from '../blocks-designs/question.js'
-import { buildEditQuestionModalView } from '../blocks-designs/question_modal.js'
-import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, textBlock } from '../blocks-designs/_block_utils.js'
-import { createForecastingQuestion } from '../slash_handlers/_create_forecast.js'
-import prisma, { callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils.js'
 import { Question } from '@prisma/client'
 import * as chrono from 'chrono-node'
+import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
+import prisma, { callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
+import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, textBlock } from '../blocks-designs/_block_utils'
+import { buildQuestionBlocks } from '../blocks-designs/question'
+import { buildEditQuestionModalView } from '../blocks-designs/question_modal'
+import { createForecastingQuestion } from '../slash_handlers/_create_forecast'
 
 export async function showCreateQuestionModal(teamId: string, triggerId: string, channelId: string, questionInput: string) {
   const view = buildEditQuestionModalView(parseQuestion(questionInput), true, channelId)

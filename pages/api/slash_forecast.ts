@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { showCreateQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
+import { showCreateQuestionModal } from '../../lib/interactive_handlers/edit_question_modal'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
   const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body

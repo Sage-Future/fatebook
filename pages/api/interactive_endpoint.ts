@@ -1,12 +1,12 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionModalActionParts, unpackBlockActionId } from '../lib/blocks-designs/_block_utils.js'
-import { deleteQuestion, questionModalSubmitted, showEditQuestionModal } from '../lib/interactive_handlers/edit_question_modal.js'
-import { questionOverflowAction } from '../lib/interactive_handlers/question_overflow.js'
-import { buttonHomeAppPageNavigation } from '../lib/interactive_handlers/app_home.js'
+import { QuestionModalActionParts, unpackBlockActionId } from '../../lib/blocks-designs/_block_utils'
+import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
+import { deleteQuestion, questionModalSubmitted, showEditQuestionModal } from '../../lib/interactive_handlers/edit_question_modal'
+import { questionOverflowAction } from '../../lib/interactive_handlers/question_overflow'
 
-import { resolve, buttonUndoResolution } from '../lib/interactive_handlers/resolve.js'
-import { submitTextForecast } from '../lib/interactive_handlers/submit_text_forecast.js'
+import { buttonUndoResolution, resolve } from '../../lib/interactive_handlers/resolve'
+import { submitTextForecast } from '../../lib/interactive_handlers/submit_text_forecast'
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {

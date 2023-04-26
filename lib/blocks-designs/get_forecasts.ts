@@ -1,8 +1,8 @@
-import { ContextBlock, KnownBlock, Block } from '@slack/types'
-import { conciseDateTime, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils.js'
+import { Block, ContextBlock, KnownBlock } from '@slack/types'
+import { conciseDateTime, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { maxForecastsVisible, forecastListColumnSpacing } from '../_constants.js'
-import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils.js'
+import { forecastListColumnSpacing, maxForecastsVisible } from '../_constants'
+import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 
 export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)

@@ -1,13 +1,13 @@
 import { Forecast, GroupType, PrismaClient, Profile, Resolution, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, QuestionWithAuthorAndAllMessages, QuestionSlackMessageWithMessage, PingSlackMessageWithMessage, ResolutionSlackMessageWithMessage } from '../prisma/additional'
-import { buildQuestionBlocks } from './blocks-designs/question.js'
-import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question.js'
-import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved.js'
+import { PingSlackMessageWithMessage, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, ResolutionSlackMessageWithMessage } from '../prisma/additional'
+import { buildQuestionBlocks } from './blocks-designs/question'
+import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
+import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
 
-import { Blocks } from './blocks-designs/_block_utils.js'
-import { maxDecimalPlaces } from './_constants.js'
+import { maxDecimalPlaces } from './_constants'
+import { Blocks } from './blocks-designs/_block_utils'
 
 const prisma = new PrismaClient()
 export default prisma

@@ -1,8 +1,8 @@
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import { QuestionOverflowActionParts } from "../blocks-designs/_block_utils.js"
-import { feedbackFormUrl } from "../_constants.js"
-import { showEditQuestionModal } from "./edit_question_modal.js"
-import { resolve, undoQuestionResolution } from "./resolve.js"
+import { feedbackFormUrl } from "../_constants"
+import { QuestionOverflowActionParts } from "../blocks-designs/_block_utils"
+import { showEditQuestionModal } from "./edit_question_modal"
+import { resolve, undoQuestionResolution } from "./resolve"
 
 export async function questionOverflowAction(actionParts: QuestionOverflowActionParts, action: BlockActionPayloadAction, payload: BlockActionPayload) {
   const selected = action.selected_option?.value
