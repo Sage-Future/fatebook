@@ -51,6 +51,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   console.log("Successfully installed app to workspace: ", data.team.name)
 
-  // todo - redirect to a nice page that says "installed to your workspace" and has usage instructions
+  // todo - redirect to a nice webpage that says "installed to your workspace" and has usage instructions
   res.status(200).send(`Installed to your workspace ${data.team.name}!`)
 }
