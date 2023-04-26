@@ -62,12 +62,6 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 
   console.log("Forecast created: ", forecastCreated)
 
-  // await postMessageToResponseUrl({
-  //   text: `I've recorded your ${number}% forecast!`,
-  //   response_type: "ephemeral",
-  //   replace_original: false,
-  // }, payload.response_url)
-
   if (payload.message?.ts && payload.channel?.id) {
     await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id)
   } else {

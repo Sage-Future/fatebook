@@ -16,9 +16,10 @@
     "chrono-node": "^2.6.3",
     "crypto": "1.0.1",
     "dotenv": "^16.0.3",
-    "next": "^12.3.1",
+    "next": "^13.3.1",
     "node-fetch": "^3.3.1",
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "seratch-slack-types": "^0.8.0",
     "vercel": "^28.19.0"
   },
@@ -28,10 +29,13 @@
     "@types/react": "^18.0.28",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
     "@typescript-eslint/parser": "^5.38.0",
+    "autoprefixer": "^10.4.14",
     "eslint": "8.27.0",
-    "eslint-config-next": "12.3.1",
+    "eslint-config-next": "^13.3.1",
     "eslint-config-prettier": "^8.5.0",
+    "postcss": "^8.4.23",
     "prisma": "^4.11.0",
+    "tailwindcss": "^3.3.2",
     "typescript": "^5.0.2"
   }
 }

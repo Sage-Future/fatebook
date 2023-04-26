@@ -32,6 +32,11 @@
     },
 
     {
+      "selector": "function",
+      "format": ["camelCase", "PascalCase"] // PascalCase for React components
+    },
+
+    {
       "selector": "property",
       "format": null
     },
