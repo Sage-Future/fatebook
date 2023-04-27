@@ -172,6 +172,9 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
         }
       },
     })
+    await backendAnalyticsEvent("new_user", {
+      platform: "slack",
+    })
   }else{
     // create the profile if they don't exist
     await prisma.profile.create({
@@ -179,6 +182,9 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
         ...profileData,
         userId: user.id
       },
+    })
+    await backendAnalyticsEvent("new_profile_for_existing_user", {
+      platform: "slack",
     })
   }
   // see above for why findFirst is used
@@ -217,19 +223,19 @@ export async function getGroupIDFromSlackID(slackTeamId : string, createGroupIfN
     }
 
     // create the group if they don't exist
-    await prisma.group.create({
+    group = await prisma.group.create({
       data: {
         slackTeamId: slackTeamId,
         type: GroupType.SLACK,
         name: slackWorkspaceName,
       },
     })
-    // we now have a group, so we can return it
-    group = await prisma.group.findFirst({
-      where: {
-        slackTeamId: slackTeamId
-      },
+
+    await backendAnalyticsEvent("new_workspace", {
+      platform: "slack",
+      name: slackWorkspaceName,
     })
+
   } else if (!group) {
     throw Error('Group not found')
   }
@@ -483,4 +489,38 @@ export function getResolutionEmoji(resolution: Resolution | null) {
 
 export function floatEquality(a : number, b : number, tolerance : number = 0.0001) {
   return Math.abs(a - b) < tolerance
+}
+
+export interface AnalyticsEventParams {
+  platform: 'slack' | 'web'
+  [key: string]: any
+}
+export async function backendAnalyticsEvent(name: string, params: AnalyticsEventParams) {
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+  const apiSecret = process.env.G_ANALYTICS_MEASUREMENT_PROTOCOL_SECRET
+
+  if (!measurementId || !apiSecret) {
+    console.error('Missing g analytics measurement ID or API secret')
+    return
+  }
+
+  const res = await fetch(`https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`, {
+    method: 'POST',
+    body: JSON.stringify({
+      client_id: 'fatebook-backend',
+      events: [
+        {
+          name,
+          params: {
+            session_id: '123',
+            engagement_time_msec: 100,
+            ...params,
+          }
+        }
+      ]
+    })
+  })
+  if (!res.ok) {
+    console.error('Error sending analytics event', res.text(), res)
+  }
 }

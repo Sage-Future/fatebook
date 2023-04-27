@@ -1,4 +1,4 @@
-import prisma, { callSlackApi, getGroupIDFromSlackID, getOrCreateProfile } from "../_utils"
+import prisma, { backendAnalyticsEvent, callSlackApi, getGroupIDFromSlackID, getOrCreateProfile } from "../_utils"
 import { HomeAppPageNavigationActionParts } from "../blocks-designs/_block_utils"
 import { buildHomeTabBlocks } from "../blocks-designs/app_home"
 
@@ -49,6 +49,12 @@ async function refreshUserAppHome(userId: string, teamId: string, activePage : n
       blocks
     },
   }, 'https://slack.com/api/views.publish')
+
+  await backendAnalyticsEvent("app_home_refreshed", {
+    platform: "slack",
+    team: teamId,
+    user: userId,
+  })
 }
 
 export async function buttonHomeAppPageNavigation(actionParts : HomeAppPageNavigationActionParts, payload: any) {
@@ -62,4 +68,10 @@ export async function buttonHomeAppPageNavigation(actionParts : HomeAppPageNavig
   }
 
   await refreshUserAppHome(payload.user.id, payload.user.team_id, activePage, closedPage)
+
+  await backendAnalyticsEvent("app_home_pagination_navigated", {
+    platform: "slack",
+    team: payload.user.team_id,
+    user: payload.user.id,
+  })
 }

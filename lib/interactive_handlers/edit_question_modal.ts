@@ -1,7 +1,7 @@
 import { Question } from '@prisma/client'
 import * as chrono from 'chrono-node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import prisma, { callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
+import prisma, { backendAnalyticsEvent, callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
 import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, textBlock } from '../blocks-designs/_block_utils'
 import { buildQuestionBlocks } from '../blocks-designs/question'
 import { buildEditQuestionModalView } from '../blocks-designs/question_modal'
@@ -166,6 +166,11 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
     }
 
     console.log(`Updated question ${actionParts.questionId} with title: ${question}, resolveBy: ${resolutionDate}, notes: ${notes}`)
+    await backendAnalyticsEvent("question_edited", {
+      platform: "slack",
+      team: payload.user.team_id,
+      user: payload.user.id,
+    })
   }
 }
 
@@ -219,4 +224,10 @@ export async function deleteQuestion(actionParts: DeleteQuestionActionParts, pay
   }
 
   console.log("Deleted question ", actionParts.questionId, " and ", messagesToDelete.length, " Slack messages")
+
+  await backendAnalyticsEvent("question_deleted", {
+    platform: "slack",
+    team: payload.user.team_id,
+    user: payload.user.id,
+  })
 }

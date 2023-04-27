@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import prisma, { getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils"
+import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils"
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 
@@ -67,6 +67,14 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
   } else {
     console.error(`Missing message.ts or channel.id in payload ${JSON.stringify(payload)}`)
   }
+
+  await backendAnalyticsEvent("forecast_submitted", {
+    platform: "slack",
+    team: payload.team.id,
+    user: payload.user.id,
+    question: questionId,
+    forecast: number,
+  })
 }
 
 async function updateQuestionMessages(teamId: string, questionTs: string, channel: string) {

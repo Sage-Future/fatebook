@@ -5,7 +5,7 @@ import { ScoreCollection, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
-import prisma, { conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
+import prisma, { backendAnalyticsEvent, conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -276,6 +276,12 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
       console.error('Unhandled resolution: ', answer)
       throw new Error('Unhandled resolution')
   }
+
+  await backendAnalyticsEvent("question_resolved", {
+    platform: "slack",
+    team: teamId,
+    resolution: answer,
+  })
 }
 
 export async function buttonUndoResolution(actionParts: UndoResolveActionParts, payload: BlockActionPayload){
@@ -377,5 +383,10 @@ export async function undoQuestionResolution(questionId: number, groupId: string
   await updateForecastQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
   await updateResolvePingQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
   await updateResolutionQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
+
+  await backendAnalyticsEvent("question_resolution_undone", {
+    platform: "slack",
+    team: groupId,
+  })
 }
 
