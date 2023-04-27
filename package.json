@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint --dir api --dir lib",
-    "studio": "prisma studio"
+    "studio": "prisma studio",
+    "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios"
   },
   "dependencies": {
     "@capacitor/android": "^4.8.0",
