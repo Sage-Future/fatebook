@@ -1,5 +1,7 @@
 import Link from "next/link"
+import { AddToSlack } from "../../components/AddToSlack"
 import { SlackCompose } from "../../components/SlackCompose"
+import Footer from "../../components/Footer"
 
 export default function ForSlackPage() {
   return (
@@ -13,9 +15,15 @@ export default function ForSlackPage() {
             </h2>
             <h3 className="text-gray-600">Track your predictions, right where your team works</h3>
 
-            <SlackCompose />
+            <div className="my-14">
+              <SlackCompose />
+            </div>
 
-            <p>Coming soon.</p>
+            <div className="flex mb-12">
+              <div className="m-auto">
+                <AddToSlack />
+              </div>
+            </div>
 
             <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
 
@@ -23,7 +31,7 @@ export default function ForSlackPage() {
           </div>
         </div>
       </div>
-      {/* <Footer /> */}
+      <Footer />
     </div >
   )
 }

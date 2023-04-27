@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 export function SlackCompose() {
   const animate = true
   return (
-    <div className="bg-white border-gray-200 border-4 rounded-2xl px-2">
+    <div className="bg-white border-gray-200 border-4 rounded-2xl px-2 select-none">
       <p className="my-4 mx-2">
         <span className="overflow-hidden border-black md:text-lg lg:md:text-xl">
           {animate ? <SlackComposeContent /> : "/forecast Will we release the podcast by Tuesday?"}
@@ -42,7 +42,7 @@ function SlackComposeContent() {
         setDirIsRight(true)
         setDemoStringIndex((demoStringIndex + 1) % demoStrings.length)
       }
-    }, content.endsWith("?") ? 500 : (dirIsRight ? 30 : 10))
+    }, content.endsWith("?") ? 500 : (dirIsRight ? (20 + (Math.random() * 20)) : 10))
   }, [content, dirIsRight, demoStringIndex])
 
   return (
