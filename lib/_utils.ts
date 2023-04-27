@@ -512,7 +512,7 @@ export async function backendAnalyticsEvent(name: string, params: AnalyticsEvent
         {
           name,
           params: {
-            session_id: '123',
+            session_id: Date.now() + 123,  // There's a limit of 500 events per session so need to be ~unique
             engagement_time_msec: 100,
             ...params,
           }

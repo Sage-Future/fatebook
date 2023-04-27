@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 
 export function SlackCompose() {
   const animate = true
+
   return (
     <div className="bg-white border-gray-200 border-4 rounded-2xl px-2 select-none">
       <p className="my-4 mx-2">

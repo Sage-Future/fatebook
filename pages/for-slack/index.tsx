@@ -1,14 +1,14 @@
-import Link from "next/link"
 import { AddToSlack } from "../../components/AddToSlack"
-import { SlackCompose } from "../../components/SlackCompose"
+import Faqs from "../../components/Faqs"
 import Footer from "../../components/Footer"
+import { SlackCompose } from "../../components/SlackCompose"
 
 export default function ForSlackPage() {
   return (
     <div className="flex flex-col min-h-screen ">
       {/* <NavbarGeneric /> */}
       <div className="bg-gray-50 grow">
-        <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
+        <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-4xl">
           <div className="prose mx-auto">
             <h2 className="text-3xl mb-2 font-extrabold text-gray-900">
               Fatebook for Slack
@@ -19,16 +19,34 @@ export default function ForSlackPage() {
               <SlackCompose />
             </div>
 
-            <div className="flex mb-12">
+            <div className="flex mb-20">
               <div className="m-auto">
                 <AddToSlack />
               </div>
             </div>
-
-            <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
-
-            <h3 className="text-lg font-semibold mt-12">Check out Sage{"'"}s other tools on <Link href="https://www.quantifiedintuitions.org/">Quantified Intuitions</Link></h3>
           </div>
+
+          <Faqs faqs={[
+            {
+              question: "When I ask a question using /forecast, who can make a prediction?",
+              answer:
+                "Anyone in the channel where you asked the question can forecast.",
+            },
+            {
+              question: "Does the app have access to my team's Slack messages?",
+              answer:
+                "The app only receives messages where you use the /forecast command or mention @Fatebook."
+            },
+            {
+              question: "How do I make private predictions?",
+              answer:
+                "Use the /forecast command in a direct message with @Fatebook.",
+            },
+            {
+              question: "How can I submit feedback about Fatebook?",
+              answer: "You can email us at hello@sage-future.org or message us on [Discord](https://discord.gg/mt9YVB8VDE).",
+            },
+          ]} />
         </div>
       </div>
       <Footer />
