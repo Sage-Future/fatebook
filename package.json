@@ -11,6 +11,9 @@
     "studio": "prisma studio"
   },
   "dependencies": {
+    "@capacitor/android": "^4.8.0",
+    "@capacitor/core": "^4.8.0",
+    "@capacitor/ios": "^4.8.0",
     "@prisma/client": "^4.11.0",
     "@slack/types": "^2.8.0",
     "chrono-node": "^2.6.3",
@@ -26,6 +29,7 @@
     "vercel": "^28.19.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^4.8.0",
     "@next/eslint-plugin-next": "^12.3.1",
     "@tailwindcss/typography": "^0.5.9",
     "@types/node": "^18.15.3",

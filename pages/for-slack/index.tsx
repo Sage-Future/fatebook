@@ -1,6 +1,7 @@
 import Link from "next/link"
+import { SlackCompose } from "../../components/SlackCompose"
 
-export default function HomePage() {
+export default function ForSlackPage() {
   return (
     <div className="flex flex-col min-h-screen ">
       {/* <NavbarGeneric /> */}
@@ -12,16 +13,14 @@ export default function HomePage() {
             </h2>
             <h3 className="text-gray-600">Track your predictions, right where your team works</h3>
 
+            <SlackCompose />
+
             <p>Coming soon.</p>
 
             <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
 
             <h3 className="text-lg font-semibold mt-12">Check out Sage{"'"}s other tools on <Link href="https://www.quantifiedintuitions.org/">Quantified Intuitions</Link></h3>
           </div>
-
-          {/* <div className="max-w-xs mt-12 mb-6 m-auto">
-            <MailingListSignup buttonText="Subscribe to hear about our next tool" tags={["homepage"]} />
-          </div> */}
         </div>
       </div>
       {/* <Footer /> */}
