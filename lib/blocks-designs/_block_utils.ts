@@ -30,6 +30,11 @@ export interface OverflowAccessoryPart {
   questionId: number
 }
 
+export interface ViewAllForecastsBtnActionParts {
+  action: 'viewAllForecastsOnThisQuestion'
+  questionId: number
+}
+
 export interface SortForecastsActionParts {
   action: 'sortForecasts'
   field : 'date' | 'title' | 'difference from community'
@@ -66,7 +71,8 @@ export interface HomeAppPageNavigationActionParts {
 
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
-  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts | HomeAppPageNavigationActionParts
+  | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
+  | HomeAppPageNavigationActionParts | ViewAllForecastsBtnActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 

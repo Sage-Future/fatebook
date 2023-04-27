@@ -66,7 +66,15 @@ export async function createForecastingQuestion(teamId: string, { question, date
         include: {
           profile: {
             include: {
-              user: true
+              user: {
+                include: {
+                  profiles: {
+                    include: {
+                      groups: true
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -79,7 +87,7 @@ export async function createForecastingQuestion(teamId: string, { question, date
     }
   })
 
-  const questionBlocks = buildQuestionBlocks(createdQuestion)
+  const questionBlocks = buildQuestionBlocks(teamId, createdQuestion)
 
   const data = await postSlackMessage(teamId, {
     channel: channelId,

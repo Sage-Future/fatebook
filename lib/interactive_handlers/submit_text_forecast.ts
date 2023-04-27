@@ -96,7 +96,15 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
         include: {
           profile: {
             include: {
-              user: true
+              user: {
+                include: {
+                  profiles: {
+                    include: {
+                      groups: true
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -116,7 +124,7 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
 
   console.log(`Updating ${questions.length} question messages `, questions)
   for (const question of questions) {
-    const questionBlocks = buildQuestionBlocks(question)
+    const questionBlocks = buildQuestionBlocks(teamId, question)
     await updateMessage(teamId, {
       ts: questionTs,
       channel: channel,

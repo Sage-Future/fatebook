@@ -16,9 +16,20 @@ export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessages = QuestionWit
     questionMessages: QuestionSlackMessageWithMessage[]
 }
 
+export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles = Question & {
+    forecasts: ForecastWithProfileAndUserWithProfilesWithGroups[]
+    questionMessages: QuestionSlackMessageWithMessage[]
+    profile: ProfileWithUser
+}
+
 export type QuestionWithForecastsAndUsersAndAuthor = Question & {
     forecasts: ForecastWithProfileAndUser[]
     profile: ProfileWithUser
+}
+
+export type QuestionWithForecastWithProfileAndUserWithProfilesWithGroups = Question & {
+  forecasts: ForecastWithProfileAndUserWithProfilesWithGroups[]
+  profile: ProfileWithUser
 }
 
 export type QuestionWithForecastsAndUsers = Question & {
@@ -33,8 +44,8 @@ export type QuestionWithAuthor = Question & {
     profile: ProfileWithUser
 }
 
-export type ForecastWithProfileAndUser = Forecast & {
-    profile: ProfileWithUser
+export type ForecastWithProfileAndUserWithProfilesWithGroups = Forecast & {
+    profile: ProfileWithUserWithProfilesWithGroups
 }
 
 export type QuestionWithSlackMessagesAndForecasts = QuestionWithForecasts & {
@@ -68,3 +79,14 @@ export type ProfileWithUser = Profile & {
     user: User
 }
 
+export type ProfileWithUserWithProfilesWithGroups = Profile & {
+    user: UserWithProfilesWithGroups
+}
+
+export type ProfileWithGroups = Profile & {
+    groups: Group[]
+}
+
+export type UserWithProfilesWithGroups = User & {
+    profiles: ProfileWithGroups[]
+}

@@ -133,7 +133,15 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
           include: {
             profile: {
               include: {
-                user: true
+                user: {
+                  include: {
+                    profiles: {
+                      include: {
+                        groups: true
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -151,7 +159,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       }
     })
 
-    const questionBlocks = buildQuestionBlocks(updatedQuestion)
+    const questionBlocks = buildQuestionBlocks(payload.user.team_id, updatedQuestion)
 
     for (const slackMessage of updatedQuestion.questionMessages) {
       const response = await updateMessage(payload.user.team_id, {

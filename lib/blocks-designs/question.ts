@@ -1,11 +1,11 @@
-import { Question, Resolution } from '@prisma/client'
+import { Question, Resolution, Group, Forecast } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
-import { conciseDateTime, getCommunityForecast, getDateYYYYMMDD, getResolutionEmoji, round } from '../../lib/_utils'
-import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
-import { feedbackFormUrl } from '../_constants'
+import { conciseDateTime, getCommunityForecast, getDateYYYYMMDD, getResolutionEmoji, round, displayForecast } from '../../lib/_utils'
+import { QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
+import { feedbackFormUrl, maxLatestForecastsVisible, maxForecastsPerUser, defaultDisplayPictureUrl } from '../_constants'
 import { Blocks, ResolveQuestionActionParts, markdownBlock, textBlock, toActionId } from './_block_utils'
 
-export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAuthor): Blocks {
+export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups): Blocks {
 
   const numUniqueForecasters = new Set(question.forecasts.map(f => f.authorId)).size
 
@@ -72,23 +72,7 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
       'type': 'section',
       'text': textBlock(`${question.notes}`)
     } as SectionBlock] : []),
-    ...question.forecasts.map((forecast) => (
-      {
-        'type': 'context',
-        'elements': [
-          {
-            'type': 'image',
-            'image_url': forecast.profile.user.imageUrl || 'https://camo.githubusercontent.com/eb6a385e0a1f0f787d72c0b0e0275bc4516a261b96a749f1cd1aa4cb8736daba/68747470733a2f2f612e736c61636b2d656467652e636f6d2f64663130642f696d672f617661746172732f6176615f303032322d3531322e706e67',
-            'alt_text': 'profile picture'
-          },
-          markdownBlock(
-            `${forecast.profile.slackId ? `<@${forecast.profile.slackId}>` : forecast.profile.user.name} ` +
-            `*${(round(forecast.forecast.toNumber() * 100))}%*` +
-            ` - _submitted at ${conciseDateTime(forecast.createdAt)}_`
-          )
-        ]
-      }
-    )),
+    ...makeForecastListing(teamId, question.id, question.forecasts),
     ...(question.forecasts.length === 0 ? [{
       'type': 'context',
       'elements': [
@@ -102,6 +86,87 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
         markdownBlock(`_Created by <@${question.profile.slackId}> using /forecast_`)
       ]
     }
+  ]
+}
+
+function underMaxSubHeader(){
+  return {
+    'type': 'section',
+    'text': markdownBlock(`*All Forecasts*`),
+  }
+}
+
+function overMaxSubHeader(questionId : number){
+  return {
+    'type': 'section',
+    'text': markdownBlock(`*Latest Forecasts*`),
+    'accessory': {
+      'type': 'button',
+      'text': textBlock('View all'),
+      'action_id': toActionId({
+        action: 'viewAllForecastsOnThisQuestion',
+        questionId: questionId,
+      }),
+      'value': 'view_all_forecasts',
+    }
+  }
+}
+
+function getUserNameOrProfileLink(teamId : string, user : UserWithProfilesWithGroups) : string {
+  const thisTeamsProfile = user.profiles.find((p : ProfileWithGroups) => p.groups.find((g : Group) => g.slackTeamId === teamId))
+  return thisTeamsProfile ? `<@${thisTeamsProfile.slackId}>` : (user.name || 'Anon User')
+}
+
+function listUserForecastUpdates(forecasts : Forecast[]) : string {
+  // if there's only one forecast, just return that
+  // if there's less than max the first forecast value, an arrow, then the rest
+  if (forecasts.length > maxForecastsPerUser) {
+    return `~${displayForecast(forecasts[0])}~ → …` +
+      `→ ~${displayForecast(forecasts[forecasts.length - 2])}~ ` + //assumes >= 3 max
+      `→ ${displayForecast(forecasts[forecasts.length - 1])}`
+  } else if (forecasts.length === 1) {
+    return `${displayForecast(forecasts[0])}`
+  } else {
+    return `${forecasts.slice(0,-1).map(f => `~${displayForecast(f)}~`).join(' → ')}` +
+    ` → ${displayForecast(forecasts[forecasts.length - 1])}`
+  }
+}
+
+
+function makeForecastListing(teamId : string, questionId : number, forecasts : ForecastWithProfileAndUserWithProfilesWithGroups[]) {
+  // a good adjustment would be to get each user
+  //   then iterate over all the forecasts and cluster them for that user
+
+  // get all the unique users ids from the forecasts
+  const uniqueUserIds = Array.from(new Set(forecasts.map(f => f.profile.user.id)))
+  const uniqueUsers   = uniqueUserIds.map(id => forecasts.find(f => f.profile.user.id === id)!.profile.user)
+
+  // for each user, get all their forecasts sorted by date
+  const forecastsByUser = [...uniqueUsers].map((user : UserWithProfilesWithGroups) => [user, forecasts.filter(f => f.profile.user.id === user.id)
+    .sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())] as [UserWithProfilesWithGroups, Forecast[]])
+
+  // sort the users by most recent forecast
+  const sortedUsersAndForecasts = forecastsByUser.sort((a, b) => b[1].slice(-1)[0].createdAt.getTime() - a[1].slice(-1)[0].createdAt.getTime())
+
+  const overMax = sortedUsersAndForecasts.length > maxLatestForecastsVisible
+
+  return [
+    ...(overMax ? [overMaxSubHeader(questionId)] : [underMaxSubHeader()]),
+    ...sortedUsersAndForecasts.slice(0, overMax ? maxLatestForecastsVisible : sortedUsersAndForecasts.length).map(([user, forecasts]) => ({
+      'type': 'context',
+      'elements': [
+        {
+          'type': 'image',
+          'image_url': user.imageUrl || defaultDisplayPictureUrl,
+          'alt_text': 'profile picture'
+        },
+        markdownBlock(
+          `${getUserNameOrProfileLink(teamId, user)} ` +
+          `${listUserForecastUpdates(forecasts)} ` +
+          `- _submitted at ${conciseDateTime(forecasts[forecasts.length - 1].createdAt)}_`
+        )
+      ]
+    }))
   ]
 }
 
