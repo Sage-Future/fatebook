@@ -1,13 +1,12 @@
 import { Question, Resolution, Group, Forecast } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
-import { conciseDateTime, getCommunityForecast, getDateYYYYMMDD, getResolutionEmoji, round, displayForecast } from '../../lib/_utils'
-import { QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
-import { feedbackFormUrl, maxLatestForecastsVisible, maxForecastsPerUser, defaultDisplayPictureUrl } from '../_constants'
-import { Blocks, ResolveQuestionActionParts, markdownBlock, textBlock, toActionId } from './_block_utils'
+import { conciseDateTime, getResolutionEmoji, displayForecast } from '../_utils'
+import {  QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
+import { noForecastsMessage, feedbackFormUrl, maxLatestForecastsVisible, maxForecastsPerUser, defaultDisplayPictureUrl } from '../_constants'
+import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId, maybeQuestionResolutionBlock, questionForecastInformationBlock } from './_block_utils'
 
 export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups): Blocks {
 
-  const numUniqueForecasters = new Set(question.forecasts.map(f => f.authorId)).size
 
   return [
     {
@@ -47,27 +46,8 @@ export function buildQuestionBlocks(teamId : string, question: QuestionWithForec
         ]
       }
     },
-    ...(question.resolution ? [{
-      'type': 'section',
-      // NB: this assumes that the author resolved the question
-      'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by <@${question.profile.slackId}>`
-        + (question.resolvedAt ? ` on ${getDateYYYYMMDD(question.resolvedAt)}` : '')),
-    } as SectionBlock] : []),
-    {
-      'type': 'context',
-      'elements': [
-        ...(question.resolution ? [] : [
-          markdownBlock(`Resolves on *${getDateYYYYMMDD(question.resolveBy)}*`)
-        ]),
-        ...(numUniqueForecasters > 0 ? [
-          markdownBlock(`*${
-            round(getCommunityForecast(question, new Date()) * 100, 1)
-          }%* average`)
-        ] : []),
-        markdownBlock(`*${question.forecasts.length}* forecast${question.forecasts.length === 1 ? '' : 's'}`),
-        markdownBlock(`*${numUniqueForecasters}* forecaster${numUniqueForecasters === 1 ? '' : 's'}`),
-      ]
-    },
+    ...maybeQuestionResolutionBlock(question),
+    questionForecastInformationBlock(question),
     ...(question.notes ? [{
       'type': 'section',
       'text': textBlock(`${question.notes}`)
@@ -76,7 +56,7 @@ export function buildQuestionBlocks(teamId : string, question: QuestionWithForec
     ...(question.forecasts.length === 0 ? [{
       'type': 'context',
       'elements': [
-        markdownBlock(`_No forecasts yet_`)
+        markdownBlock(noForecastsMessage)
       ]
     }] : []),
     ...(!question.resolution ? [buildPredictOptions(question)] : []),
@@ -87,29 +67,6 @@ export function buildQuestionBlocks(teamId : string, question: QuestionWithForec
       ]
     }
   ]
-}
-
-function underMaxSubHeader(){
-  return {
-    'type': 'section',
-    'text': markdownBlock(`*All Forecasts*`),
-  }
-}
-
-function overMaxSubHeader(questionId : number){
-  return {
-    'type': 'section',
-    'text': markdownBlock(`*Latest Forecasts*`),
-    'accessory': {
-      'type': 'button',
-      'text': textBlock('View all'),
-      'action_id': toActionId({
-        action: 'viewAllForecastsOnThisQuestion',
-        questionId: questionId,
-      }),
-      'value': 'view_all_forecasts',
-    }
-  }
 }
 
 function getUserNameOrProfileLink(teamId : string, user : UserWithProfilesWithGroups) : string {
@@ -123,12 +80,12 @@ function listUserForecastUpdates(forecasts : Forecast[]) : string {
   if (forecasts.length > maxForecastsPerUser) {
     return `~${displayForecast(forecasts[0])}~ → …` +
       `→ ~${displayForecast(forecasts[forecasts.length - 2])}~ ` + //assumes >= 3 max
-      `→ ${displayForecast(forecasts[forecasts.length - 1])}`
+      `→ *${displayForecast(forecasts[forecasts.length - 1])}*`
   } else if (forecasts.length === 1) {
-    return `${displayForecast(forecasts[0])}`
+    return `*${displayForecast(forecasts[0])}*`
   } else {
     return `${forecasts.slice(0,-1).map(f => `~${displayForecast(f)}~`).join(' → ')}` +
-    ` → ${displayForecast(forecasts[forecasts.length - 1])}`
+    ` → *${displayForecast(forecasts[forecasts.length - 1])}*`
   }
 }
 
@@ -148,10 +105,23 @@ function makeForecastListing(teamId : string, questionId : number, forecasts : F
   // sort the users by most recent forecast
   const sortedUsersAndForecasts = forecastsByUser.sort((a, b) => b[1].slice(-1)[0].createdAt.getTime() - a[1].slice(-1)[0].createdAt.getTime())
 
-  const overMax = sortedUsersAndForecasts.length > maxLatestForecastsVisible
+  const overMax        = sortedUsersAndForecasts.length > maxLatestForecastsVisible
+  const forecastHeader = '*Latest forecasts*'
 
   return [
-    ...(overMax ? [overMaxSubHeader(questionId)] : [underMaxSubHeader()]),
+    {
+      'type': 'section',
+      'text': markdownBlock(forecastHeader),
+      'accessory': {
+        'type': 'button',
+        'text': textBlock('View all'),
+        'action_id': toActionId({
+          action: 'viewForecastLog',
+          questionId: questionId,
+        }),
+        'value': 'view_all_forecasts',
+      }
+    },
     ...sortedUsersAndForecasts.slice(0, overMax ? maxLatestForecastsVisible : sortedUsersAndForecasts.length).map(([user, forecasts]) => ({
       'type': 'context',
       'elements': [

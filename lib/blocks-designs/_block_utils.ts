@@ -1,7 +1,7 @@
-import { Block, DividerBlock, KnownBlock, MrkdwnElement } from "@slack/types"
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, QuestionWithForecasts } from '../../prisma/additional'
+import { Block, DividerBlock, KnownBlock, MrkdwnElement, SectionBlock } from "@slack/types"
+import { getSlackPermalinkFromChannelAndTS, getDateYYYYMMDD, getResolutionEmoji, round, getCommunityForecast } from '../_utils'
 import { feedbackFormUrl } from '../_constants'
-import { getSlackPermalinkFromChannelAndTS } from '../_utils'
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -30,8 +30,8 @@ export interface OverflowAccessoryPart {
   questionId: number
 }
 
-export interface ViewAllForecastsBtnActionParts {
-  action: 'viewAllForecastsOnThisQuestion'
+export interface ViewForecastLogBtnActionParts {
+  action: 'viewForecastLog'
   questionId: number
 }
 
@@ -72,7 +72,7 @@ export interface HomeAppPageNavigationActionParts {
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
   | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
-  | HomeAppPageNavigationActionParts | ViewAllForecastsBtnActionParts
+  | HomeAppPageNavigationActionParts | ViewForecastLogBtnActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
@@ -145,4 +145,32 @@ export async function getQuestionTitleLink(teamId : string, question: QuestionWi
     return `*<${slackPermalink}|${question.title}>*`
   }
   return questionTitle
+}
+
+export function maybeQuestionResolutionBlock(question : QuestionWithForecastWithProfileAndUserWithProfilesWithGroups) : SectionBlock[] {
+  return (question.resolution ? [{
+    'type': 'section',
+    // NB: this assumes that the author resolved the question
+    'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by <@${question.profile.slackId}>`
+      + (question.resolvedAt ? ` on ${getDateYYYYMMDD(question.resolvedAt)}` : '')),
+  } as SectionBlock] : [])
+}
+
+export function questionForecastInformationBlock(question: QuestionWithForecasts){
+  const numUniqueForecasters = new Set(question.forecasts.map(f => f.authorId)).size
+  return {
+    'type': 'context',
+    'elements': [
+      ...(question.resolution ? [] : [
+        markdownBlock(`Resolves on *${getDateYYYYMMDD(question.resolveBy)}*`)
+      ]),
+      ...(numUniqueForecasters > 0 ? [
+        markdownBlock(`*${
+          round(getCommunityForecast(question, new Date()) * 100, 1)
+        }%* average`)
+      ] : []),
+      markdownBlock(`*${question.forecasts.length}* forecast${question.forecasts.length === 1 ? '' : 's'}`),
+      markdownBlock(`*${numUniqueForecasters}* forecaster${numUniqueForecasters === 1 ? '' : 's'}`),
+    ]
+  }
 }

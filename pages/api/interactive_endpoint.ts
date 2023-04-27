@@ -1,9 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionModalActionParts, unpackBlockActionId } from '../../lib/blocks-designs/_block_utils'
-import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
 import { deleteQuestion, questionModalSubmitted, showEditQuestionModal } from '../../lib/interactive_handlers/edit_question_modal'
+import { showForecastLogModal } from '../../lib/interactive_handlers/question_forecast_log_modal'
 import { questionOverflowAction } from '../../lib/interactive_handlers/question_overflow'
+import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
 
 import { buttonUndoResolution, resolve } from '../../lib/interactive_handlers/resolve'
 import { submitTextForecast } from '../../lib/interactive_handlers/submit_text_forecast'
@@ -47,6 +48,10 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'homeAppPageNavigation':
         await buttonHomeAppPageNavigation(actionParts, payload)
+        break
+
+      case 'viewForecastLog':
+        await showForecastLogModal(actionParts, payload)
         break
 
       default:
