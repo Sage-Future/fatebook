@@ -500,7 +500,7 @@ export async function backendAnalyticsEvent(name: string, params: AnalyticsEvent
   const apiSecret = process.env.G_ANALYTICS_MEASUREMENT_PROTOCOL_SECRET
 
   if (!measurementId || !apiSecret) {
-    console.error('Missing g analytics measurement ID or API secret')
+    console.log('Missing g analytics measurement ID or API secret. (Ignore unless in production)')
     return
   }
 
