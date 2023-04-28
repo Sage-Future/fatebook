@@ -6,7 +6,7 @@ export function SlackCompose() {
 
   return (
     <div className="bg-white border-gray-200 border-4 rounded-2xl px-2 select-none">
-      <p className="my-4 mx-2">
+      <p className="my-4 mx-2 min-h-[62px]">
         <span className="overflow-hidden border-black md:text-lg lg:md:text-xl">
           {animate ? <SlackComposeContent /> : "/forecast Will we release the podcast by Tuesday?"}
         </span>
@@ -31,6 +31,8 @@ function SlackComposeContent() {
         "/forecast Will we double our users by March?",
         "/forecast Will GPT-5 be released before 2024?",
         "/forecast Will we move office this year?",
+        "/forecast If we share the report publicly, will there be major negative consequences?",
+        "/forecast Will AMF be funding-constrained this year?",
       ]
       const str = demoStrings[demoStringIndex]
       setContent(dirIsRight ? str.slice(0, content.length + 1) : str.slice(0, content.length - 1))
