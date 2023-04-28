@@ -1,9 +1,10 @@
+import { CheckCircleIcon } from "@heroicons/react/24/solid"
+import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
 import { AddToSlack } from "../../components/AddToSlack"
 import Faqs from "../../components/Faqs"
 import Footer from "../../components/Footer"
 import { SlackCompose } from "../../components/SlackCompose"
-import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 
 
@@ -13,7 +14,7 @@ export default function ForSlackPage() {
 
   return (
     <div className="flex flex-col min-h-screen ">
-      {/* <NavbarGeneric /> */}
+      <NextSeo title="Fatebook for Slack" titleTemplate="Fatebook for Slack" />
       <div className="bg-gray-50 grow">
         <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
           <div className="prose mx-auto">
