@@ -17,7 +17,7 @@ type ResolveQuestionDetails = {
 }
 
 export async function buildQuestionResolvedBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages, details : ResolveQuestionDetails | undefined = undefined) {
-  const questionLink       = await getQuestionTitleLink(teamId, question)
+  const questionLink       = await getQuestionTitleLink(question)
   if(question.resolution == null){
     return [
       {
@@ -54,7 +54,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
       'type': 'context',
       'elements': [
         markdownBlock(`<slack://app?team=${teamId}&id=${slackAppId}&tab=home|See your full forecasting history.>`),
-        markdownBlock(`_Thanks for using our bot! We'd love to <${feedbackFormUrl}/|hear your feedback>_`)
+        markdownBlock(`_Thanks for using <https://fatebook.io/for-slack|Fatebook for Slack>! We'd love to <${feedbackFormUrl}/|hear your feedback>_`)
       ]
     }
   ]

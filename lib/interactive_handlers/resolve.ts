@@ -1,6 +1,6 @@
 import { Group, Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionWithAuthorAndQuestionMessagesAndGroups } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessagesAndGroups, QuestionWithScores } from '../../prisma/additional'
 import { ScoreCollection, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
@@ -16,7 +16,7 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
     data: {
       resolved: true,
       resolution: resolution,
-      resolvedAt: new Date()
+      resolvedAt: new Date(),
     },
     include: {
       groups: true,
@@ -52,13 +52,26 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
         include: {
           message: true
         }
-      }
+      },
+      questionScores: true,
     }
   })
 }
 
-async function scoreForecasts(scoreArray : ScoreCollection, question : Question) {
+async function scoreForecasts(scoreArray : ScoreCollection, question : QuestionWithScores) {
   console.log(`updating questionScores for question id: ${question.id}`)
+
+  // in case the question was previously resolved, delete all questionScores
+  // this should only happen if the user pressed resolve yes and no in rapid succession
+  // there's potential for nasty race conditions if this goes wrong...
+  if (question.questionScores) {
+    console.warn("Warning: questionScores already existed for question being resolved. Deleting all previous questionScores.", {dscores: question.questionScores})
+    await prisma.questionScore.deleteMany({
+      where: {
+        questionId: question.id
+      }
+    })
+  }
 
   let updateArray : any[] = []
   for (const id in scoreArray) {
@@ -203,14 +216,13 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
   const question = await dbResolveQuestion(questionid, resolution)
   console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
 
-  // message users first for responsiveness
+  // update ping and question message first for responsiveness
+  await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
   await updateForecastQuestionMessages(question, teamId, "Question resolved!")
 
   const scores = relativeBrierScoring(question.forecasts, question)
   await scoreForecasts(scores, question)
   await messageUsers(scores, question)
-
-  await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
 }
 
 export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, teamId?: string) {

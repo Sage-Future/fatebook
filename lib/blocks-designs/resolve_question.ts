@@ -4,12 +4,15 @@ import { ResolveQuestionActionParts, feedbackOverflow, getQuestionTitleLink, mar
 
 export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages) {
   const answerLabels = ['yes', 'no', 'ambiguous'] as ResolveQuestionActionParts['answer'][]
-  const questionTitle     = await getQuestionTitleLink(teamId, question)
+  const questionTitle     = await getQuestionTitleLink(question)
   const resolutionDateStr = conciseDateTime(question.resolveBy, false)
   return [
     {
       "type": "section",
-      "text": markdownBlock(`Hey ${question?.profile.user?.name || "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`),
+      "text": question.resolvedAt == null ?
+        (markdownBlock(`Hey ${question?.profile.slackId ? `<@${question.profile.slackId}>` : "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`))
+        :
+        markdownBlock(`_You resolved ${questionTitle} as ${question.resolution}_`),
       "accessory": feedbackOverflow()
     },
     {
@@ -31,7 +34,6 @@ export async function buildResolveQuestionBlocks(teamId: string, question: Quest
             {
               "type":"button",
               "text": textBlock("Undo resolution"),
-              "style": "danger",
               "action_id": toActionId({
                 action: "undoResolve",
                 questionId: question.id

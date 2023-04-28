@@ -74,7 +74,7 @@ async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWi
 }
 
 async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
-  const questionTitle = await getQuestionTitleLink(teamId, forecast.question)
+  const questionTitle = await getQuestionTitleLink(forecast.question)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
   const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber())

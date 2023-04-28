@@ -251,9 +251,9 @@ export function tokenizeString(instring : string) {
   return array
 }
 
-export async function getSlackPermalinkFromChannelAndTS(teamId: string, channel: string, timestamp: string){
+export async function getSlackPermalinkFromChannelAndTS(messageTeamId: string, channel: string, timestamp: string){
   const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
-  const data = await callSlackApi(teamId, null, url, 'get', false) as {ok: boolean, permalink: string}
+  const data = await callSlackApi(messageTeamId, null, url, 'get', false) as {ok: boolean, permalink: string}
   if (data.ok === false) {
     console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
   }

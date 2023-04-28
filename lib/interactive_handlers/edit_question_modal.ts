@@ -154,7 +154,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
     const questionBlocks = buildQuestionBlocks(updatedQuestion)
 
     for (const slackMessage of updatedQuestion.questionMessages) {
-      const response = await updateMessage(payload.user.team_id, {
+      const response = await updateMessage(slackMessage.message.teamId, {
         channel: slackMessage.message.channel,
         ts: slackMessage.message.ts,
         text: `Question edited: *${updatedQuestion.title}*`,
