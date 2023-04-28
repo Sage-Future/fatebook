@@ -70,7 +70,7 @@ export function buildQuestionBlocks(question: QuestionWithForecastsAndUsersAndAu
     },
     ...(question.notes ? [{
       'type': 'section',
-      'text': markdownBlock(question.notes)
+      'text': markdownBlock(`${question.notes}`)
     } as SectionBlock] : []),
     ...question.forecasts.map((forecast) => (
       {
