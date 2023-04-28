@@ -1,19 +1,33 @@
+import { useRouter } from "next/router"
 import { AddToSlack } from "../../components/AddToSlack"
 import Faqs from "../../components/Faqs"
 import Footer from "../../components/Footer"
 import { SlackCompose } from "../../components/SlackCompose"
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
+
+
 
 export default function ForSlackPage() {
+  const router = useRouter()
+  const { installedTo } = router.query
+
   return (
     <div className="flex flex-col min-h-screen ">
       {/* <NavbarGeneric /> */}
       <div className="bg-gray-50 grow">
-        <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-4xl">
+        <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
           <div className="prose mx-auto">
             <h2 className="text-3xl mb-2 font-extrabold text-gray-900">
               Fatebook for Slack
             </h2>
             <h3 className="text-gray-600">Track your predictions, right where your team works</h3>
+
+            {installedTo && <>
+              <h2 className="my-16 text-3xl text-center">
+                <CheckCircleIcon className="inline mr-4" color="green" height={52}/>
+                {`Added to your workspace ${installedTo}!`}
+              </h2>
+            </>}
 
             <div className="my-14">
               <SlackCompose />
@@ -21,7 +35,7 @@ export default function ForSlackPage() {
 
             <div className="flex mb-20">
               <div className="m-auto">
-                <AddToSlack />
+                <AddToSlack buttonText={installedTo ? "Add to another Slack workspace" : "Add to Slack"} />
               </div>
             </div>
           </div>
@@ -41,6 +55,11 @@ export default function ForSlackPage() {
               question: "How do I make private predictions?",
               answer:
                 "Use the /forecast command in a direct message with @Fatebook.",
+            },
+            {
+              question: "How can I get better at forecasting?",
+              answer:
+                "Try our rapid-feedback training tools on [Quantified Intuitions](https://quantifiedintuitions.org).",
             },
             {
               question: "How can I submit feedback about Fatebook?",
