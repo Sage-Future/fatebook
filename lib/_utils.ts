@@ -253,12 +253,11 @@ export function tokenizeString(instring : string) {
 
 export async function getSlackPermalinkFromChannelAndTS(teamId: string, channel: string, timestamp: string){
   const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
-  const data = await callSlackApi(teamId, null, url, 'get') as {ok: boolean, permalink: string}
+  const data = await callSlackApi(teamId, null, url, 'get', false) as {ok: boolean, permalink: string}
   if (data.ok === false) {
     console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
-    throw new Error('No message found')
   }
-  return data.permalink
+  return data?.permalink
 }
 
 export async function postBlockMessage(teamId: string, channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostClearMessageAdditionalArgs = {}){
@@ -353,7 +352,7 @@ export async function callSlackApi(teamId: string, message: any, url: string, me
   })
   let data = await response.json() as {ok: boolean, error?: string, ts?: string, channel? :string}
   if (data.ok === false) {
-    console.error('Error calling Slack API:', data)
+    console.error('Error calling Slack API:', {response: data, message, url})
     if (throwOnError) throw new Error('Error calling Slack API')
   }
   return data

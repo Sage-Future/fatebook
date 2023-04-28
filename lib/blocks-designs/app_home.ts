@@ -43,12 +43,16 @@ function populateDetails(questionScores : QuestionScore[]) : { recentDetails: Sc
 export async function buildHomeTabBlocks(teamId: string, allUserForecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
   const {recentDetails, overallDetails} = populateDetails(questionScores)
 
+  const formatScore = (score: number, decimals: number = 6) => {
+    return (score || score === 0) ? formatDecimalNicely(score, decimals) : '...'
+  }
+
   const myRecentScoreBlock     = [
     {
       type: 'section',
       'fields': [
-        markdownBlock(`*Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatDecimalNicely(recentDetails.brierScore, 6)}`),
-        markdownBlock(`*Relative Brier score*\n ${formatDecimalNicely(recentDetails.rBrierScore, 6)}`),
+        markdownBlock(`*Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatScore(recentDetails.brierScore)}`),
+        markdownBlock(`*Relative Brier score*\n ${formatScore(recentDetails.rBrierScore)}`),
         //markdownBlock(`*Ranking*\n *${details.ranking}*/${details.totalParticipants}`),
       ]
     }
@@ -57,8 +61,8 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
     {
       type: 'section',
       'fields': [
-        markdownBlock(`*Overall Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatDecimalNicely(overallDetails.brierScore, 6)}`),
-        markdownBlock(`*Overall Relative Brier score*\n ${formatDecimalNicely(overallDetails.rBrierScore, 6)}`),
+        markdownBlock(`*Overall Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatScore(overallDetails.brierScore)}`),
+        markdownBlock(`*Overall Relative Brier score*\n ${formatScore(overallDetails.rBrierScore)}`),
         //markdownBlock(`*Ranking*\n *${details.ranking}*/${details.totalParticipants}`),
       ]
     }
@@ -67,8 +71,14 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
   const activeForecasts = allUserForecasts.filter(f => f.question.resolution == null).sort((a, b) => b.question.createdAt.getTime() - a.question.createdAt.getTime())
   const closedForecasts = allUserForecasts.filter(f => f.question.resolution != null).sort((a, b) => b.question.createdAt.getTime() - a.question.createdAt.getTime())
 
-  const myActiveForecastsBlock : Blocks = await buildGetForecastsBlocks(teamId, activeForecasts, activePage, closedPage, true)
-  const myClosedForecastsBlock : Blocks = await buildGetForecastsBlocks(teamId, closedForecasts, activePage, closedPage, false)
+  const myActiveForecastsBlock : Blocks = await buildGetForecastsBlocks(
+    teamId, activeForecasts, activePage, closedPage, true,
+    '_Time to make your first prediction! Create a question by typing `/forecast` in any channel._'
+  )
+  const myClosedForecastsBlock : Blocks = await buildGetForecastsBlocks(
+    teamId, closedForecasts, activePage, closedPage, false,
+    '_Check here once a question you\'ve forecasted on has resolved._'
+  )
   return [
     headerBlock('Your score for the last 3 months'),
     ...(myRecentScoreBlock),
@@ -96,7 +106,9 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
     {
       'type': 'context',
       'elements': [
-        markdownBlock(`_Built by Sage to help impactful teams seek the truth. Find our other tools on <${quantifiedIntuitionsUrl}|Quantified Intuitions>_`)
+        markdownBlock(`_<https://fatebook.io|Fatebook> is built by Sage to help impactful teams seek the truth._`),
+        markdownBlock(`_Want more Fatebook? <https://fatebook.io/for-slack|Install Fatebook to another Slack workspace>._`),
+        markdownBlock(`_Find our other forecasting tools on <${quantifiedIntuitionsUrl}|Quantified Intuitions>._`),
       ]
     }
 

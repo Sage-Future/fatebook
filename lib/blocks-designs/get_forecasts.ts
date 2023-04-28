@@ -4,7 +4,7 @@ import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/
 import { forecastListColumnSpacing, maxForecastsVisible } from '../_constants'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 
-export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean) : Promise<Blocks> {
+export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)
 
   const page = activeForecast ? activePage : closedPage
@@ -14,7 +14,10 @@ export async function buildGetForecastsBlocks(teamId: string, forecasts: Forecas
   const lastPage   = page == (Math.ceil(latestForecasts.length / maxForecastsVisible) -1)
 
   if(latestForecasts.length == 0) {
-    return [buildEmptyResponseBlock()]
+    return [{
+      'type': 'section',
+      'text': markdownBlock(noForecastsText)
+    }]
   }
 
   return await Promise.all([
@@ -104,13 +107,6 @@ function padForecastPrettily(forecast : string, maxprepad : number , maxpostpad 
 
   const forecastPadded = ' '.repeat(prepad) + '`'+ forecast + '%`' + ' '.repeat(postpad)
   return forecastPadded
-}
-
-function buildEmptyResponseBlock(): KnownBlock {
-  return {
-    'type': 'section',
-    'text': markdownBlock('_Time to make your first prediction! Create a question by typing `/forecast` in any channel._')
-  }
 }
 
 function getLatestForecastPerQuestion(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
