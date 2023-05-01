@@ -60,35 +60,36 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 
   // dealing with duplicate forecasts
   //   check if the last forecast was:
-  //    within 5 minutes
+  //    within 1 minutes
   //    & has the same value
   const lastForecast = await getLastForecast(profile!.id, questionId)
   if (lastForecast && floatEquality(lastForecast.forecast.toNumber(), (number/100))) {
     const lastForecastTime = new Date(lastForecast.createdAt).getTime()
     const now = new Date().getTime()
     const timeDiff = now - lastForecastTime
-    if (timeDiff < 5 * 60 * 1000) {
+    if (timeDiff < 1 * 60 * 1000) {
       console.log(`Duplicate forecast detected for ${profile.id} on ${questionId}\nExiting`)
+      return
     }
-  }else{
-    const forecastCreated = await prisma.forecast.create({
-      data: {
-        profile: {
-          connect: {
-            id: profile.id
-          }
-        },
-        question: {
-          connect: {
-            id: questionId
-          }
-        },
-        forecast: new Decimal(number / 100), // convert 0-100% to 0-1
-      }
-    })
-
-    console.log("Forecast created: ", forecastCreated)
   }
+
+  const forecastCreated = await prisma.forecast.create({
+    data: {
+      profile: {
+        connect: {
+          id: profile.id
+        }
+      },
+      question: {
+        connect: {
+          id: questionId
+        }
+      },
+      forecast: new Decimal(number / 100), // convert 0-100% to 0-1
+    }
+  })
+
+  console.log("Forecast created: ", forecastCreated)
 
   if (payload.message?.ts && payload.channel?.id) {
     await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id)

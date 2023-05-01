@@ -387,7 +387,7 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
 
 async function updateSlackMessages(slackMessages: SlackMessage[], teamId: string, notificationMessage: string, updateBlocks : Blocks) {
   for (const slackMessage of slackMessages) {
-    const response = await updateMessage(teamId, {
+    const response = await updateMessage(slackMessage.teamId, {
       channel: slackMessage.channel,
       ts: slackMessage.ts,
       text: notificationMessage,
