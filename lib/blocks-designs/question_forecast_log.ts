@@ -7,7 +7,7 @@ import { conciseDateTime, displayForecast } from '../../lib/_utils'
 export function buildQuestionForecastLogModalView(question: QuestionWithForecastsAndUsersAndAuthor): ModalView {
   return {
     'type': 'modal',
-    'title': textBlock(`Viewing All Forecasts`),
+    'title': textBlock(`All forecasts`),
     'blocks': [
       {
         'type': 'section',
