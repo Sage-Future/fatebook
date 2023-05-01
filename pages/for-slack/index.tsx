@@ -1,11 +1,11 @@
-import { ChartBarIcon, ChatBubbleOvalLeftIcon, CheckCircleIcon, GlobeAsiaAustraliaIcon, RocketLaunchIcon, TrophyIcon, UserGroupIcon, UsersIcon } from "@heroicons/react/24/solid"
+import { ChartBarIcon, ChatBubbleOvalLeftIcon, CheckCircleIcon, RocketLaunchIcon, TrophyIcon } from "@heroicons/react/24/solid"
 import { NextSeo } from "next-seo"
+import Image from "next/image"
 import { useRouter } from "next/router"
 import { AddToSlack } from "../../components/AddToSlack"
 import Faqs from "../../components/Faqs"
 import Footer from "../../components/Footer"
 import { SlackCompose } from "../../components/SlackCompose"
-import Image from "next/image"
 
 
 
