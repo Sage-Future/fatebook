@@ -24,7 +24,15 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
         include: {
           profile: {
             include: {
-              user: true
+              user: {
+                include: {
+                  profiles: {
+                    include: {
+                      groups: true
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -357,7 +365,15 @@ export async function undoQuestionResolution(questionId: number, groupId: string
         include: {
           profile: {
             include: {
-              user: true
+              user: {
+                include: {
+                  profiles: {
+                    include: {
+                      groups: true
+                    }
+                  }
+                }
+              }
             }
           }
         }

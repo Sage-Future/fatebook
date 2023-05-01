@@ -1,8 +1,22 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils"
+import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage, floatEquality } from "../_utils"
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
+
+export async function getLastForecast(profileId: number, questionId: number) {
+  const forecasts = await prisma.forecast.findMany({
+    where: {
+      authorId: profileId,
+      questionId: questionId,
+    },
+    orderBy: {
+      createdAt: 'desc'
+    },
+    take: 1,
+  })
+  return forecasts[0]
+}
 
 export async function submitTextForecast(actionParts: SubmitTextForecastActionParts, action: BlockActionPayloadAction, payload: BlockActionPayload) {
   if (actionParts.questionId === undefined)
@@ -44,23 +58,37 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
     return
   }
 
-  const forecastCreated = await prisma.forecast.create({
-    data: {
-      profile: {
-        connect: {
-          id: profile.id
-        }
-      },
-      question: {
-        connect: {
-          id: questionId
-        }
-      },
-      forecast: new Decimal(number / 100), // convert 0-100% to 0-1
+  // dealing with duplicate forecasts
+  //   check if the last forecast was:
+  //    within 5 minutes
+  //    & has the same value
+  const lastForecast = await getLastForecast(profile!.id, questionId)
+  if (lastForecast && floatEquality(lastForecast.forecast.toNumber(), (number/100))) {
+    const lastForecastTime = new Date(lastForecast.createdAt).getTime()
+    const now = new Date().getTime()
+    const timeDiff = now - lastForecastTime
+    if (timeDiff < 5 * 60 * 1000) {
+      console.log(`Duplicate forecast detected for ${profile.id} on ${questionId}\nExiting`)
     }
-  })
+  }else{
+    const forecastCreated = await prisma.forecast.create({
+      data: {
+        profile: {
+          connect: {
+            id: profile.id
+          }
+        },
+        question: {
+          connect: {
+            id: questionId
+          }
+        },
+        forecast: new Decimal(number / 100), // convert 0-100% to 0-1
+      }
+    })
 
-  console.log("Forecast created: ", forecastCreated)
+    console.log("Forecast created: ", forecastCreated)
+  }
 
   if (payload.message?.ts && payload.channel?.id) {
     await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id)
@@ -96,7 +124,15 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
         include: {
           profile: {
             include: {
-              user: true
+              user: {
+                include: {
+                  profiles: {
+                    include: {
+                      groups: true
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -116,7 +152,7 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
 
   console.log(`Updating ${questions.length} question messages `, questions)
   for (const question of questions) {
-    const questionBlocks = buildQuestionBlocks(question)
+    const questionBlocks = buildQuestionBlocks(teamId, question)
     await updateMessage(teamId, {
       ts: questionTs,
       channel: channel,

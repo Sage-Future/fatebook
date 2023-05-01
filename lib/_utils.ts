@@ -1,7 +1,7 @@
 import { Forecast, GroupType, PrismaClient, Profile, Resolution, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { PingSlackMessageWithMessage, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, ResolutionSlackMessageWithMessage } from '../prisma/additional'
+import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles, QuestionWithAuthorAndAllMessages, QuestionSlackMessageWithMessage, PingSlackMessageWithMessage, ResolutionSlackMessageWithMessage } from '../prisma/additional'
 import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
@@ -409,8 +409,8 @@ export async function updateResolvePingQuestionMessages(question: QuestionWithAu
   await updateSlackMessages(question.pingResolveMessages.map((x : PingSlackMessageWithMessage) => x.message ), teamId, notificationMessage, updateBlocks)
 }
 
-export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessages, teamId: string, notificationMessage: string) {
-  const updateBlocks = buildQuestionBlocks(question)
+export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles, teamId: string, notificationMessage: string) {
+  const updateBlocks = buildQuestionBlocks(teamId, question)
   await updateSlackMessages(question.questionMessages.map((x : QuestionSlackMessageWithMessage) => x.message), teamId, notificationMessage, updateBlocks)
 }
 
@@ -448,6 +448,10 @@ export function conciseDateTime(date: Date, includeTime = true) {
   if (includeTime)
     timeStr = `${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())} on `
   return `${timeStr}${getDateYYYYMMDD(date)}`
+}
+
+export function displayForecast(forecast: Forecast): string {
+  return `${formatDecimalNicely(forecast.forecast.toNumber() * 100)}%`
 }
 
 export function formatDecimalNicely(num : number, decimalPlaces : number = maxDecimalPlaces) : string {
