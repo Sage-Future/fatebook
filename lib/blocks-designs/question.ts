@@ -6,7 +6,9 @@ import { noForecastsMessage, feedbackFormUrl, maxLatestForecastsVisible, maxFore
 import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId, maybeQuestionResolutionBlock, questionForecastInformationBlock } from './_block_utils'
 
 export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups): Blocks {
-
+  const hideForecasts =
+    (question.hideForecastsUntil && question.hideForecastsUntil?.getTime() > Date.now())
+    || false
 
   return [
     {
@@ -47,12 +49,12 @@ export function buildQuestionBlocks(teamId : string, question: QuestionWithForec
       }
     },
     ...maybeQuestionResolutionBlock(question),
-    questionForecastInformationBlock(question),
+    questionForecastInformationBlock(question, hideForecasts),
     ...(question.notes ? [{
       'type': 'section',
       'text': markdownBlock(`${question.notes}`)
     } as SectionBlock] : []),
-    ...makeForecastListing(teamId, question.id, question.forecasts),
+    ...makeForecastListing(teamId, question.id, question.forecasts, hideForecasts, question.hideForecastsUntil),
     ...(question.forecasts.length === 0 ? [{
       'type': 'context',
       'elements': [
@@ -93,7 +95,23 @@ function listUserForecastUpdates(forecasts : Forecast[]) : string {
 }
 
 
-function makeForecastListing(teamId : string, questionId : number, forecasts : ForecastWithProfileAndUserWithProfilesWithGroups[]) {
+function makeForecastListing(teamId : string, questionId : number,
+  forecasts : ForecastWithProfileAndUserWithProfilesWithGroups[],
+  hideForecasts : boolean, hideForecastsUntil : Date | null) {
+  const forecastHeader = '*Latest forecasts*'
+
+  if(hideForecasts){
+    return [{
+      'type': 'section',
+      'text': markdownBlock(forecastHeader)
+    },
+    ...(forecasts.length != 0 ? [{
+      'type': 'context',
+      'elements': [
+        markdownBlock(`Forecasts are hidden until ${conciseDateTime(hideForecastsUntil!, false)}.`)
+      ]}] : [])
+    ]
+  }
   // a good adjustment would be to get each user
   //   then iterate over all the forecasts and cluster them for that user
 
@@ -109,7 +127,6 @@ function makeForecastListing(teamId : string, questionId : number, forecasts : F
   const sortedUsersAndForecasts = forecastsByUser.sort((a, b) => b[1].slice(-1)[0].createdAt.getTime() - a[1].slice(-1)[0].createdAt.getTime())
 
   const overMax        = sortedUsersAndForecasts.length > maxLatestForecastsVisible
-  const forecastHeader = '*Latest forecasts*'
 
   return [
     {

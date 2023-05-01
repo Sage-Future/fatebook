@@ -1,9 +1,11 @@
 import { Question } from '@prisma/client'
 import { ActionsBlock, ModalView } from '@slack/types'
 import { getDateYYYYMMDD } from '../../lib/_utils'
-import { textBlock, toActionId } from './_block_utils'
+import { textBlock, markdownBlock, toActionId, CheckboxOption } from './_block_utils'
 
-export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string): ModalView {
+export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string, isHidingForecasts: boolean = false): ModalView {
+  const defaultHideUntil = question?.resolveBy || new Date(Date.now() + ( 3600 * 1000 * 24))  // default = tomorrow
+
   return {
     'type': 'modal',
     'callback_id': `question_modal${toActionId({
@@ -17,12 +19,13 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
     'close': textBlock('Cancel'),
     'blocks': [
       {
+        'block_id': 'question_title',
         'type': 'input',
         'label': textBlock('Question'),
         'element': {
           'type': 'plain_text_input',
           'action_id': 'forecast_question',
-          'placeholder': textBlock('"Will humans walk on Mars by 2050?"'),
+          'placeholder': textBlock('Will humans walk on Mars by 2050?'),
           'initial_value': question?.title || '',
         },
       },
@@ -42,6 +45,7 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
         },
       },
       {
+        'block_id': 'notes',
         'type': 'input',
         'label': textBlock('Notes'),
         'element': {
@@ -53,21 +57,8 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
         },
         'optional': true,
       },
-      // TODO - add options like this:
-      // {
-      //   'type': 'input',
-      //   'element': {
-      //     'type': 'checkboxes',
-      //     'options': [
-      //       {
-      //         'text': textBlock('Delphi mode: Hide other people\'s forecasts until you forecast'),
-      //         'value': 'value-0'
-      //       }
-      //     ],
-      //     'action_id': 'checkboxes-action'
-      //   },
-      //   'label': textBlock('Options')
-      // },
+      optionsCheckboxes(isHidingForecasts, isCreating, defaultHideUntil),
+      ...(isHidingForecasts ? [hideForecastsUntilDatePicker(isCreating, defaultHideUntil)] : []),
       ...(isCreating ? [] : [{ // only show delete button if editing
         'type': 'actions',
         'elements': [
@@ -76,11 +67,11 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
             'style': 'danger',
             'text': textBlock('Delete question'),
             confirm: {
-              title: textBlock("Delete question?"),
-              text: textBlock("Are you sure you want to delete this question?"),
-              confirm: textBlock("Delete"),
-              deny: textBlock("Cancel"),
-              style: "danger",
+              title: textBlock('Delete question?'),
+              text: textBlock('Are you sure you want to delete this question?'),
+              confirm: textBlock('Delete'),
+              deny: textBlock('Cancel'),
+              style: 'danger',
             },
             'action_id': toActionId({
               action: 'deleteQuestion',
@@ -92,3 +83,52 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
     ]
   }
 }
+
+export const checkboxes : CheckboxOption[] = [
+  {
+    label: 'Hide forecasts until a specific date to prevent anchoring',
+    valueLabel: 'hide_forecasts_until_date'
+  }
+]
+
+function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hideUntil : Date){
+  return {
+    'block_id': 'option_checkboxes',
+    "type": "section",
+    "text": markdownBlock('*Options*'),
+    "accessory": {
+      'type': 'checkboxes',
+      'options': [
+        ...checkboxes.map((cb : CheckboxOption) => ({
+          'text': textBlock(cb.label),
+          'value': cb.valueLabel
+        }))
+      ],
+      'action_id': toActionId({
+        action: 'optionsCheckBox',
+        questionResolutionDate: hideUntil,
+        isCreating
+      })
+    }
+  }
+}
+
+function hideForecastsUntilDatePicker(isCreating : boolean, hideUntil : Date){
+  return {
+    'type': 'section',
+    'text': markdownBlock('Hide all forecasts until:'),
+    'accessory': {
+      'type': 'datepicker',
+      'initial_date': getDateYYYYMMDD(hideUntil),
+      'placeholder': {
+        'type': 'plain_text',
+        'text': 'Select a date',
+        'emoji': true
+      },
+      'action_id': toActionId({
+        action: 'updateHideForecastsDate'
+      })
+    }
+  }
+}
+

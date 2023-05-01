@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Workspace {
-  teamId     String   @id @unique
-  teamName   String
-  token      String
-  createdAt  DateTime @default(now())
+  teamId    String   @id @unique
+  teamName  String
+  token     String
+  createdAt DateTime @default(now())
 }
 
 model Forecast {
@@ -26,79 +26,80 @@ model Forecast {
 }
 
 model QuestionScore {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  relativeScore Decimal
-  absoluteScore Decimal
-  rank          Int
-  profileId     Int
-  questionId    Int
-  profile       Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  question      Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  profileQuestionComboId Int @unique
+  id                     Int      @id @default(autoincrement())
+  createdAt              DateTime @default(now())
+  relativeScore          Decimal
+  profileId              Int
+  questionId             Int
+  profileQuestionComboId Int      @unique
+  absoluteScore          Decimal
+  rank                   Int
+  profile                Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  question               Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model Question {
-  id                  Int             @id @default(autoincrement())
-  createdAt           DateTime        @default(now())
+  id                  Int                      @id @default(autoincrement())
+  createdAt           DateTime                 @default(now())
   comment             String?
   authorId            Int
-  title               String          @db.VarChar(255)
-  forecasts           Forecast[]
+  title               String                   @db.VarChar(255)
   resolveBy           DateTime
-  resolvedAt          DateTime?
-  resolved            Boolean         @default(false)
-  profile             Profile         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  groups              Group[]
+  resolved            Boolean                  @default(false)
+  pingedForResolution Boolean                  @default(false)
   resolution          Resolution?
-  pingedForResolution Boolean         @default(false)
+  resolvedAt          DateTime?
+  notes               String?
+  hideForecastsUntil  DateTime?
+  forecasts           Forecast[]
+  pingResolveMessages PingSlackMessage[]
+  profile             Profile                  @relation(fields: [authorId], references: [id], onDelete: Cascade)
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
-  pingResolveMessages PingSlackMessage[]
   resolutionMessages  ResolutionSlackMessage[]
-  notes               String?
+  groups              Group[]                  @relation("GroupToQuestion")
 }
 
 model ResolutionSlackMessage {
-  id           Int @id @default(autoincrement())
-  questionId   Int
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  detailsId    Int  @unique
-  message      SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  id         Int          @id @default(autoincrement())
+  questionId Int
+  detailsId  Int          @unique
+  message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model PingSlackMessage {
-  id           Int @id @default(autoincrement())
-  questionId   Int
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  detailsId    Int  @unique
-  message      SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  id         Int          @id @default(autoincrement())
+  questionId Int
+  detailsId  Int          @unique
+  message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model QuestionSlackMessage {
-  id           Int @id @default(autoincrement())
-  questionId   Int
-  question     Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  detailsId    Int  @unique
-  message      SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  id         Int          @id @default(autoincrement())
+  updatedAt  DateTime     @default(now())
+  questionId Int
+  detailsId  Int          @unique
+  message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model SlackMessage {
-  id          Int @id @default(autoincrement())
-  ts          String // Slack timestamp identifier for messages
-  channel     String
-  teamId      String
-  // could store threadts here
-  questionSlackMessage   QuestionSlackMessage?
+  id                     Int                     @id @default(autoincrement())
+  ts                     String
+  channel                String
+  teamId                 String
   pingSlackMessage       PingSlackMessage?
+  questionSlackMessage   QuestionSlackMessage?
   resolutionSlackMessage ResolutionSlackMessage?
 }
 
 model User {
   id        Int       @id @default(autoincrement())
+  name      String?
   createdAt DateTime  @default(now())
   email     String    @unique
-  name      String?
   imageUrl  String?
   profiles  Profile[]
 }
@@ -106,13 +107,13 @@ model User {
 model Profile {
   id             Int             @id @default(autoincrement())
   createdAt      DateTime        @default(now())
-  groups         Group[]
   slackId        String?
   userId         Int
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   forecasts      Forecast[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions      Question[]
   questionScores QuestionScore[]
+  groups         Group[]         @relation("GroupToProfile")
 }
 
 model Group {
@@ -121,8 +122,8 @@ model Group {
   createdAt   DateTime   @default(now())
   name        String     @db.VarChar(255)
   slackTeamId String?
-  questions   Question[]
-  profiles    Profile[]
+  profiles    Profile[]  @relation("GroupToProfile")
+  questions   Question[] @relation("GroupToQuestion")
 }
 
 enum GroupType {

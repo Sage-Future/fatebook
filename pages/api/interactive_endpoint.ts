@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionModalActionParts, unpackBlockActionId } from '../../lib/blocks-designs/_block_utils'
-import { deleteQuestion, questionModalSubmitted, showEditQuestionModal } from '../../lib/interactive_handlers/edit_question_modal'
+import { deleteQuestion, questionModalSubmitted, showEditQuestionModal, updateFromCheckboxes } from '../../lib/interactive_handlers/edit_question_modal'
 import { showForecastLogModal } from '../../lib/interactive_handlers/question_forecast_log_modal'
 import { questionOverflowAction } from '../../lib/interactive_handlers/question_overflow'
 import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
@@ -16,6 +16,15 @@ async function blockActions(payload: BlockActionPayload) {
       return
     }
     const actionParts = unpackBlockActionId(action.action_id)
+    let callbackParts : QuestionModalActionParts = {action: 'qModal',
+      isCreating: false,
+      channel: '',
+    }
+    if (payload.view?.callback_id?.startsWith('question_modal')) {
+      // extract callback_id after 'question_modal'
+      const actionId = payload.view.callback_id.substring('question_modal'.length)
+      callbackParts = unpackBlockActionId(actionId) as QuestionModalActionParts
+    }
     switch (actionParts.action) {
       case 'resolve':
         console.log('  resolve')
@@ -28,6 +37,10 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'updateResolutionDate':
         console.log('  updateResolutionDate: user changed resolution date in modal, do nothing')
+        break
+
+      case 'updateHideForecastsDate':
+        console.log('  updateHideForecastsDate: user changed hide date in modal, do nothing')
         break
 
       case 'editQuestionBtn':
@@ -54,6 +67,10 @@ async function blockActions(payload: BlockActionPayload) {
         await showForecastLogModal(actionParts, payload)
         break
 
+      case 'optionsCheckBox':
+        await updateFromCheckboxes(actionParts, payload, callbackParts.channel)
+        break
+
       default:
         console.warn('Unknown action: ', actionParts)
         break
@@ -73,7 +90,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'view_submission':
       console.log('view_submission')
       if (payload.view?.callback_id?.startsWith('question_modal')) {
-        // should be dealt with in middleware.ts
         // extract callback_id after 'question_modal'
         const actionId = payload.view.callback_id.substring('question_modal'.length)
         const actionParts = unpackBlockActionId(actionId) as QuestionModalActionParts

@@ -58,6 +58,7 @@ function getQuestion(days : number) : Question {
     pingedForResolution: true,
     authorId: 0,
     notes: null,
+    hideForecastsUntil: null,
   }
 }
 

@@ -1,6 +1,6 @@
 {
   "crons": [{
-    "path": "/api/check_for_resolution",
+    "path": "/api/check_for_message_updates",
     "schedule": "0 1 * * *"
   }]
 }

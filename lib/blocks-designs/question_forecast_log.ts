@@ -5,6 +5,9 @@ import { maybeQuestionResolutionBlock, questionForecastInformationBlock, markdow
 import { conciseDateTime, displayForecast } from '../../lib/_utils'
 
 export function buildQuestionForecastLogModalView(question: QuestionWithForecastsAndUsersAndAuthor): ModalView {
+  const hideForecasts =
+    (question.hideForecastsUntil && question.hideForecastsUntil?.getTime() > Date.now())
+    || false
   return {
     'type': 'modal',
     'title': textBlock(`All forecasts`),
@@ -14,7 +17,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
         'text': markdownBlock(`*${question.title}*`),
       },
       ...maybeQuestionResolutionBlock(question),
-      questionForecastInformationBlock(question),
+      questionForecastInformationBlock(question, hideForecasts),
       ...question.forecasts
         .sort((b, a) => a.createdAt.getTime() - b.createdAt.getTime())
         .map((forecast) => (

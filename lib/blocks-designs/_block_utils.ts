@@ -1,7 +1,8 @@
 import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, QuestionWithForecasts } from '../../prisma/additional'
-import { Block, DividerBlock, KnownBlock, MrkdwnElement, SectionBlock } from "@slack/types"
+import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
 import { getSlackPermalinkFromChannelAndTS, getDateYYYYMMDD, getResolutionEmoji, round, getCommunityForecast } from '../_utils'
 import { feedbackFormUrl } from '../_constants'
+import { checkboxes } from './question_modal'
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -23,6 +24,10 @@ export interface QuestionModalActionParts {
 
 export interface UpdateResolutionDateActionParts {
   action: 'updateResolutionDate'
+}
+
+export interface UpdateHideForecastsDateActionParts {
+  action: 'updateHideForecastsDate'
 }
 
 export interface OverflowAccessoryPart {
@@ -56,6 +61,12 @@ export interface QuestionOverflowActionParts {
   questionId: number
 }
 
+export interface OptionsCheckBoxActionParts {
+  action: 'optionsCheckBox'
+  questionResolutionDate: Date
+  isCreating: boolean
+}
+
 export interface DeleteQuestionActionParts {
   action: 'deleteQuestion'
   questionId: number
@@ -69,10 +80,14 @@ export interface HomeAppPageNavigationActionParts {
   isForActiveForecasts: boolean
 }
 
+export type CheckboxOption = {
+  label: string
+  valueLabel: string
+}
 
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
   | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
-  | HomeAppPageNavigationActionParts | ViewForecastLogBtnActionParts
+  | HomeAppPageNavigationActionParts | ViewForecastLogBtnActionParts | OptionsCheckBoxActionParts | UpdateHideForecastsDateActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
@@ -156,7 +171,7 @@ export function maybeQuestionResolutionBlock(question : QuestionWithForecastWith
   } as SectionBlock] : [])
 }
 
-export function questionForecastInformationBlock(question: QuestionWithForecasts){
+export function questionForecastInformationBlock(question: QuestionWithForecasts, hideForecasts : boolean){
   const numUniqueForecasters = new Set(question.forecasts.map(f => f.authorId)).size
   return {
     'type': 'context',
@@ -166,11 +181,28 @@ export function questionForecastInformationBlock(question: QuestionWithForecasts
       ]),
       ...(numUniqueForecasters > 0 ? [
         markdownBlock(`*${
-          round(getCommunityForecast(question, new Date()) * 100, 1)
+          hideForecasts
+            ? '? '
+            : round(getCommunityForecast(question, new Date()) * 100, 1)
         }%* average`)
       ] : []),
       markdownBlock(`*${question.forecasts.length}* forecast${question.forecasts.length === 1 ? '' : 's'}`),
       markdownBlock(`*${numUniqueForecasters}* forecaster${numUniqueForecasters === 1 ? '' : 's'}`),
     ]
   }
+}
+
+export type OptionSelection = {
+  text: PlainTextElement
+  value: string
+}
+
+export function parseSelectedCheckboxOptions(optionSelections: OptionSelection[]){
+  return checkboxes.map((cb) => {
+    const option = optionSelections.find((os) => os.value === cb.valueLabel)
+    return {
+      ...cb,
+      value: option ? true : false
+    }
+  })
 }

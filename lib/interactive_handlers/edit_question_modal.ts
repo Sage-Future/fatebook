@@ -2,7 +2,7 @@ import { Question } from '@prisma/client'
 import * as chrono from 'chrono-node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import prisma, { backendAnalyticsEvent, callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
-import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, textBlock } from '../blocks-designs/_block_utils'
+import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, OptionsCheckBoxActionParts, textBlock, parseSelectedCheckboxOptions } from '../blocks-designs/_block_utils'
 import { buildQuestionBlocks } from '../blocks-designs/question'
 import { buildEditQuestionModalView } from '../blocks-designs/question_modal'
 import { createForecastingQuestion } from '../slash_handlers/_create_forecast'
@@ -88,18 +88,23 @@ interface ViewStateValues {
 }
 
 export async function questionModalSubmitted(payload: any, actionParts: QuestionModalActionParts) {
-  function getVal(actionId: string) {
+  function getVal(actionId: string, throwIfMissing = true) {
     const blockObj = Object.values(payload.view.state.values as ViewStateValues).find((v) => v[actionId] !== undefined)
-    if (!blockObj) {
+    if (!blockObj && throwIfMissing) {
       console.error("missing blockObj for actionId", actionId, ". values: ", payload.view.state.values)
       throw new Error("missing blockObj for actionId")
     }
-    return blockObj[actionId]
+    return blockObj? blockObj[actionId] : undefined
   }
+  console.log('    blockObj', Object.values(payload.view.state.values as ViewStateValues))
 
   const question = getVal('forecast_question')?.value
   const resolutionDate = getVal('{"action":"updateResolutionDate"}')?.selected_date
   const notes = getVal('notes')?.value
+
+  const hideForecastsUntilStr = getVal('{"action":"updateHideForecastsDate"}', false)?.selected_date
+  console.log('    hideForecastsUntilStr', hideForecastsUntilStr)
+  const hideForecastsUntil = hideForecastsUntilStr ? new Date(hideForecastsUntilStr) : undefined
 
   if (!question || !resolutionDate) {
     console.error("missing question or resolution date")
@@ -117,6 +122,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       groupId,
       profile,
       notes,
+      hideForecastsUntil
     })
   } else {
     const updatedQuestion = await prisma.question.update({
@@ -127,6 +133,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
         title: question,
         resolveBy: new Date(resolutionDate),
         notes,
+        hideForecastsUntil,
       },
       include: {
         forecasts: {
@@ -238,4 +245,18 @@ export async function deleteQuestion(actionParts: DeleteQuestionActionParts, pay
     team: payload.user.team_id,
     user: payload.user.id,
   })
+}
+
+export async function updateFromCheckboxes(actionParts: OptionsCheckBoxActionParts, payload: any, channel : string) {
+  const checkboxOptions = parseSelectedCheckboxOptions(payload.actions?.[0].selected_options)
+  const updateHideForecasts = checkboxOptions.find((cb) => cb.valueLabel === 'hide_forecasts_until_date')?.value
+  const questionPart = {
+    resolveBy: new Date(actionParts.questionResolutionDate),
+  }
+  const newView = buildEditQuestionModalView(questionPart, actionParts.isCreating, channel, updateHideForecasts)
+
+  await callSlackApi(payload.view.team_id, {
+    view_id: payload.view.id,
+    view: newView,
+  }, 'https://slack.com/api/views.update')
 }
