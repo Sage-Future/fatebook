@@ -63,6 +63,11 @@ export default function ForSlackPage() {
                 "Anyone in the channel where you asked the question can forecast.",
             },
             {
+              question: "Where can I use /forecast?",
+              answer:
+                "You can use /forecast in any channel."
+            },
+            {
               question: "Does the app have access to my team's Slack messages?",
               answer:
                 "The app only receives messages where you use the /forecast command or mention @Fatebook."
