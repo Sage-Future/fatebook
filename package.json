@@ -12,7 +12,8 @@
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios"
   },
   "git": {
-    "pre-commit": "lint"
+    "pre-commit": "lint",
+    "pre-push": "build"
   },
   "dependencies": {
     "@capacitor/android": "^4.8.0",
