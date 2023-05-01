@@ -58,8 +58,12 @@ export default async function testScoring(req: VercelRequest, res: VercelRespons
   })
 
   for (const q of qs) {
-    await updateForecastQuestionMessages(q, q.groups[0].slackTeamId!, "")
-    //console.log(q.title)
+    console.log(`Updating - ${q.title}`)
+    try {
+      await updateForecastQuestionMessages(q, q.groups[0].slackTeamId!, "")
+    } catch (e) {
+      console.log(`  ${e}`)
+    }
   }
   return res.status(200).json(qs)
 }
