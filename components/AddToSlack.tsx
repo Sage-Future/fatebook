@@ -8,9 +8,9 @@ export function AddToSlack({
  }) {
   return (
     <Link href="https://fatebook.io/api/auth/install">
-      <button className="my-4 text-xl bg-white text-black hover:bg-indigo-50">
+      <button className="my-4 text-2xl py-4 px-6 shadow-2xl shadow-indigo-500 hover:scale-105 transition-transform bg-white text-black font-semibold hover:bg-white">
         <>
-          <Image src="/slack-logo.svg" width={40} height={40} className="m-0" alt="" />
+          <Image src="/slack-logo.svg" width={60} height={60} className="m-0" alt="" />
           <span>{buttonText}</span>
         </>
       </button>

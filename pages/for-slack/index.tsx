@@ -41,10 +41,6 @@ export default function ForSlackPage() {
               </div>
             </div>
 
-            <div className="my-8 p-1 bg-white">
-              <Image src={"/question_screenshot.png"} className="mx-auto" alt="" width={600} height={200} />
-            </div>
-
             <div className="my-4">
               <h2>{"Why build a culture of forecasting?"}</h2>
               <ul className="list-none space-y-4 pl-0">
@@ -53,6 +49,10 @@ export default function ForSlackPage() {
                 <li className="flex items-center space-x-3"><ChartBarIcon className="flex-shrink-0 mr-2 w-6 h-6 text-indigo-500 inline-block" /><span>{"Build your track record"}</span></li>
                 <li className="flex items-center space-x-3"><TrophyIcon className="flex-shrink-0 mr-2 w-6 h-6 text-indigo-500 inline-block" /><span>{"Trust your most reliable forecasters"}</span></li>
               </ul>
+            </div>
+
+            <div className="my-8 p-1 bg-white">
+              <Image src={"/question_screenshot.png"} className="mx-auto" alt="" width={600} height={200} />
             </div>
           </div>
 
