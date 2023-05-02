@@ -6,7 +6,7 @@ import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
 
-import { maxDecimalPlaces } from './_constants'
+import { TEST_WORKSPACES, maxDecimalPlaces } from './_constants'
 import { Blocks } from './blocks-designs/_block_utils'
 
 const prisma = new PrismaClient()
@@ -174,6 +174,7 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
     })
     await backendAnalyticsEvent("new_user", {
       platform: "slack",
+      team: teamId,
     })
   }else{
     // create the profile if they don't exist
@@ -185,6 +186,7 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
     })
     await backendAnalyticsEvent("new_profile_for_existing_user", {
       platform: "slack",
+      team: teamId,
     })
   }
   // see above for why findFirst is used
@@ -234,6 +236,7 @@ export async function getGroupIDFromSlackID(slackTeamId : string, createGroupIfN
     await backendAnalyticsEvent("new_workspace", {
       platform: "slack",
       name: slackWorkspaceName,
+      team: slackTeamId,
     })
 
   } else if (!group) {
@@ -496,11 +499,17 @@ export function floatEquality(a : number, b : number, tolerance : number = 0.000
 
 export interface AnalyticsEventParams {
   platform: 'slack' | 'web'
+  team?: string
   [key: string]: any
 }
 export async function backendAnalyticsEvent(name: string, params: AnalyticsEventParams) {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
   const apiSecret = process.env.G_ANALYTICS_MEASUREMENT_PROTOCOL_SECRET
+
+  if (process.env.NODE_ENV !== 'production' || (params.team && TEST_WORKSPACES.includes(params.team))) {
+    console.log('Skipping analytics event because test workspace or not in production: ', name)
+    return
+  }
 
   if (!measurementId || !apiSecret) {
     console.log('Missing g analytics measurement ID or API secret. (Ignore unless in production)')

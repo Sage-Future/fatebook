@@ -23,3 +23,17 @@ export const forecastListColumnSpacing  : number = 14
 
 export const feedbackFormUrl = 'https://forms.gle/nHkwvMFCjtNBHAT69'
 export const quantifiedIntuitionsUrl = 'https://quantifiedintuitions.org/'
+
+// Special workspaces
+// Omit from analytics
+export const TEST_WORKSPACES = [
+  "T03051N3XQR", // Sage
+  "T04U374T602", // ForecastBot
+  "T052V4YQDPS", // forecast-test-2
+  "T0532NY1SV8", // Adam ForecastBot
+  "T0554AC87T6", // fatebook-staging
+]
+// Show extra install message
+export const CONNECTOR_WORKSPACES = [
+
+]

@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { postEphemeralTextMessage } from '../../lib/_utils'
+import { backendAnalyticsEvent, postEphemeralTextMessage } from '../../lib/_utils'
 import { refreshAppHome } from '../../lib/interactive_handlers/app_home'
 import { slackAppId } from '../../lib/_constants'
 
@@ -33,6 +33,7 @@ export default async function eventsApiHandler(req: VercelRequest, res: VercelRe
         `To ask a new forecasting question, type /forecast in any channel. `
         + `Or <slack://app?team=${reqbody.team_id}&id=${slackAppId}&tab=home|see more info and your full forecasting history.>`
       )
+      await backendAnalyticsEvent('app_mention', { team: reqbody.team_id, platform: 'slack' })
       break
 
     default:
