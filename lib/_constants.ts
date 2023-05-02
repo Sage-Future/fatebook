@@ -33,6 +33,7 @@ export const TEST_WORKSPACES = [
   "T0532NY1SV8", // Adam ForecastBot
   "T0554AC87T6", // fatebook-staging
 ]
-// Show extra install message
+// Show extra `install` note in questions in these workspaces
 export const CONNECTOR_WORKSPACES = [
+  "TEQ28RPAN", // EA Forecasting + Epistemics
 ] as string[]
