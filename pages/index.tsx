@@ -12,7 +12,7 @@ export default function HomePage() {
             </h2>
             <h3 className="text-gray-600">Track your predictions, make better decisions</h3>
 
-            <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: available for alpha testers.</p>
+            <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: out now.</p>
 
             <p><b>Fatebook for web</b>: coming soon.</p>
 
