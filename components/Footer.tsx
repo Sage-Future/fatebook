@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function Footer({
   showReportProblem = false
 }: {
@@ -118,8 +120,9 @@ export default function Footer({
             </svg>
           </a>
         </div>
-        <div className="mt-8 md:mt-0 md:order-1">
-          <p className="text-center text-base text-gray-400">Sage Future Inc</p>
+        <div className="mt-8  text-center md:mt-0 md:order-1 md:ml-8 md:text-left">
+          <p className="text-base text-gray-400">Sage Future Inc</p>
+          <p className="text-gray-300 my-1"><Link className="mr-4" href="/privacy">Privacy Policy</Link> <Link href="/terms">Terms of Use</Link></p>
         </div>
       </div>
     </footer>

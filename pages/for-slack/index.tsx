@@ -51,7 +51,7 @@ export default function ForSlackPage() {
               </ul>
             </div>
 
-            <div className="my-8 p-1 bg-white">
+            <div className="my-8 p-1 bg-white hover:scale-[1.02] transition-transform">
               <Image src={"/question_screenshot.png"} className="mx-auto" alt="" width={600} height={200} />
             </div>
           </div>
