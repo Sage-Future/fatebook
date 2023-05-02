@@ -2,7 +2,7 @@ import { Question, Resolution, Group, Forecast } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
 import { conciseDateTime, getResolutionEmoji, displayForecast } from '../_utils'
 import {  QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
-import { noForecastsMessage, feedbackFormUrl, maxLatestForecastsVisible, maxForecastsPerUser, defaultDisplayPictureUrl } from '../_constants'
+import { noForecastsMessage, feedbackFormUrl, maxLatestForecastsVisible, maxForecastsPerUser, defaultDisplayPictureUrl, CONNECTOR_WORKSPACES } from '../_constants'
 import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId, maybeQuestionResolutionBlock, questionForecastInformationBlock } from './_block_utils'
 
 export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups): Blocks {
@@ -63,7 +63,10 @@ export function buildQuestionBlocks(teamId : string, question: QuestionWithForec
     {
       'type': 'context',
       'elements': [
-        markdownBlock(`_Created by <@${question.profile.slackId}> using /forecast_`)
+        markdownBlock(`_Created by <@${question.profile.slackId}> using /forecast_`),
+        ...(CONNECTOR_WORKSPACES.includes(teamId) ?
+          [markdownBlock(`_<https://fatebook.io/for-slack|Add Fatebook to another Slack workspace>_`)]
+          : [])
       ]
     }
   ]

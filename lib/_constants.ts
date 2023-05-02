@@ -35,5 +35,4 @@ export const TEST_WORKSPACES = [
 ]
 // Show extra install message
 export const CONNECTOR_WORKSPACES = [
-
-]
+] as string[]

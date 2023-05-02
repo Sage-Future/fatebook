@@ -107,7 +107,7 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
       'type': 'context',
       'elements': [
         markdownBlock(`_<https://fatebook.io|Fatebook> is built by Sage to help impactful teams seek the truth._`),
-        markdownBlock(`_Want more Fatebook? <https://fatebook.io/for-slack|Install Fatebook to another Slack workspace>._`),
+        markdownBlock(`_Want more Fatebook? <https://fatebook.io/for-slack|Add Fatebook to another Slack workspace>._`),
         markdownBlock(`_Find our other forecasting tools on <${quantifiedIntuitionsUrl}|Quantified Intuitions>._`),
       ]
     }
