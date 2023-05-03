@@ -98,14 +98,16 @@ function listUserForecastUpdates(forecasts : Forecast[]) : string {
 function makeForecastListing(teamId : string, questionId : number,
   forecasts : ForecastWithProfileAndUserWithProfilesWithGroups[],
   hideForecasts : boolean, hideForecastsUntil : Date | null) {
-  const forecastHeader = '*Latest forecasts*'
-  const buttonLabel = hideForecasts ? 'View my forecasts' : 'View all'
   const forecastHeaderBlock = {
     'type': 'section',
-    'text': markdownBlock(forecastHeader),
+    'text': markdownBlock(hideForecasts ?
+      `_Forecasts are hidden until ${getDateSlackFormat(hideForecastsUntil!, false, 'date_short_pretty')}_`
+      :
+      '*Latest forecasts*'
+    ),
     'accessory': {
       'type': 'button',
-      'text': textBlock(buttonLabel),
+      'text': textBlock(hideForecasts ? 'View my forecasts' : 'View all'),
       'action_id': toActionId({
         action: 'viewForecastLog',
         questionId: questionId,
@@ -114,15 +116,8 @@ function makeForecastListing(teamId : string, questionId : number,
     }
   }
 
-  if(hideForecasts){
-    return [
-      forecastHeaderBlock,
-      ...(forecasts.length != 0 ? [{
-        'type': 'context',
-        'elements': [
-          markdownBlock(`Forecasts are hidden until ${getDateSlackFormat(hideForecastsUntil!, false, 'date_short_pretty')}.`)
-        ]}] : [])
-    ]
+  if (hideForecasts){
+    return [forecastHeaderBlock]
   }
   // a good adjustment would be to get each user
   //   then iterate over all the forecasts and cluster them for that user

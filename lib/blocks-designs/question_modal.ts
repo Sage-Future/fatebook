@@ -4,7 +4,7 @@ import { getDateYYYYMMDD } from '../../lib/_utils'
 import { CheckboxOption, markdownBlock, textBlock, toActionId } from './_block_utils'
 
 export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string, hideForecastsJustChecked?: boolean): ModalView {
-  const isHidingForecasts = (hideForecastsJustChecked !== undefined) ? hideForecastsJustChecked : (question.hideForecastsUntil !== null)
+  const isHidingForecasts = (hideForecastsJustChecked !== undefined) ? hideForecastsJustChecked : (question.hideForecastsUntil != undefined)
   const hideUntil = question?.hideForecastsUntil || question?.resolveBy || new Date(Date.now() + ( 3600 * 1000 * 24))  // default = tomorrow
 
   return {
