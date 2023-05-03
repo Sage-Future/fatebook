@@ -36,6 +36,7 @@ export type QuestionWithForecastsAndUsers = Question & {
     forecasts: ForecastWithProfileAndUser[]
 }
 
+
 export type QuestionWithForecasts = Question & {
     forecasts: Forecast[]
 }
@@ -45,6 +46,10 @@ export type QuestionWithScores = Question & {
 }
 
 export type QuestionWithAuthor = Question & {
+    profile: ProfileWithUser
+}
+
+export type ForecastWithProfileAndUser = Forecast & {
     profile: ProfileWithUser
 }
 
@@ -60,13 +65,9 @@ export type QuestionWithAuthorAndQuestionMessages = QuestionWithAuthor & {
     questionMessages: QuestionSlackMessageWithMessage[]
 }
 
-
-export type QuestionWithAuthorAndQuestionMessagesAndGroups = QuestionWithAuthorAndSlackMessages & {
+export type QuestionWithAuthorAndQuestionMessagesAndGroups = QuestionWithAuthor & {
+    questionMessages: QuestionSlackMessageWithMessage[]
     groups: Group[]
-}
-
-export type QuestionWithAuthorAndQuestionMessagesAndResolvePingMessages = QuestionWithAuthorAndSlackMessages & {
-    pingResolveMessages: PingSlackMessageWithMessage[]
 }
 
 export type QuestionWithAuthorAndAllMessages = QuestionWithAuthor & {

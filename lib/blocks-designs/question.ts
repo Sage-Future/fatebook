@@ -99,17 +99,29 @@ function makeForecastListing(teamId : string, questionId : number,
   forecasts : ForecastWithProfileAndUserWithProfilesWithGroups[],
   hideForecasts : boolean, hideForecastsUntil : Date | null) {
   const forecastHeader = '*Latest forecasts*'
+  const buttonLabel = hideForecasts ? 'View my forecasts' : 'View all'
+  const forecastHeaderBlock = {
+    'type': 'section',
+    'text': markdownBlock(forecastHeader),
+    'accessory': {
+      'type': 'button',
+      'text': textBlock(buttonLabel),
+      'action_id': toActionId({
+        action: 'viewForecastLog',
+        questionId: questionId,
+      }),
+      'value': 'view_all_forecasts',
+    }
+  }
 
   if(hideForecasts){
-    return [{
-      'type': 'section',
-      'text': markdownBlock(forecastHeader)
-    },
-    ...(forecasts.length != 0 ? [{
-      'type': 'context',
-      'elements': [
-        markdownBlock(`Forecasts are hidden until ${conciseDateTime(hideForecastsUntil!, false)}.`)
-      ]}] : [])
+    return [
+      forecastHeaderBlock,
+      ...(forecasts.length != 0 ? [{
+        'type': 'context',
+        'elements': [
+          markdownBlock(`Forecasts are hidden until ${conciseDateTime(hideForecastsUntil!, false)}.`)
+        ]}] : [])
     ]
   }
   // a good adjustment would be to get each user
@@ -129,19 +141,7 @@ function makeForecastListing(teamId : string, questionId : number,
   const overMax        = sortedUsersAndForecasts.length > maxLatestForecastsVisible
 
   return [
-    {
-      'type': 'section',
-      'text': markdownBlock(forecastHeader),
-      'accessory': {
-        'type': 'button',
-        'text': textBlock('View all'),
-        'action_id': toActionId({
-          action: 'viewForecastLog',
-          questionId: questionId,
-        }),
-        'value': 'view_all_forecasts',
-      }
-    },
+    forecastHeaderBlock,
     ...sortedUsersAndForecasts.slice(0, overMax ? maxLatestForecastsVisible : sortedUsersAndForecasts.length).map(([user, forecasts]) => ({
       'type': 'context',
       'elements': [

@@ -1,16 +1,20 @@
-import { QuestionWithForecastsAndUsersAndAuthor } from '../../prisma/additional'
+import { ForecastWithProfileAndUser, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups } from '../../prisma/additional'
 import { ModalView } from '@slack/types'
 import { noForecastsMessage, defaultDisplayPictureUrl } from '../_constants'
 import { maybeQuestionResolutionBlock, questionForecastInformationBlock, markdownBlock, textBlock } from './_block_utils'
 import { conciseDateTime, displayForecast } from '../../lib/_utils'
 
-export function buildQuestionForecastLogModalView(question: QuestionWithForecastsAndUsersAndAuthor): ModalView {
+export function buildQuestionForecastLogModalView(question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, slackUserId : string): ModalView {
   const hideForecasts =
     (question.hideForecastsUntil && question.hideForecastsUntil?.getTime() > Date.now())
     || false
+  const forecasts = hideForecasts
+    ? getForecastsOfUser(question.forecasts, slackUserId)
+    : question.forecasts
+  const title     = hideForecasts ? 'My forecasts' : 'All forecasts'
   return {
     'type': 'modal',
-    'title': textBlock(`All forecasts`),
+    'title': textBlock(title),
     'blocks': [
       {
         'type': 'section',
@@ -18,7 +22,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
       },
       ...maybeQuestionResolutionBlock(question),
       questionForecastInformationBlock(question, hideForecasts),
-      ...question.forecasts
+      ...forecasts
         .sort((b, a) => a.createdAt.getTime() - b.createdAt.getTime())
         .map((forecast) => (
           {
@@ -37,7 +41,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
             ]
           }
         )),
-      ...(question.forecasts.length === 0 ? [{
+      ...(forecasts.length === 0 ? [{
         'type': 'context',
         'elements': [
           markdownBlock(noForecastsMessage)
@@ -45,4 +49,9 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
       }] : []),
     ]
   }
+}
+
+function getForecastsOfUser(forecasts: ForecastWithProfileAndUser[], slackUserId: string) {
+  const userId = forecasts.find(forecast => forecast.profile.slackId === slackUserId)?.profile.user.id
+  return userId ? forecasts.filter(forecast => forecast.profile.user.id === userId) : []
 }

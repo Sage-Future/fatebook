@@ -15,25 +15,34 @@ export async function showForecastLogModal(actionParts: ViewForecastLogBtnAction
       id: questionId,
     },
     include: {
-      profile: {
-        include: {
-          user: {
-            include: {
-              profiles: true
-            }
-          }
-        }
-      },
       forecasts: {
         include: {
           profile: {
             include: {
-              user: true
+              user: {
+                include: {
+                  profiles: {
+                    include: {
+                      groups: true
+                    }
+                  }
+                }
+              }
             }
           }
         }
+      },
+      profile: {
+        include: {
+          user: true
+        }
+      },
+      questionMessages: {
+        include: {
+          message: true
+        }
       }
-    },
+    }
   })
 
   if (!question) {
@@ -46,7 +55,7 @@ export async function showForecastLogModal(actionParts: ViewForecastLogBtnAction
     throw new Error(`Couldn't find question ${questionId}`)
   }
 
-  const view = buildQuestionForecastLogModalView(question)
+  const view = buildQuestionForecastLogModalView(question, payload.user.id)
   const response = await showModal(payload.team.id, payload.trigger_id, view)
   console.log('showForecastLogModal response', response)
 
