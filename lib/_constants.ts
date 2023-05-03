@@ -36,4 +36,5 @@ export const TEST_WORKSPACES = [
 // Show extra `install` note in questions in these workspaces
 export const CONNECTOR_WORKSPACES = [
   "TEQ28RPAN", // EA Forecasting + Epistemics
+  "T0296L8C8F9", // Lightcone Offices
 ] as string[]

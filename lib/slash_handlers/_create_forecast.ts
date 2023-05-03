@@ -90,11 +90,38 @@ export async function createForecastingQuestion(teamId: string, { question, date
 
   const questionBlocks = buildQuestionBlocks(teamId, createdQuestion)
 
-  const data = await postSlackMessage(teamId, {
-    channel: channelId,
-    text: `Forecasting question created: ${question}`,
-    blocks: questionBlocks,
-  }, createdQuestion.profile.slackId || undefined)
+  let questionPostedSuccessfully = true
+  let data
+  try {
+    data = await postSlackMessage(teamId, {
+      channel: channelId,
+      text: `Forecasting question created: ${question}`,
+      blocks: questionBlocks,
+    }, createdQuestion.profile.slackId || undefined)
+
+    if ((data as any)?.notifiedUserAboutEmptyChannel) {
+      questionPostedSuccessfully = false
+
+      await backendAnalyticsEvent("question_create_failed_invalid_channel", {
+        platform: "slack",
+        team: teamId,
+        user: profile.userId,
+      })
+    }
+  } catch (err) {
+    questionPostedSuccessfully = false
+  }
+
+  // if question slack message failed to post, delete the question
+  if (!questionPostedSuccessfully) {
+    await prisma.question.delete({
+      where: {
+        id: createdQuestion.id
+      }
+    })
+    console.log('Immediately deleted question because slack message failed to post')
+    return
+  }
 
   if (!data?.ts) {
     console.error(`Missing message.ts in response ${JSON.stringify(data)}`)

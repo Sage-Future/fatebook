@@ -301,9 +301,10 @@ export async function postSlackMessage(teamId: string, message: PostMessagePaylo
       await postEphemeralSlackMessage(teamId, {
         channel: userId, // DM the user
         user: userId,
-        text: `Oops, this bot is not in that channel. Invite me to the channel first by tagging me, or use a public channel.`,
+        text: `Oops, this bot is not in that channel. Invite me to the channel first by tagging me, or use a public channel. (Note that Slack doesn't let you add bots to DMs).`,
       })
       console.log("Notified user about error posting Slack message channel_not_found (Bot is not in that channel).")
+      return {...response, notifiedUserAboutEmptyChannel: true}
     } else {
       console.error(`Error posting Slack message:`, response.error)
       throw new Error(`Error posting Slack message: ${response.error}`)
