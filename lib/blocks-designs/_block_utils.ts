@@ -63,6 +63,7 @@ export interface QuestionOverflowActionParts {
 
 export interface OptionsCheckBoxActionParts {
   action: 'optionsCheckBox'
+  questionId?: number // included when editing question
   questionResolutionDate: Date
   isCreating: boolean
 }

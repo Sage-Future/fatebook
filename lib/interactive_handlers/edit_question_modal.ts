@@ -104,7 +104,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
 
   const hideForecastsUntilStr = getVal('{"action":"updateHideForecastsDate"}', false)?.selected_date
   console.log('    hideForecastsUntilStr', hideForecastsUntilStr)
-  const hideForecastsUntil = hideForecastsUntilStr ? new Date(hideForecastsUntilStr) : undefined
+  const hideForecastsUntil = hideForecastsUntilStr ? new Date(hideForecastsUntilStr) : null
 
   if (!question || !resolutionDate) {
     console.error("missing question or resolution date")
@@ -122,7 +122,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       groupId,
       profile,
       notes,
-      hideForecastsUntil
+      hideForecastsUntil,
     })
   } else {
     const updatedQuestion = await prisma.question.update({
@@ -251,6 +251,7 @@ export async function updateFromCheckboxes(actionParts: OptionsCheckBoxActionPar
   const checkboxOptions = parseSelectedCheckboxOptions(payload.actions?.[0].selected_options)
   const updateHideForecasts = checkboxOptions.find((cb) => cb.valueLabel === 'hide_forecasts_until_date')?.value
   const questionPart = {
+    id: actionParts.questionId,
     resolveBy: new Date(actionParts.questionResolutionDate),
   }
   const newView = buildEditQuestionModalView(questionPart, actionParts.isCreating, channel, updateHideForecasts)

@@ -42,7 +42,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
   await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, groupId, channelId })
 }
 
-export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, groupId, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string, notes?: string, hideForecastsUntil?: Date}) {
+export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, groupId, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,

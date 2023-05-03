@@ -3,8 +3,9 @@ import { ActionsBlock, ModalView } from '@slack/types'
 import { getDateYYYYMMDD } from '../../lib/_utils'
 import { textBlock, markdownBlock, toActionId, CheckboxOption } from './_block_utils'
 
-export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string, isHidingForecasts: boolean = false): ModalView {
-  const defaultHideUntil = question?.resolveBy || new Date(Date.now() + ( 3600 * 1000 * 24))  // default = tomorrow
+export function buildEditQuestionModalView(question: Partial<Question>, isCreating: boolean, channel: string, hideForecastsJustChecked?: boolean): ModalView {
+  const isHidingForecasts = (hideForecastsJustChecked !== undefined) ? hideForecastsJustChecked : (question.hideForecastsUntil !== null)
+  const hideUntil = question?.hideForecastsUntil || question?.resolveBy || new Date(Date.now() + ( 3600 * 1000 * 24))  // default = tomorrow
 
   return {
     'type': 'modal',
@@ -57,8 +58,8 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
         },
         'optional': true,
       },
-      optionsCheckboxes(isHidingForecasts, isCreating, defaultHideUntil),
-      ...(isHidingForecasts ? [hideForecastsUntilDatePicker(isCreating, defaultHideUntil)] : []),
+      optionsCheckboxes(isHidingForecasts, isCreating, hideUntil, question?.id),
+      ...(isHidingForecasts ? [hideForecastsUntilDatePicker(hideUntil)] : []),
       ...(isCreating ? [] : [{ // only show delete button if editing
         'type': 'actions',
         'elements': [
@@ -84,14 +85,21 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
   }
 }
 
+const hideCheckbox = {
+  label: 'Hide forecasts until a specific date to prevent anchoring',
+  valueLabel: 'hide_forecasts_until_date'
+}
 export const checkboxes : CheckboxOption[] = [
-  {
-    label: 'Hide forecasts until a specific date to prevent anchoring',
-    valueLabel: 'hide_forecasts_until_date'
-  }
+  hideCheckbox,
 ]
 
-function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hideUntil : Date){
+function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hideUntil : Date, questionId?: number) {
+  console.log({isHidingForecasts, hideUntil})
+  const toCheckbox = (cb : CheckboxOption) => ({
+    'text': textBlock(cb.label),
+    'value': cb.valueLabel
+  })
+
   return {
     'block_id': 'option_checkboxes',
     "type": "section",
@@ -99,13 +107,12 @@ function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hide
     "accessory": {
       'type': 'checkboxes',
       'options': [
-        ...checkboxes.map((cb : CheckboxOption) => ({
-          'text': textBlock(cb.label),
-          'value': cb.valueLabel
-        }))
+        ...checkboxes.map(toCheckbox)
       ],
+      ...(isHidingForecasts ? {'initial_options': [toCheckbox(hideCheckbox)]} : {}),
       'action_id': toActionId({
         action: 'optionsCheckBox',
+        questionId,
         questionResolutionDate: hideUntil,
         isCreating
       })
@@ -113,7 +120,7 @@ function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hide
   }
 }
 
-function hideForecastsUntilDatePicker(isCreating : boolean, hideUntil : Date){
+function hideForecastsUntilDatePicker(hideUntil : Date){
   return {
     'type': 'section',
     'text': markdownBlock('Hide all forecasts until:'),
