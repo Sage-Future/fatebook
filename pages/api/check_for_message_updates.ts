@@ -173,6 +173,11 @@ async function updateQuestionsToUnhideForecasts(){
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+    console.log("Not in production, no operation. Make a debug function that restricts these functions to a specific workspace.")
+    return
+  }
+
   const allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
   const questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
   res.json({questionsToBeUpdated, allQuestionsToBeNotified})

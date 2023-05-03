@@ -68,7 +68,7 @@ function generateNonAmbiguousResolution(details : ResolveQuestionDetails) : Bloc
         markdownBlock(`*Brier score* _(<https://en.wikipedia.org/wiki/Brier_score|Lower is better>)_\n ${formatDecimalNicely(details.brierScore, 6)}`),
         markdownBlock(`*Relative Brier score*\n ${formatDecimalNicely(details.rBrierScore, 6)}`),
         markdownBlock(`*Ranking*\n *${details.ranking}*/${details.totalParticipants}`),
-        markdownBlock(`*Your last forecast*\n ${details.lastForecast}% _at ${details.lastForecastDate}_`)
+        markdownBlock(`*Your last forecast*\n ${details.lastForecast}%, _${details.lastForecastDate}_`)
       ]
     },
     dividerBlock(),
