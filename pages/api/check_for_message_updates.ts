@@ -12,6 +12,8 @@ async function getQuestionsToBeResolved()  {
       },
       resolved: false,
       pingedForResolution: false,
+      // has at least one question message
+      questionMessages: { some: {} },
     },
     include: {
       profile: {
