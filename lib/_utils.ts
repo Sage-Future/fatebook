@@ -1,7 +1,7 @@
 import { Forecast, GroupType, PrismaClient, Profile, Resolution, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles, QuestionWithAuthorAndAllMessages, QuestionSlackMessageWithMessage, PingSlackMessageWithMessage, ResolutionSlackMessageWithMessage } from '../prisma/additional'
+import { PingSlackMessageWithMessage, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles, ResolutionSlackMessageWithMessage } from '../prisma/additional'
 import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
@@ -463,8 +463,21 @@ export function formatDecimalNicely(num : number, decimalPlaces : number = maxDe
     maximumFractionDigits: decimalPlaces,})
 }
 
+// date_num: 2020-12-31
+// date_short_pretty: Dec 31, 2020 or tomorrow / yesterday / today where appropriate
+export function getDateSlackFormat(date: Date, includeTime: boolean = false, dateFormat: 'date_num' | 'date_short_pretty' = 'date_num') {
+  const fallbackText = conciseDateTime(date, includeTime)
+
+  // e.g. <!date^1392734382^{date_num} at {time}|2014-02-18 6:39:42 AM PST>
+  return `<!date^${unixTimestamp(date)}^{${dateFormat}}${includeTime ? ' at {time}' : ''}|${fallbackText}>`
+}
+
 export function getDateYYYYMMDD(date: Date) {
   return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
+}
+
+function unixTimestamp(date: Date) {
+  return Math.floor(date.getTime() / 1000)
 }
 
 export function zeroPad(num: number) {

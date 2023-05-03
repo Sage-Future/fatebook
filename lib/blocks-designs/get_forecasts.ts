@@ -1,5 +1,5 @@
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
-import { conciseDateTime, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils'
+import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { forecastListColumnSpacing, maxForecastsVisible } from '../_constants'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
@@ -86,9 +86,9 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
 
   // resolution date
   const resolutionStr = forecast.question.resolution ?
-    `Resolved: ${getResolutionEmoji(forecast.question.resolution)} ${forecast.question.resolution}`
+    `Resolved:  ${getResolutionEmoji(forecast.question.resolution)} ${forecast.question.resolution}`
     :
-    `Resolves: ${conciseDateTime(forecast.question.resolveBy, false)}`
+    `Resolves:  ${getDateSlackFormat(forecast.question.resolveBy, false, 'date_short_pretty')}`
 
   return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionStr
 }

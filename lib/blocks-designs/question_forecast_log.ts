@@ -1,8 +1,8 @@
-import { ForecastWithProfileAndUser, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups } from '../../prisma/additional'
 import { ModalView } from '@slack/types'
-import { noForecastsMessage, defaultDisplayPictureUrl } from '../_constants'
-import { maybeQuestionResolutionBlock, questionForecastInformationBlock, markdownBlock, textBlock } from './_block_utils'
-import { conciseDateTime, displayForecast } from '../../lib/_utils'
+import { displayForecast, getDateSlackFormat } from '../../lib/_utils'
+import { ForecastWithProfileAndUser, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups } from '../../prisma/additional'
+import { defaultDisplayPictureUrl, noForecastsMessage } from '../_constants'
+import { markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock } from './_block_utils'
 
 export function buildQuestionForecastLogModalView(question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, slackUserId : string): ModalView {
   const hideForecasts =
@@ -36,7 +36,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
               markdownBlock(
                 `${forecast.profile.slackId ? `<@${forecast.profile.slackId}>` : forecast.profile.user.name} ` +
                 `*${displayForecast(forecast)}*` +
-                ` - _submitted at ${conciseDateTime(forecast.createdAt)}_`
+                ` - _submitted ${getDateSlackFormat(forecast.createdAt, true, 'date_short_pretty')}_`
               )
             ]
           }

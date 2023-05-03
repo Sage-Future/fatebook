@@ -5,7 +5,7 @@ import { ScoreCollection, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
-import prisma, { backendAnalyticsEvent, conciseDateTime, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
+import prisma, { backendAnalyticsEvent, getDateSlackFormat, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -168,7 +168,7 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       ranking:     scoreArray[profile.id].rank,
       totalParticipants: Object.keys(scoreArray).length,
       lastForecast: lastForecast.forecast.toNumber()*100,
-      lastForecastDate: conciseDateTime(lastForecast.createdAt, true),
+      lastForecastDate: getDateSlackFormat(lastForecast.createdAt, true, 'date_short_pretty'),
       overallBrierScore: averageScores.avgAbsoluteScore,
       overallRBrierScore: averageScores.avgRelativeScore
     }

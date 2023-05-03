@@ -1,9 +1,9 @@
-import { Question, Resolution, Group, Forecast } from '@prisma/client'
+import { Forecast, Group, Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
-import { conciseDateTime, getResolutionEmoji, displayForecast } from '../_utils'
-import {  QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
-import { noForecastsMessage, feedbackFormUrl, maxLatestForecastsVisible, maxForecastsPerUser, defaultDisplayPictureUrl, CONNECTOR_WORKSPACES } from '../_constants'
-import { Blocks, markdownBlock, ResolveQuestionActionParts, textBlock, toActionId, maybeQuestionResolutionBlock, questionForecastInformationBlock } from './_block_utils'
+import { ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
+import { CONNECTOR_WORKSPACES, defaultDisplayPictureUrl, feedbackFormUrl, maxForecastsPerUser, maxLatestForecastsVisible, noForecastsMessage } from '../_constants'
+import { displayForecast, getDateSlackFormat, getResolutionEmoji } from '../_utils'
+import { Blocks, ResolveQuestionActionParts, markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock, toActionId } from './_block_utils'
 
 export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups): Blocks {
   const hideForecasts =
@@ -120,7 +120,7 @@ function makeForecastListing(teamId : string, questionId : number,
       ...(forecasts.length != 0 ? [{
         'type': 'context',
         'elements': [
-          markdownBlock(`Forecasts are hidden until ${conciseDateTime(hideForecastsUntil!, false)}.`)
+          markdownBlock(`Forecasts are hidden until ${getDateSlackFormat(hideForecastsUntil!, false, 'date_short_pretty')}.`)
         ]}] : [])
     ]
   }
@@ -153,7 +153,7 @@ function makeForecastListing(teamId : string, questionId : number,
         markdownBlock(
           `${getUserNameOrProfileLink(teamId, user)} ` +
           `${listUserForecastUpdates(forecasts)} ` +
-          `- _submitted at ${conciseDateTime(forecasts[forecasts.length - 1].createdAt)}_`
+          `- _submitted ${getDateSlackFormat(forecasts[forecasts.length - 1].createdAt, true, 'date_short_pretty')}_`
         )
       ]
     }))

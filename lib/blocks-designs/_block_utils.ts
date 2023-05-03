@@ -1,7 +1,7 @@
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithSlackMessagesAndForecasts, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, QuestionWithForecasts } from '../../prisma/additional'
 import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
-import { getSlackPermalinkFromChannelAndTS, getDateYYYYMMDD, getResolutionEmoji, round, getCommunityForecast } from '../_utils'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { feedbackFormUrl } from '../_constants'
+import { getCommunityForecast, getDateSlackFormat, getResolutionEmoji, getSlackPermalinkFromChannelAndTS, round } from '../_utils'
 import { checkboxes } from './question_modal'
 
 export interface ResolveQuestionActionParts {
@@ -109,6 +109,10 @@ export function unpackBlockActionId(actionId: string) {
 }
 
 export function textBlock(content: string, emoji = true) {
+  if (content.includes('<!date')) {
+    console.warn("WARNING: plain_text block uses <!date...> which will not render properly. Use mrkdwn instead.")
+  }
+
   return {
     'type': "plain_text" as "plain_text",
     'emoji': emoji,
@@ -168,7 +172,7 @@ export function maybeQuestionResolutionBlock(question : QuestionWithForecastWith
     'type': 'section',
     // NB: this assumes that the author resolved the question
     'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by <@${question.profile.slackId}>`
-      + (question.resolvedAt ? ` on ${getDateYYYYMMDD(question.resolvedAt)}` : '')),
+      + (question.resolvedAt ? ` on ${getDateSlackFormat(question.resolvedAt)}` : '')),
   } as SectionBlock] : [])
 }
 
@@ -178,7 +182,7 @@ export function questionForecastInformationBlock(question: QuestionWithForecasts
     'type': 'context',
     'elements': [
       ...(question.resolution ? [] : [
-        markdownBlock(`Resolves on *${getDateYYYYMMDD(question.resolveBy)}*`)
+        markdownBlock(`Resolves *${getDateSlackFormat(question.resolveBy, false, 'date_short_pretty')}*`)
       ]),
       ...(numUniqueForecasters > 0 ? [
         markdownBlock(`*${
