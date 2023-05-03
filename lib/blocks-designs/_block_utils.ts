@@ -172,7 +172,7 @@ export function maybeQuestionResolutionBlock(question : QuestionWithForecastWith
     'type': 'section',
     // NB: this assumes that the author resolved the question
     'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by <@${question.profile.slackId}>`
-      + (question.resolvedAt ? ` on ${getDateSlackFormat(question.resolvedAt)}` : '')),
+      + (question.resolvedAt ? `, ${getDateSlackFormat(question.resolvedAt, false, 'date_short_pretty')}` : '')),
   } as SectionBlock] : [])
 }
 
