@@ -100,8 +100,12 @@ model User {
   name      String?
   createdAt DateTime  @default(now())
   email     String    @unique
-  imageUrl  String?
+  image     String?
   profiles  Profile[]
+
+  // Used by next-auth:
+  emailVerified DateTime?
+  accounts  Account[]
 }
 
 model Profile {
@@ -135,4 +139,24 @@ enum Resolution {
   YES
   NO
   AMBIGUOUS
+}
+
+// OAuth account, e.g. google - used by next-auth for web
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
 }

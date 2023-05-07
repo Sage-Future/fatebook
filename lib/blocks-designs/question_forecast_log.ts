@@ -30,7 +30,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
             'elements': [
               {
                 'type': 'image',
-                'image_url': forecast.profile.user.imageUrl ||  defaultDisplayPictureUrl,
+                'image_url': forecast.profile.user.image ||  defaultDisplayPictureUrl,
                 'alt_text': 'profile picture'
               },
               markdownBlock(

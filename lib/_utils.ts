@@ -166,7 +166,7 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
       data: {
         email: email,
         name: realName,
-        imageUrl: slackProfile.image_512,
+        image: slackProfile.image_512,
         profiles: {
           create: profileData
         }

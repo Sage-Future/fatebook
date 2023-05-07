@@ -142,7 +142,7 @@ function makeForecastListing(teamId : string, questionId : number,
       'elements': [
         {
           'type': 'image',
-          'image_url': user.imageUrl || defaultDisplayPictureUrl,
+          'image_url': user.image || defaultDisplayPictureUrl,
           'alt_text': 'profile picture'
         },
         markdownBlock(
