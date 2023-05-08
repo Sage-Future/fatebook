@@ -39,4 +39,6 @@ export const CONNECTOR_WORKSPACES = [
   "TEQ28RPAN", // EA Forecasting + Epistemics
   // "T0296L8C8F9", // Lightcone Offices
   "T01JANAE7FZ", // EA UK
+  "TCPAQPU94", // Boston EA Organisers
+  "T0LE0CFD2", // EA Groups
 ] as string[]
