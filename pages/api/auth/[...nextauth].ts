@@ -29,8 +29,8 @@ export const authOptions: NextAuthOptions = {
     session: (params: { session: Session; token: JWT }) => {
       const { session, token } = params
       if (token.id && session.user) {
-        // TODO
-        // session.user.id = token.id as string
+        console.log({tokenId: token.id, token, session})
+        session.user.id = token.id as string
       }
       return Promise.resolve(session)
     },

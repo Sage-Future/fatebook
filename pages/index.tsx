@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+import { signIn, signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 
 export default function HomePage() {
+  const { data: session } = useSession()
+
   return (
     <div className="flex flex-col min-h-screen ">
       {/* <NavbarGeneric /> */}
@@ -11,6 +15,17 @@ export default function HomePage() {
               Fatebook
             </h2>
             <h3 className="text-gray-600">Track your predictions, make better decisions</h3>
+
+            {session ?
+              <>
+                Signed in as {session.user?.email} <br />
+                <button onClick={() => signOut()}>Sign out</button>
+              </> :
+              <>
+                Not signed in <br />
+                <button onClick={() => signIn()}>Sign in</button>
+              </>
+            }
 
             <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: out now.</p>
 
