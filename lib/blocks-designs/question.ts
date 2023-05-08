@@ -167,7 +167,7 @@ function buildPredictOptions(question: Question): InputBlock | ActionsBlock {
       'type': 'input',
       'element': {
         'type': 'plain_text_input',
-        'placeholder': textBlock('e.g. \'70%\''),
+        'placeholder': textBlock('XX%'),
         'action_id': toActionId({
           action: 'submitTextForecast',
           questionId: question.id,
