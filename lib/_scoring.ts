@@ -46,17 +46,17 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   let absoluteScoreTimeSeries : ScoreTimeSeries = {}
 
   const sortedForecastsById : [number, Forecast[]][] = uniqueIds.map(id => {
-    return [id, forecasts.filter(f => f.authorId == id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())]
+    return [id, forecasts.filter(f => f.authorId == id).sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())]
   })
-
   for (let j = question.createdAt.getTime(); j < endDay; j = j + day) {
     // dealing with fractional part of day at the end
     const currentInterval = j + day < question.resolvedAt!.getTime() ? j + day : question.resolvedAt!.getTime()
     const startOfInterval = j < question.resolvedAt!.getTime() ? j       : question.resolvedAt!.getTime()
+    const lengthOfInterval = currentInterval - startOfInterval
+
 
     // get the most up to date forecast for each profile before this time period
     const mostRecentForecastBeforeThisIntervalById : ForecastArray = getMostRecentForecasts(sortedForecastsById, startOfInterval)
-
     // get all the forecasts for each user inbetween the current time interval and the previous one
     const forecastsOfCurrentIntervalbyId : DaysForecasts[] = sortedForecastsById.map(([id, sortedForecasts]) => {
       return {
@@ -68,8 +68,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 
     const weightedForecastsOfCurrentIntervalById : DayAvgForecast[] = getWeightedAverageForecastOfInterval(forecastsOfCurrentIntervalbyId,
                                                                                                            startOfInterval,
-                                                                                                           day)
-
+                                                                                                           lengthOfInterval)
     let absoluteBrierScores : [number, number | undefined][] = weightedForecastsOfCurrentIntervalById.map(({id, avgForecast}) => {
       if (avgForecast === undefined) {
         return [id, undefined]
@@ -143,30 +142,32 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 function getWeightedAverageForecastOfInterval(forecastsOfCurrentIntervalbyId : DaysForecasts[], startOfInterval : number, day : number)  : DayAvgForecast[]{
   // mapping for each id
   return forecastsOfCurrentIntervalbyId.map(({id, forecasts, mostRecentForecast}) => {
-    if (mostRecentForecast != undefined){
-      const [avgForecast,] = forecasts.reduce(([sum, date], forecast) => {
-        const weight = (forecast.createdAt.getTime() - date) / day
-        if(weight == 1) {
-          // dealing with case where forecast is on boundary, can ignore previous forecast
-          sum = 0
-        }
-        return [sum + (weight * forecast.forecast.toNumber()), forecast.createdAt.getTime()]
-      }, [mostRecentForecast!, startOfInterval] as [number, number])
-      return {id, avgForecast}
+    let avg          = 0
+    let sumOfWeights = 0
 
-    } else {
-      if (forecasts.length == 0){
-        return {id, avgForecast:undefined}
-      } else {
-        // In the case where there hasn't been a previous forecast, need to average over the time
-        //   since the first forecast of the day, so intialise reduce with forecast[0] values
-        const [avgForecast,] = forecasts.slice(1).reduce(([sum, date], forecast) => {
-          const weight = (forecast.createdAt.getTime() - date) / day
-          return [(sum + (weight * forecast.forecast.toNumber())), forecast.createdAt.getTime()]
-        }, [forecasts[0].forecast.toNumber(), forecasts[0].createdAt.getTime()] as [number, number])
-        return {id, avgForecast}
-      }
+    if (mostRecentForecast != undefined && forecasts.length > 0){
+      const thisForecast = mostRecentForecast
+      const nextForecast = forecasts[0]
+      const mostRecentWeight = (nextForecast.createdAt.getTime() - startOfInterval) / day
+      sumOfWeights     = sumOfWeights + mostRecentWeight
+      avg              = avg + (mostRecentWeight * thisForecast)
+    } else if (mostRecentForecast != undefined){
+      return {id, avgForecast : mostRecentForecast}
+    } else if (forecasts.length == 0){
+      return {id, avgForecast:undefined}
     }
+
+    for(let i = 0; i < forecasts.length - 1; i++){
+      const thisForecast = forecasts[i]
+      const nextForecast = forecasts[i+1]
+      const thisWeight = (nextForecast.createdAt.getTime() - thisForecast.createdAt.getTime()) / day
+      sumOfWeights     = sumOfWeights + thisWeight
+      avg              = avg + (thisWeight * thisForecast.forecast.toNumber())
+    }
+
+    const lastForecastWeight = 1 - sumOfWeights
+    avg = avg + (lastForecastWeight * forecasts[forecasts.length-1].forecast.toNumber())
+    return {id, avgForecast : avg}
   })
 }
 
@@ -178,7 +179,7 @@ function getMostRecentForecasts(sortedForecastsById : [number, Forecast[]][], st
     const forecastsBeforeCurrentInterval = sortedForecasts.filter(f => f.createdAt.getTime() <= startOfInterval)
 
     if (forecastsBeforeCurrentInterval.length > 0) {
-      mostRecentForecasts[id] = (forecastsBeforeCurrentInterval[0].forecast.toNumber())
+      mostRecentForecasts[id] = (forecastsBeforeCurrentInterval[forecastsBeforeCurrentInterval.length-1].forecast.toNumber())
     } else {
       mostRecentForecasts[id] = undefined
     }
@@ -188,7 +189,6 @@ function getMostRecentForecasts(sortedForecastsById : [number, Forecast[]][], st
 
 function median(values : number[]) : number {
   if (values.length === 0) return 0
-  // filter out undefined values
   let numValues = values.sort((a, b) => a - b)
 
   // get the median
