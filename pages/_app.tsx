@@ -3,11 +3,12 @@ import { AppProps } from "next/app"
 import Head from "next/head"
 import { GoogleAnalytics } from "nextjs-google-analytics"
 import Meta from "../components/Meta"
+import { trpc } from "../lib/web/trpc"
 import "../styles/globals.css"
 
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export default function App({ Component, pageProps: {session, ...pageProps} }: AppProps) {
+function App({ Component, pageProps: {session, ...pageProps} }: AppProps) {
   return <>
     <Meta />
     <Head>
@@ -19,3 +20,5 @@ export default function App({ Component, pageProps: {session, ...pageProps} }: A
     </SessionProvider>
   </>
 }
+
+export default trpc.withTRPC(App)

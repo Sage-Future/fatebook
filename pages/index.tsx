@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { signIn, signOut, useSession } from "next-auth/react"
 import Link from "next/link"
+import Footer from "../components/Footer"
+import { Predict } from "../components/Predict"
 
 export default function HomePage() {
-  const { data: session } = useSession()
+  const { data: session, status: sessionStatus } = useSession()
 
   return (
     <div className="flex flex-col min-h-screen ">
@@ -16,15 +18,21 @@ export default function HomePage() {
             </h2>
             <h3 className="text-gray-600">Track your predictions, make better decisions</h3>
 
-            {session ?
-              <>
-                Signed in as {session.user?.email} <br />
-                <button onClick={() => signOut()}>Sign out</button>
-              </> :
-              <>
+            <Predict />
+            <div className="py-12"/>
+
+            {sessionStatus === "loading" ? <p>Loading...</p> :
+              (
+                session ?
+                  <>
+              Signed in as {session.user?.email} <br />
+                    <button onClick={() => signOut()}>Sign out</button>
+                  </> :
+                  <>
                 Not signed in <br />
-                <button onClick={() => signIn()}>Sign in</button>
-              </>
+                    <button onClick={() => signIn()}>Sign in</button>
+                  </>
+              )
             }
 
             <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: out now.</p>
@@ -41,7 +49,7 @@ export default function HomePage() {
           </div> */}
         </div>
       </div>
-      {/* <Footer /> */}
+      <Footer />
     </div >
   )
 }
