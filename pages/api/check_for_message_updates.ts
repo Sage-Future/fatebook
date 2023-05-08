@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
-import prisma, { postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils'
+import prisma, { conciseDateTime, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 
 async function getQuestionsToBeResolved()  {
@@ -92,18 +92,14 @@ async function notifyAuthorsToResolveQuestions() {
 }
 
 async function updateQuestionsToUnhideForecasts(){
-  const questionsToBeUpdated = await prisma.question.findMany({
+  const now = new Date()
+  const LAST_X_DAYS = 7
+  console.log(`Checking for questions to unhide forecasts for between ${conciseDateTime(now)} ${conciseDateTime(new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000))}`)
+  const questionsToCheck= await prisma.question.findMany({
     where: {
       hideForecastsUntil: {
-        lte: new Date()
-      },
-      // where any question message is last updated before the hideForecastsUntil date or is null
-      questionMessages : {
-        some: {
-          updatedAt: {
-            lte: new Date()
-          }
-        }
+        lte: now,
+        gte: new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000)
       }
     },
     include: {
@@ -152,6 +148,14 @@ async function updateQuestionsToUnhideForecasts(){
       questionScores: true,
     }
   })
+
+  // if the date of any message last updated is before the hideForecastsUntil date
+  //   then needs to be updated
+  const questionsToBeUpdated = questionsToCheck.filter((question) =>
+    question.questionMessages.filter((qm) =>
+      qm.updatedAt < question.hideForecastsUntil!
+    ).length > 0
+  )
 
   for (const question of questionsToBeUpdated) {
     const teamId = question.questionMessages[0].message.teamId
