@@ -470,11 +470,11 @@ export function formatDecimalNicely(num : number, decimalPlaces : number = maxDe
 
 // date_num: 2020-12-31
 // date_short_pretty: Dec 31, 2020 or tomorrow / yesterday / today where appropriate
-export function getDateSlackFormat(date: Date, includeTime: boolean = false, dateFormat: 'date_num' | 'date_short_pretty' = 'date_num') {
+export function getDateSlackFormat(date: Date, includeTime: boolean = false, dateFormat: 'date_num' | 'date_short_pretty' = 'date_num', lowerCase = true) {
   const fallbackText = conciseDateTime(date, includeTime)
 
   // e.g. <!date^1392734382^{date_num} at {time}|2014-02-18 6:39:42 AM PST>
-  return `<!date^${unixTimestamp(date)}^{${dateFormat}}${includeTime ? ' at {time}' : ''}|${fallbackText}>`
+  return `<!date^${unixTimestamp(date)}^${lowerCase?' ':''}{${dateFormat}}${includeTime ? ' at {time}' : ''}|${fallbackText}>`
 }
 
 export function getDateYYYYMMDD(date: Date) {
