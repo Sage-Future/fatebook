@@ -269,7 +269,11 @@ export async function postBlockMessage(teamId: string, channel : string, blocks 
                                   channel,
                                   text: notificationText, // this is the fallback text, it shows up in e.g. system notifications
                                   blocks,
-                                  ...(additionalArgs && { ...additionalArgs } )
+                                  ...(additionalArgs ?
+                                    { ...additionalArgs }
+                                    :
+                                    { unfurl_links: false, unfurl_media: false } // default to not unfurling links
+                                  )
                                 })
 }
 

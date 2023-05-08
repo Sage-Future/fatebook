@@ -97,6 +97,8 @@ export async function createForecastingQuestion(teamId: string, { question, date
       channel: channelId,
       text: `Forecasting question created: ${question}`,
       blocks: questionBlocks,
+      unfurl_links: false,
+      unfurl_media: false
     }, createdQuestion.profile.slackId || undefined)
 
     if ((data as any)?.notifiedUserAboutEmptyChannel) {
