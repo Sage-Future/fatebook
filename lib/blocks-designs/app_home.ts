@@ -1,7 +1,7 @@
 import { QuestionScore } from '@prisma/client'
 import { formatDecimalNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional"
-import { numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants'
+import { feedbackFormUrl, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants'
 import { Blocks, dividerBlock, headerBlock, markdownBlock, textBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 
@@ -100,6 +100,21 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
         '2. Record your prediction of how likely the question is to be answered \'yes\'\n' +
         '3. After time passes, resolve the question Yes, No or Ambiguous\n' +
         '4. Check back here to see your scores and watch your prediction skills improve over time!'
+      )
+    },
+    dividerBlock(),
+    headerBlock('What\'s new?'),
+    {
+      "type": "section",
+      "text": markdownBlock(
+        '• You can now hide other forecaster’s predictions on a question to prevent anchoring. Look for the new option when you use `/forecast`\n' +
+        '• Create private forecasts by DMing @Fatebook - just type `/forecast`'
+      )
+    },
+    {
+      "type": "section",
+      "text": markdownBlock(
+        `What do you want us to add next? <${feedbackFormUrl}|Let us know>!`
       )
     },
     dividerBlock(),
