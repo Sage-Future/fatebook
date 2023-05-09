@@ -2,6 +2,8 @@ import { z } from "zod"
 import prisma from "../_utils"
 import { publicProcedure, router } from "./trpc_base"
 
+const HARDCODED_ADAM_PROFILE_ID = 12
+
 export const questionRouter = router({
   create: publicProcedure
     .input(
@@ -14,8 +16,6 @@ export const questionRouter = router({
     )
     .mutation(async ({input}) => {
       // todo check authorId = current user
-
-      const HARDCODED_ADAM_PROFILE_ID = 12
 
       const question = await prisma.question.create({
         data: {
@@ -30,5 +30,81 @@ export const questionRouter = router({
         },
       })
       return question
+    }),
+
+  getQuestion: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number().optional(),
+      })
+    )
+    .query(async ({input}) => {
+      if (!input.questionId) {
+        return null
+      }
+
+      return await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        },
+        include: {
+          forecasts: {
+            include: {
+              profile: {
+                include: {
+                  user: true
+                }
+              }
+            }
+          },
+          profile: {
+            include: {
+              user: true
+            }
+          }
+        }
+      })
+    }),
+
+  getQuestionsUserCreatedOrForecastedOn: publicProcedure
+    .input(
+      z.object({
+        userId: z.number().optional(),
+      })
+    )
+    .query(async ({input}) => {
+      if (!input.userId) {
+        return null
+      }
+
+      console.log({input})
+      return await prisma.question.findMany({
+        where: {
+          OR: {
+            authorId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
+            forecasts: {
+              some: {
+                authorId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
+              }
+            }
+          }
+        },
+        include: {
+          forecasts: {
+            include: {
+              profile: {
+                include: {
+                  user: true
+                }
+              }
+            }
+          },
+          profile: {
+            include: {
+              user: true
+            }
+          }
+        }
+      })
     }),
 })
