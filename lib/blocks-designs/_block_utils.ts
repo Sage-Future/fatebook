@@ -211,3 +211,15 @@ export function parseSelectedCheckboxOptions(optionSelections: OptionSelection[]
     }
   })
 }
+
+export function tipsContextBlock() {
+  const tips = [
+    'You can create private forecasts by DMing @Fatebook - just type /forecast',
+  ]
+  return {
+    'type': 'context',
+    'elements': [
+      markdownBlock(`*Tip:* ${tips[Math.floor(Math.random() * tips.length)]}`),
+    ],
+  }
+}
