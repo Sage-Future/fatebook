@@ -81,7 +81,12 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
   const yourForecastValuePadded = 'You:' + padForecastPrettily(yourForecastValueStr, 3, forecastListColumnSpacing)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
-  const commForecastValueStr    = formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()))
+  const hideForecasts = forecast.question.hideForecastsUntil !== null && forecast.question.hideForecastsUntil > new Date()
+  const commForecastValueStr    = (hideForecasts ?
+    '?'
+    :
+    formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()))
+  )
   const commForecastValuePadded = 'Community:' + padForecastPrettily(commForecastValueStr, 3, forecastListColumnSpacing)
 
   // resolution date
