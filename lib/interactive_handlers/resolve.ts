@@ -66,7 +66,7 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   })
 }
 
-async function scoreForecasts(scoreArray : ScoreCollection, question : QuestionWithScores) {
+export async function scoreForecasts(scoreArray : ScoreCollection, question : QuestionWithScores) {
   console.log(`updating questionScores for question id: ${question.id}`)
 
   // in case the question was previously resolved, delete all questionScores

@@ -1,10 +1,11 @@
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
-import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji } from '../../lib/_utils'
+import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, formatScoreNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { forecastListColumnSpacing, maxForecastsVisible } from '../_constants'
+import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, maxForecastsVisible, noResolutionColumnSpacing, numberPrepad, yesResolutionColumnSpacing } from '../_constants'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
+import { Forecast, QuestionScore, Resolution } from '@prisma/client'
 
-export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string) : Promise<Blocks> {
+export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)
 
   const page = activeForecast ? activePage : closedPage
@@ -20,11 +21,19 @@ export async function buildGetForecastsBlocks(teamId: string, forecasts: Forecas
     }]
   }
 
+  const forecastsForPage = latestForecasts.slice(page * maxForecastsVisible, (page + 1) * maxForecastsVisible)
+  const scoresForPage    = matchForecastsToScores(forecastsForPage, questionScores)
+
   return await Promise.all([
     // slice latestForecasts to get the forecasts for the current page
-    ...(await buildGetForecastsBlocksPage(teamId, latestForecasts.slice(page * maxForecastsVisible, (page + 1) * maxForecastsVisible))),
+    ...(await buildGetForecastsBlocksPage(teamId, forecastsForPage, scoresForPage)),
     ...(pagination ? [generateButtonsBlock(pagination, firstPage, lastPage, activePage, closedPage, activeForecast)]:[])
   ])
+}
+
+function matchForecastsToScores(forecasts : Forecast[], questionScores : QuestionScore[]){
+  const forecastScores = questionScores.filter((qs : QuestionScore) => forecasts.find((f) => qs.questionId == f.questionId))
+  return forecastScores
 }
 
 function generateButtonsBlock(pagination: boolean, firstPage: boolean, lastPage: boolean, activePage: number, closedPage : number, activeForecast : boolean) : Block {
@@ -59,13 +68,15 @@ function generateButtonsBlock(pagination: boolean, firstPage: boolean, lastPage:
   } as KnownBlock
 }
 
-async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) : Promise<Blocks> {
+async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores : QuestionScore[]) : Promise<Blocks> {
   let blocks = await Promise.all([
     ...forecasts.map(async (forecast) => (
       {
 			  'type': 'context',
         'elements': [
-          markdownBlock((await buildForecastQuestionText(teamId, forecast))),
+          markdownBlock((await buildForecastQuestionText(teamId,
+                                                         forecast,
+                                                         questionScores.find((qs : QuestionScore) => qs.questionId == forecast.questionId)))),
         ]
       } as ContextBlock
     ))
@@ -73,12 +84,12 @@ async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWi
   return blocks as Blocks
 }
 
-async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts) {
+async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts, questionScore : QuestionScore | undefined) {
   const questionTitle = await getQuestionTitleLink(forecast.question)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
   const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber())
-  const yourForecastValuePadded = 'You:' + padForecastPrettily(yourForecastValueStr, 3, forecastListColumnSpacing)
+  const yourForecastValuePadded = 'You:' + padForecast(yourForecastValueStr)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
   const hideForecasts = forecast.question.hideForecastsUntil !== null && forecast.question.hideForecastsUntil > new Date()
@@ -87,19 +98,66 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
     :
     formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()))
   )
-  const commForecastValuePadded = 'Community:' + padForecastPrettily(commForecastValueStr, 3, forecastListColumnSpacing)
+  const commForecastValuePadded = 'Community:' + padForecast(commForecastValueStr)
 
   // resolution date
   const resolutionStr = forecast.question.resolution ?
-    `Resolved:  ${getResolutionEmoji(forecast.question.resolution)} ${forecast.question.resolution}`
+    `Resolved:  ${getResolutionEmoji(forecast.question.resolution)} ${shortResolution(forecast.question.resolution)}`
     :
     `Resolves:  ${getDateSlackFormat(forecast.question.resolveBy, false, 'date_short_pretty')}`
 
-  return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionStr
+  const resolutionPadded = questionScore ?
+    resolutionStr + padResolution(forecast.question.resolution)
+    :
+    resolutionStr
+
+  const scoreStr = questionScore ?
+    `Your score:${padAndFormatScore(questionScore.relativeScore.toNumber())}`
+    :
+    ''
+  return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionPadded + scoreStr
+}
+
+function shortResolution(resolution : Resolution | null){
+  switch(resolution){
+    case 'YES':
+    case 'NO':
+      return resolution
+    case 'AMBIGUOUS':
+      return 'N/A'
+    case null:
+    default:
+      return ''
+  }
+}
+
+function padResolution(resolution : Resolution | null){
+  switch(resolution){
+    case 'YES':
+      return ' '.repeat(yesResolutionColumnSpacing)
+    case 'NO':
+      return ' '.repeat(noResolutionColumnSpacing)
+    case 'AMBIGUOUS':
+      return ' '.repeat(ambiguousResolutionColumnSpacing)
+    case null:
+      return ' '.repeat(forecastListColumnSpacing)
+    default:
+      return ' '.repeat(forecastListColumnSpacing)
+  }
+}
+
+function padAndFormatScore(score : number, maxprepad : number = numberPrepad){
+  let prepad  = maxprepad
+
+  if (score < 0)
+    prepad = prepad - 2
+
+  const scorePadded = ' '.repeat(prepad) + '`'+ formatScoreNicely(score) + '`'
+  return scorePadded
 }
 
 // function used to align decimal places, even when no decimal places are present
-function padForecastPrettily(forecast : string, maxprepad : number , maxpostpad : number ) : string {
+function padForecast(forecast : string, maxprepad : number = numberPrepad, maxpostpad : number = forecastListColumnSpacing ) : string {
   let prepad  = maxprepad
   let postpad = maxpostpad
 

@@ -6,7 +6,7 @@ import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
 
-import { TEST_WORKSPACES, maxDecimalPlaces } from './_constants'
+import { TEST_WORKSPACES, maxDecimalPlaces, maxScoreDecimalPlaces, scoreSignificantDigits } from './_constants'
 import { Blocks } from './blocks-designs/_block_utils'
 
 const prisma = new PrismaClient()
@@ -460,6 +460,11 @@ export function conciseDateTime(date: Date, includeTime = true) {
 
 export function displayForecast(forecast: Forecast): string {
   return `${formatDecimalNicely(forecast.forecast.toNumber() * 100)}%`
+}
+
+export function formatScoreNicely(num: number, maxDigits : number = maxScoreDecimalPlaces, significantDigits : number = scoreSignificantDigits): string {
+  const rounded = +num.toPrecision(significantDigits)
+  return formatDecimalNicely(rounded, maxDigits)
 }
 
 export function formatDecimalNicely(num : number, decimalPlaces : number = maxDecimalPlaces) : string {

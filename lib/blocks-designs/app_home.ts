@@ -73,11 +73,13 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
 
   const myActiveForecastsBlock : Blocks = await buildGetForecastsBlocks(
     teamId, activeForecasts, activePage, closedPage, true,
-    '_Time to make your first prediction! Create a question by typing `/forecast` in any channel._'
+    '_Time to make your first prediction! Create a question by typing `/forecast` in any channel._',
+    []
   )
   const myClosedForecastsBlock : Blocks = await buildGetForecastsBlocks(
     teamId, closedForecasts, activePage, closedPage, false,
-    '_Check here once a question you\'ve forecasted on has resolved._'
+    '_Check here once a question you\'ve forecasted on has resolved._',
+    questionScores
   )
   return [
     headerBlock('Your score for the last 3 months'),
