@@ -1,7 +1,7 @@
 import { QuestionScore } from '@prisma/client'
 import { formatDecimalNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional"
-import { feedbackFormUrl, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants'
+import { feedbackFormUrl, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 
@@ -108,7 +108,7 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
       "type": "section",
       "text": markdownBlock(
         '• You can now hide other forecaster’s predictions on a question to prevent anchoring. Look for the new option when you use `/forecast`\n' +
-        '• Create private forecasts by DMing @Fatebook - just type `/forecast`'
+        `• Create private forecasts by <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|DMing @Fatebook> - just type \`/forecast\``
       )
     },
     {
