@@ -1,7 +1,7 @@
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
 import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, formatScoreNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, maxForecastsVisible, noResolutionColumnSpacing, numberPrepad, yesResolutionColumnSpacing } from '../_constants'
+import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxForecastsVisible, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 import { Forecast, QuestionScore, Resolution } from '@prisma/client'
 
@@ -102,9 +102,9 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
 
   // resolution date
   const resolutionStr = forecast.question.resolution ?
-    `Resolved:  ${getResolutionEmoji(forecast.question.resolution)} ${shortResolution(forecast.question.resolution)}`
+    `Resolved: ${getResolutionEmoji(forecast.question.resolution)} ${shortResolution(forecast.question.resolution)}`
     :
-    `Resolves:  ${getDateSlackFormat(forecast.question.resolveBy, false, 'date_short_pretty')}`
+    `Resolves:${getDateSlackFormat(forecast.question.resolveBy, false, 'date_short_pretty')}`
 
   const resolutionPadded = questionScore ?
     resolutionStr + padResolution(forecast.question.resolution)
@@ -146,7 +146,7 @@ function padResolution(resolution : Resolution | null){
   }
 }
 
-function padAndFormatScore(score : number, maxprepad : number = numberPrepad){
+function padAndFormatScore(score : number, maxprepad : number = scorePrepad){
   let prepad  = maxprepad
 
   if (score < 0)
@@ -157,7 +157,7 @@ function padAndFormatScore(score : number, maxprepad : number = numberPrepad){
 }
 
 // function used to align decimal places, even when no decimal places are present
-function padForecast(forecast : string, maxprepad : number = numberPrepad, maxpostpad : number = forecastListColumnSpacing ) : string {
+function padForecast(forecast : string, maxprepad : number = forecastPrepad, maxpostpad : number = forecastListColumnSpacing ) : string {
   let prepad  = maxprepad
   let postpad = maxpostpad
 
@@ -165,8 +165,11 @@ function padForecast(forecast : string, maxprepad : number = numberPrepad, maxpo
     postpad = postpad - 4
 
   const integerPart = forecast.split('.')[0]
-  if (integerPart.length > 1)
+  if (integerPart.length == 2){
     prepad = prepad - 2
+  } else if ( integerPart.length == 3){
+    prepad = prepad - 4
+  }
 
   const forecastPadded = ' '.repeat(prepad) + '`'+ forecast + '%`' + ' '.repeat(postpad)
   return forecastPadded

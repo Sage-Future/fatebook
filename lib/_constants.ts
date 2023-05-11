@@ -22,7 +22,8 @@ export const noForecastsMessage   : string = `_No forecasts yet_`
 export const maxForecastsVisible        : number = 5
 export const numberOfDaysInRecentPeriod : number = 91
 export const forecastListColumnSpacing  : number = 14
-export const numberPrepad               : number = 3
+export const forecastPrepad             : number = 4
+export const scorePrepad                : number = 3
 
 export const yesResolutionColumnSpacing        : number = forecastListColumnSpacing
 export const noResolutionColumnSpacing         : number = forecastListColumnSpacing
