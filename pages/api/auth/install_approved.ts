@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       text: `You've added Fatebook to ${data.team.name}!\n
 *Here’s a message you can copy and paste to introduce it to your team:*\n\n
 ${fatebookMention} is now added to this workspace! It lets us track our predictions, right here in Slack.\n
-You can create a forecasting question like “Will we release the podcast by Tuesday?” by typing \`/forecast\` . then everyone in the channel can add their predictions. When Tuesday comes around, you can resolve the question as YES, NO or AMBIGUOUS.\n
+You can create a forecasting question like “Will we release the podcast by Tuesday?” by typing \`/forecast\` . Then, everyone in the channel can add their predictions. When Tuesday comes around, you can resolve the question as Yes, No or Ambiguous.\n
 We’ll each get a score for how accurate our predictions are. Build a track record to see how you’re improving over time!\n
 If you want to make private forecasts, that only you can see, you can type \`/forecast\` in a DM with ${fatebookMention}.\n
 Some ideas of questions we can forecast on:\n
