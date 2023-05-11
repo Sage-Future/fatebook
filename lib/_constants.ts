@@ -49,4 +49,5 @@ export const CONNECTOR_WORKSPACES = [
   "T01JANAE7FZ", // EA UK
   "TCPAQPU94", // Boston EA Organisers
   "T0LE0CFD2", // EA Groups
+  "T054STGLAD9", // EAG London
 ] as string[]
