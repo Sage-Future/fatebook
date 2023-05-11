@@ -1,7 +1,7 @@
 import { Group, Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionWithAuthorAndQuestionMessagesAndGroups, QuestionWithScores } from '../../prisma/additional'
-import { ScoreCollection, relativeBrierScoring } from '../_scoring'
+import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
@@ -228,8 +228,22 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
   await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
   await updateForecastQuestionMessages(question, teamId, "Question resolved!")
 
-  const scores = relativeBrierScoring(question.forecasts, question)
-  await scoreForecasts(scores, question)
+  let scores : ScoreCollection = {}
+  if(resolution != Resolution.AMBIGUOUS) {
+    scores = relativeBrierScoring(question.forecasts, question)
+    await scoreForecasts(scores, question)
+  } else {
+    let uniqueIds = Array.from(new Set(question.forecasts.map(f => f.authorId)))
+    scores = uniqueIds.map(id => {
+      return {
+        [id]: {
+          absoluteBrierScore: 0,
+          relativeBrierScore: 0,
+          rank: 0
+        } as ScoreTuple
+      }
+    }).reduce((a, b) => Object.assign(a, b), {})
+  }
   await messageUsers(scores, question)
 }
 
