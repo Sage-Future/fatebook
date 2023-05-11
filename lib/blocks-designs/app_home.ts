@@ -2,7 +2,7 @@ import { QuestionScore } from '@prisma/client'
 import { formatDecimalNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional"
 import { feedbackFormUrl, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl } from '../_constants'
-import { Blocks, dividerBlock, headerBlock, markdownBlock, textBlock } from "./_block_utils"
+import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 
 type ScoreDetails = {
@@ -95,7 +95,7 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
     headerBlock('How to use this app'),
     {
       "type": "section",
-      "text": textBlock(
+      "text": markdownBlock(
         '1. Ask a question about the future by typing `/forecast` in any Slack channel\n' +
         '2. Record your prediction of how likely the question is to be answered \'yes\'\n' +
         '3. After time passes, resolve the question Yes, No or Ambiguous\n' +
