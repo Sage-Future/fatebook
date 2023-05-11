@@ -88,6 +88,11 @@ export default function ForSlackPage() {
                 "Try our rapid-feedback training tools on [Quantified Intuitions](https://quantifiedintuitions.org).",
             },
             {
+              question: "How can I stay up to date about Fatebook and Sage's other projects?",
+              answer:
+                "You can [join our mailing list](https://quantifiedintuitions.org) and [Discord](https://discord.gg/mt9YVB8VDE)."
+            },
+            {
               question: "How can I submit feedback about Fatebook?",
               answer: "You can email us at hello@sage-future.org or message us on [Discord](https://discord.gg/mt9YVB8VDE).",
             },
