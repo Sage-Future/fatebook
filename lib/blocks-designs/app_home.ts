@@ -1,7 +1,7 @@
 import { QuestionScore } from '@prisma/client'
 import { formatDecimalNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional"
-import { feedbackFormUrl, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
+import { baseUrl, feedbackFormUrl, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 
@@ -40,7 +40,7 @@ function populateDetails(questionScores : QuestionScore[]) : { recentDetails: Sc
   return {recentDetails, overallDetails}
 }
 
-export async function buildHomeTabBlocks(teamId: string, allUserForecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
+export async function buildHomeTabBlocks(teamId: string, fatebookUserId: number, allUserForecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
   const {recentDetails, overallDetails} = populateDetails(questionScores)
 
   const formatScore = (score: number, decimals: number = 6) => {
@@ -93,6 +93,11 @@ export async function buildHomeTabBlocks(teamId: string, allUserForecasts: Forec
     dividerBlock(),
     headerBlock('Your all-time overall score'),
     ...(myOverallScoreBlock),
+    questionScores.length > 0 ? {
+      type: "image",
+      image_url: `${baseUrl}/api/calibration_graph?user=${fatebookUserId}&r=${new Date().getTime()}`, // force refresh
+      alt_text: "Your calibration graph",
+    } : {type: "section", text: markdownBlock('_Check back to see how well calibrated you are once your first forecast has resolved._')},
     dividerBlock(),
     headerBlock('How to use this app'),
     {

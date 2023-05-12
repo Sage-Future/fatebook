@@ -39,7 +39,7 @@ async function refreshUserAppHome(userId: string, teamId: string, activePage : n
     },
   })
 
-  const blocks = await buildHomeTabBlocks(teamId, allUserForecasts, allUserQuestionScores, activePage, closedPage)
+  const blocks = await buildHomeTabBlocks(teamId, profile.userId, allUserForecasts, allUserQuestionScores, activePage, closedPage)
 
   console.log(`App home refreshed for user ${userId}, blocks `, JSON.stringify(blocks, null, 2))
   await callSlackApi(teamId, {
