@@ -114,6 +114,7 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: number,
     {
       "type": "section",
       "text": markdownBlock(
+        '• See how well calibrated you are with our new calibration graph. Perfect calibration means things you expect to happen X% of the time do in fact happen X% of the time. This is a skill you can train, e.g. using our <https://www.quantifiedintuitions.org/calibration|calibration app>!\n' +
         '• You can now hide other forecasters’ predictions on a question to prevent anchoring. Look for the new option when you use `/forecast`\n' +
         `• Create private forecasts by <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|DMing @Fatebook> - just type \`/forecast\``
       )
