@@ -4,7 +4,7 @@ import { KeyboardEvent, useEffect } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
 import { z } from "zod"
-import { trpc } from "../lib/web/trpc"
+import { api } from "../lib/web/trpc"
 
 const predictFormSchema = z.object({
   question: z.string().min(1),
@@ -12,18 +12,27 @@ const predictFormSchema = z.object({
   predictionPercentage: z.number().max(100).min(0),
 })
 export function Predict() {
-  const { register, handleSubmit, setFocus, formState: { errors } } = useForm<z.infer<typeof predictFormSchema>>()
-  const createQuestion = trpc.question.create.useMutation()
+  const { register, handleSubmit, setFocus, reset, formState: { errors } } = useForm<z.infer<typeof predictFormSchema>>()
   const session = useSession()
+  const utils = api.useContext()
+  const createQuestion = api.question.create.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate({userId: session.data?.user.id})
+    }
+  })
 
-  const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data) => {
+  const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
+    e?.preventDefault() // don't reload the page
+    console.log({data})
     if (session.data?.user.id) {
       createQuestion.mutate({
         title: data.question,
-        resolveBy: new Date(),
+        resolveBy: data.resolveBy,
         authorId: session.data?.user.id,
-        prediction: data.predictionPercentage / 100,
+        prediction: data.predictionPercentage ? data.predictionPercentage / 100 : undefined,
       })
+
+      reset()
     } else {
       window.alert("You must be signed in to make a prediction.")
     }
@@ -68,7 +77,7 @@ export function Predict() {
                 new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
               }
               onKeyDown={onEnterSubmit}
-              {...register("resolveBy", { required: true })}
+              {...register("resolveBy", { required: true, valueAsDate: true })}
             />
           </div>
 
@@ -87,7 +96,9 @@ export function Predict() {
         </div>
 
         <div className="py-4">
-          <button type="submit" className="block bg-indigo-600">
+          <button onClick={(e) => {e.preventDefault(); void handleSubmit(onSubmit)()}} className="block bg-indigo-600"
+            disabled={createQuestion.isLoading || Object.values(errors).some(err => !!err)}
+          >
             Predict
           </button>
         </div>

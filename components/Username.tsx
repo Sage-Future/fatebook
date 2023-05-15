@@ -14,7 +14,7 @@ export function Username({
       "flex flex-row gap-1 items-center",
       className,
     )}>
-      <Image src={user?.image || 'default_avatar.png'} width={20} height={20} className="m-0 rounded-full" alt="" />
+      <Image src={user?.image || '/default_avatar.png'} width={20} height={20} className="m-0 rounded-full" alt="" />
       <span>{user?.name || "Unknown user"}</span>
     </span>
   )

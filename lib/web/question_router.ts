@@ -10,7 +10,7 @@ export const questionRouter = router({
       z.object({
         title: z.string(),
         resolveBy: z.date(),
-        prediction: z.number().max(1).min(0),
+        prediction: z.number().max(1).min(0).optional(),
         authorId: z.number(),
       })
     )
@@ -19,16 +19,19 @@ export const questionRouter = router({
 
       const question = await prisma.question.create({
         data: {
-          ...input,
+          title: input.title,
+          resolveBy: input.resolveBy,
           authorId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
-          forecasts: {
+          forecasts: input.prediction ? {
             create: {
               authorId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
-              forecast: 0.5,
+              forecast: input.prediction,
             }
-          }
+          } : undefined,
         },
       })
+
+      console.log("questioncreated", {question})
       return question
     }),
 
@@ -77,17 +80,16 @@ export const questionRouter = router({
         return null
       }
 
-      console.log({input})
       return await prisma.question.findMany({
         where: {
-          OR: {
-            authorId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
-            forecasts: {
+          OR: [
+            {authorId: { equals: HARDCODED_ADAM_PROFILE_ID}}, // input.userId,
+            {forecasts: {
               some: {
                 authorId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
               }
-            }
-          }
+            }}
+          ]
         },
         include: {
           forecasts: {
