@@ -1,3 +1,4 @@
+import * as chrono from 'chrono-node'
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
 import { KeyboardEvent, useEffect } from "react"
@@ -5,6 +6,7 @@ import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
 import { z } from "zod"
 import { api } from "../lib/web/trpc"
+import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/web/utils'
 
 const predictFormSchema = z.object({
   question: z.string().min(1),
@@ -12,7 +14,7 @@ const predictFormSchema = z.object({
   predictionPercentage: z.number().max(100).min(0),
 })
 export function Predict() {
-  const { register, handleSubmit, setFocus, reset, formState: { errors } } = useForm<z.infer<typeof predictFormSchema>>()
+  const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, setValue } = useForm<z.infer<typeof predictFormSchema>>({mode: "all"})
   const session = useSession()
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
@@ -42,12 +44,14 @@ export function Predict() {
     if (e.key === "Enter") {
       void handleSubmit(onSubmit)()
       e.preventDefault()
+      return true
     }
   }
 
   useEffect(() => {
     setFocus("question")
   }, [setFocus])
+
   return (
     <div className="w-full">
       <form onSubmit={void handleSubmit(onSubmit)}>
@@ -59,7 +63,19 @@ export function Predict() {
           autoFocus={true}
           placeholder="Will humans walk on Mars by 2050?"
           maxRows={15}
-          onKeyDown={onEnterSubmit}
+          onKeyDown={(e) => {
+            if (onEnterSubmit(e)) return
+            if (!dirtyFields.resolveBy) {
+              const dateResult = chrono.parse(e.currentTarget.value, new Date(), { forwardDate: true })
+              const resolveBy = (dateResult.length === 1 && dateResult[0].date()) ?
+                getDateYYYYMMDD(dateResult[0].date())
+                :
+                undefined
+
+              // @ts-ignore - type definition is wrong (Date not string)
+              resolveBy && setValue("resolveBy", resolveBy)
+            }
+          }}
           {...register("question", { required: true })}
         />
 
@@ -73,8 +89,7 @@ export function Predict() {
               )}
               type="date"
               defaultValue={
-                // tomorrow
-                new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                new Date(tomorrowDate()).toISOString().split("T")[0]
               }
               onKeyDown={onEnterSubmit}
               {...register("resolveBy", { required: true, valueAsDate: true })}
