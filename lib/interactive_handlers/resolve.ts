@@ -188,7 +188,8 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
         id:      -1,
         ts:      data.ts,
         channel: data.channel!,
-        teamId:  group.slackTeamId!
+        teamId:  group.slackTeamId!,
+        profileId : profile.id
       }
     }))
   }))
@@ -196,7 +197,9 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
   await replaceQuestionResolveMessages(question, newMessageDetails.flat())
 }
 
-async function replaceQuestionResolveMessages(question : Question, newMessageDetails : SlackMessage[]) {
+type SlackMessageWithProfileId = SlackMessage & {profileId : number}
+
+async function replaceQuestionResolveMessages(question : Question, newMessageDetails : SlackMessageWithProfileId[]) {
   console.log(`addQuestionResolveMessages for question id: ${question.id}`)
   await prisma.question.update({
     where: {
@@ -211,6 +214,11 @@ async function replaceQuestionResolveMessages(question : Question, newMessageDet
                 ts:      message.ts,
                 channel: message.channel,
                 teamId:  message.teamId
+              }
+            },
+            profile: {
+              connect: {
+                id: message.profileId
               }
             }
           }

@@ -66,6 +66,8 @@ model ResolutionSlackMessage {
   detailsId  Int          @unique
   message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
   question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  profile    Profile?     @relation(fields: [profileId], references: [id])
+  profileId  Int?
 }
 
 model PingSlackMessage {
@@ -105,19 +107,20 @@ model User {
 
   // Used by next-auth:
   emailVerified DateTime?
-  accounts  Account[]
+  accounts      Account[]
 }
 
 model Profile {
-  id             Int             @id @default(autoincrement())
-  createdAt      DateTime        @default(now())
-  slackId        String?
-  userId         Int
-  forecasts      Forecast[]
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  questions      Question[]
-  questionScores QuestionScore[]
-  groups         Group[]         @relation("GroupToProfile")
+  id                 Int                      @id @default(autoincrement())
+  createdAt          DateTime                 @default(now())
+  slackId            String?
+  userId             Int
+  forecasts          Forecast[]
+  user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions          Question[]
+  questionScores     QuestionScore[]
+  groups             Group[]                  @relation("GroupToProfile")
+  resolutionMessages ResolutionSlackMessage[]
 }
 
 model Group {
