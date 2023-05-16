@@ -4,6 +4,7 @@ import Link from "next/link"
 import { api } from "../lib/web/trpc"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
+import { getQuestionUrl } from "../pages/q/[id]"
 
 export function Questions() {
   const session = useSession()
@@ -32,7 +33,7 @@ export function Questions() {
           (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
         ).map((question) => (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-1" key={question.id}>
-            <Link href={`q/${question.id}`} key={question.id} className="no-underline">
+            <Link href={getQuestionUrl(question)} key={question.id} className="no-underline">
               <span className="col-span-2 xl:col-span-1 font-semibold" key={`${question.id}title`}>
                 {question.title}
               </span>

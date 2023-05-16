@@ -1,5 +1,6 @@
 // TODO move this to a shared lib
 
+
 export function getDateYYYYMMDD(date: Date) {
   return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
 }

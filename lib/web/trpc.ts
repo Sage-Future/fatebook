@@ -3,7 +3,7 @@ import { createTRPCNext } from '@trpc/next'
 import superjson from 'superjson'
 import { AppRouter } from './app_router'
 
-function getBaseUrl() {
+export function getClientBaseUrl() {
   if (typeof window !== 'undefined') {
     // browser should use relative path
     return ''
@@ -27,7 +27,7 @@ export const api = createTRPCNext<AppRouter>({
            * If you want to use SSR, you need to use the server's full URL
            * @link https://trpc.io/docs/ssr
            **/
-          url: `${getBaseUrl()}/api/trpc`,
+          url: `${getClientBaseUrl()}/api/trpc`,
 
           // You can pass any HTTP headers you wish here
           headers() {

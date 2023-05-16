@@ -2,6 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 
 import prisma, { conciseDateTime, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
+import { sendEmail } from '../../lib/web/email'
+import { getQuestionUrl } from '../q/[id]'
 
 async function getQuestionsToBeResolved()  {
   // check if any questions need to be resolved by time
@@ -12,8 +14,6 @@ async function getQuestionsToBeResolved()  {
       },
       resolved: false,
       pingedForResolution: false,
-      // has at least one question message
-      questionMessages: { some: {} },
     },
     include: {
       profile: {
@@ -27,8 +27,9 @@ async function getQuestionsToBeResolved()  {
             include: {
               groups: true
             }
-          }
-        }
+          },
+          accounts: true,
+        },
       },
       groups: {
         where: {
@@ -52,56 +53,71 @@ async function notifyAuthorsToResolveQuestions() {
   const allQuestionsToBeNotified = await getQuestionsToBeResolved()
 
   for (const question of allQuestionsToBeNotified) {
-    // there should only be one slack group per profile
-    const group = question.profile.groups.find(g => g.slackTeamId)
-    if (!group) {
-      console.error(`No slack group found for question ${question.id}`)
-      continue
-    }
-    const slackId = question.profile.slackId!
-    const teamId = group.slackTeamId!
-    try {
-      const resolveQuestionBlock = await buildResolveQuestionBlocks(group.slackTeamId!, question)
-      const data = await postBlockMessage(teamId,
-                                          slackId,
-                                          resolveQuestionBlock,
-                                          "Ready to resolve your question?",
-                                          { unfurl_links: false, unfurl_media: false })
-
-      if (!data?.ts || !data?.channel) {
-        console.error(`Missing message.ts or channel in response ${JSON.stringify(data)}`)
-        throw new Error("Missing message.ts or channel in response")
-      }
-
-      console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
-
-      // OPTIMISATION:: move these intro a transaction
-      await prisma.question.update({
-        where: {
-          id: question.id,
-        },
-        data: {
-          pingedForResolution: true,
-          pingResolveMessages: {
-            create: {
-              message: {
-                create: {
-                  ts: data.ts,
-                  teamId: teamId,
-                  channel: data.channel,
-                }
-              }
-            }
-          }
-        },
-      })
-
-      console.log(`Updated question ${question.id} to pingedForResolution`)
-    } catch (err) {
-      console.error(`Error sending message on question ${question.id}: \n${err}`)
+    if (question.questionMessages.length > 0) {
+      await sendSlackNotification(question)
+    } else if (question.user.accounts.length > 0) {
+      // only email notify Fatebook web users, and only about questions they haven't shared to Slack
+      await sendEmailNotification(question)
     }
   }
   return allQuestionsToBeNotified
+}
+
+export async function sendEmailNotification(question: Awaited<ReturnType<typeof getQuestionsToBeResolved>>[number]) {
+  await sendEmail({
+    subject: `Ready to resolve: ${question.title}`,
+    to: question.user.email,
+    textBody: `Are you ready to resolve your question: ${question.title}`,
+    htmlBody: `<p>Are you ready to resolve your question: <b>${question.title}</b></p>\n
+<p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>`,
+  })
+}
+
+async function sendSlackNotification(question: Awaited<ReturnType<typeof getQuestionsToBeResolved>>[number]) {
+  // there should only be one slack group per profile
+  const group = question.profile.groups.find(g => g.slackTeamId)
+  const slackId = question.profile.slackId!
+  const teamId = group?.slackTeamId!
+  try {
+    const resolveQuestionBlock = await buildResolveQuestionBlocks(teamId, question)
+    const data = await postBlockMessage(teamId,
+                                        slackId,
+                                        resolveQuestionBlock,
+                                        "Ready to resolve your question?",
+                                        { unfurl_links: false, unfurl_media: false })
+
+    if (!data?.ts || !data?.channel) {
+      console.error(`Missing message.ts or channel in response ${JSON.stringify(data)}`)
+      throw new Error("Missing message.ts or channel in response")
+    }
+
+    console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
+
+    // OPTIMISATION:: move these intro a transaction
+    await prisma.question.update({
+      where: {
+        id: question.id,
+      },
+      data: {
+        pingedForResolution: true,
+        pingResolveMessages: {
+          create: {
+            message: {
+              create: {
+                ts: data.ts,
+                teamId: teamId,
+                channel: data.channel,
+              }
+            }
+          }
+        }
+      },
+    })
+
+    console.log(`Updated question ${question.id} to pingedForResolution`)
+  } catch (err) {
+    console.error(`Error sending message on question ${question.id}: \n${err}`)
+  }
 }
 
 async function updateQuestionsToUnhideForecasts(){

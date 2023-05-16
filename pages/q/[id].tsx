@@ -3,7 +3,19 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { FormattedDate } from "../../components/FormattedDate"
 import { Username } from "../../components/Username"
-import { api } from "../../lib/web/trpc"
+import { api, getClientBaseUrl } from "../../lib/web/trpc"
+import { Question } from "@prisma/client"
+
+function createQuestionSlug(question: Partial<Question>) {
+  return question.title ?
+    encodeURIComponent(question.title?.substring(0, 30).replace(/[^a-z0-9]+/gi, "-").toLowerCase())
+    :
+    ""
+}
+
+export function getQuestionUrl(question: Partial<Question>) {
+  return `${getClientBaseUrl()}/q/${question.id}--${createQuestionSlug(question)}`
+}
 
 export default function QuestionPage() {
   const router = useRouter()
@@ -12,6 +24,8 @@ export default function QuestionPage() {
   const qQuery = api.question.getQuestion.useQuery({
     questionId: (typeof id === "number" && !isNaN(id)) ? id : undefined
   })
+
+  const sendEmail = api.sendEmail.useMutation()
 
   if (!qQuery.data) {
     return <></>
@@ -48,6 +62,7 @@ export default function QuestionPage() {
             </span>
           </div>
         </div>
+        <button onClick={() => sendEmail.mutate({questionId: question.id })}>Send email</button>
       </div>
     </div>
   )
