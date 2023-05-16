@@ -19,30 +19,32 @@ model Forecast {
   createdAt  DateTime @default(now())
   comment    String?
   forecast   Decimal
-  authorId   Int
+  profileId  Int
   questionId Int
-  profile    Profile  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  userId     Int
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model QuestionScore {
   id                     Int      @id @default(autoincrement())
   createdAt              DateTime @default(now())
   relativeScore          Decimal?
-  profileId              Int
   questionId             Int
-  profileQuestionComboId Int      @unique
+  userQuestionComboId    String   @unique
   absoluteScore          Decimal
   rank                   Int
-  profile                Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  userId                 Int
   question               Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Question {
   id                  Int                      @id @default(autoincrement())
   createdAt           DateTime                 @default(now())
   comment             String?
-  authorId            Int
+  profileId           Int
   title               String                   @db.VarChar(255)
   resolveBy           DateTime
   resolved            Boolean                  @default(false)
@@ -51,9 +53,11 @@ model Question {
   resolvedAt          DateTime?
   notes               String?
   hideForecastsUntil  DateTime?
+  userId              Int
   forecasts           Forecast[]
   pingResolveMessages PingSlackMessage[]
-  profile             Profile                  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  profile             Profile                  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
+  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
   resolutionMessages  ResolutionSlackMessage[]
@@ -64,10 +68,10 @@ model ResolutionSlackMessage {
   id         Int          @id @default(autoincrement())
   questionId Int
   detailsId  Int          @unique
-  message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
-  question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  profile    Profile?     @relation(fields: [profileId], references: [id])
   profileId  Int?
+  message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
+  profile    Profile?     @relation(fields: [profileId], references: [id])
+  question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model PingSlackMessage {
@@ -80,9 +84,9 @@ model PingSlackMessage {
 
 model QuestionSlackMessage {
   id         Int          @id @default(autoincrement())
-  updatedAt  DateTime     @default(now())
   questionId Int
   detailsId  Int          @unique
+  updatedAt  DateTime     @default(now())
   message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
   question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
@@ -98,16 +102,20 @@ model SlackMessage {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  name      String?
-  createdAt DateTime  @default(now())
-  email     String    @unique
-  image     String?
-  profiles  Profile[]
+  id             Int             @id @default(autoincrement())
+  name           String?
+  createdAt      DateTime        @default(now())
+  email          String          @unique
+  image          String?
+  forecasts      Forecast[]
+  profiles       Profile[]
+  questions      Question[]
 
   // Used by next-auth:
   emailVerified DateTime?
   accounts      Account[]
+
+  questionScores QuestionScore[]
 }
 
 model Profile {
@@ -118,9 +126,8 @@ model Profile {
   forecasts          Forecast[]
   user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions          Question[]
-  questionScores     QuestionScore[]
-  groups             Group[]                  @relation("GroupToProfile")
   resolutionMessages ResolutionSlackMessage[]
+  groups             Group[]                  @relation("GroupToProfile")
 }
 
 model Group {
@@ -158,8 +165,7 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }

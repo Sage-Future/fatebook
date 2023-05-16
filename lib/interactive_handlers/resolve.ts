@@ -1,11 +1,11 @@
 import { Group, Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionWithAuthorAndQuestionMessagesAndGroups, QuestionWithScores } from '../../prisma/additional'
+import { QuestionWithQuestionMessagesAndGroupsAndForecastWithUserWithProfilesWithGroups, QuestionWithScores } from '../../prisma/additional'
 import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
-import prisma, { averageScores, backendAnalyticsEvent, getDateSlackFormat, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
+import prisma, { averageScores, backendAnalyticsEvent, getDateSlackFormat, getResolutionEmoji, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -19,29 +19,25 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
       resolvedAt: new Date(),
     },
     include: {
-      groups: true,
-      forecasts: {
+      user: {
         include: {
-          profile: {
+          profiles: {
             include: {
-              user: {
-                include: {
-                  profiles: {
-                    include: {
-                      groups: true
-                    }
-                  }
-                }
-              }
+              groups: true
             }
           }
         }
       },
-      profile: {
+      groups: true,
+      forecasts: {
         include: {
           user: {
             include: {
-              profiles: true
+              profiles: {
+                include: {
+                  groups: true
+                }
+              }
             }
           }
         }
@@ -86,10 +82,10 @@ export async function scoreForecasts(scoreArray : ScoreCollection, question : Qu
     const relativeScore = scoreArray[id].relativeBrierScore
     const absoluteScore = scoreArray[id].absoluteBrierScore
     const rank          = scoreArray[id].rank
-    let profileQuestionComboId = parseInt(`${id}${question.id}`)
+    let userQuestionComboId = `${id}-${question.id}`
     updateArray.push(prisma.questionScore.upsert({
       where: {
-        profileQuestionComboId: profileQuestionComboId,
+        userQuestionComboId: userQuestionComboId,
       },
       update: {
         relativeScore: relativeScore,
@@ -97,8 +93,8 @@ export async function scoreForecasts(scoreArray : ScoreCollection, question : Qu
         rank: rank
       },
       create: {
-        profileQuestionComboId: profileQuestionComboId,
-        profileId: Number(id),
+        userQuestionComboId: userQuestionComboId,
+        userId: Number(id),
         questionId: question.id,
         relativeScore: relativeScore,
         absoluteScore: absoluteScore,
@@ -123,14 +119,14 @@ function getAverageScores(questionScores : QuestionScore[]) {
   }
 }
 
-async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithAuthorAndQuestionMessagesAndGroups) {
+async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithQuestionMessagesAndGroupsAndForecastWithUserWithProfilesWithGroups) {
   console.log(`messageUsers for question id: ${question.id}`)
 
   console.log("get profiles")
   const profiles = await prisma.profile.findMany({
     where: {
       id: {
-        in: Object.keys(scoreArray).map(id => Number(id))
+        in: question.forecasts.map(f => f.profileId)
       },
       slackId: {
         not: null
@@ -148,12 +144,16 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
           }
         }
       },
-      forecasts: {
-        where: {
-          questionId: question.id
+      user : {
+        include:{
+          forecasts: {
+            where: {
+              questionId: question.id
+            }
+          },
+          questionScores: true
         }
       },
-      questionScores: true
     }
   })
 
@@ -162,23 +162,24 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
   // go over each profile and send a message to each group they are in which
   //   are also in the question's groups
   const newMessageDetails = await Promise.all(profiles.map(async profile => {
+    const user = profile.user
     // sort the foreacsts
-    const sortedProfileForecasts = profile.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    const sortedProfileForecasts = user.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     const lastForecast           = sortedProfileForecasts[0]
-    const averageScores          = getAverageScores(profile.questionScores)
+    const averageScores          = getAverageScores(user.questionScores)
     const scoreDetails = {
-      brierScore:  scoreArray[profile.id].absoluteBrierScore,
-      rBrierScore: scoreArray[profile.id].relativeBrierScore,
-      ranking:     scoreArray[profile.id].rank,
+      brierScore:  scoreArray[user.id].absoluteBrierScore,
+      rBrierScore: scoreArray[user.id].relativeBrierScore,
+      ranking:     scoreArray[user.id].rank,
       totalParticipants: Object.keys(scoreArray).length,
       lastForecast: lastForecast.forecast.toNumber()*100,
       lastForecastDate: getDateSlackFormat(lastForecast.createdAt, true, 'date_short_pretty'),
       overallBrierScore:  averageScores.avgAbsoluteScore,
       overallRBrierScore: averageScores.avgRelativeScore
     }
-    const brierScore = scoreArray[profile.id].relativeBrierScore != undefined
-      ? scoreArray[profile.id].absoluteBrierScore
-      : scoreArray[profile.id].relativeBrierScore!
+    const brierScore = scoreArray[user.id].relativeBrierScore != undefined
+      ? scoreArray[user.id].absoluteBrierScore
+      : scoreArray[user.id].relativeBrierScore!
     const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. `
       + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(brierScore, 4)}`)
     console.log({message})
@@ -249,7 +250,7 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
     scores = relativeBrierScoring(question.forecasts, question)
     await scoreForecasts(scores, question)
   } else {
-    let uniqueIds = Array.from(new Set(question.forecasts.map(f => f.authorId)))
+    let uniqueIds = Array.from(new Set(question.forecasts.map(f => f.userId)))
     scores = uniqueIds.map(id => {
       return {
         [id]: {
@@ -279,11 +280,11 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
       id: questionId,
     },
     include: {
-      profile: {
+      user: {
         include: {
-          user: {
+          profiles: {
             include: {
-              profiles: true
+              groups: true,
             }
           }
         }
@@ -301,10 +302,10 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
     throw new Error(`Couldn't find question ${questionId}`)
   }
 
-  if (!question.profile.user.profiles.some((p) => p.slackId === userSlackId)) {
+  if (!question.user.profiles.some((p) => p.slackId === userSlackId)) {
     // user is not the author of the question
     await postMessageToResponseUrl({
-      text: `Only the question's author <@${question.profile.slackId}> can resolve it.`,
+      text: `Only the question's author ${getUserNameOrProfileLink(teamId, question.user)} can resolve it.`,
       replace_original: false,
       response_type: 'ephemeral',
     }, responseUrl)
@@ -345,22 +346,28 @@ export async function buttonUndoResolution(actionParts: UndoResolveActionParts, 
   await undoQuestionResolution(questionId, payload.team.id, payload.user.id, payload.channel.id)
 }
 
-export async function undoQuestionResolution(questionId: number, groupId: string, userSlackId: string, channelId: string) {
+export async function undoQuestionResolution(questionId: number, teamId: string, userSlackId: string, channelId: string) {
   const questionPreUpdate = await prisma.question.findUnique({
     where: {
       id: questionId,
     },
     include: {
-      profile: true
+      user: {
+        include: {
+          profiles: {
+            include: {
+              groups: true,
+            }
+          }
+        }
+      }
     }
   })
 
-  if (questionPreUpdate?.profile.slackId !== userSlackId) {
+  if (! questionPreUpdate?.user.profiles.find(p => p.slackId == userSlackId)) {
     console.log("Can't undo resolution, not author")
-    await postEphemeralSlackMessage(groupId, {
-      text: `Only the question's author${
-        (questionPreUpdate?.profile.slackId ? ' <@' + questionPreUpdate?.profile.slackId + '> ' : '')
-      }can undo a resolution.`,
+    await postEphemeralSlackMessage(teamId, {
+      text: `Only the question's author${questionPreUpdate ? getUserNameOrProfileLink(teamId, questionPreUpdate?.user) : ''} can undo a resolution.`,
       channel: channelId,
       user: userSlackId,
     }
@@ -393,26 +400,22 @@ export async function undoQuestionResolution(questionId: number, groupId: string
     include: {
       forecasts: {
         include: {
-          profile: {
+          user: {
             include: {
-              user: {
+              profiles: {
                 include: {
-                  profiles: {
-                    include: {
-                      groups: true
-                    }
-                  }
+                  groups: true
                 }
               }
             }
           }
         }
       },
-      profile: {
+      user: {
         include: {
-          user: {
+          profiles: {
             include: {
-              profiles: true
+              groups: true
             }
           }
         }
@@ -438,13 +441,13 @@ export async function undoQuestionResolution(questionId: number, groupId: string
   if (!questionUpdated) {
     throw Error(`Cannot find question with id: ${questionId}`)
   }
-  await updateForecastQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
-  await updateResolvePingQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
-  await updateResolutionQuestionMessages(questionUpdated, groupId, "Question resolution undone!")
+  await updateForecastQuestionMessages(questionUpdated, teamId, "Question resolution undone!")
+  await updateResolvePingQuestionMessages(questionUpdated, teamId, "Question resolution undone!")
+  await updateResolutionQuestionMessages(questionUpdated, teamId, "Question resolution undone!")
 
   await backendAnalyticsEvent("question_resolution_undone", {
     platform: "slack",
-    team: groupId,
+    team: teamId,
   })
 }
 

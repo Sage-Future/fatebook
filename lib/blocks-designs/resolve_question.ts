@@ -1,5 +1,5 @@
 import { QuestionWithAuthorAndQuestionMessages } from "../../prisma/additional"
-import { conciseDateTime } from "../_utils"
+import { conciseDateTime, getUserNameOrProfileLink } from "../_utils"
 import { ResolveQuestionActionParts, feedbackOverflow, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from "./_block_utils"
 
 export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages) {
@@ -10,7 +10,7 @@ export async function buildResolveQuestionBlocks(teamId: string, question: Quest
     {
       "type": "section",
       "text": question.resolvedAt == null ?
-        (markdownBlock(`Hey ${question?.profile.slackId ? `<@${question.profile.slackId}>` : "there"}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`))
+        (markdownBlock(`Hey ${getUserNameOrProfileLink(teamId, question.user)}, you asked:\n ${questionTitle}\n You said it should resolve on ${resolutionDateStr}. How should this resolve?`))
         :
         markdownBlock(`_You resolved ${questionTitle} as ${question.resolution}_`),
       "accessory": feedbackOverflow()

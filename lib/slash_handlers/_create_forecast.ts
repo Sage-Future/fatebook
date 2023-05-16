@@ -1,8 +1,9 @@
-import { Profile } from '@prisma/client'
+import { Profile, User } from '@prisma/client'
 import { VercelResponse } from '@vercel/node'
 
 import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfile, postSlackMessage } from '../../lib/_utils'
 import { buildQuestionBlocks } from '../blocks-designs/question'
+import { ProfileWithUser } from '../../prisma/additional'
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {
   let question : string = commandArray[2]
@@ -24,7 +25,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
     return
   }
 
-  let profile : Profile
+  let profile : ProfileWithUser
   try {
     profile = await getOrCreateProfile(slackTeamId, slackUserId, groupId)
   } catch (err) {
@@ -39,15 +40,16 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   //parse the date string
   let date : Date = new Date(dateStr)
-  await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, groupId, channelId })
+  await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, user : profile.user, groupId, channelId })
 }
 
-export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, groupId, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, groupId: number, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
+export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, groupId, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, groupId: number, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,
       resolveBy : date,
-      authorId  : profile.id,
+      userId  : user.id,
+      profileId  : profile.id,
       notes,
       hideForecastsUntil,
       groups    : {
@@ -57,32 +59,33 @@ export async function createForecastingQuestion(teamId: string, { question, date
       },
       forecasts : forecastNum ? {
         create: {
-          authorId : profile.id,
+          profileId : profile.id,
+          userId : user.id,
           forecast : forecastNum
         }
       } : {}
     },
     include: {
-      forecasts: {
+      user: {
         include: {
-          profile: {
+          profiles: {
             include: {
-              user: {
-                include: {
-                  profiles: {
-                    include: {
-                      groups: true
-                    }
-                  }
-                }
-              }
+              groups: true
             }
           }
         }
       },
-      profile: {
+      forecasts: {
         include: {
-          user: true
+          user: {
+            include: {
+              profiles: {
+                include: {
+                  groups: true
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -99,7 +102,8 @@ export async function createForecastingQuestion(teamId: string, { question, date
       blocks: questionBlocks,
       unfurl_links: false,
       unfurl_media: false
-    }, createdQuestion.profile.slackId || undefined)
+    }, undefined)
+    // TODO createdQuestion.profile.slackId || undefined)
 
     if ((data as any)?.notifiedUserAboutEmptyChannel) {
       questionPostedSuccessfully = false

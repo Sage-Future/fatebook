@@ -1,15 +1,19 @@
 import { ModalView } from '@slack/types'
-import { displayForecast, getDateSlackFormat } from '../../lib/_utils'
-import { ForecastWithProfileAndUser, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups } from '../../prisma/additional'
+import { displayForecast, getDateSlackFormat, getUserNameOrProfileLink } from '../../lib/_utils'
+import { ForecastWithUserWithProfiles, QuestionWithForecastWithUserWithProfilesWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
 import { defaultDisplayPictureUrl, maxDecimalPlacesForecastLogListing, noForecastsMessage } from '../_constants'
 import { markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock } from './_block_utils'
 import { Forecast } from '@prisma/client'
+
+export type ForecastWithUserWithProfilesWithGroups = Forecast & {
+    user: UserWithProfilesWithGroups
+}
 
 function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecimalPlacesForecastLogListing){
   return displayForecast(forecast, maxDecimalPlaces)
 }
 
-export function buildQuestionForecastLogModalView(question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, slackUserId : string): ModalView {
+export function buildQuestionForecastLogModalView(teamId : string, question: QuestionWithForecastWithUserWithProfilesWithGroups, slackUserId : string): ModalView {
   const hideForecasts =
     (question.hideForecastsUntil && question.hideForecastsUntil?.getTime() > Date.now())
     || false
@@ -25,7 +29,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
         'type': 'section',
         'text': markdownBlock(`*${question.title}*`),
       },
-      ...maybeQuestionResolutionBlock(question),
+      ...maybeQuestionResolutionBlock(teamId, question),
       questionForecastInformationBlock(question, hideForecasts),
       ...forecasts
         .sort((b, a) => a.createdAt.getTime() - b.createdAt.getTime())
@@ -35,12 +39,12 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
             'elements': [
               {
                 'type': 'image',
-                'image_url': forecast.profile.user.image ||  defaultDisplayPictureUrl,
+                'image_url': forecast.user.image ||  defaultDisplayPictureUrl,
                 'alt_text': 'profile picture'
               },
               markdownBlock(
-                `${forecast.profile.slackId ? `<@${forecast.profile.slackId}>` : forecast.profile.user.name} ` +
-                `*${formatForecast(forecast)}*` +
+                getUserNameOrProfileLink(teamId, forecast.user) +
+                ` *${formatForecast(forecast)}*` +
                 ` - _submitted ${getDateSlackFormat(forecast.createdAt, true, 'date_short_pretty')}_`
               )
             ]
@@ -56,7 +60,7 @@ export function buildQuestionForecastLogModalView(question: QuestionWithForecast
   }
 }
 
-function getForecastsOfUser(forecasts: ForecastWithProfileAndUser[], slackUserId: string) {
-  const userId = forecasts.find(forecast => forecast.profile.slackId === slackUserId)?.profile.user.id
-  return userId ? forecasts.filter(forecast => forecast.profile.user.id === userId) : []
+function getForecastsOfUser(forecasts: ForecastWithUserWithProfiles[], slackUserId: string) {
+  const userId = forecasts.find(forecast => forecast.user.profiles.find(p => p.slackId === slackUserId))?.user.id
+  return userId ? forecasts.filter(forecast => forecast.user.id === userId) : []
 }

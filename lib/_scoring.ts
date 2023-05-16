@@ -39,7 +39,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   const days      = (question.resolvedAt!.getTime() - question.createdAt.getTime()) / (1000 * 60 * 60 * 24)
   const fractionalDay = days - Math.floor(days)
 
-  let uniqueIds = Array.from(new Set(forecasts.map(f => f.authorId)))
+  let uniqueIds = Array.from(new Set(forecasts.map(f => f.userId)))
 
   // iterate over each time interval from start of question to
   //   resolution datetimes
@@ -50,7 +50,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   let absoluteScoreTimeSeries : ScoreTimeSeries = {}
 
   const sortedForecastsById : [number, Forecast[]][] = uniqueIds.map(id => {
-    return [id, forecasts.filter(f => f.authorId == id).sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())]
+    return [id, forecasts.filter(f => f.userId == id).sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())]
   })
   for (let j = question.createdAt.getTime(); j < endDay; j = j + day) {
     // dealing with fractional part of day at the end
@@ -59,7 +59,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
     const lengthOfInterval = currentInterval - startOfInterval
 
 
-    // get the most up to date forecast for each profile before this time period
+    // get the most up to date forecast for each user before this time period
     const mostRecentForecastBeforeThisIntervalById : ForecastArray = getMostRecentForecasts(sortedForecastsById, startOfInterval)
     // get all the forecasts for each user inbetween the current time interval and the previous one
     const forecastsOfCurrentIntervalbyId : DaysForecasts[] = sortedForecastsById.map(([id, sortedForecasts]) => {

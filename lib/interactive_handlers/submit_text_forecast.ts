@@ -4,10 +4,10 @@ import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfil
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 
-export async function getLastForecast(profileId: number, questionId: number) {
+export async function getLastForecast(userId: number, questionId: number) {
   const forecasts = await prisma.forecast.findMany({
     where: {
-      authorId: profileId,
+      userId: userId,
       questionId: questionId,
     },
     orderBy: {
@@ -62,7 +62,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
   //   check if the last forecast was:
   //    within 1 minutes
   //    & has the same value
-  const lastForecast = await getLastForecast(profile!.id, questionId)
+  const lastForecast = await getLastForecast(profile.user.id, questionId)
   if (lastForecast && floatEquality(lastForecast.forecast.toNumber(), (number/100))) {
     const lastForecastTime = new Date(lastForecast.createdAt).getTime()
     const now = new Date().getTime()
@@ -75,14 +75,19 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 
   const forecastCreated = await prisma.forecast.create({
     data: {
-      profile: {
+      user: {
         connect: {
-          id: profile.id
+          id: profile.user.id
         }
       },
       question: {
         connect: {
           id: questionId
+        }
+      },
+      profile: {
+        connect: {
+          id: profile.id
         }
       },
       forecast: new Decimal(number / 100), // convert 0-100% to 0-1
@@ -123,27 +128,27 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
     include: {
       forecasts: {
         include: {
-          profile: {
+          user: {
             include: {
-              user: {
+              profiles: {
                 include: {
-                  profiles: {
-                    include: {
-                      groups: true
-                    }
-                  }
+                  groups: true
                 }
               }
             }
           }
         }
       },
-      profile: {
+      user:{
         include: {
-          user: true
+          profiles: {
+            include: {
+              groups: true
+            }
+          }
         }
       }
-    }
+    },
   })
 
   if (!questions) {

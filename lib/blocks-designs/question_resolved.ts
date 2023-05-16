@@ -1,7 +1,7 @@
 import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndQuestionMessages } from '../../prisma/additional'
 import { feedbackFormUrl, maxDecimalPlacesForResolution, slackAppId } from '../_constants'
-import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from '../_utils'
+import { formatDecimalNicely, getResolutionEmoji, getUserNameOrProfileLink, resolutionToString } from '../_utils'
 import type { Blocks } from './_block_utils'
 import { dividerBlock, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils'
 
@@ -27,7 +27,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
       {
         'type': 'context',
         'elements': [
-          markdownBlock(`Unresolved by <@${question.profile.slackId}>`)
+          markdownBlock(`Unresolved by ${getUserNameOrProfileLink(teamId, question.user)}`)
         ],
         // 'accessory': feedbackOverflow()
       },
@@ -43,7 +43,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
     {
       'type': 'context',
       'elements': [
-        markdownBlock(`Resolved by <@${question.profile.slackId}>`)
+        markdownBlock(`Resolved by ${getUserNameOrProfileLink(teamId, question.user)}`)
       ],
       // 'accessory': feedbackOverflow()
     },

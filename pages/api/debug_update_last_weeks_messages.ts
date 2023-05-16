@@ -14,26 +14,22 @@ export default async function updateLastWeeksQuestions(req: VercelRequest, res: 
       groups: true,
       forecasts: {
         include: {
-          profile: {
+          user: {
             include: {
-              user: {
+              profiles: {
                 include: {
-                  profiles: {
-                    include: {
-                      groups: true
-                    }
-                  }
+                  groups: true
                 }
               }
             }
           }
         }
       },
-      profile: {
+      user: {
         include: {
-          user: {
+          profiles: {
             include: {
-              profiles: true
+              groups: true
             }
           }
         }

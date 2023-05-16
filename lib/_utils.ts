@@ -1,7 +1,7 @@
-import { Forecast, GroupType, PrismaClient, Profile, Resolution, SlackMessage } from '@prisma/client'
+import { Forecast, Group, GroupType, PrismaClient, Resolution, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { PingSlackMessageWithMessage, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecasts, QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles, ResolutionSlackMessageWithMessage } from '../prisma/additional'
+import { PingSlackMessageWithMessage, ProfileWithGroups, ProfileWithUser, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages, QuestionWithForecasts, ResolutionSlackMessageWithMessage, UserWithProfilesWithGroups } from '../prisma/additional'
 import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
@@ -89,6 +89,12 @@ export async function getSlackWorkspaceName(teamId: string, ) {
   }
 }
 
+export function getUserNameOrProfileLink(teamId : string, user : UserWithProfilesWithGroups) : string {
+  const thisTeamsProfile = user.profiles.find((p : ProfileWithGroups) => p.groups.find((g : Group) => g.slackTeamId === teamId))
+  return thisTeamsProfile ? `<@${thisTeamsProfile.slackId}>` : (user.name || 'Anon User')
+}
+
+
 export async function getSlackProfileFromSlackId(teamId: string, slackId : string) {
   let data
   try {
@@ -124,6 +130,9 @@ export async function getOrCreateProfile(teamId: string, slackUserId: string, gr
     where: {
       slackId: slackUserId
     },
+    include: {
+      user: true,
+    }
   })
 
   // if no profile, create one
@@ -139,7 +148,7 @@ export async function getOrCreateProfile(teamId: string, slackUserId: string, gr
   return profile
 }
 
-export async function createProfile(teamId: string, slackId : string, groupId : number) : Promise<Profile>{
+export async function createProfile(teamId: string, slackId : string, groupId : number) : Promise<ProfileWithUser>{
   // check if the user exists
   const slackProfile = (await getSlackProfileFromSlackId(teamId, slackId))
   const email = slackProfile.email
@@ -195,6 +204,9 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
     where: {
       slackId: slackId
     },
+    include: {
+      user: true,
+    }
   })
   if(profile === undefined) {
     throw new Error(`db error, failed to find created profile with slackId: ${slackId}`)
@@ -417,30 +429,30 @@ export async function updateResolvePingQuestionMessages(question: QuestionWithAu
   await updateSlackMessages(question.pingResolveMessages.map((x : PingSlackMessageWithMessage) => x.message ), teamId, notificationMessage, updateBlocks)
 }
 
-export async function updateForecastQuestionMessages(question: QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles, teamId: string, notificationMessage: string) {
+export async function updateForecastQuestionMessages(question: QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages, teamId: string, notificationMessage: string) {
   const updateBlocks = buildQuestionBlocks(teamId, question)
   await updateSlackMessages(question.questionMessages.map((x : QuestionSlackMessageWithMessage) => x.message), teamId, notificationMessage, updateBlocks)
 }
 
-export function getMostRecentForecastPerProfile(forecasts: Forecast[], date : Date) : [number, Forecast][] {
-  const forecastsPerProfile = new Map<number, Forecast>()
+export function getMostRecentForecastPerUser(forecasts: Forecast[], date : Date) : [number, Forecast][] {
+  const forecastsPerUser = new Map<number, Forecast>()
   for (const forecast of forecasts) {
-    const authorId = forecast.authorId
-    if (forecastsPerProfile.has(authorId) && forecast.createdAt < date) {
-      const existingForecast = forecastsPerProfile.get(authorId)
+    const authorId = forecast.userId
+    if (forecastsPerUser.has(authorId) && forecast.createdAt < date) {
+      const existingForecast = forecastsPerUser.get(authorId)
       if (existingForecast!.createdAt < forecast.createdAt) {
-        forecastsPerProfile.set(authorId, forecast)
+        forecastsPerUser.set(authorId, forecast)
       }
     } else if(forecast.createdAt < date){
-      forecastsPerProfile.set(authorId, forecast)
+      forecastsPerUser.set(authorId, forecast)
     }
   }
-  return Array.from(forecastsPerProfile, ([id, value]) => [id, value])
+  return Array.from(forecastsPerUser, ([id, value]) => [id, value])
 }
 
 export function getCommunityForecast(question : QuestionWithForecasts, date : Date) : number {
   // get all forecasts for this question
-  const uptoDateForecasts : number[] = getMostRecentForecastPerProfile(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
+  const uptoDateForecasts : number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
   // sum each forecast
   const summedForecasts : number = uptoDateForecasts.reduce(
     (acc, forecast) => acc + forecast,

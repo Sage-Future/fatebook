@@ -17,7 +17,7 @@ async function refreshUserAppHome(userId: string, teamId: string, activePage : n
 
   const allUserForecasts = await prisma.forecast.findMany({
     where: {
-      authorId: profile!.id
+      userId: profile.user.id
     },
     include: {
       question: {
@@ -35,7 +35,7 @@ async function refreshUserAppHome(userId: string, teamId: string, activePage : n
 
   const allUserQuestionScores = await prisma.questionScore.findMany({
     where: {
-      profileId: profile!.id
+      userId: profile.user.id
     },
   })
 

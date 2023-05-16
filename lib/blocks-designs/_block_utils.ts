@@ -1,7 +1,7 @@
 import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfilesWithGroups, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { feedbackFormUrl } from '../_constants'
-import { getCommunityForecast, getDateSlackFormat, getResolutionEmoji, getSlackPermalinkFromChannelAndTS, round } from '../_utils'
+import { getCommunityForecast, getDateSlackFormat, getResolutionEmoji, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink, round } from '../_utils'
 import { checkboxes } from './question_modal'
 
 export interface ResolveQuestionActionParts {
@@ -167,17 +167,17 @@ export async function getQuestionTitleLink(question: QuestionWithAuthorAndQuesti
   return questionTitle
 }
 
-export function maybeQuestionResolutionBlock(question : QuestionWithForecastWithProfileAndUserWithProfilesWithGroups) : SectionBlock[] {
+export function maybeQuestionResolutionBlock(teamId : string, question : QuestionWithForecastWithUserWithProfilesWithGroups) : SectionBlock[] {
   return (question.resolution ? [{
     'type': 'section',
     // NB: this assumes that the author resolved the question
-    'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by <@${question.profile.slackId}>`
+    'text': markdownBlock(`${getResolutionEmoji(question.resolution)} Resolved *${question.resolution}* by ${getUserNameOrProfileLink(teamId, question.user)}`
       + (question.resolvedAt ? `, ${getDateSlackFormat(question.resolvedAt, false, 'date_short_pretty')}` : '')),
   } as SectionBlock] : [])
 }
 
 export function questionForecastInformationBlock(question: QuestionWithForecasts, hideForecasts : boolean){
-  const numUniqueForecasters = new Set(question.forecasts.map(f => f.authorId)).size
+  const numUniqueForecasters = new Set(question.forecasts.map(f => f.userId)).size
   return {
     'type': 'context',
     'elements': [

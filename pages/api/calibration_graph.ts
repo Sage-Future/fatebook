@@ -17,21 +17,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       },
       forecasts: {
         some: {
-          profile: {
-            userId: {
-              equals: userId,
-            }
-          },
+          userId: {
+            equals: userId,
+          }
         }
       }
     },
     include: {
       forecasts: {
         where: {
-          profile: {
-            userId: {
-              equals: userId,
-            }
+          userId: {
+            equals: userId,
           }
         }
       },

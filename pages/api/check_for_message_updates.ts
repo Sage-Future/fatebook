@@ -18,13 +18,22 @@ async function getQuestionsToBeResolved()  {
     include: {
       profile: {
         include: {
-          user: true,
-          groups: {
-            where: {
-              slackTeamId:{
-                not: null
-              }
+          groups: true
+        }
+      },
+      user: {
+        include: {
+          profiles: {
+            include: {
+              groups: true
             }
+          }
+        }
+      },
+      groups: {
+        where: {
+          slackTeamId:{
+            not: null
           }
         }
       },
@@ -44,7 +53,11 @@ async function notifyAuthorsToResolveQuestions() {
 
   for (const question of allQuestionsToBeNotified) {
     // there should only be one slack group per profile
-    const group = question.profile.groups[0]
+    const group = question.profile.groups.find(g => g.slackTeamId)
+    if (!group) {
+      console.error(`No slack group found for question ${question.id}`)
+      continue
+    }
     const slackId = question.profile.slackId!
     const teamId = group.slackTeamId!
     try {
@@ -106,26 +119,22 @@ async function updateQuestionsToUnhideForecasts(){
       groups: true,
       forecasts: {
         include: {
-          profile: {
+          user: {
             include: {
-              user: {
+              profiles: {
                 include: {
-                  profiles: {
-                    include: {
-                      groups: true
-                    }
-                  }
+                  groups: true
                 }
               }
             }
           }
         }
       },
-      profile: {
+      user: {
         include: {
-          user: {
+          profiles: {
             include: {
-              profiles: true
+              groups: true
             }
           }
         }

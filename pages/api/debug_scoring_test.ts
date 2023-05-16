@@ -11,11 +11,12 @@ function addDays(date : Date, days : number) {
   return new Date(date.getTime() + (days * 1000 * 60 * 60 * 24))
 }
 
-function createForecast(authorid : number, forecastValue : number, dateOffset : number)
+function createForecast(userid : number, forecastValue : number, dateOffset : number)
 {
   const forecast : Forecast = {
     id: forecastid++,
-    authorId: authorid,
+    userId: userid,
+    profileId: userid+10,
     forecast: new Prisma.Decimal(forecastValue),
     questionId: questionid,
     createdAt: addDays(startDate, dateOffset),
@@ -61,7 +62,8 @@ function getQuestion(days : number) : Question {
     resolveBy: startDate,
     resolved: true,
     pingedForResolution: true,
-    authorId: 0,
+    userId: 0,
+    profileId: 0,
     notes: null,
     hideForecastsUntil: null,
   }

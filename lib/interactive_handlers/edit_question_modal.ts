@@ -1,7 +1,7 @@
 import { Question } from '@prisma/client'
 import * as chrono from 'chrono-node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import prisma, { backendAnalyticsEvent, callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
+import prisma, { backendAnalyticsEvent, callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, getUserNameOrProfileLink, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
 import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, OptionsCheckBoxActionParts, textBlock, parseSelectedCheckboxOptions } from '../blocks-designs/_block_utils'
 import { buildQuestionBlocks } from '../blocks-designs/question'
 import { buildEditQuestionModalView } from '../blocks-designs/question_modal'
@@ -38,11 +38,11 @@ export async function showEditQuestionModal(actionParts: EditQuestionBtnActionPa
       id: questionId,
     },
     include: {
-      profile: {
+      user: {
         include: {
-          user: {
+          profiles: {
             include: {
-              profiles: true
+              groups: true
             }
           }
         }
@@ -60,10 +60,10 @@ export async function showEditQuestionModal(actionParts: EditQuestionBtnActionPa
     throw new Error(`Couldn't find question ${questionId}`)
   }
 
-  if (!question.profile.user.profiles.some((p) => p.slackId === payload.user?.id)) {
+  if (!question.user.profiles.some((p) => p.slackId === payload.user?.id)) {
     // user is not the author of the question
     await postMessageToResponseUrl({
-      text: `Only the question's author <@${question.profile.slackId}> can edit it.`,
+      text: `Only the question's author ${getUserNameOrProfileLink(payload.team.id, question.user)} can edit it.`,
       replace_original: false,
       response_type: 'ephemeral',
     }, payload.response_url)
@@ -121,6 +121,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       channelId: actionParts.channel,
       groupId,
       profile,
+      user: profile.user,
       notes,
       hideForecastsUntil,
     })
@@ -138,24 +139,24 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       include: {
         forecasts: {
           include: {
-            profile: {
+            user: {
               include: {
-                user: {
+                profiles: {
                   include: {
-                    profiles: {
-                      include: {
-                        groups: true
-                      }
-                    }
+                    groups: true
                   }
                 }
               }
             }
           }
         },
-        profile: {
+        user: {
           include: {
-            user: true
+            profiles: {
+              include: {
+                groups: true
+              }
+            }
           }
         },
         questionMessages: {
