@@ -58,7 +58,6 @@ export function Predict() {
         <TextareaAutosize
           className={clsx(
             "w-full text-xl border-2 border-gray-300 rounded-md p-4 resize-none",
-            errors.question && "border-red-400"
           )}
           autoFocus={true}
           placeholder="Will humans walk on Mars by 2050?"

@@ -5,6 +5,7 @@ import { api } from "../lib/web/trpc"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
 import { getQuestionUrl } from "../pages/q/[id]"
+import { ResolveButton } from "./ResolveButton"
 
 export function Questions() {
   const session = useSession()
@@ -33,11 +34,11 @@ export function Questions() {
           (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
         ).map((question) => (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-1" key={question.id}>
-            <Link href={getQuestionUrl(question)} key={question.id} className="no-underline">
-              <span className="col-span-2 xl:col-span-1 font-semibold" key={`${question.id}title`}>
+            <span className="col-span-2 xl:col-span-1 font-semibold" key={`${question.id}title`}>
+              <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
                 {question.title}
-              </span>
-            </Link>
+              </Link>
+            </span>
             <div className="grid grid-cols-3">
               <span className="text-sm" key={`${question.id}author`}>
                 <Username user={question.profile.user} />
@@ -56,11 +57,10 @@ export function Questions() {
                   </span>
                 )
               }
-              <span className="text-sm" key={`${question.id}resolution`}>
-                {question.resolution}
-              </span>
+              <ResolveButton question={question} />
             </div>
           </div>
+
         ))}
       </div>
     </div>

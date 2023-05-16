@@ -1,6 +1,8 @@
 import { z } from "zod"
-import prisma from "../_utils"
+import prisma, { backendAnalyticsEvent } from "../_utils"
 import { publicProcedure, router } from "./trpc_base"
+import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
+import { Resolution } from "@prisma/client"
 
 const HARDCODED_ADAM_PROFILE_ID = 12
 
@@ -108,5 +110,53 @@ export const questionRouter = router({
           }
         }
       })
+    }),
+
+  resolveQuestion: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+        resolution: z.string(),
+      })
+    )
+    .mutation(async ({input}) => {
+      const question = await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        }
+      })
+
+      if (!question) {
+        throw new Error('question not found')
+      }
+      // TODO CHECK IF USER ID MATCHES AUTHOR ID
+
+      await handleQuestionResolution(question.id, input.resolution as Resolution)
+
+      await backendAnalyticsEvent("question_resolved", {
+        platform: "web",
+        resolution: input.resolution.toLowerCase(),
+      })
+    }),
+
+  undoResolution: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+      })
+    )
+    .mutation(async ({input}) => {
+      const question = await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        }
+      })
+
+      if (!question) {
+        throw new Error('question not found')
+      }
+      // TODO CHECK IF USER ID MATCHES AUTHOR ID
+
+      await undoQuestionResolution(question.id)
     }),
 })

@@ -293,9 +293,9 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
   })
 
   if (!question) {
-    console.error("Couldn't find question to open edit modal: ", questionId)
+    console.error("Couldn't find question to resolve: ", questionId)
     await postMessageToResponseUrl({
-      text: `Error: Couldn't find question to edit.`,
+      text: `Error: Couldn't find question to resolve.`,
       replace_original: false,
       response_type: 'ephemeral',
     }, responseUrl)
@@ -343,10 +343,16 @@ export async function buttonUndoResolution(actionParts: UndoResolveActionParts, 
   if (!payload.team?.id || !payload.user?.id || !payload.channel?.id) {
     throw new Error('Missing team or user or channel id on question overflow > undo_resolve')
   }
-  await undoQuestionResolution(questionId, payload.team.id, payload.user.id, payload.channel.id)
+  if (await slackUserCanUndoResolution(questionId, payload.team.id, payload.user.id, payload.channel.id)) {
+    await undoQuestionResolution(questionId)
+    await backendAnalyticsEvent("question_resolution_undone", {
+      platform: "slack",
+      team: payload.team.id,
+    })
+  }
 }
 
-export async function undoQuestionResolution(questionId: number, teamId: string, userSlackId: string, channelId: string) {
+export async function slackUserCanUndoResolution(questionId: number, teamId: string, userSlackId: string, channelId: string) {
   const questionPreUpdate = await prisma.question.findUnique({
     where: {
       id: questionId,
@@ -372,9 +378,13 @@ export async function undoQuestionResolution(questionId: number, teamId: string,
       user: userSlackId,
     }
     )
-    return
+    return false
   }
 
+  return true
+}
+
+export async function undoQuestionResolution(questionId: number) {
   await prisma.$transaction([
     prisma.question.update({
       where: {
@@ -444,10 +454,5 @@ export async function undoQuestionResolution(questionId: number, teamId: string,
   await updateForecastQuestionMessages(questionUpdated, "Question resolution undone!")
   await updateResolvePingQuestionMessages(questionUpdated, "Question resolution undone!")
   await updateResolutionQuestionMessages(questionUpdated, "Question resolution undone!")
-
-  await backendAnalyticsEvent("question_resolution_undone", {
-    platform: "slack",
-    team: teamId,
-  })
 }
 

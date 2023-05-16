@@ -35,6 +35,11 @@ export default function QuestionPage() {
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <div className="prose mx-auto">
+        <h2 className="text-3xl mb-4">
+          <Link href="/" className="no-underline font-extrabold text-gray-900">
+              Fatebook
+          </Link>
+        </h2>
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-1" key={question.id}>
           <span className="col-span-2 xl:col-span-1 font-semibold" key={`${question.id}title`}>
             <Link href={`q/${question.id}`}>{question.title}</Link>
