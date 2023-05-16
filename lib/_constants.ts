@@ -7,9 +7,6 @@ export const clientSecret  : string = process.env.SLACK_CLIENT_SECRET!
 export const baseUrl       : string = process.env.SLACKBOT_BASE_URL!
 export const slackAppId    : string = process.env.SLACKBOT_APP_ID!
 
-export const maxDecimalPlaces       : number = 1
-export const maxScoreDecimalPlaces  : number = 5
-export const scoreSignificantDigits : number = 2
 
 // Question Block
 export const maxLatestForecastsVisible  : number = 5
@@ -17,6 +14,10 @@ export const defaultDisplayPictureUrl ='https://fatebook.io/default_avatar.png'
 // this should be >=3, see listUserForecastUpdates
 export const maxForecastsPerUser  : number = 3
 export const noForecastsMessage   : string = `_No forecasts yet_`
+export const maxDecimalPlacesForQuestionForecast : number = 1
+
+// Resolution Message
+export const maxDecimalPlacesForResolution : number = 6
 
 // Home Tab View
 export const maxForecastsVisible        : number = 5
@@ -24,6 +25,12 @@ export const numberOfDaysInRecentPeriod : number = 91
 export const forecastListColumnSpacing  : number = 14
 export const forecastPrepad             : number = 4
 export const scorePrepad                : number = 3
+export const maxAvgScoreDecimalPlaces   : number = 6
+export const scoreSignificantDigits     : number = 2
+export const maxScoreDecimalPlacesListing            : number = 5
+export const maxDecimalPlacesForecastForecastListing : number = 1
+export const maxDecimalPlacesScoreForecastListing    : number = 5
+export const maxDecimalPlacesForecastLogListing      : number = 1
 
 export const yesResolutionColumnSpacing        : number = forecastListColumnSpacing
 export const noResolutionColumnSpacing         : number = forecastListColumnSpacing

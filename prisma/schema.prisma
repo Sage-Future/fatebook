@@ -28,7 +28,7 @@ model Forecast {
 model QuestionScore {
   id                     Int      @id @default(autoincrement())
   createdAt              DateTime @default(now())
-  relativeScore          Decimal
+  relativeScore          Decimal?
   profileId              Int
   questionId             Int
   profileQuestionComboId Int      @unique

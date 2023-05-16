@@ -5,7 +5,7 @@ import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
-import prisma, { backendAnalyticsEvent, getDateSlackFormat, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
+import prisma, { averageScores, backendAnalyticsEvent, getDateSlackFormat, getResolutionEmoji, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -111,8 +111,12 @@ export async function scoreForecasts(scoreArray : ScoreCollection, question : Qu
 }
 
 function getAverageScores(questionScores : QuestionScore[]) {
-  const avgRelativeScore = questionScores.map(score => score.relativeScore.toNumber()).reduce((a, b) => a + b, 0) / questionScores.length
-  const avgAbsoluteScore = questionScores.map(score => score.absoluteScore.toNumber()).reduce((a, b) => a + b, 0) / questionScores.length
+  const avgRelativeScore = averageScores(questionScores
+    .map(score => score.relativeScore?.toNumber()))
+
+  const avgAbsoluteScore = averageScores(questionScores
+    .map(score => score.absoluteScore.toNumber()))
+
   return {
     avgRelativeScore: avgRelativeScore,
     avgAbsoluteScore: avgAbsoluteScore
@@ -169,11 +173,14 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       totalParticipants: Object.keys(scoreArray).length,
       lastForecast: lastForecast.forecast.toNumber()*100,
       lastForecastDate: getDateSlackFormat(lastForecast.createdAt, true, 'date_short_pretty'),
-      overallBrierScore: averageScores.avgAbsoluteScore,
+      overallBrierScore:  averageScores.avgAbsoluteScore,
       overallRBrierScore: averageScores.avgRelativeScore
     }
+    const brierScore = scoreArray[profile.id].relativeBrierScore != undefined
+      ? scoreArray[profile.id].absoluteBrierScore
+      : scoreArray[profile.id].relativeBrierScore!
     const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. `
-      + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(scoreArray[profile.id].relativeBrierScore, 4)}`)
+      + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(brierScore, 4)}`)
     console.log({message})
     return await Promise.all(profile.groups.map(async group => {
       const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,

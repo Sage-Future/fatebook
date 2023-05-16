@@ -10,7 +10,7 @@ type ForecastArray = {
 }
 
 export type ScoreTuple = {
-  relativeBrierScore: number
+  relativeBrierScore: number | undefined
   absoluteBrierScore: number
   rank              : number
 }
@@ -32,6 +32,10 @@ export type DayAvgForecast = {
 
 
 export function relativeBrierScoring(forecasts : Forecast[], question : Question) : ScoreCollection {
+  if(forecasts.length == 0){
+    return {}
+  }
+
   const days      = (question.resolvedAt!.getTime() - question.createdAt.getTime()) / (1000 * 60 * 60 * 24)
   const fractionalDay = days - Math.floor(days)
 
@@ -123,14 +127,19 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   } else {
     const id = uniqueIds[0]
     avgScoresPerUser[id] = {
-      relativeBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
+      relativeBrierScore : undefined,
       absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
       rank               : -1 //reassigned below
     }
   }
 
   //sort the user id's of avgScoresPerUser by their relative brier score
-  let sortedIds = Object.keys(avgScoresPerUser).map(id => parseInt(id)).sort((a, b) => avgScoresPerUser[a].relativeBrierScore - avgScoresPerUser[b].relativeBrierScore)
+  let sortedIds : number[] = []
+  if (uniqueIds.length != 1) {
+    sortedIds = Object.keys(avgScoresPerUser).map(id => parseInt(id)).sort((a, b) => avgScoresPerUser[a].relativeBrierScore! - avgScoresPerUser[b].relativeBrierScore!)
+  } else {
+    sortedIds = uniqueIds
+  }
 
   for (let i = 0; i < sortedIds.length; i++) {
     avgScoresPerUser[sortedIds[i]].rank = i+1

@@ -70,30 +70,30 @@ function getQuestion(days : number) : Question {
 export default function testScoring(req: VercelRequest, res: VercelResponse) {
   const scoreMulti = relativeBrierScoring(testMultiForecasts, question)
 
-  if (!floatEquality(scoreMulti[1].relativeBrierScore, -0.43) || !floatEquality(scoreMulti[2].relativeBrierScore, 0.7943) || !floatEquality(scoreMulti[3].relativeBrierScore, -0.00137)) {
-    console.log(`scoreMulti 1 1 is right : ${floatEquality(scoreMulti[1].relativeBrierScore, -0.43)}`)
-    console.log(`scoreMulti 2 1 is right : ${floatEquality(scoreMulti[2].relativeBrierScore, 0.7943)}`)
-    console.log(`scoreMulti 3 1 is right : ${floatEquality(scoreMulti[3].relativeBrierScore, -0.00137)}`)
+  if (!floatEquality(scoreMulti[1].relativeBrierScore!, -0.43) || !floatEquality(scoreMulti[2].relativeBrierScore!, 0.7943) || !floatEquality(scoreMulti[3].absoluteBrierScore, -0.00137)) {
+    console.log(`scoreMulti 1 1 is right : ${floatEquality(scoreMulti[1].relativeBrierScore!, -0.43)}`)
+    console.log(`scoreMulti 2 1 is right : ${floatEquality(scoreMulti[2].relativeBrierScore!, 0.7943)}`)
+    console.log(`scoreMulti 3 1 is right : ${floatEquality(scoreMulti[3].relativeBrierScore!, -0.00137)}`)
     res.status(500).send("Multiuser scoring failed: " + JSON.stringify(scoreMulti))
     return
   }
 
   const scoreSingle = relativeBrierScoring(testSingleForecasts, question)
-  if (!floatEquality(scoreSingle[1].relativeBrierScore,	0.0114)){
+  if (!floatEquality(scoreSingle[1].absoluteBrierScore,	0.0114)){
     res.status(500).send("Single user scoring failed: " + JSON.stringify(scoreSingle))
     return
   }
 
   const scoreSinglePartDay = relativeBrierScoring(testSinglePartForecasts, quickQuestion)
   console.log(scoreSinglePartDay)
-  if (!floatEquality(scoreSinglePartDay[1].relativeBrierScore,	0.02)){
+  if (!floatEquality(scoreSinglePartDay[1].absoluteBrierScore,	0.02)){
     res.status(500).send("Single user part day scoring failed: " + JSON.stringify(scoreSinglePartDay))
     return
   }
 
   const scoreMultiPartDay = relativeBrierScoring(testMultiPartForecasts, quickQuestion)
   console.log(scoreMultiPartDay)
-  if (!floatEquality(scoreMultiPartDay[1].relativeBrierScore,	0.00845)){
+  if (!floatEquality(scoreMultiPartDay[1].absoluteBrierScore,	0.00845)){
     res.status(500).send("Multi user part day scoring failed: " + JSON.stringify(scoreMultiPartDay))
     return
   }

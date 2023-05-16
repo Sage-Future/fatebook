@@ -6,7 +6,7 @@ import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
 
-import { TEST_WORKSPACES, maxDecimalPlaces, maxScoreDecimalPlaces, scoreSignificantDigits } from './_constants'
+import { TEST_WORKSPACES } from './_constants'
 import { Blocks } from './blocks-designs/_block_utils'
 
 const prisma = new PrismaClient()
@@ -458,16 +458,16 @@ export function conciseDateTime(date: Date, includeTime = true) {
   return `${timeStr}${getDateYYYYMMDD(date)}`
 }
 
-export function displayForecast(forecast: Forecast): string {
-  return `${formatDecimalNicely(forecast.forecast.toNumber() * 100)}%`
+export function displayForecast(forecast: Forecast, decimalPlaces :number): string {
+  return `${formatDecimalNicely(forecast.forecast.toNumber() * 100, decimalPlaces)}%`
 }
 
-export function formatScoreNicely(num: number, maxDigits : number = maxScoreDecimalPlaces, significantDigits : number = scoreSignificantDigits): string {
+export function formatScoreNicely(num: number, maxDigits : number, significantDigits : number): string {
   const rounded = +num.toPrecision(significantDigits)
   return formatDecimalNicely(rounded, maxDigits)
 }
 
-export function formatDecimalNicely(num : number, decimalPlaces : number = maxDecimalPlaces) : string {
+export function formatDecimalNicely(num : number, decimalPlaces : number) : string {
   return num.toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: decimalPlaces,})
@@ -557,5 +557,14 @@ export async function backendAnalyticsEvent(name: string, params: AnalyticsEvent
   })
   if (!res.ok) {
     console.error('Error sending analytics event', res.text(), res)
+  }
+}
+
+export function averageScores(scores: (number | undefined)[]) {
+  const existentScores = scores.filter((s : number | undefined) => s != undefined) as number[]
+  if (existentScores.length == 0){
+    return undefined
+  } else {
+    return existentScores.reduce((a, b) => a + b, 0) / scores.length
   }
 }

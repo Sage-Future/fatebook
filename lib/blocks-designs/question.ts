@@ -1,9 +1,13 @@
 import { Forecast, Group, Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
 import { ForecastWithProfileAndUserWithProfilesWithGroups, ProfileWithGroups, QuestionWithForecastWithProfileAndUserWithProfilesWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
-import { CONNECTOR_WORKSPACES, defaultDisplayPictureUrl, feedbackFormUrl, maxForecastsPerUser, maxLatestForecastsVisible, noForecastsMessage } from '../_constants'
+import { CONNECTOR_WORKSPACES, defaultDisplayPictureUrl, feedbackFormUrl, maxDecimalPlacesForQuestionForecast, maxForecastsPerUser, maxLatestForecastsVisible, noForecastsMessage } from '../_constants'
 import { displayForecast, getDateSlackFormat, getResolutionEmoji } from '../_utils'
 import { Blocks, ResolveQuestionActionParts, markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock, toActionId } from './_block_utils'
+
+function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecimalPlacesForQuestionForecast): string {
+  return displayForecast(forecast, maxDecimalPlaces)
+}
 
 export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithProfileAndUserWithProfilesWithGroups): Blocks {
   const hideForecasts =
@@ -83,14 +87,14 @@ function listUserForecastUpdates(forecasts : Forecast[]) : string {
   // if there's only one forecast, just return that
   // if there's less than max the first forecast value, an arrow, then the rest
   if (forecasts.length > maxForecastsPerUser) {
-    return `~${displayForecast(forecasts[0])}~ → …` +
-      `→ ~${displayForecast(forecasts[forecasts.length - 2])}~ ` + //assumes >= 3 max
-      `→ *${displayForecast(forecasts[forecasts.length - 1])}*`
+    return `~${formatForecast(forecasts[0])}~ → …` +
+      `→ ~${formatForecast(forecasts[forecasts.length - 2])}~ ` + //assumes >= 3 max
+      `→ *${formatForecast(forecasts[forecasts.length - 1])}*`
   } else if (forecasts.length === 1) {
-    return `*${displayForecast(forecasts[0])}*`
+    return `*${formatForecast(forecasts[0])}*`
   } else {
-    return `${forecasts.slice(0,-1).map(f => `~${displayForecast(f)}~`).join(' → ')}` +
-    ` → *${displayForecast(forecasts[forecasts.length - 1])}*`
+    return `${forecasts.slice(0,-1).map(f => `~${formatForecast(f)}~`).join(' → ')}` +
+    ` → *${formatForecast(forecasts[forecasts.length - 1])}*`
   }
 }
 

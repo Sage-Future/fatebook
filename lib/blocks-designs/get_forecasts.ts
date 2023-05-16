@@ -1,9 +1,17 @@
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
 import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, formatScoreNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxForecastsVisible, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
+import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxDecimalPlacesForecastForecastListing, maxDecimalPlacesScoreForecastListing, maxForecastsVisible, maxScoreDecimalPlacesListing, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 import { Forecast, QuestionScore, Resolution } from '@prisma/client'
+
+function roundForecast(forecast: number, decimalPlaces :number = maxDecimalPlacesForecastForecastListing){
+  return formatDecimalNicely(forecast, decimalPlaces)
+}
+
+function roundScore(score: number, decimalPlaces :number = maxDecimalPlacesScoreForecastListing, sf : number = maxScoreDecimalPlacesListing){
+  return formatScoreNicely(score, decimalPlaces, sf)
+}
 
 export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)
@@ -88,7 +96,7 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
   const questionTitle = await getQuestionTitleLink(forecast.question)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
-  const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber())
+  const yourForecastValueStr    = roundForecast(100 * forecast.forecast.toNumber())
   const yourForecastValuePadded = 'You:' + padForecast(yourForecastValueStr)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
@@ -96,7 +104,7 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
   const commForecastValueStr    = (hideForecasts ?
     '?'
     :
-    formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()))
+    roundForecast(100* getCommunityForecast(forecast.question, new Date()))
   )
   const commForecastValuePadded = 'Community:' + padForecast(commForecastValueStr)
 
@@ -111,10 +119,17 @@ async function buildForecastQuestionText(teamId: string, forecast : ForecastWith
     :
     resolutionStr
 
-  const scoreStr = questionScore ?
-    `Your score:${padAndFormatScore(questionScore.relativeScore.toNumber())}`
-    :
-    ''
+  let scoreStr
+  if(questionScore) {
+    if(questionScore.relativeScore !== null) {
+      scoreStr = `Relative score:${padAndFormatScore(questionScore.relativeScore.toNumber())}`
+    } else {
+      scoreStr = `Brier score:      ${padAndFormatScore(questionScore.absoluteScore.toNumber())}`
+    }
+  } else {
+    scoreStr = ''
+  }
+
   return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionPadded + scoreStr
 }
 
@@ -152,7 +167,7 @@ function padAndFormatScore(score : number, maxprepad : number = scorePrepad){
   if (score < 0)
     prepad = prepad - 2
 
-  const scorePadded = ' '.repeat(prepad) + '`'+ formatScoreNicely(score) + '`'
+  const scorePadded = ' '.repeat(prepad) + '`'+ roundScore(score) + '`'
   return scorePadded
 }
 
