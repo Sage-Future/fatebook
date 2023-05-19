@@ -14,7 +14,7 @@ export default function Meta() {
         title: "Fatebook",
         description:
           "Track your predictions, make better decisions.",
-        site_name: "Fatebook",
+        siteName: "Fatebook",
         images: [
           {
             url: "https://fatebook.io/mclean.png",
