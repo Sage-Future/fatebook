@@ -367,7 +367,7 @@ export async function undoQuestionResolution(questionId: number, teamId: string,
   if (! questionPreUpdate?.user.profiles.find(p => p.slackId == userSlackId)) {
     console.log("Can't undo resolution, not author")
     await postEphemeralSlackMessage(teamId, {
-      text: `Only the question's author${questionPreUpdate ? getUserNameOrProfileLink(teamId, questionPreUpdate?.user) : ''} can undo a resolution.`,
+      text: `Only the question's author ${questionPreUpdate ? getUserNameOrProfileLink(teamId, questionPreUpdate?.user) : ''} can undo a resolution.`,
       channel: channelId,
       user: userSlackId,
     }
