@@ -24,6 +24,9 @@ export type QuestionWithUserAndForecastsAndUsersAndAuthorAndSlackMessages = Ques
     user: User
 }
 
+export type QuestionWithResolutionMessages = Question & {
+  resolutionMessages: ResolutionSlackMessageWithMessage[]
+}
 
 export type QuestionWithForecastWithUserWithProfilesWithGroups = Question & {
   forecasts: ForecastWithUserWithProfilesWithGroups[]
@@ -90,6 +93,16 @@ export type QuestionWithAuthorAndAllMessages = QuestionWithUser & {
 export type ForecastWithQuestionWithSlackMessagesAndForecasts = Forecast & {
     question: QuestionWithSlackMessagesAndForecasts
 }
+
+export type ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts = Forecast & {
+    question: QuestionWithQMessagesAndRMessagesAndForecasts
+}
+
+export type QuestionWithQMessagesAndRMessagesAndForecasts = QuestionWithForecasts & {
+    questionMessages: QuestionSlackMessageWithMessage[]
+    resolutionMessages: ResolutionSlackMessageWithMessage[]
+}
+
 
 export type ProfileWithUser = Profile & {
     user: User

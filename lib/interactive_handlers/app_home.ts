@@ -27,6 +27,11 @@ async function refreshUserAppHome(userId: string, teamId: string, activePage : n
             include: {
               message: true
             }
+          },
+          resolutionMessages: {
+            include: {
+              message: true
+            }
           }
         }
       }

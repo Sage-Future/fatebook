@@ -1,6 +1,6 @@
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
-import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, formatScoreNicely } from '../../lib/_utils'
-import { ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, formatScoreNicely, getSlackPermalinkFromChannelAndTS } from '../../lib/_utils'
+import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, QuestionWithResolutionMessages } from '../../prisma/additional'
 import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxDecimalPlacesForecastForecastListing, maxDecimalPlacesScoreForecastListing, maxForecastsVisible, maxScoreDecimalPlacesListing, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 import { Forecast, QuestionScore, Resolution } from '@prisma/client'
@@ -13,7 +13,7 @@ function roundScore(score: number, decimalPlaces :number = maxDecimalPlacesScore
   return formatScoreNicely(score, decimalPlaces, sf)
 }
 
-export async function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
+export async function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)
 
   const page = activeForecast ? activePage : closedPage
@@ -76,7 +76,7 @@ function generateButtonsBlock(firstPage: boolean, lastPage: boolean, activePage:
   } as KnownBlock
 }
 
-async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores : QuestionScore[]) : Promise<Blocks> {
+async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], questionScores : QuestionScore[]) : Promise<Blocks> {
   let blocks = await Promise.all([
     ...forecasts.map(async (forecast) => (
       {
@@ -91,7 +91,7 @@ async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSl
   return blocks as Blocks
 }
 
-async function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlackMessagesAndForecasts, questionScore : QuestionScore | undefined) {
+async function buildForecastQuestionText(forecast : ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, questionScore : QuestionScore | undefined) {
   const questionTitle = await getQuestionTitleLink(forecast.question)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
@@ -120,16 +120,28 @@ async function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlac
 
   let scoreStr
   if(questionScore) {
-    if(questionScore.relativeScore !== null) {
-      scoreStr = `Relative score:${padAndFormatScore(questionScore.relativeScore.toNumber())}`
-    } else {
-      scoreStr = `Brier score:      ${padAndFormatScore(questionScore.absoluteScore.toNumber())}`
-    }
+    const scoreLink = await getScoreLink(forecast.question, forecast.profileId)
+
+    const scoreStrLabel     = questionScore.relativeScore !== null ? `Relative score:` : `Brier score:`
+    const scoreStrLabelPad  = questionScore.relativeScore !== null ? `` : `      `
+    const scoreStrLinklabel = scoreLink ? `<${scoreLink}|${scoreStrLabel}>${scoreStrLabelPad}` : scoreStrLabel+scoreStrLabelPad
+
+    scoreStr = scoreStrLinklabel+padAndFormatScore(questionScore.absoluteScore.toNumber())
   } else {
     scoreStr = ''
   }
 
   return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionPadded + scoreStr
+}
+
+async function getScoreLink(question : QuestionWithResolutionMessages, profileId : number) {
+  const resolutionMessage = question.resolutionMessages.filter((rm) => rm.profileId == profileId)
+    .sort((b,a) => a.id - b.id)[0]?.message
+  if (resolutionMessage) {
+    return await getSlackPermalinkFromChannelAndTS(resolutionMessage.teamId, resolutionMessage.channel, resolutionMessage.ts)
+  } else {
+    return undefined
+  }
 }
 
 function shortResolution(resolution : Resolution | null){
@@ -189,8 +201,8 @@ function padForecast(forecast : string, maxprepad : number = forecastPrepad, max
   return forecastPadded
 }
 
-function getLatestForecastPerQuestion(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[]) {
-  const latestForecasts = new Map<number, ForecastWithQuestionWithSlackMessagesAndForecasts>()
+function getLatestForecastPerQuestion(forecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[]) {
+  const latestForecasts = new Map<number, ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts>()
   for (const forecast of forecasts) {
     if (!latestForecasts.has(forecast.questionId)) {
       latestForecasts.set(forecast.questionId, forecast)

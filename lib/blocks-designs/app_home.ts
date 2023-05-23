@@ -1,6 +1,6 @@
 import { QuestionScore } from '@prisma/client'
 import { averageScores, formatDecimalNicely } from '../../lib/_utils'
-import { ForecastWithQuestionWithSlackMessagesAndForecasts } from "../../prisma/additional"
+import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
 import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
@@ -48,7 +48,7 @@ function populateDetails(questionScores : QuestionScore[]) : { recentDetails: Sc
   return {recentDetails, overallDetails}
 }
 
-export async function buildHomeTabBlocks(teamId: string, fatebookUserId: number, allUserForecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
+export async function buildHomeTabBlocks(teamId: string, fatebookUserId: number, allUserForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
   const {recentDetails, overallDetails} = populateDetails(questionScores)
 
   const formatScore = (score: number | undefined) => {
