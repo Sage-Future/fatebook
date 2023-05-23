@@ -80,12 +80,12 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: number,
   const closedForecasts = allUserForecasts.filter(f => f.question.resolution != null).sort((a, b) => b.question.createdAt.getTime() - a.question.createdAt.getTime())
 
   const myActiveForecastsBlock : Blocks = await buildGetForecastsBlocks(
-    teamId, activeForecasts, activePage, closedPage, true,
+    activeForecasts, activePage, closedPage, true,
     '_Time to make your first prediction! Create a question by typing `/forecast` in any channel._',
     []
   )
   const myClosedForecastsBlock : Blocks = await buildGetForecastsBlocks(
-    teamId, closedForecasts, activePage, closedPage, false,
+    closedForecasts, activePage, closedPage, false,
     '_Check here once a question you\'ve forecasted on has resolved._',
     questionScores
   )

@@ -13,7 +13,7 @@ function roundScore(score: number, decimalPlaces :number = maxDecimalPlacesScore
   return formatScoreNicely(score, decimalPlaces, sf)
 }
 
-export async function buildGetForecastsBlocks(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
+export async function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
   const latestForecasts = getLatestForecastPerQuestion(forecasts)
 
   const page = activeForecast ? activePage : closedPage
@@ -34,8 +34,8 @@ export async function buildGetForecastsBlocks(teamId: string, forecasts: Forecas
 
   return await Promise.all([
     // slice latestForecasts to get the forecasts for the current page
-    ...(await buildGetForecastsBlocksPage(teamId, forecastsForPage, scoresForPage)),
-    ...(pagination ? [generateButtonsBlock(pagination, firstPage, lastPage, activePage, closedPage, activeForecast)]:[])
+    ...(await buildGetForecastsBlocksPage(forecastsForPage, scoresForPage)),
+    ...(pagination ? [generateButtonsBlock(firstPage, lastPage, activePage, closedPage, activeForecast)]:[])
   ])
 }
 
@@ -44,7 +44,7 @@ function matchForecastsToScores(forecasts : Forecast[], questionScores : Questio
   return forecastScores
 }
 
-function generateButtonsBlock(pagination: boolean, firstPage: boolean, lastPage: boolean, activePage: number, closedPage : number, activeForecast : boolean) : Block {
+function generateButtonsBlock(firstPage: boolean, lastPage: boolean, activePage: number, closedPage : number, activeForecast : boolean) : Block {
   return {
     'type': 'actions',
     'elements': [
@@ -76,14 +76,13 @@ function generateButtonsBlock(pagination: boolean, firstPage: boolean, lastPage:
   } as KnownBlock
 }
 
-async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores : QuestionScore[]) : Promise<Blocks> {
+async function buildGetForecastsBlocksPage(forecasts: ForecastWithQuestionWithSlackMessagesAndForecasts[], questionScores : QuestionScore[]) : Promise<Blocks> {
   let blocks = await Promise.all([
     ...forecasts.map(async (forecast) => (
       {
 			  'type': 'context',
         'elements': [
-          markdownBlock((await buildForecastQuestionText(teamId,
-                                                         forecast,
+          markdownBlock((await buildForecastQuestionText(forecast,
                                                          questionScores.find((qs : QuestionScore) => qs.questionId == forecast.questionId)))),
         ]
       } as ContextBlock
@@ -92,7 +91,7 @@ async function buildGetForecastsBlocksPage(teamId: string, forecasts: ForecastWi
   return blocks as Blocks
 }
 
-async function buildForecastQuestionText(teamId: string, forecast : ForecastWithQuestionWithSlackMessagesAndForecasts, questionScore : QuestionScore | undefined) {
+async function buildForecastQuestionText(forecast : ForecastWithQuestionWithSlackMessagesAndForecasts, questionScore : QuestionScore | undefined) {
   const questionTitle = await getQuestionTitleLink(forecast.question)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
