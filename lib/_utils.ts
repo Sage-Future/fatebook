@@ -405,13 +405,17 @@ export async function postMessageToResponseUrl(message: ResponseMessage, respons
   return await response.text()
 }
 
-async function updateSlackMessages(slackMessages: SlackMessage[], teamId: string, notificationMessage: string, updateBlocks : Blocks) {
+async function updateSlackMessages<QuestionX>(slackMessages: SlackMessage[],
+  notificationMessage: string,
+  question : QuestionX,
+  updateBlocks : (teamId: string, question : QuestionX ) => Promise<Blocks> | Blocks
+) {
   for (const slackMessage of slackMessages) {
     const response = await updateMessage(slackMessage.teamId, {
       channel: slackMessage.channel,
       ts: slackMessage.ts,
       text: notificationMessage,
-      blocks: updateBlocks,
+      blocks: await updateBlocks(slackMessage.teamId, question),
     })
     if (!response.ok) {
       console.error("Error updating message: ", response)
@@ -419,19 +423,25 @@ async function updateSlackMessages(slackMessages: SlackMessage[], teamId: string
   }
 }
 
-export async function updateResolutionQuestionMessages(question: QuestionWithAuthorAndAllMessages, teamId: string, notificationMessage: string) {
-  const updateBlocks = await buildQuestionResolvedBlocks(teamId, question)
-  await updateSlackMessages(question.resolutionMessages.map((x : ResolutionSlackMessageWithMessage) => x.message ), teamId, notificationMessage, updateBlocks)
+export async function updateResolutionQuestionMessages(question: QuestionWithAuthorAndAllMessages, notificationMessage: string) {
+  await updateSlackMessages(question.resolutionMessages.map((x : ResolutionSlackMessageWithMessage) => x.message ),
+                            notificationMessage,
+                            question,
+                            buildQuestionResolvedBlocks)
 }
 
-export async function updateResolvePingQuestionMessages(question: QuestionWithAuthorAndAllMessages, teamId: string, notificationMessage: string) {
-  const updateBlocks = await buildResolveQuestionBlocks(teamId, question)
-  await updateSlackMessages(question.pingResolveMessages.map((x : PingSlackMessageWithMessage) => x.message ), teamId, notificationMessage, updateBlocks)
+export async function updateResolvePingQuestionMessages(question: QuestionWithAuthorAndAllMessages, notificationMessage: string) {
+  await updateSlackMessages(question.pingResolveMessages.map((x : PingSlackMessageWithMessage) => x.message ),
+                            notificationMessage,
+                            question,
+                            buildResolveQuestionBlocks)
 }
 
-export async function updateForecastQuestionMessages(question: QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages, teamId: string, notificationMessage: string) {
-  const updateBlocks = buildQuestionBlocks(teamId, question)
-  await updateSlackMessages(question.questionMessages.map((x : QuestionSlackMessageWithMessage) => x.message), teamId, notificationMessage, updateBlocks)
+export async function updateForecastQuestionMessages(question: QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages, notificationMessage: string) {
+  await updateSlackMessages(question.questionMessages.map((x : QuestionSlackMessageWithMessage) => x.message),
+                            notificationMessage,
+                            question,
+                            buildQuestionBlocks)
 }
 
 export function getMostRecentForecastPerUser(forecasts: Forecast[], date : Date) : [number, Forecast][] {

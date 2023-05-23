@@ -52,6 +52,11 @@
     },
 
     {
+      "selector": "typeParameter",
+      "format": ["PascalCase"]
+    },
+
+    {
       "selector": "typeAlias",
       "format": ["PascalCase"]
     }

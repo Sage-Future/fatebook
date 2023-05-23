@@ -236,14 +236,14 @@ async function replaceQuestionResolveMessages(question : Question, newMessageDet
   })
 }
 
-async function handleQuestionResolution(questionid : number, resolution : Resolution, teamId : string) {
+async function handleQuestionResolution(questionid : number, resolution : Resolution) {
   console.log(`    handleQuestionResolution: ${questionid} ${resolution}`)
   const question = await dbResolveQuestion(questionid, resolution)
   console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
 
   // update ping and question message first for responsiveness
-  await updateResolvePingQuestionMessages(question, teamId, "Question resolved!")
-  await updateForecastQuestionMessages(question, teamId, "Question resolved!")
+  await updateResolvePingQuestionMessages(question, "Question resolved!")
+  await updateForecastQuestionMessages(question, "Question resolved!")
 
   let scores : ScoreCollection = {}
   if(resolution != Resolution.AMBIGUOUS) {
@@ -264,12 +264,12 @@ async function handleQuestionResolution(questionid : number, resolution : Resolu
   await messageUsers(scores, question)
 }
 
-export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, teamId?: string) {
+export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, connectingTeamId? : string) {
   // actionParts.answer is set by buttons block in resolution reminder DM, actionValue is set by select block on question
   const answer = actionParts.answer || actionValue
   if (!answer)
     throw Error('blockActions: both payload.actions.answer and actionValue is undefined')
-  else if (actionParts.questionId === undefined || userSlackId === undefined || teamId === undefined || responseUrl === undefined)
+  else if (actionParts.questionId === undefined || userSlackId === undefined || connectingTeamId === undefined || responseUrl === undefined)
     throw Error('blockActions: missing param')
 
   const { questionId } = actionParts
@@ -305,7 +305,7 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
   if (!question.user.profiles.some((p) => p.slackId === userSlackId)) {
     // user is not the author of the question
     await postMessageToResponseUrl({
-      text: `Only the question's author ${getUserNameOrProfileLink(teamId, question.user)} can resolve it.`,
+      text: `Only the question's author ${getUserNameOrProfileLink(connectingTeamId, question.user)} can resolve it.`,
       replace_original: false,
       response_type: 'ephemeral',
     }, responseUrl)
@@ -315,13 +315,13 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
   // TODO:NEAT replace yes/no/ambiguous with enum (with check for resolution template)
   switch (answer) {
     case 'yes':
-      await handleQuestionResolution(questionId, Resolution.YES, teamId)
+      await handleQuestionResolution(questionId, Resolution.YES)
       break
     case 'no':
-      await handleQuestionResolution(questionId, Resolution.NO, teamId)
+      await handleQuestionResolution(questionId, Resolution.NO)
       break
     case 'ambiguous':
-      await handleQuestionResolution(questionId, Resolution.AMBIGUOUS, teamId)
+      await handleQuestionResolution(questionId, Resolution.AMBIGUOUS)
       break
     default:
       console.error('Unhandled resolution: ', answer)
@@ -330,7 +330,7 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
 
   await backendAnalyticsEvent("question_resolved", {
     platform: "slack",
-    team: teamId,
+    team: connectingTeamId,
     resolution: answer,
   })
 }
@@ -441,9 +441,9 @@ export async function undoQuestionResolution(questionId: number, teamId: string,
   if (!questionUpdated) {
     throw Error(`Cannot find question with id: ${questionId}`)
   }
-  await updateForecastQuestionMessages(questionUpdated, teamId, "Question resolution undone!")
-  await updateResolvePingQuestionMessages(questionUpdated, teamId, "Question resolution undone!")
-  await updateResolutionQuestionMessages(questionUpdated, teamId, "Question resolution undone!")
+  await updateForecastQuestionMessages(questionUpdated, "Question resolution undone!")
+  await updateResolvePingQuestionMessages(questionUpdated, "Question resolution undone!")
+  await updateResolutionQuestionMessages(questionUpdated, "Question resolution undone!")
 
   await backendAnalyticsEvent("question_resolution_undone", {
     platform: "slack",

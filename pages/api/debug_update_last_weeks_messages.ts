@@ -56,7 +56,7 @@ export default async function updateLastWeeksQuestions(req: VercelRequest, res: 
   for (const q of qs) {
     console.log(`Updating - ${q.id}`)
     try {
-      await updateForecastQuestionMessages(q, q.groups[0].slackTeamId!, "")
+      await updateForecastQuestionMessages(q, "")
       // wait 100ms between each update to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 100))
     } catch (e) {

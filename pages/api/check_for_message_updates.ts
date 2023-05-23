@@ -167,8 +167,7 @@ async function updateQuestionsToUnhideForecasts(){
   )
 
   for (const question of questionsToBeUpdated) {
-    const teamId = question.questionMessages[0].message.teamId
-    await updateForecastQuestionMessages(question, teamId, "Forecasts unhidden")
+    await updateForecastQuestionMessages(question, "Forecasts unhidden")
     await prisma.questionSlackMessage.updateMany({
       // select all ids of question messages that are in the question
       where: {

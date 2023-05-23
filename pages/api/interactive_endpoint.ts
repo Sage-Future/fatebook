@@ -28,7 +28,7 @@ async function blockActions(payload: BlockActionPayload) {
     switch (actionParts.action) {
       case 'resolve':
         console.log('  resolve')
-        await resolve(actionParts, payload?.response_url, payload.user?.id, action.selected_option?.value, payload.team?.id)
+        await resolve(actionParts, payload?.response_url, payload.user?.id, action.selected_option?.value, payload?.team?.id)
         break
 
       case 'submitTextForecast':
