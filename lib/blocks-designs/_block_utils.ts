@@ -215,6 +215,8 @@ export function parseSelectedCheckboxOptions(optionSelections: OptionSelection[]
 export function tipsContextBlock() {
   const tips = [
     'You can create private forecasts by DMing @Fatebook - just type /forecast',
+    'You can create private forecasts by DMing @Fatebook - just type /forecast', // include twice to show up more often
+    'See all existing forecasting questions by searching for `from:@Fatebook` in Slack',
   ]
   return {
     'type': 'context',
