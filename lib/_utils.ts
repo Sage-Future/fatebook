@@ -309,7 +309,7 @@ export async function postEphemeralTextMessage(teamId: string, channel : string,
 }
 
 export async function postSlackMessage(teamId: string, message: PostMessagePayload, userId?: string){
-  console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, message?.blocks)
+  console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, JSON.stringify(message?.blocks))
   const url = 'https://slack.com/api/chat.postMessage'
   const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
   if (response.ok === false) {
