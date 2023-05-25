@@ -163,7 +163,7 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
   //   are also in the question's groups
   const newMessageDetails = await Promise.all(profiles.map(async profile => {
     const user = profile.user
-    // sort the foreacsts
+    // sort the forecasts
     const sortedProfileForecasts = user.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     const lastForecast           = sortedProfileForecasts[0]
     const averageScores          = getAverageScores(user.questionScores)
@@ -177,9 +177,9 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       overallBrierScore:  averageScores.avgAbsoluteScore,
       overallRBrierScore: averageScores.avgRelativeScore
     }
-    const brierScore = scoreArray[user.id].relativeBrierScore != undefined
-      ? scoreArray[user.id].absoluteBrierScore
-      : scoreArray[user.id].relativeBrierScore!
+    const brierScore = scoreDetails.rBrierScore == undefined
+      ? scoreDetails.brierScore
+      : scoreDetails.rBrierScore
     const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. `
       + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(brierScore, 4)}`)
     console.log({message})
