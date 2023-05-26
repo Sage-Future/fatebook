@@ -37,6 +37,11 @@ async function notifyAuthorsToResolveQuestions() {
   const allQuestionsToBeNotified = await getQuestionsToBeResolved()
 
   for (const question of allQuestionsToBeNotified) {
+    if (!question.profile) {
+      console.error(`No profile found for question ${question.id}, author ${question.user.name}. Todo add email notification instead`)
+      continue
+    }
+
     const slackTeamId = question.profile.slackTeamId
     if (!slackTeamId) {
       console.error(`No slack team id found for question ${question.id}`)

@@ -19,10 +19,10 @@ model Forecast {
   createdAt  DateTime @default(now())
   comment    String?
   forecast   Decimal
-  profileId  Int
+  profileId  Int?
   questionId Int
   userId     Int
-  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
+  profile    Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -44,7 +44,7 @@ model Question {
   id                  Int                      @id @default(autoincrement())
   createdAt           DateTime                 @default(now())
   comment             String?
-  profileId           Int
+  profileId           Int?
   title               String                   @db.VarChar(255)
   resolveBy           DateTime
   resolved            Boolean                  @default(false)
@@ -56,7 +56,7 @@ model Question {
   userId              Int
   forecasts           Forecast[]
   pingResolveMessages PingSlackMessage[]
-  profile             Profile                  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
+  profile             Profile?                  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
   user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]

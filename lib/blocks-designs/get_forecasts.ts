@@ -120,7 +120,7 @@ async function buildForecastQuestionText(forecast : ForecastWithQuestionWithQMes
 
   let scoreStr
   if(questionScore) {
-    const scoreLink = await getScoreLink(forecast.question, forecast.profileId)
+    const scoreLink = forecast.profileId && await getScoreLink(forecast.question, forecast.profileId)
 
     const scoreStrLabel     = questionScore.relativeScore !== null ? `Relative score:` : `Brier score:`
     const scoreStrLabelPad  = questionScore.relativeScore !== null ? `` : `      `

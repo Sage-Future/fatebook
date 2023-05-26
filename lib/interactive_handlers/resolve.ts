@@ -117,7 +117,7 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
   const profiles = await prisma.profile.findMany({
     where: {
       id: {
-        in: question.forecasts.map(f => f.profileId)
+        in: question.forecasts.filter(f => f.profileId !== null).map(f => f.profileId!)
       },
       slackId: {
         not: null
