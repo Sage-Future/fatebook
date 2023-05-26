@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
+import { Question, User } from '@prisma/client'
 import prisma, { conciseDateTime, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 import { sendEmail } from '../../lib/web/email'
@@ -63,7 +64,7 @@ async function notifyAuthorsToResolveQuestions() {
   return allQuestionsToBeNotified
 }
 
-export async function sendEmailNotification(question: Awaited<ReturnType<typeof getQuestionsToBeResolved>>[number]) {
+export async function sendEmailNotification(question: Question & { user: User }) {
   await sendEmail({
     subject: `Ready to resolve: ${question.title}`,
     to: question.user.email,

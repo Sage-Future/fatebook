@@ -20,21 +20,7 @@ export const appRouter = router({
           id: input.questionId,
         },
         include: {
-          questionMessages: {
-            include: {
-              message: true,
-            },
-          },
-          profile: {
-            include: {
-              groups: true,
-              user: {
-                include: {
-                  accounts: true,
-                },
-              }
-            },
-          },
+          user: true,
         },
       })
       if (!question) {

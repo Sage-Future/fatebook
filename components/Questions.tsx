@@ -41,7 +41,7 @@ export function Questions() {
             </span>
             <div className="grid grid-cols-3">
               <span className="text-sm" key={`${question.id}author`}>
-                <Username user={question.profile.user} />
+                <Username user={question.user} />
               </span>
               {
                 question.resolvedAt ? (

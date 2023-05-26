@@ -23,10 +23,12 @@ export const questionRouter = router({
         data: {
           title: input.title,
           resolveBy: input.resolveBy,
-          authorId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
+          userId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
+          profileId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE
           forecasts: input.prediction ? {
             create: {
-              authorId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
+              userId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
+              profileId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE
               forecast: input.prediction,
             }
           } : undefined,
@@ -85,10 +87,10 @@ export const questionRouter = router({
       return await prisma.question.findMany({
         where: {
           OR: [
-            {authorId: { equals: HARDCODED_ADAM_PROFILE_ID}}, // input.userId,
+            {userId: HARDCODED_ADAM_PROFILE_ID}, // input.userId,
             {forecasts: {
               some: {
-                authorId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
+                profileId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
               }
             }}
           ]
@@ -103,11 +105,7 @@ export const questionRouter = router({
               }
             }
           },
-          profile: {
-            include: {
-              user: true
-            }
-          }
+          user: true,
         }
       })
     }),

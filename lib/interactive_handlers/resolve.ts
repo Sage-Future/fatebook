@@ -236,7 +236,7 @@ async function replaceQuestionResolveMessages(question : Question, newMessageDet
   })
 }
 
-async function handleQuestionResolution(questionid : number, resolution : Resolution) {
+export async function handleQuestionResolution(questionid : number, resolution : Resolution) {
   console.log(`    handleQuestionResolution: ${questionid} ${resolution}`)
   const question = await dbResolveQuestion(questionid, resolution)
   console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
