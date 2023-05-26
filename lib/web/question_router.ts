@@ -23,11 +23,11 @@ export const questionRouter = router({
         data: {
           title: input.title,
           resolveBy: input.resolveBy,
-          userId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
+          userId: input.authorId,
           profileId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE
           forecasts: input.prediction ? {
             create: {
-              userId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE HARDCODE
+              userId: input.authorId, // TODO REMOVE HARDCODE
               profileId: HARDCODED_ADAM_PROFILE_ID, // TODO REMOVE
               forecast: input.prediction,
             }
@@ -87,10 +87,10 @@ export const questionRouter = router({
       return await prisma.question.findMany({
         where: {
           OR: [
-            {userId: HARDCODED_ADAM_PROFILE_ID}, // input.userId,
+            {userId: input.userId},
             {forecasts: {
               some: {
-                profileId: HARDCODED_ADAM_PROFILE_ID, // input.userId,
+                userId: input.userId,
               }
             }}
           ]

@@ -9,7 +9,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'avatars.slack-edge.com',
+        hostname: '*', // because Slack profile pictures seem to be on different domains
         port: '',
         pathname: '**',
       },
