@@ -6,3 +6,4 @@ tsconfig.tsbuildinfo
 .env
 out
 .DS_Store
+*debugAdam.ts

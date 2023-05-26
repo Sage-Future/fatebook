@@ -1,4 +1,4 @@
-import { Forecast, Profile, Question, QuestionSlackMessage, ResolutionSlackMessage, User, SlackMessage, PingSlackMessage, Group, QuestionScore } from "@prisma/client"
+import { Forecast, PingSlackMessage, Profile, Question, QuestionScore, QuestionSlackMessage, ResolutionSlackMessage, SlackMessage, User } from "@prisma/client"
 
 export type QuestionSlackMessageWithMessage = QuestionSlackMessage & {
     message: SlackMessage
@@ -13,13 +13,13 @@ export type ResolutionSlackMessageWithMessage = ResolutionSlackMessage & {
 }
 
 export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfiles = Question & {
-    forecasts: ForecastWithProfileAndUserWithProfilesWithGroups[]
+    forecasts: ForecastWithProfileAndUser[]
     questionMessages: QuestionSlackMessageWithMessage[]
     profile: ProfileWithUser
 }
 
 export type QuestionWithUserAndForecastsAndUsersAndAuthorAndSlackMessages = Question & {
-    forecasts: ForecastWithProfileAndUserWithProfilesWithGroups[]
+    forecasts: ForecastWithProfileAndUser[]
     questionMessages: QuestionSlackMessageWithMessage[]
     user: User
 }
@@ -28,12 +28,12 @@ export type QuestionWithResolutionMessages = Question & {
   resolutionMessages: ResolutionSlackMessageWithMessage[]
 }
 
-export type QuestionWithForecastWithUserWithProfilesWithGroups = Question & {
-  forecasts: ForecastWithUserWithProfilesWithGroups[]
-  user: UserWithProfilesWithGroups
+export type QuestionWithForecastWithUserWithProfiles = Question & {
+  forecasts: ForecastWithUserWithProfiles[]
+  user: UserWithProfiles
 }
 
-export type QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages = QuestionWithForecastWithUserWithProfilesWithGroups & {
+export type QuestionWithForecastWithUserWithProfilesAndSlackMessages = QuestionWithForecastWithUserWithProfiles & {
   questionMessages: QuestionSlackMessageWithMessage[]
 }
 
@@ -47,15 +47,15 @@ export type QuestionWithScores = Question & {
 }
 
 export type QuestionWithUser = Question & {
-    user: UserWithProfilesWithGroups
+    user: UserWithProfiles
 }
 
 export type ForecastWithUserWithProfiles = Forecast & {
-    user: UserWithProfilesWithGroups
+    user: UserWithProfiles
 }
 
-export type ForecastWithProfileAndUserWithProfilesWithGroups = Forecast & {
-    profile: ProfileWithUserWithProfilesWithGroups
+export type ForecastWithProfileAndUser = Forecast & {
+    profile: ProfileWithUser
 }
 
 export type QuestionWithSlackMessagesAndForecasts = QuestionWithForecasts & {
@@ -66,20 +66,7 @@ export type QuestionWithAuthorAndQuestionMessages = QuestionWithUser & {
     questionMessages: QuestionSlackMessageWithMessage[]
 }
 
-export type ForecastWithUserWithProfilesWithGroups = Forecast & {
-    user: UserWithProfilesWithGroups
-}
-
-export type QuestionWithAuthorAndQuestionMessagesAndGroups = QuestionWithUser & {
-    questionMessages: QuestionSlackMessageWithMessage[]
-    groups: Group[]
-}
-
-export type QuestionWithGroupsAndForecastWithUserWithProfilesWithGroups = QuestionWithForecastWithUserWithProfilesWithGroups & {
-    groups: Group[]
-}
-
-export type QuestionWithQuestionMessagesAndGroupsAndForecastWithUserWithProfilesWithGroups = QuestionWithGroupsAndForecastWithUserWithProfilesWithGroups & {
+export type QuestionWithQuestionMessagesAndForecastWithUserWithProfiles = QuestionWithForecastWithUserWithProfiles & {
   questionMessages: QuestionSlackMessageWithMessage[]
 }
 
@@ -110,16 +97,4 @@ export type ProfileWithUser = Profile & {
 
 export type UserWithProfiles = User & {
     profiles: Profile[]
-}
-
-export type ProfileWithUserWithProfilesWithGroups = Profile & {
-    user: UserWithProfilesWithGroups
-}
-
-export type ProfileWithGroups = Profile & {
-    groups: Group[]
-}
-
-export type UserWithProfilesWithGroups = User & {
-    profiles: ProfileWithGroups[]
 }

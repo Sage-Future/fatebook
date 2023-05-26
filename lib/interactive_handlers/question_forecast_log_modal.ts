@@ -1,7 +1,7 @@
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
-import { buildQuestionForecastLogModalView } from '../blocks-designs/question_forecast_log'
-import { ViewForecastLogBtnActionParts } from '../blocks-designs/_block_utils'
 import prisma, { postMessageToResponseUrl, showModal } from '../../lib/_utils'
+import { ViewForecastLogBtnActionParts } from '../blocks-designs/_block_utils'
+import { buildQuestionForecastLogModalView } from '../blocks-designs/question_forecast_log'
 
 export async function showForecastLogModal(actionParts: ViewForecastLogBtnActionParts, payload: BlockActionPayload) {
   if (!payload.response_url || !payload.trigger_id || !payload.team?.id || !payload.user?.id || !payload.channel?.id) {
@@ -19,22 +19,14 @@ export async function showForecastLogModal(actionParts: ViewForecastLogBtnAction
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }
       },
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       },
       questionMessages: {

@@ -1,8 +1,8 @@
 import { Question } from '@prisma/client'
 import * as chrono from 'chrono-node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import prisma, { backendAnalyticsEvent, callSlackApi, deleteMessage, getGroupIDFromSlackID, getOrCreateProfile, getUserNameOrProfileLink, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
-import { DeleteQuestionActionParts, EditQuestionBtnActionParts, QuestionModalActionParts, OptionsCheckBoxActionParts, textBlock, parseSelectedCheckboxOptions } from '../blocks-designs/_block_utils'
+import prisma, { backendAnalyticsEvent, callSlackApi, deleteMessage, getOrCreateProfile, getUserNameOrProfileLink, postMessageToResponseUrl, showModal, updateMessage } from '../../lib/_utils'
+import { DeleteQuestionActionParts, EditQuestionBtnActionParts, OptionsCheckBoxActionParts, QuestionModalActionParts, parseSelectedCheckboxOptions, textBlock } from '../blocks-designs/_block_utils'
 import { buildQuestionBlocks } from '../blocks-designs/question'
 import { buildEditQuestionModalView } from '../blocks-designs/question_modal'
 import { createForecastingQuestion } from '../slash_handlers/_create_forecast'
@@ -40,11 +40,7 @@ export async function showEditQuestionModal(actionParts: EditQuestionBtnActionPa
     include: {
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       }
     },
@@ -112,14 +108,12 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
   }
 
   if (actionParts.isCreating) {
-    const groupId = await getGroupIDFromSlackID(payload.user.team_id, true)
-    const profile = await getOrCreateProfile(payload.user.team_id, payload.user.id, groupId)
+    const profile = await getOrCreateProfile(payload.user.team_id, payload.user.id)
 
     await createForecastingQuestion(payload.user.team_id, {
       question: question,
       date: new Date(resolutionDate),
       channelId: actionParts.channel,
-      groupId,
       profile,
       user: profile.user,
       notes,
@@ -141,22 +135,14 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
           include: {
             user: {
               include: {
-                profiles: {
-                  include: {
-                    groups: true
-                  }
-                }
+                profiles: true
               }
             }
           }
         },
         user: {
           include: {
-            profiles: {
-              include: {
-                groups: true
-              }
-            }
+            profiles: true
           }
         },
         questionMessages: {

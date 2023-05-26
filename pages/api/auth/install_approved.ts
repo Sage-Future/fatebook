@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import fetch from 'node-fetch'
 import { clientId, clientSecret } from '../../../lib/_constants'
-import prisma, { postSlackMessage } from '../../../lib/_utils'
+import prisma, { backendAnalyticsEvent, postSlackMessage } from '../../../lib/_utils'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // user has approved the app being installed to their workspace, this is the redirect URI
@@ -70,6 +70,12 @@ Some ideas of questions we can forecast on:\n
   } else {
     console.error("Missing user id, did not DM on install. In response: ", data)
   }
+
+  await backendAnalyticsEvent("new_workspace", {
+    platform: "slack",
+    name: data.team.name,
+    team: data.team.id,
+  })
 
   console.log("Successfully installed app to workspace: ", data.team.name)
   res.redirect(`/for-slack?installedTo=${encodeURIComponent(data.team.name)}`)

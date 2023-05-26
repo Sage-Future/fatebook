@@ -1,9 +1,9 @@
 import { Profile, User } from '@prisma/client'
 import { VercelResponse } from '@vercel/node'
 
-import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfile, postSlackMessage } from '../../lib/_utils'
-import { buildQuestionBlocks } from '../blocks-designs/question'
+import prisma, { backendAnalyticsEvent, getOrCreateProfile, postSlackMessage } from '../../lib/_utils'
 import { ProfileWithUser } from '../../prisma/additional'
+import { buildQuestionBlocks } from '../blocks-designs/question'
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {
   let question : string = commandArray[2]
@@ -11,23 +11,9 @@ export async function createForecast(res : VercelResponse, commandArray : string
   let forecast : string = commandArray[4]
   console.log(`question: ${question}, date: ${dateStr}, forecast: ${forecast}`)
 
-  // find the group id, create group if doesn't exist for workspace
-  let groupId : number
-  try {
-    const createGroupIfNotExists : boolean = true
-    groupId = await getGroupIDFromSlackID(slackTeamId, createGroupIfNotExists)
-  } catch (err) {
-    console.error(`Couldn't find slack group`)
-    res.send({
-      response_type: 'ephemeral',
-      text: `I couldn't find your group! So I don't know where to assign your forecasts.`,
-    })
-    return
-  }
-
   let profile : ProfileWithUser
   try {
-    profile = await getOrCreateProfile(slackTeamId, slackUserId, groupId)
+    profile = await getOrCreateProfile(slackTeamId, slackUserId)
   } catch (err) {
     res.send({
       response_type: 'ephemeral',
@@ -40,10 +26,10 @@ export async function createForecast(res : VercelResponse, commandArray : string
 
   //parse the date string
   let date : Date = new Date(dateStr)
-  await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, user : profile.user, groupId, channelId })
+  await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, user : profile.user, channelId })
 }
 
-export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, groupId, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, groupId: number, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
+export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,
@@ -52,11 +38,6 @@ export async function createForecastingQuestion(teamId: string, { question, date
       profileId  : profile.id,
       notes,
       hideForecastsUntil,
-      groups    : {
-        connect: {
-          id: groupId
-        }
-      },
       forecasts : forecastNum ? {
         create: {
           profileId : profile.id,
@@ -68,22 +49,14 @@ export async function createForecastingQuestion(teamId: string, { question, date
     include: {
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       },
       forecasts: {
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }

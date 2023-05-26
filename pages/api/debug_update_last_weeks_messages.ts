@@ -1,6 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node"
-import { updateForecastQuestionMessages } from '../../lib/_utils'
-import prisma from '../../lib/_utils'
+import prisma, { updateForecastQuestionMessages } from '../../lib/_utils'
 
 export default async function updateLastWeeksQuestions(req: VercelRequest, res: VercelResponse) {
   const LAST_X_DAYS = 7
@@ -11,27 +10,18 @@ export default async function updateLastWeeksQuestions(req: VercelRequest, res: 
       },
     },
     include: {
-      groups: true,
       forecasts: {
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }
       },
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       },
       questionMessages: {

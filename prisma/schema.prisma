@@ -61,7 +61,6 @@ model Question {
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
   resolutionMessages  ResolutionSlackMessage[]
-  groups              Group[]                  @relation("GroupToQuestion")
 }
 
 model ResolutionSlackMessage {
@@ -122,12 +121,12 @@ model Profile {
   id                 Int                      @id @default(autoincrement())
   createdAt          DateTime                 @default(now())
   slackId            String?
+  slackTeamId        String?
   userId             Int
   forecasts          Forecast[]
   user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions          Question[]
   resolutionMessages ResolutionSlackMessage[]
-  groups             Group[]                  @relation("GroupToProfile")
 }
 
 model Group {
@@ -136,8 +135,6 @@ model Group {
   createdAt   DateTime   @default(now())
   name        String     @db.VarChar(255)
   slackTeamId String?
-  profiles    Profile[]  @relation("GroupToProfile")
-  questions   Question[] @relation("GroupToQuestion")
 }
 
 enum GroupType {

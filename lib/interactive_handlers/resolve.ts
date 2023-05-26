@@ -1,6 +1,6 @@
-import { Group, Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
+import { Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionWithQuestionMessagesAndGroupsAndForecastWithUserWithProfilesWithGroups, QuestionWithScores } from '../../prisma/additional'
+import { QuestionWithQuestionMessagesAndForecastWithUserWithProfiles, QuestionWithScores } from '../../prisma/additional'
 import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
@@ -21,23 +21,14 @@ async function dbResolveQuestion(questionid : number, resolution : Resolution) {
     include: {
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       },
-      groups: true,
       forecasts: {
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }
@@ -119,7 +110,7 @@ function getAverageScores(questionScores : QuestionScore[]) {
   }
 }
 
-async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithQuestionMessagesAndGroupsAndForecastWithUserWithProfilesWithGroups) {
+async function messageUsers(scoreArray : ScoreCollection, question : QuestionWithQuestionMessagesAndForecastWithUserWithProfiles) {
   console.log(`messageUsers for question id: ${question.id}`)
 
   console.log("get profiles")
@@ -130,20 +121,12 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       },
       slackId: {
         not: null
+      },
+      slackTeamId: {
+        not: null
       }
     },
     include: {
-      groups: {
-        where: {
-          // this is likely overkill, as we should only have one slack group per profile
-          id: {
-            in: question.groups.map((group : Group) => group.id)
-          },
-          slackTeamId: {
-            not: null
-          }
-        }
-      },
       user : {
         include:{
           forecasts: {
@@ -159,13 +142,13 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
 
   console.log('Messaging profiles ', profiles)
 
-  // go over each profile and send a message to each group they are in which
-  //   are also in the question's groups
+  // go over each profile and send a message to each workspace they are in which
+  //   are also in the question's workspace
   const newMessageDetails = await Promise.all(profiles.map(async profile => {
     const user = profile.user
-    // sort the foreacsts
-    const sortedProfileForecasts = user.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    const lastForecast           = sortedProfileForecasts[0]
+    // sort the forecasts
+    const sortedUserForecasts = user.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    const lastForecast           = sortedUserForecasts[0]
     const averageScores          = getAverageScores(user.questionScores)
     const scoreDetails = {
       brierScore:  scoreArray[user.id].absoluteBrierScore,
@@ -177,29 +160,28 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       overallBrierScore:  averageScores.avgAbsoluteScore,
       overallRBrierScore: averageScores.avgRelativeScore
     }
-    const brierScore = scoreArray[user.id].relativeBrierScore != undefined
+    const brierScore = scoreArray[user.id].relativeBrierScore == undefined
       ? scoreArray[user.id].absoluteBrierScore
       : scoreArray[user.id].relativeBrierScore!
+
+    // send message
     const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. `
       + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(brierScore, 4)}`)
     console.log({message})
-    return await Promise.all(profile.groups.map(async group => {
-      const blocks = await buildQuestionResolvedBlocks(group.slackTeamId!,
-                                                       question,
-                                                       scoreDetails)
-      const data = await postBlockMessage(group.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})
-      if (!data?.ts || !data?.channel) {
-        console.error(`Missing message.ts or message.channel in response ${JSON.stringify(data)}`)
-        throw new Error("Missing message.ts or message.channel in response")
-      }
-      return {
-        id:      -1,
-        ts:      data.ts,
-        channel: data.channel!,
-        teamId:  group.slackTeamId!,
-        profileId : profile.id
-      }
-    }))
+
+    const blocks = await buildQuestionResolvedBlocks(profile.slackTeamId!, question, scoreDetails)
+    const data = await postBlockMessage(profile.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})
+    if (!data?.ts || !data?.channel) {
+      console.error(`Missing message.ts or message.channel in response ${JSON.stringify(data)}`)
+      throw new Error("Missing message.ts or message.channel in response")
+    }
+    return {
+      id:      -1,
+      ts:      data.ts,
+      channel: data.channel!,
+      teamId:  profile.slackTeamId!,
+      profileId : profile.id
+    }
   }))
 
   await replaceQuestionResolveMessages(question, newMessageDetails.flat())
@@ -282,11 +264,7 @@ export async function resolve(actionParts: ResolveQuestionActionParts, responseU
     include: {
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true,
-            }
-          }
+          profiles: true,
         }
       }
     },
@@ -354,11 +332,7 @@ export async function undoQuestionResolution(questionId: number, teamId: string,
     include: {
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true,
-            }
-          }
+          profiles: true,
         }
       }
     }
@@ -402,22 +376,14 @@ export async function undoQuestionResolution(questionId: number, teamId: string,
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }
       },
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true,
         }
       },
       questionMessages: {

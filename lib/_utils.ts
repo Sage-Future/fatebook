@@ -1,7 +1,7 @@
-import { Forecast, Group, GroupType, PrismaClient, Resolution, SlackMessage } from '@prisma/client'
+import { Forecast, PrismaClient, Resolution, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { PingSlackMessageWithMessage, ProfileWithGroups, ProfileWithUser, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages, QuestionWithForecasts, ResolutionSlackMessageWithMessage, UserWithProfilesWithGroups } from '../prisma/additional'
+import { PingSlackMessageWithMessage, ProfileWithUser, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecastWithUserWithProfilesAndSlackMessages, QuestionWithForecasts, ResolutionSlackMessageWithMessage, UserWithProfiles } from '../prisma/additional'
 import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
@@ -89,8 +89,8 @@ export async function getSlackWorkspaceName(teamId: string, ) {
   }
 }
 
-export function getUserNameOrProfileLink(teamId : string, user : UserWithProfilesWithGroups) : string {
-  const thisTeamsProfile = user.profiles.find((p : ProfileWithGroups) => p.groups.find((g : Group) => g.slackTeamId === teamId))
+export function getUserNameOrProfileLink(teamId : string, user : UserWithProfiles) : string {
+  const thisTeamsProfile = user.profiles.find((p) => p.slackTeamId === teamId)
   return thisTeamsProfile ? `<@${thisTeamsProfile.slackId}>` : (user.name || 'Anon User')
 }
 
@@ -121,7 +121,7 @@ export async function getSlackProfileFromSlackId(teamId: string, slackId : strin
   return slackProfile
 }
 
-export async function getOrCreateProfile(teamId: string, slackUserId: string, groupId: number) {
+export async function getOrCreateProfile(teamId: string, slackUserId: string) {
   // query the database for the user
   //   we use findFirst because we expect only one result
   //   cannot get unique because we don't have a unique on
@@ -138,9 +138,9 @@ export async function getOrCreateProfile(teamId: string, slackUserId: string, gr
   // if no profile, create one
   if(!profile) {
     try{
-      profile = await createProfile(teamId, slackUserId, groupId)
+      profile = await createProfile(teamId, slackUserId)
     } catch(err) {
-      console.error(`Couldn't create userID or group for slackUserID: ${slackUserId}`)
+      console.error(`Couldn't create profile for slackUserID: ${slackUserId}`)
       throw new Error(`Couldn't create profile for slackUserId: ${slackUserId}. ${err}`)
     }
   }
@@ -148,7 +148,7 @@ export async function getOrCreateProfile(teamId: string, slackUserId: string, gr
   return profile
 }
 
-export async function createProfile(teamId: string, slackId : string, groupId : number) : Promise<ProfileWithUser>{
+export async function createProfile(teamId: string, slackId : string) : Promise<ProfileWithUser>{
   // check if the user exists
   const slackProfile = (await getSlackProfileFromSlackId(teamId, slackId))
   const email = slackProfile.email
@@ -164,11 +164,7 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
   //   and create a profile for them
   const profileData = {
     slackId: slackId,
-    groups: {
-      connect: {
-        id: groupId
-      }
-    }
+    slackTeamId: teamId
   }
   if (!user) {
     await prisma.user.create({
@@ -190,7 +186,7 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
     await prisma.profile.create({
       data: {
         ...profileData,
-        userId: user.id
+        userId: user.id,
       },
     })
     await backendAnalyticsEvent("new_profile_for_existing_user", {
@@ -212,50 +208,6 @@ export async function createProfile(teamId: string, slackId : string, groupId : 
     throw new Error(`db error, failed to find created profile with slackId: ${slackId}`)
   }
   return profile!
-}
-
-export async function getGroupIDFromSlackID(slackTeamId : string, createGroupIfNotExists : boolean = false) : Promise<number>{
-  // query the database for the group
-  //   see above for why findFirst is used
-  let group = await prisma.group.findFirst({
-    where: {
-      slackTeamId: slackTeamId
-    },
-  })
-
-  if (createGroupIfNotExists && !group) {
-    // get workspace name for nice labelling of new group
-    let slackWorkspaceName
-    try {
-      slackWorkspaceName = (await getSlackWorkspaceName(slackTeamId))
-      if(slackWorkspaceName === undefined) {
-        throw new Error('slackWorkspace not found')
-      }
-    } catch (err) {
-      console.log('Error getting workspace')
-      throw Error('Error getting workspace')
-    }
-
-    // create the group if they don't exist
-    group = await prisma.group.create({
-      data: {
-        slackTeamId: slackTeamId,
-        type: GroupType.SLACK,
-        name: slackWorkspaceName,
-      },
-    })
-
-    await backendAnalyticsEvent("new_workspace", {
-      platform: "slack",
-      name: slackWorkspaceName,
-      team: slackTeamId,
-    })
-
-  } else if (!group) {
-    throw Error('Group not found')
-  }
-
-  return group!.id
 }
 
 export function tokenizeString(instring : string) {
@@ -437,7 +389,7 @@ export async function updateResolvePingQuestionMessages(question: QuestionWithAu
                             buildResolveQuestionBlocks)
 }
 
-export async function updateForecastQuestionMessages(question: QuestionWithForecastWithUserWithProfilesWithGroupsAndSlackMessages, notificationMessage: string) {
+export async function updateForecastQuestionMessages(question: QuestionWithForecastWithUserWithProfilesAndSlackMessages, notificationMessage: string) {
   await updateSlackMessages(question.questionMessages.map((x : QuestionSlackMessageWithMessage) => x.message),
                             notificationMessage,
                             question,

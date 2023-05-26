@@ -16,25 +16,10 @@ async function getQuestionsToBeResolved()  {
       questionMessages: { some: {} },
     },
     include: {
-      profile: {
-        include: {
-          groups: true
-        }
-      },
+      profile: true,
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
-        }
-      },
-      groups: {
-        where: {
-          slackTeamId:{
-            not: null
-          }
+          profiles: true
         }
       },
       questionMessages: {
@@ -52,17 +37,15 @@ async function notifyAuthorsToResolveQuestions() {
   const allQuestionsToBeNotified = await getQuestionsToBeResolved()
 
   for (const question of allQuestionsToBeNotified) {
-    // there should only be one slack group per profile
-    const group = question.profile.groups.find(g => g.slackTeamId)
-    if (!group) {
-      console.error(`No slack group found for question ${question.id}`)
+    const slackTeamId = question.profile.slackTeamId
+    if (!slackTeamId) {
+      console.error(`No slack team id found for question ${question.id}`)
       continue
     }
     const slackId = question.profile.slackId!
-    const teamId = group.slackTeamId!
     try {
-      const resolveQuestionBlock = await buildResolveQuestionBlocks(group.slackTeamId!, question)
-      const data = await postBlockMessage(teamId,
+      const resolveQuestionBlock = await buildResolveQuestionBlocks(slackTeamId, question)
+      const data = await postBlockMessage(slackTeamId,
                                           slackId,
                                           resolveQuestionBlock,
                                           "Ready to resolve your question?",
@@ -87,7 +70,7 @@ async function notifyAuthorsToResolveQuestions() {
               message: {
                 create: {
                   ts: data.ts,
-                  teamId: teamId,
+                  teamId: slackTeamId,
                   channel: data.channel,
                 }
               }
@@ -116,27 +99,18 @@ async function updateQuestionsToUnhideForecasts(){
       }
     },
     include: {
-      groups: true,
       forecasts: {
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }
       },
       user: {
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       },
       questionMessages: {

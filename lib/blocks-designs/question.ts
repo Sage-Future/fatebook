@@ -1,6 +1,6 @@
 import { Forecast, Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
-import { ForecastWithUserWithProfilesWithGroups, QuestionWithForecastWithUserWithProfilesWithGroups, UserWithProfilesWithGroups } from '../../prisma/additional'
+import { ForecastWithUserWithProfiles, QuestionWithForecastWithUserWithProfiles, UserWithProfiles } from '../../prisma/additional'
 import { CONNECTOR_WORKSPACES, defaultDisplayPictureUrl, feedbackFormUrl, maxDecimalPlacesForQuestionForecast, maxForecastsPerUser, maxLatestForecastsVisible, noForecastsMessage } from '../_constants'
 import { displayForecast, getDateSlackFormat, getResolutionEmoji, getUserNameOrProfileLink } from '../_utils'
 import { Blocks, ResolveQuestionActionParts, markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock, toActionId } from './_block_utils'
@@ -9,7 +9,7 @@ function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecim
   return displayForecast(forecast, maxDecimalPlaces)
 }
 
-export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithUserWithProfilesWithGroups): Blocks {
+export function buildQuestionBlocks(teamId : string, question: QuestionWithForecastWithUserWithProfiles): Blocks {
   const hideForecasts =
     (question.hideForecastsUntil && question.hideForecastsUntil?.getTime() > Date.now())
     || false
@@ -94,7 +94,7 @@ function listUserForecastUpdates(forecasts : Forecast[]) : string {
 }
 
 function makeForecastListing(teamId : string, questionId : number,
-  forecasts : ForecastWithUserWithProfilesWithGroups[],
+  forecasts : ForecastWithUserWithProfiles[],
   hideForecasts : boolean, hideForecastsUntil : Date | null) {
   const forecastHeaderBlock = {
     'type': 'section',
@@ -125,8 +125,8 @@ function makeForecastListing(teamId : string, questionId : number,
   const uniqueUsers   = uniqueUserIds.map(id => forecasts.find(f => f.user.id === id)!.user)
 
   // for each user, get all their forecasts sorted by date
-  const forecastsByUser = [...uniqueUsers].map((user : UserWithProfilesWithGroups) => [user, forecasts.filter(f => f.user.id === user.id)
-    .sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())] as [UserWithProfilesWithGroups, Forecast[]])
+  const forecastsByUser = [...uniqueUsers].map((user) => [user, forecasts.filter(f => f.user.id === user.id)
+    .sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())] as [UserWithProfiles, Forecast[]])
 
   // sort the users by most recent forecast
   const sortedUsersAndForecasts = forecastsByUser.sort((a, b) => b[1].slice(-1)[0].createdAt.getTime() - a[1].slice(-1)[0].createdAt.getTime())

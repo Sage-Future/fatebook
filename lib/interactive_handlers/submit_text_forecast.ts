@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import prisma, { backendAnalyticsEvent, getGroupIDFromSlackID, getOrCreateProfile, postMessageToResponseUrl, updateMessage, floatEquality } from "../_utils"
+import prisma, { backendAnalyticsEvent, floatEquality, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils"
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 
@@ -46,8 +46,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 
   let profile
   try {
-    const groupId = await getGroupIDFromSlackID(payload.team.id)
-    profile = await getOrCreateProfile(payload.team.id, payload.user.id, groupId)
+    profile = await getOrCreateProfile(payload.team.id, payload.user.id)
   } catch (e) {
     console.error(e)
     await postMessageToResponseUrl({
@@ -130,22 +129,14 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
         include: {
           user: {
             include: {
-              profiles: {
-                include: {
-                  groups: true
-                }
-              }
+              profiles: true
             }
           }
         }
       },
       user:{
         include: {
-          profiles: {
-            include: {
-              groups: true
-            }
-          }
+          profiles: true
         }
       }
     },

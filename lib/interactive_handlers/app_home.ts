@@ -1,4 +1,4 @@
-import prisma, { backendAnalyticsEvent, callSlackApi, getGroupIDFromSlackID, getOrCreateProfile } from "../_utils"
+import prisma, { backendAnalyticsEvent, callSlackApi, getOrCreateProfile } from "../_utils"
 import { HomeAppPageNavigationActionParts } from "../blocks-designs/_block_utils"
 import { buildHomeTabBlocks } from "../blocks-designs/app_home"
 
@@ -7,8 +7,7 @@ export async function refreshAppHome(event: any, teamId: string) {
 }
 
 async function refreshUserAppHome(userId: string, teamId: string, activePage : number = 0, closedPage : number = 0) {
-  const groupId = await getGroupIDFromSlackID(teamId, true)
-  const profile = await getOrCreateProfile(teamId, userId, groupId)
+  const profile = await getOrCreateProfile(teamId, userId)
 
   if (!profile) {
     console.error('Could not find or create profile for user', userId)

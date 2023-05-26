@@ -1,5 +1,5 @@
 import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfilesWithGroups, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfiles, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { feedbackFormUrl } from '../_constants'
 import { getCommunityForecast, getDateSlackFormat, getResolutionEmoji, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink, round } from '../_utils'
 import { checkboxes } from './question_modal'
@@ -167,7 +167,7 @@ export async function getQuestionTitleLink(question: QuestionWithAuthorAndQuesti
   return questionTitle
 }
 
-export function maybeQuestionResolutionBlock(teamId : string, question : QuestionWithForecastWithUserWithProfilesWithGroups) : SectionBlock[] {
+export function maybeQuestionResolutionBlock(teamId : string, question : QuestionWithForecastWithUserWithProfiles) : SectionBlock[] {
   return (question.resolution ? [{
     'type': 'section',
     // NB: this assumes that the author resolved the question
