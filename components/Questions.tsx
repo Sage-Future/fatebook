@@ -24,7 +24,7 @@ export function Questions() {
   return (
     <div>
       <h3 className="mb-2">Your forecasts</h3>
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         {questions.data.sort(
           (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
         ).map((question) => (
