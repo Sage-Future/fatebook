@@ -18,6 +18,11 @@ export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfile
     profile: ProfileWithUser
 }
 
+export type QuestionWithUserAndForecastsWithUser = Question & {
+    forecasts: (Forecast & {user: User})[]
+    user: User
+}
+
 export type QuestionWithUserAndForecastsAndUsersAndAuthorAndSlackMessages = Question & {
     forecasts: ForecastWithProfileAndUser[]
     questionMessages: QuestionSlackMessageWithMessage[]

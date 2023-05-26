@@ -11,6 +11,9 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      // allow slackbot users to link Google OAuth Accounts later in web
+      // "dangerous" if Google does not verify the email address
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   theme: {
@@ -29,8 +32,7 @@ export const authOptions: NextAuthOptions = {
     session: (params: { session: Session; token: JWT }) => {
       const { session, token } = params
       if (token.id && session.user) {
-        // TODO
-        // session.user.id = token.id as string
+        session.user.id = token.id as number
       }
       return Promise.resolve(session)
     },

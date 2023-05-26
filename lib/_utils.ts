@@ -9,8 +9,18 @@ import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
 import { TEST_WORKSPACES } from './_constants'
 import { Blocks } from './blocks-designs/_block_utils'
 
-const prisma = new PrismaClient()
+// Intialise prisma, use this method to avoid multiple intialisations in `next dev`
+// Source: https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices#solution
+const globalForPrisma = global as unknown as {
+  prisma: PrismaClient | undefined
+}
+const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: ['query'],
+  })
 export default prisma
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 export type PostAnyMessageAdditionalArgs =  {
   as_user?         : boolean

@@ -2,7 +2,8 @@ import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-type
 import { feedbackFormUrl } from "../_constants"
 import { QuestionOverflowActionParts } from "../blocks-designs/_block_utils"
 import { showEditQuestionModal } from "./edit_question_modal"
-import { resolve, undoQuestionResolution } from "./resolve"
+import { resolve, slackUserCanUndoResolution, undoQuestionResolution } from "./resolve"
+import { backendAnalyticsEvent } from "../_utils"
 
 export async function questionOverflowAction(actionParts: QuestionOverflowActionParts, action: BlockActionPayloadAction, payload: BlockActionPayload) {
   const selected = action.selected_option?.value
@@ -21,7 +22,13 @@ export async function questionOverflowAction(actionParts: QuestionOverflowAction
       if (!payload.team?.id || !payload.user?.id || !payload.channel?.id) {
         throw new Error('Missing team or user or channel id on question overflow > undo_resolve')
       }
-      await undoQuestionResolution(actionParts.questionId, payload.team?.id, payload.user?.id, payload.channel?.id)
+      if (await slackUserCanUndoResolution(actionParts.questionId, payload.team.id, payload.user.id, payload.channel.id)) {
+        await undoQuestionResolution(actionParts.questionId)
+        await backendAnalyticsEvent("question_resolution_undone", {
+          platform: "slack",
+          team: payload.team.id,
+        })
+      }
       break
 
     case 'edit_question':
