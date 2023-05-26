@@ -1,9 +1,11 @@
+import { NextSeo } from "next-seo"
 import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import remarkGfm from "remark-gfm"
 
 export default function PrivacyPage() {
   return (
     <div className="prose mx-auto my-8">
+      <NextSeo title="Privacy" />
       <ReactMarkdown remarkPlugins={[remarkGfm]}>
         {privacyMd}
       </ReactMarkdown>
