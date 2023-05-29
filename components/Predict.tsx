@@ -110,7 +110,7 @@ export function Predict() {
         </div>
 
         <div className="py-4">
-          <button onClick={(e) => {e.preventDefault(); void handleSubmit(onSubmit)()}} className="block bg-indigo-600"
+          <button onClick={(e) => {e.preventDefault(); void handleSubmit(onSubmit)()}} className="block primary"
             disabled={createQuestion.isLoading || Object.values(errors).some(err => !!err)}
           >
             Predict

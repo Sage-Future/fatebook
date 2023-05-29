@@ -57,6 +57,8 @@ export const questionRouter = router({
             }
           },
           user: true,
+          sharedWith: true,
+          questionMessages: true,
         }
       })
     }),
@@ -90,6 +92,8 @@ export const questionRouter = router({
             }
           },
           user: true,
+          sharedWith: true,
+          questionMessages: true,
         }
       })
     }),
@@ -140,5 +144,34 @@ export const questionRouter = router({
       // TODO CHECK IF USER ID MATCHES AUTHOR ID
 
       await undoQuestionResolution(question.id)
+    }),
+
+  setSharedPublicly: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+        sharedPublicly: z.boolean(),
+      })
+    )
+    .mutation(async ({input}) => {
+      const question = await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        }
+      })
+
+      if (!question) {
+        throw new Error('question not found')
+      }
+      // TODO CHECK IF USER ID MATCHES AUTHOR ID
+
+      await prisma.question.update({
+        where: {
+          id: input.questionId,
+        },
+        data: {
+          sharedPublicly: input.sharedPublicly,
+        }
+      })
     }),
 })

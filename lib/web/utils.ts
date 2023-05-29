@@ -1,6 +1,7 @@
 // TODO move this to a shared lib
 
 import { Resolution } from "@prisma/client"
+import { useSession } from "next-auth/react"
 
 
 export function getDateYYYYMMDD(date: Date) {
@@ -35,4 +36,9 @@ export function toSentenceCase(str: string) {
     return ''
   }
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export function useUserId() {
+  const session = useSession()
+  return session.data?.user.id
 }
