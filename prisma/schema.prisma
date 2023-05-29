@@ -28,16 +28,16 @@ model Forecast {
 }
 
 model QuestionScore {
-  id                     Int      @id @default(autoincrement())
-  createdAt              DateTime @default(now())
-  relativeScore          Decimal?
-  questionId             Int
-  userQuestionComboId    String   @unique
-  absoluteScore          Decimal
-  rank                   Int
-  userId                 Int
-  question               Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  Int      @id @default(autoincrement())
+  createdAt           DateTime @default(now())
+  relativeScore       Decimal?
+  questionId          Int
+  userQuestionComboId String   @unique
+  absoluteScore       Decimal
+  rank                Int
+  userId              Int
+  question            Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Question {
@@ -56,8 +56,10 @@ model Question {
   userId              Int
   forecasts           Forecast[]
   pingResolveMessages PingSlackMessage[]
-  profile             Profile?                  @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
-  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile             Profile?                 @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
+  user                User                     @relation("author", fields: [userId], references: [id], onDelete: Cascade)
+  sharedWith          User[]                   @relation("questionsSharedWith")
+  sharedPublicly      Boolean                  @default(false)
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
   resolutionMessages  ResolutionSlackMessage[]
@@ -101,20 +103,20 @@ model SlackMessage {
 }
 
 model User {
-  id             Int             @id @default(autoincrement())
-  name           String?
-  createdAt      DateTime        @default(now())
-  email          String          @unique
-  image          String?
-  forecasts      Forecast[]
-  profiles       Profile[]
-  questions      Question[]
+  id                  Int             @id @default(autoincrement())
+  name                String?
+  createdAt           DateTime        @default(now())
+  email               String          @unique
+  image               String?
+  forecasts           Forecast[]
+  profiles            Profile[]
+  questions           Question[]      @relation("author")
+  questionScores      QuestionScore[]
+  questionsSharedWith Question[]      @relation("questionsSharedWith")
 
   // Used by next-auth:
   emailVerified DateTime?
   accounts      Account[]
-
-  questionScores QuestionScore[]
 }
 
 model Profile {
@@ -130,10 +132,10 @@ model Profile {
 }
 
 model Group {
-  id          Int        @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   type        GroupType
-  createdAt   DateTime   @default(now())
-  name        String     @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  name        String    @db.VarChar(255)
   slackTeamId String?
 }
 
