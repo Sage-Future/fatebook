@@ -183,7 +183,7 @@ async function updateQuestionsToUnhideForecasts(){
         }
       })
     } catch(e) {
-      console.error(`Error updating question ${question.id}: ${e}`)
+      console.error(`Could not update question ${question.id}: ${e}`)
     }
   }
 
