@@ -298,8 +298,8 @@ export async function postEphemeralSlackMessage(teamId : string, message: PostEp
   return await callSlackApi(teamId, message, url) as {ok: boolean, ts: string}
 }
 
-export async function updateMessage(teamId: string, message: {channel: string, ts: string, text: string, blocks?: Blocks}){
-  console.log(`Updating message to channel: ${message.channel}, text: ${message.text}`)
+export async function updateMessage(teamId: string, message: {channel: string, ts: string, text: string, blocks?: Blocks}, logToConsole: boolean = true){
+  logToConsole && console.log(`Updating message to channel: ${message.channel}, text: ${message.text}`)
 
   const url = 'https://slack.com/api/chat.update'
   return await callSlackApi(teamId, message, url) as {ok: boolean}
@@ -372,13 +372,15 @@ async function updateSlackMessages<QuestionX>(slackMessages: SlackMessage[],
   question : QuestionX,
   updateBlocks : (teamId: string, question : QuestionX ) => Promise<Blocks> | Blocks
 ) {
+  console.log(`Updating messages for question ${(question as any)?.id}`)
   for (const slackMessage of slackMessages) {
+    console.log(`Updating message to channel: ${slackMessage.channel}`)
     const response = await updateMessage(slackMessage.teamId, {
       channel: slackMessage.channel,
       ts: slackMessage.ts,
       text: notificationMessage,
       blocks: await updateBlocks(slackMessage.teamId, question),
-    })
+    }, false)
     if (!response.ok) {
       console.error("Error updating message: ", response)
     }

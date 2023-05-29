@@ -78,7 +78,7 @@ async function sendSlackReadyToResolveNotification(question: Awaited<ReturnType<
     const data = await postBlockMessage(slackTeamId,
                                         slackId,
                                         resolveQuestionBlock,
-                                        "Ready to resolve your question?",
+                                        `Ready to resolve your question? "${question.title.substring(0, 250)}"`,
                                         { unfurl_links: false, unfurl_media: false })
 
     if (!data?.ts || !data?.channel) {
