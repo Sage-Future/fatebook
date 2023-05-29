@@ -169,18 +169,22 @@ async function updateQuestionsToUnhideForecasts(){
   )
 
   for (const question of questionsToBeUpdated) {
-    await updateForecastQuestionMessages(question, "Forecasts unhidden")
-    await prisma.questionSlackMessage.updateMany({
-      // select all ids of question messages that are in the question
-      where: {
-        id: {
-          in: question.questionMessages.map((qm) => qm.id)
+    try {
+      await updateForecastQuestionMessages(question, "Forecasts unhidden")
+      await prisma.questionSlackMessage.updateMany({
+        // select all ids of question messages that are in the question
+        where: {
+          id: {
+            in: question.questionMessages.map((qm) => qm.id)
+          }
+        },
+        data: {
+          updatedAt: new Date()
         }
-      },
-      data: {
-        updatedAt: new Date()
-      }
-    })
+      })
+    } catch(e) {
+      console.error(`Error updating question ${question.id}: ${e}`)
+    }
   }
 
   return questionsToBeUpdated
