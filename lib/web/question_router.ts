@@ -1,8 +1,9 @@
+import { Prisma, Resolution } from "@prisma/client"
+import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import prisma, { backendAnalyticsEvent } from "../_utils"
-import { publicProcedure, router } from "./trpc_base"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
-import { Resolution } from "@prisma/client"
+import { publicProcedure, router } from "./trpc_base"
 
 export const questionRouter = router({
   create: publicProcedure
@@ -15,7 +16,6 @@ export const questionRouter = router({
       })
     )
     .mutation(async ({input}) => {
-      // todo check authorId = current user
 
       const question = await prisma.question.create({
         data: {
@@ -41,12 +41,12 @@ export const questionRouter = router({
         questionId: z.number().optional(),
       })
     )
-    .query(async ({input}) => {
+    .query(async ({input, ctx}) => {
       if (!input.questionId) {
         return null
       }
 
-      return await prisma.question.findUnique({
+      const question = await prisma.question.findUnique({
         where: {
           id: input.questionId,
         },
@@ -61,26 +61,36 @@ export const questionRouter = router({
           questionMessages: true,
         }
       })
+
+      if (!question) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+      }
+
+      if (
+        question?.sharedPublicly
+        || question?.userId === ctx.userId
+        || question?.forecasts.some(f => f.userId === ctx.userId)
+      ) {
+        return question
+      } else {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to that question" })
+      }
     }),
 
   getQuestionsUserCreatedOrForecastedOn: publicProcedure
-    .input(
-      z.object({
-        userId: z.number().optional(),
-      })
-    )
-    .query(async ({input}) => {
-      if (!input.userId) {
+    .query(async ({ ctx }) => {
+      if (!ctx.userId) {
+        console.log({ctx})
         return null
       }
 
       return await prisma.question.findMany({
         where: {
           OR: [
-            {userId: input.userId},
+            {userId: ctx.userId},
             {forecasts: {
               some: {
-                userId: input.userId,
+                userId: ctx.userId,
               }
             }}
           ]
@@ -105,19 +115,10 @@ export const questionRouter = router({
         resolution: z.string(),
       })
     )
-    .mutation(async ({input}) => {
-      const question = await prisma.question.findUnique({
-        where: {
-          id: input.questionId,
-        }
-      })
+    .mutation(async ({input, ctx}) => {
+      await getQuestionAssertAuthor(ctx, input.questionId)
 
-      if (!question) {
-        throw new Error('question not found')
-      }
-      // TODO CHECK IF USER ID MATCHES AUTHOR ID
-
-      await handleQuestionResolution(question.id, input.resolution as Resolution)
+      await handleQuestionResolution(input.questionId, input.resolution as Resolution)
 
       await backendAnalyticsEvent("question_resolved", {
         platform: "web",
@@ -131,19 +132,10 @@ export const questionRouter = router({
         questionId: z.number(),
       })
     )
-    .mutation(async ({input}) => {
-      const question = await prisma.question.findUnique({
-        where: {
-          id: input.questionId,
-        }
-      })
+    .mutation(async ({input, ctx}) => {
+      await getQuestionAssertAuthor(ctx, input.questionId)
 
-      if (!question) {
-        throw new Error('question not found')
-      }
-      // TODO CHECK IF USER ID MATCHES AUTHOR ID
-
-      await undoQuestionResolution(question.id)
+      await undoQuestionResolution(input.questionId)
     }),
 
   setSharedPublicly: publicProcedure
@@ -153,17 +145,8 @@ export const questionRouter = router({
         sharedPublicly: z.boolean(),
       })
     )
-    .mutation(async ({input}) => {
-      const question = await prisma.question.findUnique({
-        where: {
-          id: input.questionId,
-        }
-      })
-
-      if (!question) {
-        throw new Error('question not found')
-      }
-      // TODO CHECK IF USER ID MATCHES AUTHOR ID
+    .mutation(async ({input, ctx}) => {
+      await getQuestionAssertAuthor(ctx, input.questionId)
 
       await prisma.question.update({
         where: {
@@ -175,3 +158,21 @@ export const questionRouter = router({
       })
     }),
 })
+
+async function getQuestionAssertAuthor(ctx: {userId: number | undefined}, questionId: number, questionInclude?: Prisma.QuestionInclude) {
+  const question = await prisma.question.findUnique({
+    where: {
+      id: questionId,
+    },
+    include: questionInclude
+  })
+
+  if (!question) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+  }
+  if (question.userId !== ctx.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Only the question's author can do that" })
+  }
+
+  return question
+}

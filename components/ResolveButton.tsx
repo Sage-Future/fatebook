@@ -2,7 +2,6 @@ import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Question, Resolution } from "@prisma/client"
 import clsx from 'clsx'
-import { useSession } from 'next-auth/react'
 import { Fragment } from 'react'
 import { api } from '../lib/web/trpc'
 import { getResolutionEmoji, toSentenceCase } from '../lib/web/utils'
@@ -12,17 +11,16 @@ export function ResolveButton({
 } : {
   question: Question
 }) {
-  const session = useSession()
   const utils = api.useContext()
   const resolveQuestion = api.question.resolveQuestion.useMutation({
     async onSettled() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate({userId: session.data?.user.id})
+      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
       await utils.question.getQuestion.invalidate({questionId: question.id})
     },
   })
   const undoResolution = api.question.undoResolution.useMutation({
     async onSettled() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate({userId: session.data?.user.id})
+      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
       await utils.question.getQuestion.invalidate({questionId: question.id})
     },
   })

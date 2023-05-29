@@ -5,12 +5,8 @@ import { Question } from "./Question"
 export function Questions() {
   const session = useSession()
 
-  const questions = api.question.getQuestionsUserCreatedOrForecastedOn.useQuery({
-    userId: session.data?.user.id
-  }, {
-    queryKey: ["question.getQuestionsUserCreatedOrForecastedOn", {
-      userId: session.data?.user.id
-    }]
+  const questions = api.question.getQuestionsUserCreatedOrForecastedOn.useQuery(undefined, {
+    queryKey: ["question.getQuestionsUserCreatedOrForecastedOn", undefined]
   })
 
   if (!session.data?.user.id) {

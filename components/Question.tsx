@@ -5,7 +5,7 @@ import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { ResolveButton } from "./ResolveButton"
-import { ShareModal } from "./ShareModal"
+import { SharePopover } from "./SharePopover"
 import { Username } from "./Username"
 
 export function Question({
@@ -21,8 +21,8 @@ export function Question({
   )?.[0]
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-1 bg-white p-4 rounded-md" key={question.id}>
-      <span className="col-span-2 xl:col-span-1 flex gap-4 justify-between">
+    <div className="grid grid-cols-1 gap-1 bg-white p-4 rounded-md" key={question.id}>
+      <span className="col-span-2 flex gap-4 justify-between">
         <span className="font-semibold" key={`${question.id}title`}>
           <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
             {question.title}
@@ -39,7 +39,7 @@ export function Question({
         <span className="text-sm my-auto" key={`${question.id}author`}>
           <Username user={question.user} />
         </span>
-        <ShareModal question={question} />
+        <SharePopover question={question} />
         {
           question.resolvedAt ? (
             <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>

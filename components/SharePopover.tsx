@@ -7,16 +7,16 @@ import { api } from "../lib/web/trpc"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages } from "../prisma/additional"
 
 
-export function ShareModal({
+export function SharePopover({
   question
 } : {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
 }) {
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
   return (
-    <div className="text-right">
+    <div className="">
       <Popover as="div" className="inline-block text-left relative w-full">
-        <div className='w-full'>
+        <div className='w-full text-right md:text-center'>
           <Popover.Button className="bg-white hover:bg-gray-200 text-sm">
             {question.sharedPublicly ? (
               <><UserGroupIcon height={15} /> <span>Public</span></>
@@ -40,12 +40,12 @@ export function ShareModal({
         >
           <Popover.Panel className="absolute z-50 w-full">
             <div className="absolute z-50 mt-2 w-64 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <div className="p-4">
+              <div className="p-4 flex flex-col gap-2">
                 <SharePublicly question={question} />
-                {sharedToSlack && <>
+                {sharedToSlack && <div>
                   <Image src="/slack-logo.svg" width={30} height={30} className="m-0 inline" alt="" />
                   <span className="text-sm">Shared in Slack</span>
-                </>}
+                </div>}
               </div>
             </div>
           </Popover.Panel>
@@ -65,7 +65,7 @@ function SharePublicly({
   const utils = api.useContext()
   const setSharedPublicly = api.question.setSharedPublicly.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate({userId: session.data?.user.id})
+      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
       await utils.question.getQuestion.invalidate({questionId: question.id})
     }
   })
@@ -83,7 +83,7 @@ function SharePublicly({
           })
         }}
       />
-      <label htmlFor="sharePublicly">Share publicly</label>
+      <label htmlFor="sharePublicly" className="text-sm">Share publicly</label>
     </div>
   )
 }

@@ -18,7 +18,8 @@ export function getClientBaseUrl() {
 }
 
 export const api = createTRPCNext<AppRouter>({
-  config() {
+  config({ ctx }) {
+    console.log("config", {ctx})
     return {
       transformer: superjson,
       links: [

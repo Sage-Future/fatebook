@@ -19,7 +19,7 @@ export function Predict() {
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate({userId: session.data?.user.id})
+      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
     }
   })
 
