@@ -54,7 +54,7 @@ export function Question({
           }
           <ResolveButton question={question} />
         </div>
-        <div
+        {!expand && <div
           className="absolute right-0 bottom-0 p-0.5"
           onClick={() => setManuallyExpanded(!manuallyExpanded)}
         >
@@ -66,7 +66,7 @@ export function Question({
             aria-hidden="true"
           />
           }
-        </div>
+        </div>}
       </div>
       <Transition
         show={expand || manuallyExpanded}

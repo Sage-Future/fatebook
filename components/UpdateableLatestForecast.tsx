@@ -42,7 +42,7 @@ export function UpdateableLatestForecast({
 
   return (
     <span
-      className={clsx("font-bold text-2xl focus-within:ring-2 ring-indigo-800 ring-opacity-30 ring-offset-1 rounded-md shrink-0",
+      className={clsx("font-bold text-2xl h-min focus-within:ring-2 ring-indigo-800 ring-opacity-30 ring-offset-1 rounded-md shrink-0",
                       addForecast.isLoading && "opacity-50",
                       question.resolution === null ? "text-indigo-800" : "text-gray-600")}
       onClick={() => { (inputRef.current as any)?.focus() }}

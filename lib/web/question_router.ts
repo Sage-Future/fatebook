@@ -6,6 +6,21 @@ import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from ".
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { publicProcedure, router } from "./trpc_base"
 
+const questionIncludes = {
+  forecasts: {
+    include: {
+      user: true,
+    }
+  },
+  user: true,
+  sharedWith: true,
+  questionMessages: {
+    include: {
+      message: true
+    }
+  },
+}
+
 export const questionRouter = router({
   create: publicProcedure
     .input(
@@ -66,16 +81,7 @@ export const questionRouter = router({
         where: {
           id: input.questionId,
         },
-        include: {
-          forecasts: {
-            include: {
-              user: true,
-            }
-          },
-          user: true,
-          sharedWith: true,
-          questionMessages: true,
-        }
+        include: questionIncludes,
       })
       assertHasAccess(ctx, question)
       return question
@@ -99,16 +105,7 @@ export const questionRouter = router({
             }}
           ]
         },
-        include: {
-          forecasts: {
-            include: {
-              user: true,
-            }
-          },
-          user: true,
-          sharedWith: true,
-          questionMessages: true,
-        }
+        include: questionIncludes,
       })
     }),
 

@@ -2,7 +2,8 @@ import { Popover, Transition } from "@headlessui/react"
 import { UserGroupIcon, UserIcon, UsersIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
-import { Fragment } from 'react'
+import Link from "next/link"
+import React, { Fragment, forwardRef } from 'react'
 import { api } from "../lib/web/trpc"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages } from "../prisma/additional"
 
@@ -38,22 +39,47 @@ export function SharePopover({
           leaveFrom="transform scale-100 opacity-100"
           leaveTo="transform scale-95 opacity-0"
         >
-          <Popover.Panel className="absolute z-50 w-full">
-            <div className="absolute z-50 mt-2 w-64 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <div className="p-4 flex flex-col gap-2">
-                <SharePublicly question={question} />
-                {sharedToSlack && <div>
-                  <Image src="/slack-logo.svg" width={30} height={30} className="m-0 inline" alt="" />
-                  <span className="text-sm">Shared in Slack</span>
-                </div>}
-              </div>
-            </div>
-          </Popover.Panel>
+          <SharePanel question={question} />
         </Transition>
       </Popover>
     </div>
   )
 }
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const SharePanel = React.forwardRef<
+  HTMLDivElement,
+  {question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages}
+>(function SharePanel({
+  question
+}: {
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
+}, forwardedRef) {
+  const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
+
+  const permalink = api.getSlackPermalink.useQuery(question.questionMessages?.length > 0 ? {
+    ...question.questionMessages[0]!.message,
+  } : undefined)
+  console.log({permalink})
+
+  return <Popover.Panel className="absolute z-50 w-full" ref={forwardedRef}>
+    <div className="absolute z-50 mt-2 w-64 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+      <div className="p-4 flex flex-col gap-2">
+        <SharePublicly question={question} />
+        {sharedToSlack && <div>
+          <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -ml-2 inline" alt="" />
+          <span className="text-sm">
+            {permalink.data ?
+              <Link href={permalink.data}>Shared in Slack</Link>
+              :
+              "Shared in Slack"
+            }
+          </span>
+        </div>}
+      </div>
+    </div>
+  </Popover.Panel>
+})
 
 function SharePublicly({
   question

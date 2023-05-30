@@ -97,7 +97,7 @@ export type QuestionWithQMessagesAndRMessagesAndForecasts = QuestionWithForecast
 
 export type QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages = QuestionWithUserAndForecastsWithUser & {
     sharedWith: User[]
-    questionMessages: QuestionSlackMessage[]
+    questionMessages: QuestionSlackMessageWithMessage[]
 }
 
 export type ProfileWithUser = Profile & {
