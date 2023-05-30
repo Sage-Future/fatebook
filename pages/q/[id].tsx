@@ -25,10 +25,6 @@ export default function QuestionPage() {
 
   const sendEmail = api.sendEmail.useMutation()
 
-  if (!qQuery.data) {
-    return <></>
-  }
-
   const question = qQuery.data
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
@@ -38,10 +34,19 @@ export default function QuestionPage() {
               Fatebook
           </Link>
         </h2>
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-1" key={question.id}>
-          <QuestionComp question={question} />
-        </div>
-        <button onClick={() => sendEmail.mutate({questionId: question.id })}>Send email</button>
+        {
+          !question && <>
+            <h3 className="text-gray-600">That question does not exist, or the author has not shared it with you.</h3>
+          </>
+        }
+        {
+          question && <>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-1" key={question.id}>
+              <QuestionComp question={question} />
+            </div>
+            <button onClick={() => sendEmail.mutate({questionId: question.id })}>Send email</button>
+          </>
+        }
       </div>
     </div>
   )
