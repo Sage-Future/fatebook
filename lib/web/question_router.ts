@@ -1,7 +1,8 @@
 import { Prisma, Resolution } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import prisma, { backendAnalyticsEvent } from "../_utils"
+import { QuestionWithForecasts } from "../../prisma/additional"
+import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { publicProcedure, router } from "./trpc_base"
 
@@ -12,26 +13,41 @@ export const questionRouter = router({
         title: z.string(),
         resolveBy: z.date(),
         prediction: z.number().max(1).min(0).optional(),
-        authorId: z.number(),
       })
     )
-    .mutation(async ({input}) => {
+    .mutation(async ({input, ctx}) => {
+      if (!ctx.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a question" })
+      }
 
       const question = await prisma.question.create({
         data: {
           title: input.title,
           resolveBy: input.resolveBy,
-          userId: input.authorId,
+          userId: ctx.userId,
           forecasts: input.prediction ? {
             create: {
-              userId: input.authorId,
+              userId: ctx.userId,
               forecast: input.prediction,
             }
           } : undefined,
         },
       })
 
-      console.log("questioncreated", {question})
+      await backendAnalyticsEvent("question_created", {
+        platform: "web",
+        user: ctx.userId,
+      })
+
+      if (input.prediction) {
+        await backendAnalyticsEvent("forecast_submitted", {
+          platform: "web",
+          user: ctx.userId,
+          question: question.id,
+          forecast: input.prediction,
+        })
+      }
+
       return question
     }),
 
@@ -61,20 +77,8 @@ export const questionRouter = router({
           questionMessages: true,
         }
       })
-
-      if (!question) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
-      }
-
-      if (
-        question?.sharedPublicly
-        || question?.userId === ctx.userId
-        || question?.forecasts.some(f => f.userId === ctx.userId)
-      ) {
-        return question
-      } else {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to that question" })
-      }
+      assertHasAccess(ctx, question)
+      return question
     }),
 
   getQuestionsUserCreatedOrForecastedOn: publicProcedure
@@ -136,6 +140,11 @@ export const questionRouter = router({
       await getQuestionAssertAuthor(ctx, input.questionId)
 
       await undoQuestionResolution(input.questionId)
+
+      await backendAnalyticsEvent("question_resolution_undone", {
+        platform: "web",
+        user: ctx.userId,
+      })
     }),
 
   setSharedPublicly: publicProcedure
@@ -157,6 +166,83 @@ export const questionRouter = router({
         }
       })
     }),
+
+  addForecast: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+        forecast: z.number().max(1).min(0),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      const question = await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        },
+        include: {
+          forecasts: true
+        }
+      })
+
+      assertHasAccess(ctx, question)
+      if (question === null) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+      }
+
+      if (question.resolution) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Question has already been resolved" })
+      }
+
+      const submittedForecast = await prisma.forecast.create({
+        data: {
+          user: {
+            connect: {
+              id: question.userId
+            }
+          },
+          question: {
+            connect: {
+              id: input.questionId
+            }
+          },
+          forecast: input.forecast,
+        },
+        include: {
+          question: {
+            include: {
+              forecasts: {
+                include: {
+                  user: {
+                    include: {
+                      profiles: true
+                    }
+                  },
+                }
+              },
+              questionMessages: {
+                include: {
+                  message: true
+                }
+              },
+              user: {
+                include: {
+                  profiles: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      await updateForecastQuestionMessages(submittedForecast.question, "New forecast")
+
+      await backendAnalyticsEvent("forecast_submitted", {
+        platform: "web",
+        user: ctx.userId,
+        question: question.id,
+        forecast: input.forecast,
+      })
+    }),
 })
 
 async function getQuestionAssertAuthor(ctx: {userId: number | undefined}, questionId: number, questionInclude?: Prisma.QuestionInclude) {
@@ -175,4 +261,19 @@ async function getQuestionAssertAuthor(ctx: {userId: number | undefined}, questi
   }
 
   return question
+}
+
+function assertHasAccess(ctx: {userId: number | undefined}, question: QuestionWithForecasts | null) {
+  if (question === null) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+  }
+  if (
+    question?.sharedPublicly
+    || question?.userId === ctx.userId
+    || question?.forecasts.some(f => f.userId === ctx.userId) // for slack questions
+  ) {
+    return question as QuestionWithForecasts
+  } else {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to that question" })
+  }
 }

@@ -1,6 +1,8 @@
 import clsx from "clsx"
-import { useSession } from "next-auth/react"
 import Link from "next/link"
+import { useRef, useState } from "react"
+import { api } from "../lib/web/trpc"
+import { useUserId } from "../lib/web/utils"
 import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
@@ -13,13 +15,6 @@ export function Question({
 } : {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
 }) {
-  const session = useSession()
-  const userId = session.data?.user.id
-
-  const latestForecast = question.forecasts.filter(f => f.userId === userId).sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  )?.[0]
-
   return (
     <div className="grid grid-cols-1 gap-1 bg-white p-4 rounded-md" key={question.id}>
       <span className="col-span-2 flex gap-4 justify-between">
@@ -28,12 +23,7 @@ export function Question({
             {question.title}
           </Link>
         </span>
-        <span className="font-bold text-2xl mr-2 text-indigo-800">
-          {latestForecast?.forecast ?
-            ((latestForecast.forecast as unknown as number) * 100).toString() + "%"
-            : ""
-          }
-        </span>
+        <UpdateableLatestForecastDisplay question={question} />
       </span>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         <span className="text-sm my-auto" key={`${question.id}author`}>
@@ -57,5 +47,66 @@ export function Question({
         <ResolveButton question={question} />
       </div>
     </div>
+  )
+}
+
+function UpdateableLatestForecastDisplay({
+  question,
+}: {
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
+}) {
+  const userId = useUserId()
+  const latestForecast = question.forecasts.filter(f => f.userId === userId).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  )?.[0]
+
+  const defaultVal = latestForecast?.forecast ? ((latestForecast.forecast as unknown as number) * 100).toString() : ""
+  const [localForecast, setLocalForecast] = useState<string>(defaultVal)
+
+  const utils = api.useContext()
+  const addForecast = api.question.addForecast.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
+      await utils.question.getQuestion.invalidate({questionId: question.id})
+    }
+  })
+
+  const inputRef = useRef(null)
+
+  function updateForecast(newForecastInput: string) {
+    const newForecast = parseFloat(newForecastInput) / 100
+    if (!isNaN(newForecast) && newForecast > 0 && newForecast < 1
+      && (!latestForecast?.forecast || newForecast !== (latestForecast.forecast as unknown as number))
+    ) {
+      addForecast.mutate({
+        questionId: question.id,
+        forecast: newForecast,
+      })
+    }
+  }
+
+  return (
+    <span
+      className={clsx("font-bold text-2xl text-indigo-800 focus-within:ring-2 ring-indigo-800 ring-opacity-60 ring-offset-1 rounded-md",
+                      addForecast.isLoading && "opacity-50")}
+      onClick={() => {(inputRef.current as any)?.focus()}}
+    >
+      <input
+        ref={inputRef}
+        type="text"
+        className={"pl-1 w-24 text-right rounded-md focus:outline-none bg-transparent"}
+        value={localForecast}
+        onChange={(e) => {
+          setLocalForecast(e.target.value)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            updateForecast(e.currentTarget.value)
+          }
+        }}
+        disabled={question.resolution !== null || addForecast.isLoading}
+      />
+      <span className="text-left">{"%"}</span>
+    </span>
   )
 }

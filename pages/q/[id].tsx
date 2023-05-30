@@ -35,7 +35,7 @@ export default function QuestionPage() {
           </Link>
         </h2>
         {
-          !question && <>
+          (!question && !qQuery.isLoading) && <>
             <h3 className="text-gray-600">That question does not exist, or the author has not shared it with you.</h3>
           </>
         }

@@ -30,7 +30,6 @@ export function Predict() {
       createQuestion.mutate({
         title: data.question,
         resolveBy: data.resolveBy,
-        authorId: session.data?.user.id,
         prediction: data.predictionPercentage ? data.predictionPercentage / 100 : undefined,
       })
 

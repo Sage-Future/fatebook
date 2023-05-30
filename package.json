@@ -49,6 +49,7 @@
     "remark-gfm": "^3.0.1",
     "seratch-slack-types": "^0.8.0",
     "superjson": "^1.12.3",
+    "use-debounce": "^9.0.4",
     "vercel": "^28.19.0",
     "zod": "^3.21.4"
   },
