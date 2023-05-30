@@ -39,7 +39,7 @@ export function ResolveButton({
           >
             {resolution ? resolution : "Resolve"}
             {!resolution && <ChevronDownIcon
-              className="ml-2 -mr-2 h-5 w-5 text-violet-200 hover:text-violet-100"
+              className="ml-2 -mr-2 h-5 w-5 text-gray-400"
               aria-hidden="true"
             />}
           </Menu.Button>

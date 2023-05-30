@@ -461,7 +461,7 @@ export function conciseDateTime(date: Date, includeTime = true) {
 }
 
 export function displayForecast(forecast: Forecast, decimalPlaces :number): string {
-  return `${formatDecimalNicely(forecast.forecast.toNumber() * 100, decimalPlaces)}%`
+  return `${formatDecimalNicely(forecast.forecast.times(100).toNumber(), decimalPlaces)}%`
 }
 
 export function formatScoreNicely(num: number, maxDigits : number, significantDigits : number): string {
