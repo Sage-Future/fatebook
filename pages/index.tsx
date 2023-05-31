@@ -3,11 +3,13 @@ import { signIn, signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
+import { useRouter } from "next/router"
 
 export default function HomePage() {
   const { data: session, status: sessionStatus } = useSession()
+  const router = useRouter()
 
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || router.query["preview"]) {
     return (
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
         <div className="prose mx-auto">
@@ -45,9 +47,7 @@ export default function HomePage() {
         </div>
       </div>
     )
-  }
-
-  if (process.env.NODE_ENV === "production") {
+  } else {
     return (
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
         <div className="prose mx-auto">
