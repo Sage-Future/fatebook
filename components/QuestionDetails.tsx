@@ -41,7 +41,7 @@ function EventsLog({
         <span><Username user={c.user} className="font-semibold" /></span>
         <span/>
         <span className="text-gray-400"><FormattedDate date={c.createdAt} /></span>
-        <span className="md:pl-7 col-span-3 pb-2 -mt-2">{c.comment}</span>
+        <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">{c.comment}</span>
       </Fragment>
     })),
   ].flat()

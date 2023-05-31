@@ -11,8 +11,8 @@ function createQuestionSlug(question: Partial<Question>) {
     ""
 }
 
-export function getQuestionUrl(question: Partial<Question>) {
-  return `${getClientBaseUrl()}/q/${question.id}--${createQuestionSlug(question)}`
+export function getQuestionUrl(question: Partial<Question>, useRelativePath?: boolean) {
+  return `${getClientBaseUrl(useRelativePath)}/q/${question.id}--${createQuestionSlug(question)}`
 }
 
 export default function QuestionPage() {

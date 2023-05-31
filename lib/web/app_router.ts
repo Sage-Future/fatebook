@@ -15,7 +15,6 @@ export const appRouter = router({
       }),
     )
     .mutation(async ({ input }) => {
-      console.log("select")
       const question = await prisma.question.findUnique({
         where: {
           id: input.questionId,
@@ -27,9 +26,7 @@ export const appRouter = router({
       if (!question) {
         throw new Error('question not found')
       }
-      console.log("send")
       await sendEmailReadyToResolveNotification(question)
-      console.log("sent")
     }),
 
   getSlackPermalink: publicProcedure
@@ -41,7 +38,7 @@ export const appRouter = router({
       }).optional(),
     )
     .query(async ({ input }) => {
-      if (!input) { return }
+      if (!input) { return null }
       return await getSlackPermalinkFromChannelAndTS(input.teamId, input.channel, input.ts)
     }),
 })

@@ -33,7 +33,7 @@ export function ResolveButton({
           <Menu.Button
             className={clsx(
               "plain inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75",
-              resolution === "YES" ? "bg-green-500 text-white" : resolution === "NO" ? "bg-red-500 text-white" : resolution === "AMBIGUOUS" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"
+              resolution === "YES" ? "bg-green-500 text-white" : resolution === "NO" ? "bg-red-500 text-white" : resolution === "AMBIGUOUS" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
             )}
             disabled={resolveQuestion.isLoading || undoResolution.isLoading}
             onClick={(e) => {e.stopPropagation()}}

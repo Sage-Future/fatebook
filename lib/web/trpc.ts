@@ -3,10 +3,9 @@ import { createTRPCNext } from '@trpc/next'
 import transformer from 'trpc-transformer'
 import { AppRouter } from './app_router'
 
-export function getClientBaseUrl() {
+export function getClientBaseUrl(useRelativePath = true) {
   if (typeof window !== 'undefined') {
-    // browser should use relative path
-    return ''
+    return useRelativePath ? '' : window.location.origin
   }
 
   if (process.env.VERCEL_URL) {
@@ -18,8 +17,7 @@ export function getClientBaseUrl() {
 }
 
 export const api = createTRPCNext<AppRouter>({
-  config({ ctx }) {
-    console.log("config", {ctx})
+  config() {
     return {
       transformer,
       links: [

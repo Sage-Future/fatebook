@@ -6,6 +6,8 @@ import Link from "next/link"
 import React, { Fragment } from 'react'
 import { api } from "../lib/web/trpc"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
+import { CopyToClipboard } from "./CopyToClipboard"
+import { getQuestionUrl } from "../pages/q/[id]"
 
 
 export function SharePopover({
@@ -61,8 +63,8 @@ const SharePanel = React.forwardRef<
     ...question.questionMessages[0]!.message,
   } : undefined)
 
-  return <Popover.Panel className="absolute z-50 w-full" ref={forwardedRef}>
-    <div className="absolute z-50 mt-2 w-64 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+  return <Popover.Panel className="absolute z-50 w-full" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
+    <div className="absolute z-50 mt-2 w-72 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
       <div className="p-4 flex flex-col gap-2">
         <SharePublicly question={question} />
         {sharedToSlack && <div>
@@ -95,20 +97,23 @@ function SharePublicly({
     }
   })
   return (
-    <div className="flex gap-2">
-      <input
-        id="sharePublicly"
-        type="checkbox"
-        disabled={userId !== question.userId || setSharedPublicly.isLoading}
-        checked={question.sharedPublicly}
-        onChange={(e) => {
-          setSharedPublicly.mutate({
-            questionId: question.id,
-            sharedPublicly: e.target.checked,
-          })
-        }}
-      />
-      <label htmlFor="sharePublicly" className="text-sm">Share publicly</label>
+    <div className="flex gap-2 justify-between">
+      <div className="flex gap-2">
+        <input
+          id="sharePublicly"
+          type="checkbox"
+          disabled={userId !== question.userId || setSharedPublicly.isLoading}
+          checked={question.sharedPublicly}
+          onChange={(e) => {
+            setSharedPublicly.mutate({
+              questionId: question.id,
+              sharedPublicly: e.target.checked,
+            })
+          }}
+        />
+        <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
+      </div>
+      {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} /> }
     </div>
   )
 }
