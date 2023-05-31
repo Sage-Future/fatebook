@@ -2,7 +2,7 @@ import { Forecast } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import { ForecastWithUserWithProfiles, QuestionWithForecastWithUserWithProfiles } from '../../prisma/additional'
 import { defaultDisplayPictureUrl, maxDecimalPlacesForecastLogListing, noForecastsMessage } from '../_constants'
-import { displayForecast } from "../_utils_common"
+import { displayForecast, forecastsAreHidden } from "../_utils_common"
 import { getDateSlackFormat, getUserNameOrProfileLink } from '../_utils_server'
 import { markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock } from './_block_utils'
 
@@ -11,9 +11,7 @@ function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecim
 }
 
 export function buildQuestionForecastLogModalView(teamId : string, question: QuestionWithForecastWithUserWithProfiles, slackUserId : string): ModalView {
-  const hideForecasts =
-    (question.hideForecastsUntil && question.hideForecastsUntil?.getTime() > Date.now())
-    || false
+  const hideForecasts = forecastsAreHidden(question)
   const forecasts = hideForecasts
     ? getForecastsOfUser(question.forecasts, slackUserId)
     : question.forecasts

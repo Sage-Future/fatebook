@@ -1,6 +1,6 @@
 import { Fragment, ReactNode, useState } from 'react'
 import ReactTextareaAutosize from 'react-textarea-autosize'
-import { displayForecast } from "../lib/_utils_common"
+import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
@@ -15,6 +15,9 @@ export function QuestionDetails({
   return (
     <div className="bg-slate-100 px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm" onClick={(e) => e.stopPropagation()}>
       <CommentBox question={question} />
+      {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">
+        {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
+      </div>}
       <EventsLog question={question} />
     </div>
   )
@@ -67,7 +70,7 @@ function EventsLog({
     ],
   ].flat()
   return (
-    <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2">
+    <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center">
       {events.length ?
         events.sort(
           (a, b) => b.timestamp.getTime() - a.timestamp.getTime() // reverse chronological
@@ -96,7 +99,7 @@ function CommentBox({
   return <div className='pb-4'>
     <ReactTextareaAutosize
       className="shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100"
-      placeholder={`Add a note...`}
+      placeholder={`Add a comment...`}
       disabled={addComment.isLoading}
       value={localComment}
       onChange={(e) => {

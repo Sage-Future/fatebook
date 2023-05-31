@@ -1,6 +1,10 @@
-import { Forecast, Resolution } from '@prisma/client'
+import { Forecast, Question, Resolution } from '@prisma/client'
 import { QuestionWithForecasts } from '../prisma/additional'
 
+
+export function forecastsAreHidden(question: Question) {
+  return Boolean(question.hideForecastsUntil && question.hideForecastsUntil.getTime() > Date.now())
+}
 
 export function getMostRecentForecastPerUser(forecasts: Forecast[], date: Date): [number, Forecast][] {
   const forecastsPerUser = new Map<number, Forecast>()
@@ -55,7 +59,12 @@ export function conciseDateTime(date: Date, includeTime = true) {
 }
 
 export function displayForecast(forecast: Forecast, decimalPlaces: number): string {
-  return `${formatDecimalNicely(forecast.forecast.times(100).toNumber(), decimalPlaces)}%`
+  return `${
+    forecast?.forecast ?
+      formatDecimalNicely(forecast.forecast.times(100).toNumber(), decimalPlaces)
+      :
+      "?"
+  }%`
 }
 
 export function formatScoreNicely(num: number, maxDigits: number, significantDigits: number): string {

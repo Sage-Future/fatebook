@@ -5,6 +5,7 @@ import { QuestionWithForecasts } from "../../prisma/additional"
 import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { publicProcedure, router } from "./trpc_base"
+import { forecastsAreHidden } from "../_utils_common"
 
 const questionIncludes = {
   forecasts: {
@@ -45,7 +46,7 @@ export const questionRouter = router({
         include: questionIncludes,
       })
       assertHasAccess(ctx, question)
-      return question
+      return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)
     }),
 
   getQuestionsUserCreatedOrForecastedOn: publicProcedure
@@ -54,7 +55,7 @@ export const questionRouter = router({
         return null
       }
 
-      return await prisma.question.findMany({
+      const questions = await prisma.question.findMany({
         where: {
           OR: [
             {userId: ctx.userId},
@@ -67,6 +68,8 @@ export const questionRouter = router({
         },
         include: questionIncludes,
       })
+
+      return questions.map(q => scrubHiddenForecastsFromQuestion(q, ctx.userId))
     }),
 
 
@@ -323,6 +326,25 @@ function assertHasAccess(ctx: {userId: number | undefined}, question: QuestionWi
   }
 }
 
-// function scrubHiddenForecastsFromQuestion<QuestionX>(question: QuestionWithForecasts) {
+function scrubHiddenForecastsFromQuestion<QuestionX extends QuestionWithForecasts>(question: QuestionX, userId: number | undefined) {
+  if (!forecastsAreHidden(question)) {
+    return question
+  }
 
-// }
+  return {
+    ...question,
+    forecasts: question.forecasts.map(f => {
+      const hideForecast = (f.userId !== userId && userId)
+      return ({
+        ...f,
+        ...(hideForecast ? {
+          forecast: null,
+          userId: null,
+          user: null,
+          profileId: null,
+          profile: null,
+        } : {}),
+      })
+    })
+  }
+}

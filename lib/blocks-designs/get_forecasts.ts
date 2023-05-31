@@ -2,7 +2,7 @@ import { Forecast, QuestionScore, Resolution } from '@prisma/client'
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, QuestionWithResolutionMessages } from '../../prisma/additional'
 import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxDecimalPlacesForecastForecastListing, maxDecimalPlacesScoreForecastListing, maxForecastsVisible, maxScoreDecimalPlacesListing, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
-import { formatDecimalNicely, formatScoreNicely, getCommunityForecast, getResolutionEmoji } from "../_utils_common"
+import { forecastsAreHidden, formatDecimalNicely, formatScoreNicely, getCommunityForecast, getResolutionEmoji } from "../_utils_common"
 import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 
@@ -100,8 +100,7 @@ async function buildForecastQuestionText(forecast : ForecastWithQuestionWithQMes
   const yourForecastValuePadded = 'You:' + padForecast(yourForecastValueStr)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
-  const hideForecasts = forecast.question.hideForecastsUntil !== null && forecast.question.hideForecastsUntil > new Date()
-  const commForecastValueStr    = (hideForecasts ?
+  const commForecastValueStr    = (forecastsAreHidden(forecast.question) ?
     '?'
     :
     roundForecast(100* getCommunityForecast(forecast.question, new Date()))

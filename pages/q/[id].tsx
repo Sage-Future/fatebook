@@ -44,7 +44,7 @@ export default function QuestionPage() {
             <div className="grid grid-cols-1" key={question.id}>
               <QuestionComp question={question} alwaysExpand={true} />
             </div>
-            <button className="btn" onClick={() => sendEmail.mutate({questionId: question.id })}>Send email</button>
+            <button className="btn" onClick={() => sendEmail.mutate({questionId: question.id })}>TEST: Send resolution reminder email to author</button>
           </>
         }
       </div>
