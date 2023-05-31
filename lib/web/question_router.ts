@@ -269,7 +269,7 @@ export const questionRouter = router({
         throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
       }
 
-      const comment = await prisma.comment.create({
+      await prisma.comment.create({
         data: {
           question: {
             connect: {
@@ -287,8 +287,6 @@ export const questionRouter = router({
           user: true,
         }
       })
-
-      return comment
     }),
 })
 
@@ -324,3 +322,7 @@ function assertHasAccess(ctx: {userId: number | undefined}, question: QuestionWi
     throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to that question" })
   }
 }
+
+// function scrubHiddenForecastsFromQuestion<QuestionX>(question: QuestionWithForecasts) {
+
+// }
