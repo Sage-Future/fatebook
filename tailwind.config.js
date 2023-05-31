@@ -1,3 +1,4 @@
+/* eslint-env node */
 /** @type {import('tailwindcss').Config} */
 const defaultTheme = require("tailwindcss/defaultTheme")
 export default {
@@ -16,4 +17,3 @@ export default {
     require('@tailwindcss/typography'),
   ],
 }
-

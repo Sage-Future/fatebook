@@ -32,7 +32,7 @@ export function ResolveButton({
         <div className='w-full'>
           <Menu.Button
             className={clsx(
-              "plain inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75",
+              "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75",
               resolution === "YES" ? "bg-green-500 text-white" : resolution === "NO" ? "bg-red-500 text-white" : resolution === "AMBIGUOUS" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
             )}
             disabled={resolveQuestion.isLoading || undoResolution.isLoading}
@@ -62,7 +62,7 @@ export function ResolveButton({
                     <button
                       className={clsx(
                         active ? 'bg-indigo-500 text-white' : 'bg-white text-gray-900',
-                        `plain group flex w-full items-center rounded-md px-2 py-2 text-sm`)}
+                        `group flex w-full items-center rounded-md px-2 py-2 text-sm`)}
                       onClick={() => {
                         undoResolution.mutate({
                           questionId: question.id,
@@ -80,7 +80,7 @@ export function ResolveButton({
                       <button
                         className={clsx(
                           active ? 'bg-indigo-500 text-white' : 'bg-white text-gray-900',
-                          `plain group flex w-full items-center rounded-md px-2 py-2 text-sm`)}
+                          `group flex w-full items-center rounded-md px-2 py-2 text-sm`)}
                         onClick={() => {
                           resolveQuestion.mutate({
                             questionId: question.id,

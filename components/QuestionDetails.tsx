@@ -13,7 +13,7 @@ export function QuestionDetails({
 }) {
 
   return (
-    <div className="bg-white px-8 py-4 text-sm flex flex-col gap" onClick={(e) => e.stopPropagation()}>
+    <div className="bg-gray-100 px-8 py-4 text-sm flex flex-col gap" onClick={(e) => e.stopPropagation()}>
       <CommentBox question={question} />
       <EventsLog question={question} />
     </div>
@@ -26,6 +26,17 @@ function EventsLog({
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments;
 }) {
   let events: { timestamp: Date, el: ReactNode }[] = [
+    [
+      ...(question.notes ? [{
+        timestamp: question.createdAt,
+        el: <Fragment key={question.id}>
+          <span><Username user={question.user} className="font-semibold" /></span>
+          <span/>
+          <span className="text-gray-400"><FormattedDate date={question.createdAt} /></span>
+          <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">{question.notes}</span>
+        </Fragment>
+      }] : []),
+    ],
     question.forecasts.map(f =>({
       timestamp: f.createdAt,
       el: <Fragment key={f.id}>
@@ -45,11 +56,6 @@ function EventsLog({
       </Fragment>
     })),
   ].flat()
-  // events.push({
-  //   user: question.user,
-  //   eventEl: <span className="italic">Asked</span>,
-  //   timestamp: question.createdAt,
-  // })
   return (
     <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2">
       {events.length ?
@@ -79,8 +85,8 @@ function CommentBox({
 
   return <div className='pb-4'>
     <ReactTextareaAutosize
-      className="shadow-sm py-4 px-4 focus:border-indigo-500 block w-full border-2 border-gray-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-gray-100"
-      placeholder={`I predicted X% because...`}
+      className="shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-gray-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-gray-100"
+      placeholder={`Add a note...`}
       disabled={addComment.isLoading}
       value={localComment}
       onChange={(e) => {

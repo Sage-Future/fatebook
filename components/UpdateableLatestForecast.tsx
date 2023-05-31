@@ -40,11 +40,13 @@ export function UpdateableLatestForecast({
     }
   }
 
+  if (question.resolution !== null && !latestForecast) return <span></span>
+
   return (
     <span
-      className={clsx("font-bold text-2xl h-min focus-within:ring-2 ring-indigo-800 ring-opacity-30 ring-offset-1 rounded-md shrink-0",
+      className={clsx("font-bold text-2xl h-min ring-2 focus-within:ring-indigo-800 ring-gray-300 px-1 py-0.5 rounded-md shrink-0",
                       addForecast.isLoading && "opacity-50",
-                      question.resolution === null ? "text-indigo-800" : "text-gray-600")}
+                      question.resolution === null ? "text-indigo-800" : "text-gray-600 ring-0")}
       onClick={() => { (inputRef.current as any)?.focus() }}
     >
       {(question.resolution === null || latestForecast) && <>

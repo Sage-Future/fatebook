@@ -26,11 +26,11 @@ export default function HomePage() {
               session ?
                 <>
                 Signed in as {session.user?.email} <br />
-                  <button className="primary" onClick={() => signOut()}>Sign out</button>
+                  <button className="btn primary" onClick={() => signOut()}>Sign out</button>
                 </> :
                 <>
                   Not signed in <br />
-                  <button className="primary" onClick={() => signIn()}>Sign in</button>
+                  <button className="btn primary" onClick={() => signIn()}>Sign in</button>
                 </>
             )
           }

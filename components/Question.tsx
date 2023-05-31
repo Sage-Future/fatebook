@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react'
-import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/20/solid"
+import { ChevronDownIcon } from "@heroicons/react/20/solid"
 import clsx from "clsx"
 import Link from "next/link"
 import { useState } from 'react'
@@ -24,9 +24,9 @@ export function Question({
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
-    <div className="bg-white rounded-md group" onClick={() => setManuallyExpanded(!manuallyExpanded)}>
+    <div className="bg-white rounded-md group shadow-sm" onClick={() => setManuallyExpanded(!manuallyExpanded)}>
       <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
-        <span className="col-span-2 flex gap-4 justify-between">
+        <span className="col-span-2 flex gap-4 mb-1 justify-between">
           <span className="font-semibold" key={`${question.id}title`}>
             <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
               {question.title}
@@ -58,20 +58,13 @@ export function Question({
             )
           }
           <ResolveButton question={question} />
-        </div>
-        {!alwaysExpand && <div
-          className="absolute right-0 bottom-0 p-0.5"
-          onClick={() => setManuallyExpanded(!manuallyExpanded)}
-        >
-          {manuallyExpanded ? <ChevronDownIcon
-            className="h-5 w-5 text-gray-200 hidden group-hover:block hover:text-gray-400"
-            aria-hidden="true"
-          /> : <ChevronLeftIcon
-            className="h-5 w-5 text-gray-200  hidden group-hover:block hover:text-gray-400"
-            aria-hidden="true"
+          <ActivityNumbers
+            question={question}
+            alwaysExpand={alwaysExpand}
+            manuallyExpanded={manuallyExpanded}
+            setManuallyExpanded={setManuallyExpanded}
           />
-          }
-        </div>}
+        </div>
       </div>
       <Transition
         show={alwaysExpand || manuallyExpanded}
@@ -84,6 +77,38 @@ export function Question({
       >
         <QuestionDetails question={question} />
       </Transition>
+    </div>
+  )
+}
+
+export function ActivityNumbers({
+  question,
+  alwaysExpand,
+  manuallyExpanded,
+  setManuallyExpanded,
+} : {
+    question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+    alwaysExpand: boolean | undefined
+    manuallyExpanded: boolean
+    setManuallyExpanded: (expanded: boolean) => void
+  }) {
+  return (
+    <div
+      className="col-span-full flex flex-row gap-2 text-sm text-gray-400 justify-end hover:underline items-center"
+      onClick={() => setManuallyExpanded(!manuallyExpanded)}
+    >
+      <span>{question.forecasts?.length ?? 0} forecasts</span>
+      <span>{new Set(question.forecasts.map(f => f.userId)).size} forecasters</span>
+      <span>{(question.comments?.length ?? 0) + (question.notes ? 1 : 0)} notes</span>
+      {!alwaysExpand && <button
+        className="btn p-0"
+      >
+        <ChevronDownIcon
+          className={clsx("h-5 w-5 transition-transform",
+                          !manuallyExpanded && "transform rotate-90")}
+          aria-hidden="true"
+        />
+      </button>}
     </div>
   )
 }
