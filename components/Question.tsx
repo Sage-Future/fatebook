@@ -24,9 +24,9 @@ export function Question({
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
-    <div className="">
+    <div className="hover:scale-[1.01] transition-transform">
       <div
-        className={clsx("bg-white rounded-md group shadow-sm",
+        className={clsx("bg-white rounded-md group shadow-sm hover:shadow-md transition-shadow cursor-pointer z-10",
                         (manuallyExpanded || alwaysExpand) && "rounded-b-none")}
         onClick={() => setManuallyExpanded(!manuallyExpanded)}
       >

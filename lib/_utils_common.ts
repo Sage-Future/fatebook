@@ -1,5 +1,6 @@
-import { Forecast, Question, Resolution } from '@prisma/client'
+import { Forecast, Question, QuestionScore, Resolution } from '@prisma/client'
 import { QuestionWithForecasts } from '../prisma/additional'
+import { numberOfDaysInRecentPeriod } from './_constants'
 
 
 export function forecastsAreHidden(question: Question) {
@@ -136,4 +137,44 @@ export function tomorrrowDate() {
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   return tomorrow
+}
+
+type ScoreDetails = {
+  brierScore: number;
+  rBrierScore: number | undefined;
+  ranking: number;
+  totalParticipants: number;
+};
+type QScoreLite = {
+  absolute: number;
+  relative: number | undefined;
+};
+export function populateDetails(questionScores: QuestionScore[]): { recentDetails: ScoreDetails; overallDetails: ScoreDetails; } {
+  const recentScores = questionScores.filter((qs: QuestionScore) => qs.createdAt > new Date(Date.now() - 1000 * 60 * 60 * 24 * numberOfDaysInRecentPeriod))
+    .map((qs: QuestionScore) => {
+      return {
+        absolute: qs.absoluteScore.toNumber(),
+        relative: qs.relativeScore?.toNumber()
+      }
+    })
+
+  const overallScores = questionScores.map((qs: QuestionScore) => {
+    return {
+      absolute: qs.absoluteScore.toNumber(),
+      relative: qs.relativeScore?.toNumber()
+    }
+  })
+  const recentDetails = {
+    brierScore: averageScores(recentScores.map((qs: QScoreLite) => qs.absolute))!,
+    rBrierScore: averageScores(recentScores.map((qs: QScoreLite) => qs.relative)),
+    ranking: 0,
+    totalParticipants: 0,
+  }
+  const overallDetails = {
+    brierScore: averageScores(overallScores.map((qs: QScoreLite) => qs.absolute))!,
+    rBrierScore: averageScores(overallScores.map((qs: QScoreLite) => qs.relative)),
+    ranking: 0,
+    totalParticipants: 0,
+  }
+  return { recentDetails, overallDetails }
 }

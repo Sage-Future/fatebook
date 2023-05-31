@@ -291,6 +291,21 @@ export const questionRouter = router({
         }
       })
     }),
+
+  getQuestionScores: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+
+      const questionScores = await prisma.questionScore.findMany({
+        where: {
+          userId: ctx.userId
+        },
+      })
+
+      return questionScores
+    }),
 })
 
 async function getQuestionAssertAuthor(ctx: {userId: number | undefined}, questionId: number, questionInclude?: Prisma.QuestionInclude) {
