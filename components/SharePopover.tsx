@@ -3,15 +3,15 @@ import { UserGroupIcon, UserIcon, UsersIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
-import React, { Fragment, forwardRef } from 'react'
+import React, { Fragment } from 'react'
 import { api } from "../lib/web/trpc"
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages } from "../prisma/additional"
+import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 
 
 export function SharePopover({
   question
 } : {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }) {
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
   return (
@@ -49,18 +49,17 @@ export function SharePopover({
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SharePanel = React.forwardRef<
   HTMLDivElement,
-  {question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages}
+  {question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments}
 >(function SharePanel({
   question
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }, forwardedRef) {
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
 
   const permalink = api.getSlackPermalink.useQuery(question.questionMessages?.length > 0 ? {
     ...question.questionMessages[0]!.message,
   } : undefined)
-  console.log({permalink})
 
   return <Popover.Panel className="absolute z-50 w-full" ref={forwardedRef}>
     <div className="absolute z-50 mt-2 w-64 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
@@ -84,7 +83,7 @@ const SharePanel = React.forwardRef<
 function SharePublicly({
   question
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }) {
   const session = useSession()
   const userId = session.data?.user.id

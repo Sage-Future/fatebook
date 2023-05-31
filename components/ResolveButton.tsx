@@ -36,6 +36,7 @@ export function ResolveButton({
               resolution === "YES" ? "bg-green-500 text-white" : resolution === "NO" ? "bg-red-500 text-white" : resolution === "AMBIGUOUS" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-500"
             )}
             disabled={resolveQuestion.isLoading || undoResolution.isLoading}
+            onClick={(e) => {e.stopPropagation()}}
           >
             {resolution ? resolution : "Resolve"}
             {!resolution && <ChevronDownIcon

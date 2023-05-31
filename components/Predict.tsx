@@ -25,7 +25,6 @@ export function Predict() {
 
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
-    console.log({data})
     if (session.data?.user.id) {
       createQuestion.mutate({
         title: data.question,

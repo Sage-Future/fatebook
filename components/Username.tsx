@@ -11,10 +11,9 @@ export function Username({
 }) {
   return (
     <span className={clsx(
-      "flex flex-row gap-1 items-center",
       className,
     )}>
-      <Image src={user?.image || '/default_avatar.png'} width={20} height={20} className="m-0 rounded-full" alt="" />
+      <Image src={user?.image || '/default_avatar.png'} width={20} height={20} className="inline m-0 mr-2 rounded-full" alt="" />
       <span>{user?.name || "Unknown user"}</span>
     </span>
   )

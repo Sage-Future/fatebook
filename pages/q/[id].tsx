@@ -42,7 +42,7 @@ export default function QuestionPage() {
         {
           question && <>
             <div className="grid grid-cols-1" key={question.id}>
-              <QuestionComp question={question} expand={true} />
+              <QuestionComp question={question} alwaysExpand={true} />
             </div>
             <button onClick={() => sendEmail.mutate({questionId: question.id })}>Send email</button>
           </>

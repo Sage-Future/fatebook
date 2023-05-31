@@ -19,9 +19,57 @@ const questionIncludes = {
       message: true
     }
   },
+  comments: {
+    include: {
+      user: true,
+    }
+  }
 }
 
 export const questionRouter = router({
+  getQuestion: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number().optional(),
+      })
+    )
+    .query(async ({input, ctx}) => {
+      if (!input.questionId) {
+        return null
+      }
+
+      const question = await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        },
+        include: questionIncludes,
+      })
+      assertHasAccess(ctx, question)
+      return question
+    }),
+
+  getQuestionsUserCreatedOrForecastedOn: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+
+      return await prisma.question.findMany({
+        where: {
+          OR: [
+            {userId: ctx.userId},
+            {forecasts: {
+              some: {
+                userId: ctx.userId,
+              }
+            }}
+          ]
+        },
+        include: questionIncludes,
+      })
+    }),
+
+
   create: publicProcedure
     .input(
       z.object({
@@ -64,49 +112,6 @@ export const questionRouter = router({
       }
 
       return question
-    }),
-
-  getQuestion: publicProcedure
-    .input(
-      z.object({
-        questionId: z.number().optional(),
-      })
-    )
-    .query(async ({input, ctx}) => {
-      if (!input.questionId) {
-        return null
-      }
-
-      const question = await prisma.question.findUnique({
-        where: {
-          id: input.questionId,
-        },
-        include: questionIncludes,
-      })
-      assertHasAccess(ctx, question)
-      return question
-    }),
-
-  getQuestionsUserCreatedOrForecastedOn: publicProcedure
-    .query(async ({ ctx }) => {
-      if (!ctx.userId) {
-        console.log({ctx})
-        return null
-      }
-
-      return await prisma.question.findMany({
-        where: {
-          OR: [
-            {userId: ctx.userId},
-            {forecasts: {
-              some: {
-                userId: ctx.userId,
-              }
-            }}
-          ]
-        },
-        include: questionIncludes,
-      })
     }),
 
   resolveQuestion: publicProcedure
@@ -239,6 +244,51 @@ export const questionRouter = router({
         question: question.id,
         forecast: input.forecast,
       })
+    }),
+
+  addComment: publicProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+        comment: z.string(),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      const question = await prisma.question.findUnique({
+        where: {
+          id: input.questionId,
+        },
+        include: {
+          comments: true,
+          forecasts: true,
+        }
+      })
+
+      assertHasAccess(ctx, question)
+      if (question === null) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+      }
+
+      const comment = await prisma.comment.create({
+        data: {
+          question: {
+            connect: {
+              id: input.questionId
+            }
+          },
+          user: {
+            connect: {
+              id: ctx.userId
+            }
+          },
+          comment: input.comment,
+        },
+        include: {
+          user: true,
+        }
+      })
+
+      return comment
     }),
 })
 

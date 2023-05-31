@@ -63,6 +63,7 @@ model Question {
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
   resolutionMessages  ResolutionSlackMessage[]
+  comments            Comment[]
 }
 
 model ResolutionSlackMessage {
@@ -113,6 +114,7 @@ model User {
   questions           Question[]      @relation("author")
   questionScores      QuestionScore[]
   questionsSharedWith Question[]      @relation("questionsSharedWith")
+  comments            Comment[]
 
   // Used by next-auth:
   emailVerified DateTime?
@@ -167,4 +169,14 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  comment    String
+  questionId Int
+  userId     Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

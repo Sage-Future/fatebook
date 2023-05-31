@@ -23,8 +23,8 @@ export function Questions() {
       <div className="grid gap-6">
         {questions.data.sort(
           (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-        ).map((question) => (
-          <Question question={question} key={question.id} />
+        ).map((question, index) => (
+          <Question question={question} key={question.id} startExpanded={index === 0} />
         ))}
       </div>
     </div>

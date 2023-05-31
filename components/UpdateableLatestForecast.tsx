@@ -2,13 +2,13 @@ import clsx from "clsx"
 import { useRef, useState } from 'react'
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages } from "../prisma/additional"
+import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 
 export function UpdateableLatestForecast({
   question,
   autoFocus,
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessages
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
   autoFocus?: boolean
 }) {
   const userId = useUserId()
