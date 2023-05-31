@@ -1,5 +1,5 @@
 import { intlFormatDistance } from "date-fns"
-import { getDateYYYYMMDD } from "../lib/web/utils"
+import { getDateYYYYMMDD } from "../lib/_utils_common"
 
 export function FormattedDate({
   date

@@ -1,7 +1,8 @@
 import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndQuestionMessages } from '../../prisma/additional'
 import { feedbackFormUrl, maxDecimalPlacesForResolution, slackAppId } from '../_constants'
-import { formatDecimalNicely, getResolutionEmoji, getUserNameOrProfileLink, resolutionToString } from '../_utils'
+import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from "../_utils_common"
+import { getUserNameOrProfileLink } from '../_utils_server'
 import type { Blocks } from './_block_utils'
 import { dividerBlock, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils'
 

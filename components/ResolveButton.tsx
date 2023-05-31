@@ -3,8 +3,8 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Question, Resolution } from "@prisma/client"
 import clsx from 'clsx'
 import { Fragment } from 'react'
+import { getResolutionEmoji, toSentenceCase } from '../lib/_utils_common'
 import { api } from '../lib/web/trpc'
-import { getResolutionEmoji, toSentenceCase } from '../lib/web/utils'
 
 export function ResolveButton({
   question

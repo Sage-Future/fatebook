@@ -1,7 +1,7 @@
 import { QuestionScore } from '@prisma/client'
-import { averageScores, formatDecimalNicely } from '../../lib/_utils'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
 import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, numberOfDaysInRecentPeriod, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
+import { averageScores, formatDecimalNicely } from "../_utils_common"
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 

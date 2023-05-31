@@ -1,7 +1,8 @@
 import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
 import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfiles, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { feedbackFormUrl } from '../_constants'
-import { getCommunityForecast, getDateSlackFormat, getResolutionEmoji, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink, round } from '../_utils'
+import { getCommunityForecast, getResolutionEmoji, round } from "../_utils_common"
+import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink } from '../_utils_server'
 import { checkboxes } from './question_modal'
 
 export interface ResolveQuestionActionParts {

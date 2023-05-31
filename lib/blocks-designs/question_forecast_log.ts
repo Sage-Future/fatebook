@@ -1,8 +1,9 @@
 import { Forecast } from '@prisma/client'
 import { ModalView } from '@slack/types'
-import { displayForecast, getDateSlackFormat, getUserNameOrProfileLink } from '../../lib/_utils'
 import { ForecastWithUserWithProfiles, QuestionWithForecastWithUserWithProfiles } from '../../prisma/additional'
 import { defaultDisplayPictureUrl, maxDecimalPlacesForecastLogListing, noForecastsMessage } from '../_constants'
+import { displayForecast } from "../_utils_common"
+import { getDateSlackFormat, getUserNameOrProfileLink } from '../_utils_server'
 import { markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock } from './_block_utils'
 
 function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecimalPlacesForecastLogListing){

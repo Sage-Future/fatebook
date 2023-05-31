@@ -1,5 +1,5 @@
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload.js'
-import prisma, { postMessageToResponseUrl, showModal } from '../../lib/_utils'
+import prisma, { postMessageToResponseUrl, showModal } from '../_utils_server'
 import { ViewForecastLogBtnActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionForecastLogModalView } from '../blocks-designs/question_forecast_log'
 

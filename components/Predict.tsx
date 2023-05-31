@@ -5,8 +5,8 @@ import { KeyboardEvent, useEffect } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
 import { z } from "zod"
+import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
-import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/web/utils'
 
 const predictFormSchema = z.object({
   question: z.string().min(1),

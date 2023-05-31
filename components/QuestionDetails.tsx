@@ -1,7 +1,7 @@
 import { Fragment, ReactNode, useState } from 'react'
 import ReactTextareaAutosize from 'react-textarea-autosize'
+import { displayForecast } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
-import { displayForecast } from "../lib/web/utils"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"

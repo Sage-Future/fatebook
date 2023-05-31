@@ -1,8 +1,8 @@
 import { Profile, User } from '@prisma/client'
 import { VercelResponse } from '@vercel/node'
 
-import prisma, { backendAnalyticsEvent, getOrCreateProfile, postSlackMessage } from '../../lib/_utils'
 import { ProfileWithUser } from '../../prisma/additional'
+import prisma, { backendAnalyticsEvent, getOrCreateProfile, postSlackMessage } from '../_utils_server'
 import { buildQuestionBlocks } from '../blocks-designs/question'
 
 export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {

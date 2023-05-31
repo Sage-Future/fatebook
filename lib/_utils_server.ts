@@ -1,12 +1,13 @@
-import { Forecast, PrismaClient, Resolution, SlackMessage } from '@prisma/client'
+import { PrismaClient, SlackMessage } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
-import { PingSlackMessageWithMessage, ProfileWithUser, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecastWithUserWithProfilesAndSlackMessages, QuestionWithForecasts, ResolutionSlackMessageWithMessage, UserWithProfiles } from '../prisma/additional'
+import { PingSlackMessageWithMessage, ProfileWithUser, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecastWithUserWithProfilesAndSlackMessages, ResolutionSlackMessageWithMessage, UserWithProfiles } from '../prisma/additional'
 import { buildQuestionBlocks } from './blocks-designs/question'
 import { buildQuestionResolvedBlocks } from './blocks-designs/question_resolved'
 import { buildResolveQuestionBlocks } from './blocks-designs/resolve_question'
 
 import { TEST_WORKSPACES } from './_constants'
+import { conciseDateTime, unixTimestamp } from './_utils_common'
 import { Blocks } from './blocks-designs/_block_utils'
 
 // Intialise prisma, use this method to avoid multiple intialisations in `next dev`
@@ -408,73 +409,6 @@ export async function updateForecastQuestionMessages(question: QuestionWithForec
                             buildQuestionBlocks)
 }
 
-export function getMostRecentForecastPerUser(forecasts: Forecast[], date : Date) : [number, Forecast][] {
-  const forecastsPerUser = new Map<number, Forecast>()
-  for (const forecast of forecasts) {
-    const authorId = forecast.userId
-    if (forecastsPerUser.has(authorId) && forecast.createdAt < date) {
-      const existingForecast = forecastsPerUser.get(authorId)
-      if (existingForecast!.createdAt < forecast.createdAt) {
-        forecastsPerUser.set(authorId, forecast)
-      }
-    } else if(forecast.createdAt < date){
-      forecastsPerUser.set(authorId, forecast)
-    }
-  }
-  return Array.from(forecastsPerUser, ([id, value]) => [id, value])
-}
-
-export function getGeometricCommunityForecast(question : QuestionWithForecasts, date : Date) : number {
-  // get all forecasts for this question
-  const uptoDateForecasts : number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
-  // sum each forecast
-  const productOfForecasts : number = uptoDateForecasts.reduce(
-    (acc, forecast) => acc * forecast,
-    1
-  )
-  // divide by number of forecasts
-  return Math.pow(productOfForecasts, 1/(uptoDateForecasts.length))
-}
-
-export function getCommunityForecast(question : QuestionWithForecasts, date : Date) : number {
-  return getGeometricCommunityForecast(question, date)
-}
-
-export function getArithmeticCommunityForecast(question : QuestionWithForecasts, date : Date) : number {
-  // get all forecasts for this question
-  const uptoDateForecasts : number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
-  // sum each forecast
-  const summedForecasts : number = uptoDateForecasts.reduce(
-    (acc, forecast) => acc + forecast,
-    0
-  )
-  // divide by number of forecasts
-  return summedForecasts / uptoDateForecasts.length
-}
-
-
-export function conciseDateTime(date: Date, includeTime = true) {
-  let timeStr = ''
-  if (includeTime)
-    timeStr = `${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())} on `
-  return `${timeStr}${getDateYYYYMMDD(date)}`
-}
-
-export function displayForecast(forecast: Forecast, decimalPlaces :number): string {
-  return `${formatDecimalNicely(forecast.forecast.times(100).toNumber(), decimalPlaces)}%`
-}
-
-export function formatScoreNicely(num: number, maxDigits : number, significantDigits : number): string {
-  const rounded = +num.toPrecision(significantDigits)
-  return formatDecimalNicely(rounded, maxDigits)
-}
-
-export function formatDecimalNicely(num : number, decimalPlaces : number) : string {
-  return num.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: decimalPlaces,})
-}
-
 // date_num: 2020-12-31
 // date_short_pretty: Dec 31, 2020 or tomorrow / yesterday / today where appropriate
 export function getDateSlackFormat(date: Date, includeTime: boolean = false, dateFormat: 'date_num' | 'date_short_pretty' = 'date_num', lowerCase = true) {
@@ -482,44 +416,6 @@ export function getDateSlackFormat(date: Date, includeTime: boolean = false, dat
 
   // e.g. <!date^1392734382^{date_num} at {time}|2014-02-18 6:39:42 AM PST>
   return `<!date^${unixTimestamp(date)}^${lowerCase?' ':''}{${dateFormat}}${includeTime ? ' at {time}' : ''}|${fallbackText}>`
-}
-
-export function getDateYYYYMMDD(date: Date) {
-  return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
-}
-
-function unixTimestamp(date: Date) {
-  return Math.floor(date.getTime() / 1000)
-}
-
-export function zeroPad(num: number) {
-  return num.toString().padStart(2, '0')
-}
-
-export function round(number: number, places = 2) {
-  // @ts-ignore
-  return +(Math.round(number + "e+" + places)  + "e-" + places)
-}
-
-export function resolutionToString(resolution: Resolution) {
-  return resolution.toString().charAt(0).toUpperCase() + resolution.toString().slice(1).toLowerCase()
-}
-
-export function getResolutionEmoji(resolution: Resolution | null) {
-  switch (resolution) {
-    case Resolution.YES:
-      return '✅'
-    case Resolution.NO:
-      return '❎'
-    case Resolution.AMBIGUOUS:
-      return '❔'
-    default:
-      return ''
-  }
-}
-
-export function floatEquality(a : number, b : number, tolerance : number = 0.0001) {
-  return Math.abs(a - b) < tolerance
 }
 
 export interface AnalyticsEventParams {
@@ -562,11 +458,3 @@ export async function backendAnalyticsEvent(name: string, params: AnalyticsEvent
   }
 }
 
-export function averageScores(scores: (number | undefined)[]) {
-  const existentScores = scores.filter((s : number | undefined) => s != undefined) as number[]
-  if (existentScores.length == 0){
-    return undefined
-  } else {
-    return existentScores.reduce((a, b) => a + b, 0) / scores.length
-  }
-}

@@ -2,7 +2,8 @@ import { Forecast, Question, Resolution } from '@prisma/client'
 import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
 import { ForecastWithUserWithProfiles, QuestionWithForecastWithUserWithProfiles, UserWithProfiles } from '../../prisma/additional'
 import { CONNECTOR_WORKSPACES, defaultDisplayPictureUrl, feedbackFormUrl, maxDecimalPlacesForQuestionForecast, maxForecastsPerUser, maxLatestForecastsVisible, noForecastsMessage } from '../_constants'
-import { displayForecast, getDateSlackFormat, getResolutionEmoji, getUserNameOrProfileLink } from '../_utils'
+import { displayForecast, getResolutionEmoji } from "../_utils_common"
+import { getDateSlackFormat, getUserNameOrProfileLink } from '../_utils_server'
 import { Blocks, ResolveQuestionActionParts, markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock, toActionId } from './_block_utils'
 
 function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecimalPlacesForQuestionForecast): string {

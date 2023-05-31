@@ -1,4 +1,4 @@
-import prisma, { backendAnalyticsEvent, callSlackApi, getOrCreateProfile } from "../_utils"
+import prisma, { backendAnalyticsEvent, callSlackApi, getOrCreateProfile } from "../_utils_server"
 import { HomeAppPageNavigationActionParts } from "../blocks-designs/_block_utils"
 import { buildHomeTabBlocks } from "../blocks-designs/app_home"
 

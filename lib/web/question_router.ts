@@ -2,7 +2,7 @@ import { Prisma, Resolution } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { QuestionWithForecasts } from "../../prisma/additional"
-import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils"
+import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { publicProcedure, router } from "./trpc_base"
 

@@ -1,7 +1,8 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
 import { Question, User } from '@prisma/client'
-import prisma, { conciseDateTime, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils'
+import { conciseDateTime } from "../../lib/_utils_common"
+import prisma, { postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 import { sendEmail } from '../../lib/web/email'
 import { getQuestionUrl } from '../q/[id]'

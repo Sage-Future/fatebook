@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { backendAnalyticsEvent, postEphemeralTextMessage } from '../../lib/_utils'
-import { refreshAppHome } from '../../lib/interactive_handlers/app_home'
 import { slackAppId } from '../../lib/_constants'
+import { backendAnalyticsEvent, postEphemeralTextMessage } from '../../lib/_utils_server'
+import { refreshAppHome } from '../../lib/interactive_handlers/app_home'
 
 export default async function eventsApiHandler(req: VercelRequest, res: VercelResponse) {
   console.log(req.body)

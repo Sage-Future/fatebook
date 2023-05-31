@@ -1,6 +1,6 @@
 import { ServerClient } from "postmark"
 import { postmarkApiToken } from "../_constants"
-import { backendAnalyticsEvent } from "../_utils"
+import { backendAnalyticsEvent } from "../_utils_server"
 
 export async function sendEmail({
   subject,

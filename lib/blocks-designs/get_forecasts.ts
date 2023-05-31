@@ -1,9 +1,10 @@
+import { Forecast, QuestionScore, Resolution } from '@prisma/client'
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
-import { getDateSlackFormat, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, formatScoreNicely, getSlackPermalinkFromChannelAndTS } from '../../lib/_utils'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, QuestionWithResolutionMessages } from '../../prisma/additional'
 import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxDecimalPlacesForecastForecastListing, maxDecimalPlacesScoreForecastListing, maxForecastsVisible, maxScoreDecimalPlacesListing, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
+import { formatDecimalNicely, formatScoreNicely, getCommunityForecast, getResolutionEmoji } from "../_utils_common"
+import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
-import { Forecast, QuestionScore, Resolution } from '@prisma/client'
 
 function roundForecast(forecast: number, decimalPlaces :number = maxDecimalPlacesForecastForecastListing){
   return formatDecimalNicely(forecast, decimalPlaces)

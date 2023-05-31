@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from "@vercel/node"
-import prisma, { updateForecastQuestionMessages } from '../../lib/_utils'
+import prisma, { updateForecastQuestionMessages } from '../../lib/_utils_server'
 
 export default async function updateLastWeeksQuestions(req: VercelRequest, res: VercelResponse) {
   const LAST_X_DAYS = 7

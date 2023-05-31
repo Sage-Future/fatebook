@@ -1,6 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import prisma, { backendAnalyticsEvent, floatEquality, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils"
+import { floatEquality } from "../_utils_common"
+import prisma, { backendAnalyticsEvent, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils_server"
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 

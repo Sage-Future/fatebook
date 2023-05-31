@@ -1,5 +1,6 @@
 import { QuestionWithAuthorAndQuestionMessages } from "../../prisma/additional"
-import { conciseDateTime, getUserNameOrProfileLink } from "../_utils"
+import { conciseDateTime } from "../_utils_common"
+import { getUserNameOrProfileLink } from "../_utils_server"
 import { ResolveQuestionActionParts, feedbackOverflow, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from "./_block_utils"
 
 export async function buildResolveQuestionBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages) {

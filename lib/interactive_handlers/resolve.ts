@@ -5,7 +5,8 @@ import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
-import prisma, { averageScores, backendAnalyticsEvent, getDateSlackFormat, getResolutionEmoji, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, round, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils'
+import { averageScores, getResolutionEmoji, round } from "../_utils_common"
+import prisma, { backendAnalyticsEvent, getDateSlackFormat, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils_server'
 
 async function dbResolveQuestion(questionid : number, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)

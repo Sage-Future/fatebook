@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { sendEmailReadyToResolveNotification } from '../../pages/api/check_for_message_updates'
-import prisma, { getSlackPermalinkFromChannelAndTS } from '../_utils'
+import prisma, { getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { questionRouter } from './question_router'
 import { publicProcedure, router } from './trpc_base'
 
