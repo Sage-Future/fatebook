@@ -5,9 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import React, { Fragment } from 'react'
 import { api } from "../lib/web/trpc"
+import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
-import { getQuestionUrl } from "../pages/q/[id]"
 
 
 export function SharePopover({

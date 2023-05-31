@@ -24,46 +24,52 @@ export function Question({
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
-    <div className="bg-white rounded-md group shadow-sm" onClick={() => setManuallyExpanded(!manuallyExpanded)}>
-      <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
-        <span className="col-span-2 flex gap-4 mb-1 justify-between">
-          <span className="font-semibold" key={`${question.id}title`}>
-            <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
-              {question.title}
-            </Link>
+    <div className="">
+      <div
+        className={clsx("bg-white rounded-md group shadow-sm",
+                        (manuallyExpanded || alwaysExpand) && "rounded-b-none")}
+        onClick={() => setManuallyExpanded(!manuallyExpanded)}
+      >
+        <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
+          <span className="col-span-2 flex gap-4 mb-1 justify-between">
+            <span className="font-semibold" key={`${question.id}title`}>
+              <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
+                {question.title}
+              </Link>
+            </span>
+            <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
           </span>
-          <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
-        </span>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <span className="text-sm my-auto" key={`${question.id}author`}>
-            <Username user={question.user} />
-          </span>
-          <SharePopover question={question} />
-          {
-            question.resolvedAt ? (
-              <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>
-                <span>Resolved</span> <FormattedDate date={question.resolvedAt} />
-              </span>
-            ) : (
-              <span className={clsx(
-                "text-sm text-gray-400 my-auto",
-                question.resolveBy < new Date() && "text-indigo-300"
-              )} key={`${question.id}resolve`}>
-                {question.resolveBy < new Date() ?
-                  <><span>Ready to resolve</span><br/> {"("}<FormattedDate date={question.resolveBy} />{")"}</>
-                  :
-                  <><span>Resolves</span> <FormattedDate date={question.resolveBy} /></>
-                }
-              </span>
-            )
-          }
-          <ResolveButton question={question} />
-          <ActivityNumbers
-            question={question}
-            alwaysExpand={alwaysExpand}
-            manuallyExpanded={manuallyExpanded}
-            setManuallyExpanded={setManuallyExpanded}
-          />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <span className="text-sm my-auto" key={`${question.id}author`}>
+              <Username user={question.user} />
+            </span>
+            <SharePopover question={question} />
+            {
+              question.resolvedAt ? (
+                <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>
+                  <span>Resolved</span> <FormattedDate date={question.resolvedAt} />
+                </span>
+              ) : (
+                <span className={clsx(
+                  "text-sm text-gray-400 my-auto",
+                  question.resolveBy < new Date() && "text-indigo-300"
+                )} key={`${question.id}resolve`}>
+                  {question.resolveBy < new Date() ?
+                    <><span>Ready to resolve</span><br/> {"("}<FormattedDate date={question.resolveBy} />{")"}</>
+                    :
+                    <><span>Resolves</span> <FormattedDate date={question.resolveBy} /></>
+                  }
+                </span>
+              )
+            }
+            <ResolveButton question={question} />
+            <ActivityNumbers
+              question={question}
+              alwaysExpand={alwaysExpand}
+              manuallyExpanded={manuallyExpanded}
+              setManuallyExpanded={setManuallyExpanded}
+            />
+          </div>
         </div>
       </div>
       <Transition
