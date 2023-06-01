@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { signIn, signOut, useSession } from "next-auth/react"
 import Link from "next/link"
+import { useRouter } from "next/router"
 import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
-import { useRouter } from "next/router"
 import { TrackRecord } from "../components/TrackRecord"
 
 export default function HomePage() {
@@ -29,11 +29,11 @@ export default function HomePage() {
               session ?
                 <>
                   Signed in as {session.user?.email} <br />
-                  <button className="btn primary" onClick={() => signOut()}>Sign out</button>
+                  <button className="button primary" onClick={() => signOut()}>Sign out</button>
                 </> :
                 <>
                     Not signed in <br />
-                  <button className="btn primary" onClick={() => signIn()}>Sign in</button>
+                  <button className="button primary" onClick={() => signIn()}>Sign in</button>
                 </>
             )
           }

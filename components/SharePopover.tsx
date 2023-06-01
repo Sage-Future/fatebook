@@ -20,7 +20,7 @@ export function SharePopover({
     <div className="">
       <Popover as="div" className="inline-block text-left relative w-full">
         <div className='w-full text-right md:text-center'>
-          <Popover.Button className="btn text-sm">
+          <Popover.Button className="button text-sm">
             {question.sharedPublicly ? (
               <><UserGroupIcon height={15} /> <span>Public</span></>
             ) :

@@ -159,7 +159,6 @@ async function makeResolvedQuestionListing(teamId: string, hideForecasts: boolea
       questionId: question.id
     },
   })
-  console.log({scores})
 
   if (hideForecasts) {
     return [

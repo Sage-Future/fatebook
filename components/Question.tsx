@@ -47,7 +47,7 @@ export function Question({
             {
               question.resolvedAt ? (
                 <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>
-                  <span>Resolved</span> <FormattedDate date={question.resolvedAt} />
+                  <FormattedDate prefix={"Resolved "} date={question.resolvedAt} />
                 </span>
               ) : (
                 <span className={clsx(
@@ -55,9 +55,9 @@ export function Question({
                   question.resolveBy < new Date() && "text-indigo-300"
                 )} key={`${question.id}resolve`}>
                   {question.resolveBy < new Date() ?
-                    <><span>Ready to resolve</span><br/> {"("}<FormattedDate date={question.resolveBy} />{")"}</>
+                    <FormattedDate prefix={<><span>Ready to resolve</span><br/>{"("}</>} date={question.resolveBy} postfix=")" />
                     :
-                    <><span>Resolves</span> <FormattedDate date={question.resolveBy} /></>
+                    <FormattedDate prefix={"Resolves "} date={question.resolveBy} />
                   }
                 </span>
               )
@@ -107,7 +107,7 @@ export function ActivityNumbers({
       <span>{new Set(question.forecasts.map(f => f.userId)).size} forecasters</span>
       <span>{(question.comments?.length ?? 0) + (question.notes ? 1 : 0)} notes</span>
       {!alwaysExpand && <button
-        className="btn p-0"
+        className="button p-0"
       >
         <ChevronDownIcon
           className={clsx("h-5 w-5 transition-transform",

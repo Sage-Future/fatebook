@@ -62,6 +62,7 @@
     "@typescript-eslint/parser": "^5.59.7",
     "@vercel/git-hooks": "^1.0.0",
     "autoprefixer": "^10.4.14",
+    "daisyui": "^3.0.0",
     "eslint": "8.27.0",
     "eslint-config-next": "^13.3.1",
     "eslint-config-prettier": "^8.5.0",
