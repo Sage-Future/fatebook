@@ -8,31 +8,36 @@ export function TrackRecord() {
   const allScoresQuery = api.question.getQuestionScores.useQuery()
   const scoreDetails = allScoresQuery?.data && populateDetails(allScoresQuery?.data)
 
-  if (!userId || !scoreDetails) return <></>
-
-  const { overallDetails, recentDetails } = scoreDetails
+  if (!userId) return <></>
 
   return (
     <div className="max-w-xs prose">
       <h2>Your track record</h2>
       <Image src={`/api/calibration_graph?user=${userId}`} width={400} height={400} alt="Your calibration chart" />
-      {[
-        {details: recentDetails, title: "Last three months"},
-        {details: overallDetails, title: "All time score"},
-      ].map(({details, title}) => (
-        <div key={title} className="prose-sm p-6">
-          <h4 className="mb-0">{title}</h4>
-          <div className="flex flex-row gap-2 justify-between">
-            <p>
-              <span className="font-bold pr-1">Brier score</span> {formatDecimalNicely(details.brierScore, 2)}
-            </p>
-            <p>
-              <span className="font-bold pr-1">Relative Brier</span>
-              {details.rBrierScore ? formatDecimalNicely(details.rBrierScore, 2) : "..."}
-            </p>
+      <div className="flex flex-col gap-4">
+        {[
+          {details: scoreDetails?.recentDetails, title: "Last 3 months"},
+          {details: scoreDetails?.overallDetails, title: "All time"},
+        ].map(({details, title}) => (
+          <div key={title} className="stats shadow">
+            <div className="stat">
+              <div className="stat-title">Brier score</div>
+              <div className="stat-value">{
+                details ? formatDecimalNicely(details.brierScore, 2) : "..."
+              }</div>
+              <div className="stat-desc">{title}</div>
+            </div>
+
+            {<div className="stat">
+              <div className="stat-title">Relative Brier</div>
+              <div className="stat-value">{
+                details?.rBrierScore ? formatDecimalNicely(details.rBrierScore, 2) : "..."
+              }</div>
+              <div className="stat-desc">{title}</div>
+            </div>}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
 
     </div>
   )

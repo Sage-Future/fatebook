@@ -12,7 +12,7 @@ export default function HomePage() {
 
   if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || router.query["preview"]) {
     return (
-      <div className="max-sm:flex-col max-sm:gap-8 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
+      <div className="max-sm:flex-col gap-8 md:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
         <div className="prose mx-auto">
           <h2 className="text-3xl mb-2 font-extrabold text-gray-900">
                   Fatebook
@@ -39,8 +39,6 @@ export default function HomePage() {
           }
 
           <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: out now.</p>
-
-          <p><b>Fatebook for web</b>: coming soon.</p>
 
           <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
 

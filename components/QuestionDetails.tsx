@@ -13,7 +13,7 @@ export function QuestionDetails({
 }) {
 
   return (
-    <div className="bg-slate-100 px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm" onClick={(e) => e.stopPropagation()}>
+    <div className="bg-slate-100 px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
       <CommentBox question={question} />
       {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">
         {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
