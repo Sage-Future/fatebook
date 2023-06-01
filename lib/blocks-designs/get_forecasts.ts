@@ -1,17 +1,13 @@
 import { Forecast, QuestionScore, Resolution } from '@prisma/client'
 import { Block, ContextBlock, KnownBlock } from '@slack/types'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, QuestionWithResolutionMessages } from '../../prisma/additional'
-import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxDecimalPlacesForecastForecastListing, maxDecimalPlacesScoreForecastListing, maxForecastsVisible, maxScoreDecimalPlacesListing, noResolutionColumnSpacing, scorePrepad, yesResolutionColumnSpacing } from '../_constants'
-import { forecastsAreHidden, formatDecimalNicely, formatScoreNicely, getCommunityForecast, getResolutionEmoji } from "../_utils_common"
+import { ambiguousResolutionColumnSpacing, forecastListColumnSpacing, forecastPrepad, maxDecimalPlacesForecastForecastListing, maxForecastsVisible, noResolutionColumnSpacing, yesResolutionColumnSpacing } from '../_constants'
+import { forecastsAreHidden, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, padAndFormatScore } from "../_utils_common"
 import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { Blocks, getQuestionTitleLink, markdownBlock, textBlock, toActionId } from './_block_utils'
 
 function roundForecast(forecast: number, decimalPlaces :number = maxDecimalPlacesForecastForecastListing){
   return formatDecimalNicely(forecast, decimalPlaces)
-}
-
-function roundScore(score: number, decimalPlaces :number = maxDecimalPlacesScoreForecastListing, sf : number = maxScoreDecimalPlacesListing){
-  return formatScoreNicely(score, decimalPlaces, sf)
 }
 
 export async function buildGetForecastsBlocks(forecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], activePage : number, closedPage : number, activeForecast : boolean, noForecastsText: string, questionScores : QuestionScore[]) : Promise<Blocks> {
@@ -126,7 +122,7 @@ async function buildForecastQuestionText(forecast : ForecastWithQuestionWithQMes
     const scoreStrLabelPad  = questionScore.relativeScore !== null ? `` : `      `
     const scoreStrLinklabel = scoreLink ? `<${scoreLink}|${scoreStrLabel}>${scoreStrLabelPad}` : scoreStrLabel+scoreStrLabelPad
 
-    scoreStr = scoreStrLinklabel+padAndFormatScore(questionScore.absoluteScore.toNumber())
+    scoreStr = scoreStrLinklabel + padAndFormatScore(questionScore.absoluteScore.toNumber())
   } else {
     scoreStr = ''
   }
@@ -172,15 +168,7 @@ function padResolution(resolution : Resolution | null){
   }
 }
 
-function padAndFormatScore(score : number, maxprepad : number = scorePrepad){
-  let prepad  = maxprepad
 
-  if (score < 0)
-    prepad = prepad - 2
-
-  const scorePadded = ' '.repeat(prepad) + '`'+ roundScore(score) + '`'
-  return scorePadded
-}
 
 // function used to align decimal places, even when no decimal places are present
 function padForecast(forecast : string, maxprepad : number = forecastPrepad, maxpostpad : number = forecastListColumnSpacing ) : string {

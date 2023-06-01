@@ -1,6 +1,6 @@
 import { Forecast, Question, QuestionScore, Resolution } from '@prisma/client'
 import { QuestionWithForecasts } from '../prisma/additional'
-import { numberOfDaysInRecentPeriod } from './_constants'
+import { maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing, numberOfDaysInRecentPeriod, scorePrepad } from './_constants'
 
 
 export function forecastsAreHidden(question: Question) {
@@ -177,4 +177,14 @@ export function populateDetails(questionScores: QuestionScore[]): { recentDetail
     totalParticipants: 0,
   }
   return { recentDetails, overallDetails }
+}
+
+export function padAndFormatScore(score: number, maxprepad: number = scorePrepad) {
+  let prepad  = maxprepad
+
+  if (score < 0)
+    prepad = prepad - 2
+
+  const scorePadded = ' '.repeat(prepad) + '`'+ formatScoreNicely(score, maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing) + '`'
+  return scorePadded
 }

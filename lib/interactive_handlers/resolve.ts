@@ -223,7 +223,6 @@ export async function handleQuestionResolution(questionid : number, resolution :
 
   // update ping and question message first for responsiveness
   await updateResolvePingQuestionMessages(question, "Question resolved!")
-  await updateForecastQuestionMessages(question, "Question resolved!")
 
   let scores : ScoreCollection = {}
   if(resolution != Resolution.AMBIGUOUS) {
@@ -241,6 +240,7 @@ export async function handleQuestionResolution(questionid : number, resolution :
       }
     }).reduce((a, b) => Object.assign(a, b), {})
   }
+  await updateForecastQuestionMessages(question, "Question resolved!")
   await messageUsers(scores, question)
 }
 

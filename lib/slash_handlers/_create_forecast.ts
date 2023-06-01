@@ -64,7 +64,7 @@ export async function createForecastingQuestion(teamId: string, { question, date
     }
   })
 
-  const questionBlocks = buildQuestionBlocks(teamId, createdQuestion)
+  const questionBlocks = await buildQuestionBlocks(teamId, createdQuestion)
 
   let questionPostedSuccessfully = true
   let data

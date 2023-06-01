@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
-export default function support() {
+export default function SupportPage() {
   return (
     <div className="prose mx-auto my-8">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>

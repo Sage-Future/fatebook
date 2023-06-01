@@ -153,7 +153,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       }
     })
 
-    const questionBlocks = buildQuestionBlocks(payload.user.team_id, updatedQuestion)
+    const questionBlocks = await buildQuestionBlocks(payload.user.team_id, updatedQuestion)
 
     for (const slackMessage of updatedQuestion.questionMessages) {
       const response = await updateMessage(slackMessage.message.teamId, {
