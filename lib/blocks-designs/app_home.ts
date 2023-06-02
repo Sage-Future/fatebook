@@ -1,10 +1,10 @@
-import { QuestionScore } from '@prisma/client'
+import { QuestionScore, Target, TargetType } from '@prisma/client'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
-import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
 import { formatDecimalNicely, plural, populateDetails } from "../_utils_common"
-import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
+import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, quantifiedIntuitionsUrl, slackAppId, targetCronTime } from '../_constants'
+import prisma, { dayEnumToNum, dayEnumToStr, getCurrentTargetProgress, getTarget, sameDate } from '../../lib/_utils_server'
+import { Blocks, dividerBlock, headerBlock, markdownBlock, targetSetButtons } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
-import prisma from '../_utils_server'
 
 export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string, allUserForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
   const {recentDetails, overallDetails} = populateDetails(questionScores)
@@ -50,6 +50,9 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string,
   return [
     headerBlock('Your score for the last 3 months'),
     ...(myRecentScoreBlock),
+    dividerBlock(),
+    headerBlock('Build your forecasting habit'),
+    ...(await targetBlock(fatebookUserId)),
     dividerBlock(),
     headerBlock('Your active forecasts'),
     ...(myActiveForecastsBlock),
@@ -150,4 +153,83 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
       )]
     },
   ]
+}
+
+function getCurrentStreak(target: Target){
+  const now = new Date()
+  // add one day as the first day you fail after a week and a day
+  const day = 1 * 24 * 60 * 60 * 1000
+  const weekNumber = Math.floor(Math.abs(((now.getTime() - (target.lastFailedAt.getTime() + day)) / (7 * 24 * 60 * 60 * 1000))))
+  return weekNumber
+}
+
+function getDay(target : Target){
+  const now    = new Date()
+  const nowDay = now.getDay()
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const earlyToday = (nowDay === ((dayEnumToNum(target.notifyOn) + 1) % 7) && now.getHours() < 1)
+
+  let day = ''
+
+  // if it's the first day of the target being set
+  if (nowDay === dayEnumToNum(target.notifyOn) && sameDate(target.lastFailedAt, now)) {
+    day = 'next ' + dayEnumToStr(target.notifyOn)
+  // if is due to be checked tomorrow in server time
+  } else if (nowDay  === dayEnumToNum(target.notifyOn)){
+    // set the date for tomorrow at 1am
+    const date = new Date()
+    date.setDate(date.getDate() + 1)
+    date.setHours(targetCronTime, 0, 0, 0)
+    day = `<!date^${Math.floor(date.getTime() / 1000)}^ {date_short_pretty} at {time}|tomorrow>`
+  // if it's the same day as checking, but between 0000 and 0100
+  } else if (earlyToday){
+    const date = new Date()
+    date.setHours(1)
+    date.setMinutes(0)
+    date.setSeconds(0)
+    date.setMilliseconds(0)
+    day = `<!date^${Math.floor(date.getTime() / 1000)}^ {date_short_pretty} at {time}|today>`
+  } else {
+    day += dayEnumToStr(target.notifyOn)
+  }
+
+  return day
+}
+
+async function targetStreak(target: Target, fatebookUserId: string){
+  const streak  = getCurrentStreak(target)
+  const current = await getCurrentTargetProgress(fatebookUserId, target)
+
+  const noun       = target.type === TargetType.FORECAST ? 'forecast' : 'question'
+  const goalPlural = target.goal === 1 ? '' : 's'
+  const diff       = target.goal - current
+  const diffPlural = diff === 1 ? '' : 's'
+
+  const message = current >= target.goal ? `You've hit your goal this week! Great job`
+    : current === target.goal - 1 ? `You're almost there! Make 1 more ${noun} by ${getDay(target)} to keep your streak!`
+      : `Make ${diff} more ${noun}${diffPlural} by ${getDay(target)} to keep your streak!`
+
+  return [
+    {
+      type: 'section',
+      'fields': [
+        markdownBlock(`🔥 Your streak: *${streak}* weeks`),
+        markdownBlock(`This week: *${current}*/${target.goal} ${noun}${goalPlural}`),
+      ]
+    },
+    {
+      type: 'section',
+      'text': markdownBlock(message),
+    }
+  ] as Blocks
+}
+
+async function targetBlock(fatebookUserId: string) {
+  const target = await getTarget(fatebookUserId)
+  if(target != null) {
+    return targetStreak(target, fatebookUserId)
+  } else {
+    return targetSetButtons(true)
+  }
 }

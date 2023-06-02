@@ -6,7 +6,7 @@ export async function refreshAppHome(event: any, teamId: string) {
   await refreshUserAppHome(event.user, teamId)
 }
 
-async function refreshUserAppHome(userId: string, teamId: string, activePage : number = 0, closedPage : number = 0) {
+export async function refreshUserAppHome(userId: string, teamId: string, activePage : number = 0, closedPage : number = 0) {
   const profile = await getOrCreateProfile(teamId, userId)
 
   if (!profile) {

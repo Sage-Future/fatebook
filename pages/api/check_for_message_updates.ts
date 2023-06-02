@@ -1,11 +1,71 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 
-import { Question, User } from '@prisma/client'
+import { Question, Target, User } from '@prisma/client'
 import { conciseDateTime } from "../../lib/_utils_common"
-import prisma, { postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
+import prisma, { dateToDayEnum, getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 import { sendEmail } from '../../lib/web/email'
 import { getQuestionUrl } from '../q/[id]'
+import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
+
+async function getTargetsToBeNotified(){
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  const todaysDay = dateToDayEnum(yesterday)
+  // what if the date set was at 0030?
+
+  return await prisma.target.findMany({
+    where: {
+      notifyOn: todaysDay,
+      lastFailedAt: {
+        lte: yesterday
+      }
+    },
+    include: {
+      profile: true,
+      user: {
+        include: {
+          accounts: true,
+        }
+      }
+    }
+  })
+}
+
+async function sendSlackTargetNotification(target : Target, slackTeamId : string, slackId : string) {
+  const current = await getCurrentTargetProgress(target.userId, target)
+  const blocks = buildTargetNotification(target, current)
+
+  if (current < target.goal) {
+    await prisma.target.update({
+      where: {
+        id: target.id
+      },
+      data: {
+        lastFailedAt: new Date()
+      }
+    })
+  }
+
+  await postBlockMessage(slackTeamId, slackId, blocks)
+}
+
+async function sendTargetMessages() {
+  const targetsToBeNotified = await getTargetsToBeNotified()
+  for (const target of targetsToBeNotified) {
+    if (target.profile && target.profile.slackTeamId && target.profile.slackId) {
+      await sendSlackTargetNotification(target,
+                                        target.profile.slackTeamId,
+                                        target.profile.slackId)
+    } else if (target.user.accounts.length > 0) {
+      // await sendEmailTargetNotification(user)
+      console.error("Email notifications not set for targets", target.id)
+    } else {
+      console.error("No profile or accounts found for target", target.id)
+    }
+  }
+  return targetsToBeNotified
+}
 
 async function getQuestionsToBeResolved()  {
   // check if any questions need to be resolved by time
@@ -34,7 +94,6 @@ async function getQuestionsToBeResolved()  {
   })
   return allQuestionsToBeNotified
 }
-
 
 async function notifyAuthorsToResolveQuestions() {
   const allQuestionsToBeNotified = await getQuestionsToBeResolved()
@@ -196,12 +255,14 @@ async function updateQuestionsToUnhideForecasts(){
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-    console.log("Not in production, no operation. Make a debug function that restricts these functions to a specific workspace.")
-    return
-  }
+  // if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
+  //     && (!process.env.DATABASE_URL?.includes('supabase'))) {
+  //   console.log("Not in production, no operation on non-supabase db. Make a debug function that restricts these functions to a specific workspace.")
+  //   return
+  // }
 
   const allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
   const questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
-  res.json({questionsToBeUpdated, allQuestionsToBeNotified})
+  const targetMessages           = await sendTargetMessages()
+  res.json({questionsToBeUpdated, allQuestionsToBeNotified, targetMessages})
 }

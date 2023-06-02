@@ -5,6 +5,7 @@ export const baseUrl          : string = process.env.SLACKBOT_BASE_URL!
 export const slackAppId       : string = process.env.SLACKBOT_APP_ID!
 export const postmarkApiToken : string = process.env.POSTMARK_API_TOKEN!
 
+export const targetCronTime   : number = 1 // 0 1 * * *
 
 // Question Block
 export const maxLatestForecastsVisible  : number = 5

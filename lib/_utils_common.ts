@@ -51,7 +51,6 @@ export function getArithmeticCommunityForecast(question: QuestionWithForecasts, 
   return summedForecasts / uptoDateForecasts.length
 }
 
-
 export function conciseDateTime(date: Date, includeTime = true) {
   let timeStr = ''
   if (includeTime)

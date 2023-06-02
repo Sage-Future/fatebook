@@ -3,7 +3,7 @@ import { QuestionWithAuthorAndQuestionMessages } from '../../prisma/additional'
 import { feedbackFormUrl, maxDecimalPlacesForResolution, slackAppId } from '../_constants'
 import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from "../_utils_common"
 import { getUserNameOrProfileLink } from '../_utils_server'
-import type { Blocks } from './_block_utils'
+import { Blocks, textBlock, toActionId } from './_block_utils'
 import { dividerBlock, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils'
 
 type ResolveQuestionDetails = {
@@ -17,7 +17,7 @@ type ResolveQuestionDetails = {
   overallRBrierScore: number | undefined
 }
 
-export async function buildQuestionResolvedBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages, details : ResolveQuestionDetails | undefined = undefined) {
+export async function buildQuestionResolvedBlocks(teamId: string, question: QuestionWithAuthorAndQuestionMessages, details : ResolveQuestionDetails | undefined = undefined, userHasTarget : boolean = false) {
   const questionLink       = await getQuestionTitleLink(question)
   if(question.resolution == null){
     return [
@@ -51,6 +51,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
     dividerBlock(),
     ...(((question.resolution!) != Resolution.AMBIGUOUS) ? generateNonAmbiguousResolution(details!) : generateAmbiguousResolution()),
     dividerBlock(),
+    ...(userHasTarget ? [] : [forecastMoreButton()]),
     {
       'type': 'context',
       'elements': [
@@ -59,6 +60,15 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
       ]
     }
   ]
+}
+
+function forecastMoreButton(){
+  return {
+    'type': 'button',
+    'text': textBlock('Want to forecast more?'),
+    'action_id': toActionId({ action: 'forecastMore' }),
+    'value': 'forecast_more',
+  }
 }
 
 function generateNonAmbiguousResolution(details : ResolveQuestionDetails) : Blocks {

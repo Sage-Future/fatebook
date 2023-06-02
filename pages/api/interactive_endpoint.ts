@@ -8,6 +8,7 @@ import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_
 
 import { buttonUndoResolution, resolve } from '../../lib/interactive_handlers/resolve'
 import { submitTextForecast } from '../../lib/interactive_handlers/submit_text_forecast'
+import { buttonTargetAdjust, buttonTargetSet, buttonTriggerTargetSet } from '../../lib/interactive_handlers/targets'
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {
@@ -69,6 +70,18 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'optionsCheckBox':
         await updateFromCheckboxes(actionParts, payload, callbackParts.channel)
+        break
+
+      case 'targetAdjust':
+        await buttonTargetAdjust(actionParts, payload)
+        break
+
+      case 'targetSet':
+        await buttonTargetSet(actionParts, payload)
+        break
+
+      case 'forecastMore':
+        await buttonTriggerTargetSet(actionParts, payload)
         break
 
       default:

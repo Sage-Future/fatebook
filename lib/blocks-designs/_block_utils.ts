@@ -4,6 +4,7 @@ import { feedbackFormUrl } from '../_constants'
 import { getCommunityForecast, getResolutionEmoji, round } from "../_utils_common"
 import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink } from '../_utils_server'
 import { checkboxes } from './question_modal'
+import { TargetType } from "@prisma/client"
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -74,6 +75,22 @@ export interface DeleteQuestionActionParts {
   questionId: string
 }
 
+export interface SetTargetActionParts {
+  action: 'targetSet'
+  targetType: TargetType
+  targetValue: number
+  homeApp : boolean
+}
+
+export interface AdjustTargetActionParts {
+  action: 'targetAdjust'
+  cancel: boolean
+}
+
+export interface TargetTriggerActionParts {
+  action: 'forecastMore'
+}
+
 export interface HomeAppPageNavigationActionParts {
   action: 'homeAppPageNavigation'
   direction: 'next' | 'previous'
@@ -90,6 +107,7 @@ export type CheckboxOption = {
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
   | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
   | HomeAppPageNavigationActionParts | ViewForecastLogBtnActionParts | OptionsCheckBoxActionParts | UpdateHideForecastsDateActionParts
+  | SetTargetActionParts | TargetTriggerActionParts | AdjustTargetActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
@@ -231,4 +249,54 @@ export function tipsContextBlock() {
       markdownBlock(`*Tip:* ${tips[Math.floor(Math.random() * tips.length)]}`),
     ],
   }
+}
+
+export function targetSetButtons(homeApp : boolean){
+  return [
+    {
+      'type': 'section',
+      'text': markdownBlock('Want to set a forecast target for next week?'),
+    },
+    {
+      'type': 'actions',
+      'elements': [
+        {
+          'type': 'button',
+          'text': textBlock('Write one question'),
+          'action_id': toActionId(
+            {
+              action: 'targetSet',
+              targetType: TargetType.QUESTION,
+              targetValue: 1,
+              homeApp
+            }),
+          'value': 'one_question',
+        },
+        {
+          'type': 'button',
+          'text': textBlock('Write three questions'),
+          'action_id': toActionId(
+            {
+              action: 'targetSet',
+              targetType: TargetType.QUESTION,
+              targetValue: 3,
+              homeApp
+            }),
+          'value': 'three_question',
+        },
+        {
+          'type': 'button',
+          'text': textBlock('Make one forecast'),
+          'action_id': toActionId(
+            {
+              action: 'targetSet',
+              targetType: TargetType.FORECAST,
+              targetValue: 1,
+              homeApp
+            }),
+          'value': 'one_forecast',
+        }
+      ]
+    }
+  ]
 }

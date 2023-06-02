@@ -1,4 +1,4 @@
-import { PrismaClient, SlackMessage } from '@prisma/client'
+import { DayOfTheWeek, PrismaClient, SlackMessage, Target, TargetType } from '@prisma/client'
 import { ModalView } from '@slack/types'
 import fetch from 'node-fetch'
 import { PingSlackMessageWithMessage, ProfileWithUser, QuestionSlackMessageWithMessage, QuestionWithAuthorAndAllMessages, QuestionWithForecastWithUserWithProfilesAndSlackMessages, ResolutionSlackMessageWithMessage, UserWithProfiles } from '../prisma/additional'
@@ -261,6 +261,17 @@ export async function postTextMessage(teamId: string, channel : string, payload 
                          })
 }
 
+export async function postEphemeralBlockMessage(teamId: string, channel : string, user : string, blocks : Blocks, notificationMessage : string, additionalArgs : PostEphemeralMessageAdditionalArgs = {}){
+  await postEphemeralSlackMessage(teamId,
+                                  {
+                                    channel,
+                                    blocks,
+                                    text: notificationMessage,
+                                    user,
+                                    ...(additionalArgs && { ...additionalArgs } )
+                                  })
+}
+
 export async function postEphemeralTextMessage(teamId: string, channel : string, user : string, payload : string, additionalArgs : PostEphemeralMessageAdditionalArgs = {}){
   await postEphemeralSlackMessage(teamId,
                                   {
@@ -272,7 +283,7 @@ export async function postEphemeralTextMessage(teamId: string, channel : string,
 }
 
 export async function postSlackMessage(teamId: string, message: PostMessagePayload, userId?: string){
-  console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, JSON.stringify(message?.blocks))
+  // console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, JSON.stringify(message?.blocks))
   const url = 'https://slack.com/api/chat.postMessage'
   const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
   if (response.ok === false) {
@@ -343,7 +354,7 @@ export async function callSlackApi(teamId: string, message: any, url: string, me
 
 interface ResponseMessage {
   text: string
-  response_type: "in_channel" | "ephemeral"
+  response_type?: "in_channel" | "ephemeral"
   replace_original: boolean
   blocks?: Blocks
   thread_ts?: string
@@ -388,6 +399,7 @@ async function updateSlackMessages<QuestionX>(slackMessages: SlackMessage[],
   }
 }
 
+// Note that this will not update the scores
 export async function updateResolutionQuestionMessages(question: QuestionWithAuthorAndAllMessages, notificationMessage: string) {
   await updateSlackMessages(question.resolutionMessages.map((x : ResolutionSlackMessageWithMessage) => x.message ),
                             notificationMessage,
@@ -458,3 +470,129 @@ export async function backendAnalyticsEvent(name: string, params: AnalyticsEvent
   }
 }
 
+export async function userHasTarget(fatebookUserId: string) {
+  return await getTarget(fatebookUserId) !== null
+}
+
+export async function getTarget(fatebookUserId: string){
+  return await prisma.target.findFirst({
+    where: {
+      userId: fatebookUserId
+    }
+  })
+}
+
+export function dateToDayEnum(date : Date) : DayOfTheWeek {
+  const dayNumber = date.getDay()
+  switch (dayNumber) {
+    case 0:
+      return DayOfTheWeek.SUNDAY
+    case 1:
+      return DayOfTheWeek.MONDAY
+    case 2:
+      return DayOfTheWeek.TUESDAY
+    case 3:
+      return DayOfTheWeek.WEDNESDAY
+    case 4:
+      return DayOfTheWeek.THURSDAY
+    case 5:
+      return DayOfTheWeek.FRIDAY
+    case 6:
+      return DayOfTheWeek.SATURDAY
+    default:
+      throw new Error('Invalid day number')
+  }
+}
+
+export function dayEnumToNum(day : DayOfTheWeek) : number {
+  switch (day) {
+    case DayOfTheWeek.SUNDAY:
+      return 0
+    case DayOfTheWeek.MONDAY:
+      return 1
+    case DayOfTheWeek.TUESDAY:
+      return 2
+    case DayOfTheWeek.WEDNESDAY:
+      return 3
+    case DayOfTheWeek.THURSDAY:
+      return 4
+    case DayOfTheWeek.FRIDAY:
+      return 5
+    case DayOfTheWeek.SATURDAY:
+      return 6
+    default:
+      throw new Error('Invalid day enum')
+  }
+}
+
+export function dayEnumToStr(day : DayOfTheWeek) : string {
+  switch (day) {
+    case DayOfTheWeek.SUNDAY:
+      return 'Sunday'
+    case DayOfTheWeek.MONDAY:
+      return 'Monday'
+    case DayOfTheWeek.TUESDAY:
+      return 'Tuesday'
+    case DayOfTheWeek.WEDNESDAY:
+      return 'Wednesday'
+    case DayOfTheWeek.THURSDAY:
+      return 'Thursday'
+    case DayOfTheWeek.FRIDAY:
+      return 'Friday'
+    case DayOfTheWeek.SATURDAY:
+      return 'Saturday'
+    default:
+      throw new Error('Invalid day enum')
+  }
+}
+
+export function sameDate(date1: Date, date2: Date) {
+  return date1.getFullYear() == date2.getFullYear()
+    && date1.getMonth() == date2.getMonth()
+    && date1.getDate() == date2.getDate()
+}
+
+export async function getCurrentTargetProgress(fatebookUserId: string, target: Target){
+  let count = 0
+  const now = new Date()
+  const nowDay = now.getDay()
+  const setToday = (nowDay === dayEnumToNum(target.notifyOn)) && sameDate(target.lastFailedAt, now)
+  console.log({setToday})
+  let previousPeriodStart
+  if(setToday){
+    console.log(target.lastFailedAt.toISOString())
+    previousPeriodStart = target.lastFailedAt
+  } else {
+  // find out the date since which we should count forecasts using target.day
+    const dayTarget       = dayEnumToNum(target.notifyOn)
+    const daysSinceTarget = nowDay === dayEnumToNum(target.notifyOn) ? 7 : (nowDay - dayTarget + 7) % 7
+    console.log({daysSinceTarget})
+    previousPeriodStart   = new Date(now.getTime() - daysSinceTarget * 24 * 60 * 60 * 1000)
+  }
+  console.log(previousPeriodStart.toISOString())
+  switch(target.type){
+    case TargetType.FORECAST:
+      count = await prisma.forecast.count({
+        where: {
+          userId: fatebookUserId,
+          createdAt: {
+            gte: previousPeriodStart
+          }
+        }
+      })
+      break
+    case TargetType.QUESTION:
+      count = await prisma.question.count({
+        where: {
+          userId: fatebookUserId,
+          createdAt: {
+            gte: previousPeriodStart
+          }
+        }
+      })
+      break
+    default:
+      throw new Error(`Unknown target type ${target.type}`)
+  }
+  return count
+}
