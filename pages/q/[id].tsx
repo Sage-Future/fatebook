@@ -1,5 +1,4 @@
 import { Question } from "@prisma/client"
-import Link from "next/link"
 import { useRouter } from "next/router"
 import { Question as QuestionComp } from "../../components/Question"
 import { api, getClientBaseUrl } from "../../lib/web/trpc"
@@ -29,11 +28,6 @@ export default function QuestionPage() {
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <div className="prose mx-auto">
-        <h2 className="text-3xl mb-4">
-          <Link href="/" className="no-underline font-extrabold text-gray-900">
-              Fatebook
-          </Link>
-        </h2>
         {
           (!question && !qQuery.isLoading) && <>
             <h3 className="text-gray-600">That question does not exist, or the author has not shared it with you.</h3>

@@ -1,5 +1,6 @@
 import { ReactNode } from "react"
 import Footer from "./Footer"
+import { Navbar } from "./Navbar"
 
 export function Layout({
   children,
@@ -9,7 +10,7 @@ export function Layout({
   return (
     <>
       <div className="flex flex-col min-h-screen ">
-        {/* <NavbarGeneric /> */}
+        <Navbar />
         <main className="bg-gray-50 grow pb-8 lg:pb-12">
           {children}
         </main>

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { signIn, signOut, useSession } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { Predict } from "../components/Predict"
@@ -14,29 +14,17 @@ export default function HomePage() {
     return (
       <div className="max-sm:flex-col gap-8 md:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
         <div className="prose mx-auto">
-          <h2 className="text-3xl mb-2 font-extrabold text-gray-900">
+          {!session?.user?.id && sessionStatus !== "loading" && <>
+            <h2 className="text-3xl mb-2 font-extrabold text-gray-900">
                   Fatebook
-          </h2>
-          <h3 className="text-gray-600">Track your predictions, make better decisions</h3>
+            </h2>
+            <h3 className="text-gray-600">Track your predictions, make better decisions</h3>
+          </>}
 
           <Predict />
           <Questions />
 
           <div className="py-12"/>
-
-          {sessionStatus === "loading" ? <p>Loading...</p> :
-            (
-              session ?
-                <>
-                  Signed in as {session.user?.email} <br />
-                  <button className="button primary" onClick={() => signOut()}>Sign out</button>
-                </> :
-                <>
-                    Not signed in <br />
-                  <button className="button primary" onClick={() => signIn()}>Sign in</button>
-                </>
-            )
-          }
 
           <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: out now.</p>
 
@@ -44,7 +32,7 @@ export default function HomePage() {
 
           <h3 className="text-lg font-semibold mt-12">Check out Sage{"'"}s other tools on <Link href="https://www.quantifiedintuitions.org/">Quantified Intuitions</Link></h3>
         </div>
-        <div className="pt-28 sticky">
+        <div className="pt-28">
           <TrackRecord />
         </div>
       </div>

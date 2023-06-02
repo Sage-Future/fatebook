@@ -14,7 +14,7 @@ export function TrackRecord() {
   return (
     <div className="max-w-xs prose">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <h2>Your track record</h2>
+        <h2 className="select-none">Your track record</h2>
         <Image src={`/api/calibration_graph?user=${userId}`} width={400} height={400} alt="Your calibration chart" />
         <div className="flex flex-col gap-4">
           {[
@@ -25,7 +25,7 @@ export function TrackRecord() {
               <div className="stat">
                 <div className="stat-title">Brier score</div>
                 <div className="stat-value">{
-                  details ? formatDecimalNicely(details.brierScore, 2) : "..."
+                  details?.brierScore ? formatDecimalNicely(details.brierScore, 2) : "..."
                 }</div>
                 <div className="stat-desc">{title}</div>
               </div>
