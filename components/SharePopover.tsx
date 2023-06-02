@@ -8,6 +8,7 @@ import { api } from "../lib/web/trpc"
 import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
+import {ErrorBoundary} from 'react-error-boundary'
 
 
 export function SharePopover({
@@ -97,24 +98,26 @@ function SharePublicly({
     }
   })
   return (
-    <div className="flex gap-2 justify-between">
-      <div className="flex gap-2">
-        <input
-          id="sharePublicly"
-          type="checkbox"
-          disabled={userId !== question.userId || setSharedPublicly.isLoading}
-          checked={question.sharedPublicly}
-          onChange={(e) => {
-            setSharedPublicly.mutate({
-              questionId: question.id,
-              sharedPublicly: e.target.checked,
-            })
-          }}
-        />
-        <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <div className="flex gap-2 justify-between">
+        <div className="flex gap-2">
+          <input
+            id="sharePublicly"
+            type="checkbox"
+            disabled={userId !== question.userId || setSharedPublicly.isLoading}
+            checked={question.sharedPublicly}
+            onChange={(e) => {
+              setSharedPublicly.mutate({
+                questionId: question.id,
+                sharedPublicly: e.target.checked,
+              })
+            }}
+          />
+          <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
+        </div>
+        {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} /> }
       </div>
-      {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} /> }
-    </div>
+    </ErrorBoundary>
   )
 }
 

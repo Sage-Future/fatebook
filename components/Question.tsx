@@ -3,6 +3,7 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid"
 import clsx from "clsx"
 import Link from "next/link"
 import { useState } from 'react'
+import { ErrorBoundary } from "react-error-boundary"
 import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
@@ -11,6 +12,7 @@ import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
+
 
 export function Question({
   question,
@@ -24,66 +26,70 @@ export function Question({
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
-    <div className="hover:scale-[1.01] transition-transform group">
-      <div
-        className={clsx("bg-white rounded-md shadow-sm group-hover:shadow-md transition-shadow cursor-pointer z-10",
-                        (manuallyExpanded || alwaysExpand) && "rounded-b-none")}
-        onClick={() => setManuallyExpanded(!manuallyExpanded)}
-      >
-        <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
-          <span className="col-span-2 flex gap-4 mb-1 justify-between">
-            <span className="font-semibold" key={`${question.id}title`}>
-              <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
-                {question.title}
-              </Link>
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <div className="hover:scale-[1.01] transition-transform group">
+        <div
+          className={clsx("bg-white rounded-md shadow-sm group-hover:shadow-md transition-shadow cursor-pointer z-10",
+                          (manuallyExpanded || alwaysExpand) && "rounded-b-none")}
+          onClick={() => setManuallyExpanded(!manuallyExpanded)}
+        >
+          <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
+            <span className="col-span-2 flex gap-4 mb-1 justify-between">
+              <span className="font-semibold" key={`${question.id}title`}>
+                <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
+                  {question.title}
+                </Link>
+              </span>
+              <div className="pr-1.5">
+                <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
+              </div>
             </span>
-            <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
-          </span>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <span className="text-sm my-auto" key={`${question.id}author`}>
-              <Username user={question.user} />
-            </span>
-            <SharePopover question={question} />
-            {
-              question.resolvedAt ? (
-                <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>
-                  <FormattedDate prefix={"Resolved "} date={question.resolvedAt} />
-                </span>
-              ) : (
-                <span className={clsx(
-                  "text-sm text-gray-400 my-auto",
-                  question.resolveBy < new Date() && "text-indigo-300"
-                )} key={`${question.id}resolve`}>
-                  {question.resolveBy < new Date() ?
-                    <FormattedDate prefix={<><span>Ready to resolve</span><br/>{"("}</>} date={question.resolveBy} postfix=")" />
-                    :
-                    <FormattedDate prefix={"Resolves "} date={question.resolveBy} />
-                  }
-                </span>
-              )
-            }
-            <ResolveButton question={question} />
-            <ActivityNumbers
-              question={question}
-              alwaysExpand={alwaysExpand}
-              manuallyExpanded={manuallyExpanded}
-              setManuallyExpanded={setManuallyExpanded}
-            />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <span className="text-sm my-auto" key={`${question.id}author`}>
+                <Username user={question.user} />
+              </span>
+              <SharePopover question={question} />
+              {
+                question.resolvedAt ? (
+                  <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>
+                    <FormattedDate prefix={"Resolved "} date={question.resolvedAt} />
+                  </span>
+                ) : (
+                  <span className={clsx(
+                    "text-sm text-gray-400 my-auto",
+                    question.resolveBy < new Date() && "text-indigo-300"
+                  )} key={`${question.id}resolve`}>
+                    {question.resolveBy < new Date() ?
+                      <FormattedDate prefix={<><span>Ready to resolve</span><br/>{"("}</>} date={question.resolveBy} postfix=")" />
+                      :
+                      <FormattedDate prefix={"Resolves "} date={question.resolveBy} />
+                    }
+                  </span>
+                )
+              }
+              <ResolveButton question={question} />
+              <ActivityNumbers
+                question={question}
+                alwaysExpand={alwaysExpand}
+                manuallyExpanded={manuallyExpanded}
+                setManuallyExpanded={setManuallyExpanded}
+              />
+            </div>
           </div>
         </div>
+        <Transition
+          show={alwaysExpand || manuallyExpanded}
+          enter="transition ease-out duration-100"
+          enterFrom="transform opacity-0 scale-98 translate-y-[-0.5rem]"
+          enterTo="transform opacity-100 scale-100 translate-y-0"
+          leave="transition ease-in duration-75"
+          leaveFrom="transform opacity-100 scale-100 translate-y-0 "
+          leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
+        >
+          <QuestionDetails question={question} />
+        </Transition>
       </div>
-      <Transition
-        show={alwaysExpand || manuallyExpanded}
-        enter="transition ease-out duration-100"
-        enterFrom="transform opacity-0 scale-98 translate-y-[-0.5rem]"
-        enterTo="transform opacity-100 scale-100 translate-y-0"
-        leave="transition ease-in duration-75"
-        leaveFrom="transform opacity-100 scale-100 translate-y-0 "
-        leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
-      >
-        <QuestionDetails question={question} />
-      </Transition>
-    </div>
+    </ErrorBoundary>
   )
 }
 

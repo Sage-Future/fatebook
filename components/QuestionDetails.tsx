@@ -1,4 +1,5 @@
 import { Fragment, ReactNode, useState } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import ReactTextareaAutosize from 'react-textarea-autosize'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
@@ -14,11 +15,13 @@ export function QuestionDetails({
 
   return (
     <div className="bg-slate-100 px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
-      <CommentBox question={question} />
-      {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">
-        {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
-      </div>}
-      <EventsLog question={question} />
+      <ErrorBoundary fallback={<div>Something went wrong</div>}>
+        <CommentBox question={question} />
+        {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">
+          {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
+        </div>}
+        <EventsLog question={question} />
+      </ErrorBoundary>
     </div>
   )
 }
@@ -70,14 +73,16 @@ function EventsLog({
     ],
   ].flat()
   return (
-    <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center">
-      {events.length ?
-        events.sort(
-          (a, b) => b.timestamp.getTime() - a.timestamp.getTime() // reverse chronological
-        ).map((event) => event?.el)
-        :
-        <span className="text-sm text-slate-400 italic">No forecasts yet</span>}
-    </div>
+    <ErrorBoundary fallback={<div>Something went wrong</div>}>
+      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center">
+        {events.length ?
+          events.sort(
+            (a, b) => b.timestamp.getTime() - a.timestamp.getTime() // reverse chronological
+          ).map((event) => event?.el)
+          :
+          <span className="text-sm text-slate-400 italic">No forecasts yet</span>}
+      </div>
+    </ErrorBoundary>
   )
 }
 
