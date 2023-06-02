@@ -33,6 +33,10 @@ export function Predict() {
         title: data.question,
         resolveBy: data.resolveBy,
         prediction: data.predictionPercentage ? data.predictionPercentage / 100 : undefined,
+      }, {
+        onError(error, variables, context) {
+          console.error("error creating question: ", {error, variables, context})
+        },
       })
 
       reset()
@@ -111,7 +115,7 @@ export function Predict() {
                 )}
                 type="date"
                 defaultValue={
-                  new Date(tomorrowDate()).toISOString().split("T")[0]
+                  getDateYYYYMMDD(new Date(tomorrowDate()))
                 }
                 onKeyDown={onEnterSubmit}
                 {...register("resolveBy", { required: true, valueAsDate: true })}

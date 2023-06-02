@@ -12,9 +12,11 @@ export function UpdateableLatestForecast({
   autoFocus?: boolean
 }) {
   const userId = useUserId()
-  const latestForecast = question.forecasts.filter(f => f.userId === userId).sort(
+
+  const forecasts = question.forecasts.filter(f => f.userId === userId).sort(
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  )?.[0]
+  )
+  const latestForecast = (forecasts && forecasts.length > 0) ? forecasts?.[0] : null
 
   const defaultVal = latestForecast?.forecast ? (latestForecast.forecast.times(100).toString()).toString() : ""
   const [localForecast, setLocalForecast] = useState<string>(defaultVal)
