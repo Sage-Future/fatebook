@@ -29,7 +29,7 @@ export function Navbar() {
             </ul>
           </details>
           :
-          <button className="btn normal-case" onClick={() => void signIn()}>Sign in or create an account</button>
+          <button className="btn normal-case" onClick={() => void signIn("google")}>Sign in or create an account</button>
         }
       </div>
     </div>

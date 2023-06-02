@@ -12,6 +12,7 @@ import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
+import { useUserId } from '../lib/web/utils'
 
 
 export function Question({
@@ -24,6 +25,8 @@ export function Question({
   startExpanded?: boolean
 }) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
+  const userId = useUserId()
+  const isAuthor = userId === question.userId
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -40,9 +43,7 @@ export function Question({
                   {question.title}
                 </Link>
               </span>
-              <div className="pr-1.5">
-                <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
-              </div>
+              <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
             </span>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <span className="text-sm my-auto" key={`${question.id}author`}>
@@ -67,7 +68,7 @@ export function Question({
                   </span>
                 )
               }
-              <ResolveButton question={question} />
+              {isAuthor ? <ResolveButton question={question} /> : <span/>}
               <ActivityNumbers
                 question={question}
                 alwaysExpand={alwaysExpand}

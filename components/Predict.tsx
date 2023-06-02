@@ -1,13 +1,15 @@
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
-import { useSession } from "next-auth/react"
+import { signIn } from "next-auth/react"
 import { KeyboardEvent, useEffect } from "react"
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
+import SuperJSON from 'trpc-transformer'
 import { z } from "zod"
 import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
+import { useUserId } from '../lib/web/utils'
 
 const predictFormSchema = z.object({
   question: z.string().min(1),
@@ -16,7 +18,7 @@ const predictFormSchema = z.object({
 })
 export function Predict() {
   const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, setValue } = useForm<z.infer<typeof predictFormSchema>>({mode: "all"})
-  const session = useSession()
+  const userId = useUserId()
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
     async onSuccess() {
@@ -26,7 +28,7 @@ export function Predict() {
 
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
-    if (session.data?.user.id) {
+    if (userId) {
       createQuestion.mutate({
         title: data.question,
         resolveBy: data.resolveBy,
@@ -35,9 +37,30 @@ export function Predict() {
 
       reset()
     } else {
-      window.alert("You must be signed in to make a prediction.")
+      localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
+      void signIn("google")
     }
   }
+
+  useEffect(() => {
+    const cachedQuestionContent = localStorage.getItem("cached_question_content")
+    if (cachedQuestionContent) {
+      // User was not logged in when they tried to create a question, repopulate the form
+      const cachedQuestion = SuperJSON.parse(cachedQuestionContent) as any
+      console.log({cachedQuestion})
+      cachedQuestion.question && setValue("question", cachedQuestion.question)
+      cachedQuestion.predictionPercentage && setValue("predictionPercentage", cachedQuestion.predictionPercentage)
+      if (cachedQuestion.resolveBy) {
+        try {
+          // @ts-ignore - type definition is wrong (Date not string)
+          setValue("resolveBy", getDateYYYYMMDD(cachedQuestion.resolveBy))
+        } catch {
+          // just skip it if we can't parse the date
+        }
+      }
+      localStorage.removeItem("cached_question_content")
+    }
+  }, [setValue])
 
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -111,9 +134,9 @@ export function Predict() {
 
           <div className="py-4">
             <button onClick={(e) => {e.preventDefault(); void handleSubmit(onSubmit)()}} className="button block primary"
-              disabled={createQuestion.isLoading || Object.values(errors).some(err => !!err)}
+              disabled={!!userId && (createQuestion.isLoading || Object.values(errors).some(err => !!err))}
             >
-            Predict
+              {userId ? "Predict" : "Sign in to predict"}
             </button>
           </div>
         </form>

@@ -9,6 +9,7 @@ import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import {ErrorBoundary} from 'react-error-boundary'
+import { useUserId } from "../lib/web/utils"
 
 
 export function SharePopover({
@@ -16,12 +17,13 @@ export function SharePopover({
 } : {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }) {
+  const isAuthor = useUserId() === question.userId
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
   return (
     <div className="">
       <Popover as="div" className="inline-block text-left relative w-full">
         <div className='w-full text-right md:text-center'>
-          <Popover.Button className="button text-sm">
+          <Popover.Button className="button text-sm" disabled={!isAuthor}>
             {question.sharedPublicly ? (
               <><UserGroupIcon height={15} /> <span>Public</span></>
             ) :
