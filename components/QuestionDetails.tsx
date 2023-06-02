@@ -6,6 +6,8 @@ import { api } from '../lib/web/trpc'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
+import { useUserId } from '../lib/web/utils'
+import { signIn } from 'next-auth/react'
 
 export function QuestionDetails({
   question
@@ -91,6 +93,7 @@ function CommentBox({
 }: {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments;
 }){
+  const userId = useUserId()
   const utils = api.useContext()
   const addComment = api.question.addComment.useMutation({
     async onSuccess() {
@@ -102,10 +105,15 @@ function CommentBox({
   const [localComment, setLocalComment] = useState<string>("")
 
   return <div className='pb-4'>
+    {!userId && <div className="flex w-full p-4">
+      <button className="button primary mx-auto" onClick={() => void signIn("google")}>
+        Sign in to add your own prediction
+      </button>
+    </div>}
     <ReactTextareaAutosize
       className="shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100"
       placeholder={`Add a comment...`}
-      disabled={addComment.isLoading}
+      disabled={addComment.isLoading || !userId}
       value={localComment}
       onChange={(e) => {
         setLocalComment(e.target.value)

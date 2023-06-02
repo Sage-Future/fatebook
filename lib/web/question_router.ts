@@ -202,7 +202,7 @@ export const questionRouter = router({
         data: {
           user: {
             connect: {
-              id: question.userId
+              id: ctx.userId
             }
           },
           question: {

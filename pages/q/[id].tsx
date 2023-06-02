@@ -22,7 +22,7 @@ export default function QuestionPage() {
     questionId: (typeof id === "number" && !isNaN(id)) ? id : undefined
   })
 
-  const sendEmail = api.sendEmail.useMutation()
+  // const sendEmail = api.sendEmail.useMutation()
 
   const question = qQuery.data
   return (
@@ -38,7 +38,7 @@ export default function QuestionPage() {
             <div className="grid grid-cols-1" key={question.id}>
               <QuestionComp question={question} alwaysExpand={true} />
             </div>
-            <button className="button" onClick={() => sendEmail.mutate({questionId: question.id })}>TEST: Send resolution reminder email to author</button>
+            {/* <button className="button" onClick={() => sendEmail.mutate({questionId: question.id })}>TEST: Send resolution reminder email to author</button> */}
           </>
         }
       </div>

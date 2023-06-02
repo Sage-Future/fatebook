@@ -71,7 +71,7 @@ export function UpdateableLatestForecast({
           onBlur={(e) => {
             (defaultVal !== e.currentTarget.value) && updateForecast(e.currentTarget.value)
           }}
-          disabled={question.resolution !== null || addForecast.isLoading} />
+          disabled={question.resolution !== null || addForecast.isLoading || !userId} />
         <span className={"text-left"}>{"%"}</span>
       </>}
     </span>
