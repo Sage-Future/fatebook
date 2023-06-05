@@ -15,7 +15,7 @@ export function CalibrationChart() {
 
   return (
     <div>
-      <Line data={params.data} width={500} height={500} options={{responsive: true}} />
+      <Line data={params.data} width={500} height={500} options={{responsive: true, animation: false}} />
     </div>
   )
 }
