@@ -5,8 +5,8 @@ import { useRouter } from "next/router"
 import { AddToSlack } from "../../components/AddToSlack"
 import Faqs from "../../components/Faqs"
 import { SlackCompose } from "../../components/SlackCompose"
-
-
+import { Layout } from "../../components/Layout"
+import React from "react"
 
 export default function ForSlackPage() {
   const router = useRouter()
@@ -138,4 +138,10 @@ export default function ForSlackPage() {
       </div>
     </div >
   )
+}
+
+ForSlackPage.getLayout = function getLayout(page: React.ReactElement) {
+  return <Layout showForSlackButton={false}>
+    {page}
+  </Layout>
 }

@@ -1,7 +1,12 @@
 import { signIn, signOut, useSession } from "next-auth/react"
 import Image from "next/image"
+import Link from "next/link"
 
-export function Navbar() {
+export function Navbar({
+  showForSlackButton = true,
+}: {
+  showForSlackButton?: boolean
+}) {
   const { data: session } = useSession()
 
   const user = {
@@ -11,10 +16,13 @@ export function Navbar() {
   }
 
   return (
-    <div className="navbar bg-base-100 max-w-5xl mx-auto">
+    <div className="navbar bg-base-100 max-w-5xl mx-auto gap-4">
       <div className="flex-1">
-        <a className="btn btn-ghost normal-case text-xl">Fatebook</a>
+        <Link href="/" className="btn btn-ghost normal-case text-xl">Fatebook</Link>
       </div>
+      {showForSlackButton && <Link href="/for-slack">
+        <button className="btn ghost normal-case">Try Fatebook for Slack</button>
+      </Link>}
       <div className="flex-none">
         {user.email ?
           <details className="dropdown dropdown-end">

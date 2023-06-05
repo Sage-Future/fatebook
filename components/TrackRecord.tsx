@@ -11,7 +11,6 @@ export function TrackRecord() {
 
   if (!userId) return <></>
 
-  console.log({scoreDetails})
   return (
     <div className="max-w-xs prose flex flex-col">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
