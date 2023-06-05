@@ -1,5 +1,5 @@
 import { ErrorBoundary } from 'react-error-boundary'
-import { formatDecimalNicely, populateDetails } from '../lib/_utils_common'
+import { populateDetails, showSignificantFigures } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
@@ -11,6 +11,7 @@ export function TrackRecord() {
 
   if (!userId) return <></>
 
+  console.log({scoreDetails})
   return (
     <div className="max-w-xs prose flex flex-col">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -25,7 +26,7 @@ export function TrackRecord() {
               <div className="stat">
                 <div className="stat-title">Brier score</div>
                 <div className="stat-value">{
-                  details?.brierScore ? formatDecimalNicely(details.brierScore, 2) : "..."
+                  details?.brierScore ? showSignificantFigures(details.brierScore, 2) : "..."
                 }</div>
                 <div className="stat-desc">{title}</div>
               </div>
@@ -33,7 +34,7 @@ export function TrackRecord() {
               {<div className="stat">
                 <div className="stat-title">Relative Brier</div>
                 <div className="stat-value">{
-                  details?.rBrierScore ? formatDecimalNicely(details.rBrierScore, 2) : "..."
+                  details?.rBrierScore ? showSignificantFigures(details.rBrierScore, 2) : "..."
                 }</div>
                 <div className="stat-desc">{title}</div>
               </div>}

@@ -43,7 +43,11 @@ export function Questions() {
         {questions.data.sort(
           (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
         ).map((question, index) => (
-          <Question question={question} key={question.id} startExpanded={index === 0} />
+          <Question question={question}
+            key={question.id}
+            startExpanded={index === 0}
+            zIndex={questions.data?.length ? (questions.data?.length - index) : undefined}
+          />
         ))}
       </div>
     </div>

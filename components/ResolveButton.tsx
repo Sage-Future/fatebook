@@ -5,12 +5,14 @@ import clsx from 'clsx'
 import { Fragment } from 'react'
 import { getResolutionEmoji, toSentenceCase } from '../lib/_utils_common'
 import { api } from '../lib/web/trpc'
+import { useUserId } from '../lib/web/utils'
 
 export function ResolveButton({
   question
 } : {
   question: Question
 }) {
+  const userId = useUserId()
   const utils = api.useContext()
   const resolveQuestion = api.question.resolveQuestion.useMutation({
     async onSettled() {
@@ -28,6 +30,10 @@ export function ResolveButton({
   })
   const resolution = question.resolution
 
+  if (question.userId !== userId && !resolution) {
+    return <span></span>
+  }
+
   return (
     <div className="text-right">
       <Menu as="div" className="inline-block text-left relative w-full">
@@ -37,7 +43,7 @@ export function ResolveButton({
               "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75",
               resolution === "YES" ? "bg-green-500 text-white" : resolution === "NO" ? "bg-red-500 text-white" : resolution === "AMBIGUOUS" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
             )}
-            disabled={resolveQuestion.isLoading || undoResolution.isLoading}
+            disabled={resolveQuestion.isLoading || undoResolution.isLoading || question.userId !== userId}
             onClick={(e) => {e.stopPropagation()}}
           >
             {resolution ? resolution : "Resolve"}

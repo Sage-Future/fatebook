@@ -12,34 +12,38 @@ import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
-import { useUserId } from '../lib/web/utils'
 
 
 export function Question({
   question,
   alwaysExpand,
   startExpanded,
+  zIndex,
 } : {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
   alwaysExpand?: boolean
   startExpanded?: boolean
+  zIndex?: number
 }) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
-  const userId = useUserId()
-  const isAuthor = userId === question.userId
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="hover:scale-[1.01] transition-transform group">
+      <div className="hover:scale-[1.01] transition-transform group" style={zIndex ? {zIndex} : undefined}>
         <div
-          className={clsx("bg-white rounded-md shadow-sm group-hover:shadow-md transition-shadow cursor-pointer z-10",
-                          (manuallyExpanded || alwaysExpand) && "rounded-b-none")}
+          className={clsx("rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10 outline-1 outline",
+                          (manuallyExpanded || alwaysExpand) && "rounded-b-none",
+                          question.resolution ?
+                            "bg-neutral-50 outline-[#eceff5] bg-gradient-to-tl via-neutral-50 via-[30%] group-hover:via-[40%]"
+                            :
+                            "bg-white outline-neutral-200",
+                          question.resolution === 'YES' ? "from-green-100" : question.resolution === 'NO' ? "from-red-100" : question.resolution === 'AMBIGUOUS' ? "from-blue-100" : "from-white",)}
           onClick={() => setManuallyExpanded(!manuallyExpanded)}
         >
           <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
             <span className="col-span-2 flex gap-4 mb-1 justify-between">
-              <span className="font-semibold" key={`${question.id}title`}>
-                <Link href={getQuestionUrl(question)} key={question.id} className="no-underline hover:underline">
+              <span className={"font-semibold"} key={`${question.id}title`}>
+                <Link href={getQuestionUrl(question)} key={question.id} className={"no-underline hover:underline"}>
                   {question.title}
                 </Link>
               </span>
@@ -68,7 +72,7 @@ export function Question({
                   </span>
                 )
               }
-              {isAuthor ? <ResolveButton question={question} /> : <span/>}
+              <ResolveButton question={question} />
               <ActivityNumbers
                 question={question}
                 alwaysExpand={alwaysExpand}

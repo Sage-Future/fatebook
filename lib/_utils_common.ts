@@ -80,6 +80,13 @@ export function formatDecimalNicely(num: number, decimalPlaces: number): string 
   })
 }
 
+export function showSignificantFigures(num: number, significantFigures: number): string {
+  return num.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumSignificantDigits: significantFigures,
+  })
+}
+
 export function getDateYYYYMMDD(date: Date) {
   return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
 }
