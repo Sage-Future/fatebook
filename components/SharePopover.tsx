@@ -1,15 +1,14 @@
 import { Popover, Transition } from "@headlessui/react"
 import { UserGroupIcon, UserIcon, UsersIcon } from "@heroicons/react/20/solid"
-import { useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import React, { Fragment } from 'react'
+import { ErrorBoundary } from 'react-error-boundary'
 import { api } from "../lib/web/trpc"
+import { useUserId } from "../lib/web/utils"
 import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
-import {ErrorBoundary} from 'react-error-boundary'
-import { useUserId } from "../lib/web/utils"
 
 
 export function SharePopover({
@@ -17,13 +16,12 @@ export function SharePopover({
 } : {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }) {
-  const isAuthor = useUserId() === question.userId
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
   return (
     <div className="">
       <Popover as="div" className="inline-block text-left relative w-full">
         <div className='w-full text-right md:text-center'>
-          <Popover.Button className="button text-sm" disabled={!isAuthor}>
+          <Popover.Button className="button text-sm">
             {question.sharedPublicly ? (
               <><UserGroupIcon height={15} /> <span>Public</span></>
             ) :
@@ -74,7 +72,7 @@ const SharePanel = React.forwardRef<
           <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -ml-2 inline" alt="" />
           <span className="text-sm">
             {permalink.data ?
-              <Link href={permalink.data}>Shared in Slack</Link>
+              <Link href={permalink.data} target="_blank">Shared in Slack</Link>
               :
               "Shared in Slack"
             }
@@ -90,8 +88,7 @@ function SharePublicly({
 }: {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }) {
-  const session = useSession()
-  const userId = session.data?.user.id
+  const userId = useUserId()
   const utils = api.useContext()
   const setSharedPublicly = api.question.setSharedPublicly.useMutation({
     async onSuccess() {

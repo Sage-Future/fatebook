@@ -333,10 +333,10 @@ export async function callSlackApi(teamId: string, message: any, url: string, me
     },
     ...(message && { body: JSON.stringify(message)}),
   })
-  let data = await response.json() as {ok: boolean, error?: string, ts?: string, channel? :string}
+  let data = await response.json() as {ok: boolean, error?: string, ts?: string, channel? :string, response_metadata?: any, permalink?: string}
   if (data.ok === false) {
     console.error('Error calling Slack API:', {response: JSON.stringify(data), message, url}, JSON.stringify(message, null, 2))
-    if (throwOnError) throw new Error('Error calling Slack API')
+    if (throwOnError) throw new Error(`Error calling Slack API ${data.error} ${JSON.stringify(data.response_metadata)}`)
   }
   return data
 }

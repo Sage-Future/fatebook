@@ -1,11 +1,12 @@
 import { Prisma, Resolution } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import { getBucketedForecasts } from "../../pages/api/calibration_graph"
 import { QuestionWithForecasts } from "../../prisma/additional"
+import { forecastsAreHidden } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { publicProcedure, router } from "./trpc_base"
-import { forecastsAreHidden } from "../_utils_common"
 
 const questionIncludes = {
   forecasts: {
@@ -305,6 +306,14 @@ export const questionRouter = router({
       })
 
       return questionScores
+    }),
+
+  getBucketedForecasts: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+      return await getBucketedForecasts(ctx.userId)
     }),
 })
 

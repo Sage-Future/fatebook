@@ -1,8 +1,8 @@
-import Image from "next/image"
+import { ErrorBoundary } from 'react-error-boundary'
 import { formatDecimalNicely, populateDetails } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
-import {ErrorBoundary} from 'react-error-boundary'
+import { CalibrationChart } from "./CalibrationChart"
 
 export function TrackRecord() {
   const userId = useUserId()
@@ -12,11 +12,11 @@ export function TrackRecord() {
   if (!userId) return <></>
 
   return (
-    <div className="max-w-xs prose">
+    <div className="max-w-xs prose flex flex-col">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <h2 className="select-none">Your track record</h2>
-        <Image src={`/api/calibration_graph?user=${userId}`} width={400} height={400} alt="Your calibration chart" />
-        <div className="flex flex-col gap-4">
+        <CalibrationChart />
+        <div className="flex flex-col gap-4 pt-6">
           {[
             {details: scoreDetails?.recentDetails, title: "Last 3 months"},
             {details: scoreDetails?.overallDetails, title: "All time"},
