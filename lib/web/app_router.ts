@@ -11,7 +11,7 @@ export const appRouter = router({
   sendEmail: publicProcedure
     .input(
       z.object({
-        questionId: z.number(),
+        questionId: z.string(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -43,4 +43,4 @@ export const appRouter = router({
     }),
 })
 
-export type AppRouter = typeof appRouter;
+export type AppRouter = typeof appRouter

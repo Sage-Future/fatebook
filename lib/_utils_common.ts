@@ -7,8 +7,8 @@ export function forecastsAreHidden(question: Question) {
   return Boolean(question.hideForecastsUntil && question.hideForecastsUntil.getTime() > Date.now())
 }
 
-export function getMostRecentForecastPerUser(forecasts: Forecast[], date: Date): [number, Forecast][] {
-  const forecastsPerUser = new Map<number, Forecast>()
+export function getMostRecentForecastPerUser(forecasts: Forecast[], date: Date): [string, Forecast][] {
+  const forecastsPerUser = new Map<string, Forecast>()
   for (const forecast of forecasts) {
     const authorId = forecast.userId
     if (forecastsPerUser.has(authorId) && forecast.createdAt < date) {

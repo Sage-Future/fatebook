@@ -30,6 +30,7 @@ export async function createForecast(res : VercelResponse, commandArray : string
 }
 
 export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
+  console.log("creating")
   const createdQuestion = await prisma.question.create({
     data: {
       title     : question,
@@ -63,6 +64,8 @@ export async function createForecastingQuestion(teamId: string, { question, date
       }
     }
   })
+
+  console.log("created")
 
   const questionBlocks = await buildQuestionBlocks(teamId, createdQuestion)
 

@@ -32,7 +32,7 @@ export const questionRouter = router({
   getQuestion: publicProcedure
     .input(
       z.object({
-        questionId: z.number().optional(),
+        questionId: z.string().optional(),
       })
     )
     .query(async ({input, ctx}) => {
@@ -121,7 +121,7 @@ export const questionRouter = router({
   resolveQuestion: publicProcedure
     .input(
       z.object({
-        questionId: z.number(),
+        questionId: z.string(),
         resolution: z.string(),
       })
     )
@@ -139,7 +139,7 @@ export const questionRouter = router({
   undoResolution: publicProcedure
     .input(
       z.object({
-        questionId: z.number(),
+        questionId: z.string(),
       })
     )
     .mutation(async ({input, ctx}) => {
@@ -156,7 +156,7 @@ export const questionRouter = router({
   setSharedPublicly: publicProcedure
     .input(
       z.object({
-        questionId: z.number(),
+        questionId: z.string(),
         sharedPublicly: z.boolean(),
       })
     )
@@ -176,7 +176,7 @@ export const questionRouter = router({
   addForecast: publicProcedure
     .input(
       z.object({
-        questionId: z.number(),
+        questionId: z.string(),
         forecast: z.number().max(1).min(0),
       })
     )
@@ -253,7 +253,7 @@ export const questionRouter = router({
   addComment: publicProcedure
     .input(
       z.object({
-        questionId: z.number(),
+        questionId: z.string(),
         comment: z.string(),
       })
     )
@@ -317,7 +317,7 @@ export const questionRouter = router({
     }),
 })
 
-async function getQuestionAssertAuthor(ctx: {userId: number | undefined}, questionId: number, questionInclude?: Prisma.QuestionInclude) {
+async function getQuestionAssertAuthor(ctx: {userId: string | undefined}, questionId: string, questionInclude?: Prisma.QuestionInclude) {
   const question = await prisma.question.findUnique({
     where: {
       id: questionId,
@@ -335,7 +335,7 @@ async function getQuestionAssertAuthor(ctx: {userId: number | undefined}, questi
   return question
 }
 
-function assertHasAccess(ctx: {userId: number | undefined}, question: QuestionWithForecasts | null) {
+function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWithForecasts | null) {
   if (question === null) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
@@ -350,7 +350,7 @@ function assertHasAccess(ctx: {userId: number | undefined}, question: QuestionWi
   }
 }
 
-function scrubHiddenForecastsFromQuestion<QuestionX extends QuestionWithForecasts>(question: QuestionX, userId: number | undefined) {
+function scrubHiddenForecastsFromQuestion<QuestionX extends QuestionWithForecasts>(question: QuestionX, userId: string | undefined) {
   if (!forecastsAreHidden(question)) {
     return question
   }

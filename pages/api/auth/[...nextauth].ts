@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
     session: (params: { session: Session; token: JWT }) => {
       const { session, token } = params
       if (token.id && session.user) {
-        session.user.id = token.id as number
+        session.user.id = token.id as string
       }
       return Promise.resolve(session)
     },

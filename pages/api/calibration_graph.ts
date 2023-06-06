@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     res.send("Missing user in query")
   }
 
-  const userId = parseInt(req.query.user as string)
+  const userId = req.query.user as string
 
   const results = await getBucketedForecasts(userId)
   if (!results) {
@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   res.send(await lineChart.toBuffer())
 }
 
-export async function getBucketedForecasts(userId: number) {
+export async function getBucketedForecasts(userId: string) {
   const questions = await prisma.question.findMany({
     where: {
       resolution: {

@@ -139,7 +139,7 @@ function makeForecastListing(teamId: string, hideForecasts: boolean, question: Q
   ]
 }
 
-const viewAllForecastsAccessory = (questionId: number, hideForecasts: boolean) => ({
+const viewAllForecastsAccessory = (questionId: string, hideForecasts: boolean) => ({
   'accessory': {
     'type': 'button',
     'text': textBlock(hideForecasts ? 'View my forecasts' : 'View all'),

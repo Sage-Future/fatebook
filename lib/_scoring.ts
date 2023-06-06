@@ -2,11 +2,11 @@ import { Forecast, Question, Resolution } from '@prisma/client'
 import { floatEquality } from "./_utils_common"
 
 type ScoreTimeSeries = {
-    [id: number]: number[]
+    [id: string]: number[]
 }
 
 type ForecastArray = {
-    [id: number]: number | undefined
+    [id: string]: number | undefined
 }
 
 export type ScoreTuple = {
@@ -16,17 +16,17 @@ export type ScoreTuple = {
 }
 
 export type ScoreCollection = {
-  [key: number]: ScoreTuple
+  [id: string]: ScoreTuple
 }
 
 export type DaysForecasts = {
-  id : number
+  id : string
   forecasts : Forecast[]
   mostRecentForecast : number | undefined
 }
 
 export type DayAvgForecast = {
-  id : number
+  id : string
   avgForecast : number | undefined
 }
 
@@ -49,7 +49,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   let relativeScoreTimeSeries : ScoreTimeSeries = {}
   let absoluteScoreTimeSeries : ScoreTimeSeries = {}
 
-  const sortedForecastsById : [number, Forecast[]][] = uniqueIds.map(id => {
+  const sortedForecastsById : [string, Forecast[]][] = uniqueIds.map(id => {
     return [id, forecasts.filter(f => f.userId == id).sort((b, a) => b.createdAt.getTime() - a.createdAt.getTime())]
   })
   for (let j = question.createdAt.getTime(); j < endDay; j = j + day) {
@@ -73,7 +73,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
     const weightedForecastsOfCurrentIntervalById : DayAvgForecast[] = getWeightedAverageForecastOfInterval(forecastsOfCurrentIntervalbyId,
                                                                                                            startOfInterval,
                                                                                                            lengthOfInterval)
-    let absoluteBrierScores : [number, number | undefined][] = weightedForecastsOfCurrentIntervalById.map(({id, avgForecast}) => {
+    let absoluteBrierScores : [string, number | undefined][] = weightedForecastsOfCurrentIntervalById.map(({id, avgForecast}) => {
       if (avgForecast === undefined) {
         return [id, undefined]
       }else{
@@ -87,7 +87,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 
 
     // subtract the median brier score from the brier score from each user's forecast
-    let relativeBrierScores : [number, number | undefined][] = weightedForecastsOfCurrentIntervalById.map(({id, avgForecast}) => {
+    let relativeBrierScores : [string, number | undefined][] = weightedForecastsOfCurrentIntervalById.map(({id, avgForecast}) => {
       if (avgForecast === undefined) {
         return [id, undefined]
       }else{
@@ -101,8 +101,8 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 
     // add the score to the user score array
     for (let i = 0; i < relativeBrierScores.length; i++) {
-      const [id,  relativeScore]  = <[number, number | undefined]> relativeBrierScores[i]
-      const [, absoluteScore]  = <[number, number | undefined]> absoluteBrierScores[i]
+      const [id,  relativeScore]  = <[string, number | undefined]> relativeBrierScores[i]
+      const [, absoluteScore]  = <[string, number | undefined]> absoluteBrierScores[i]
       if (relativeScoreTimeSeries[id] === undefined && relativeScore !== undefined){
         relativeScoreTimeSeries[id] = [relativeScore!]
         absoluteScoreTimeSeries[id] = [absoluteScore!]
@@ -134,9 +134,9 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   }
 
   //sort the user id's of avgScoresPerUser by their relative brier score
-  let sortedIds : number[] = []
+  let sortedIds : string[] = []
   if (uniqueIds.length != 1) {
-    sortedIds = Object.keys(avgScoresPerUser).map(id => parseInt(id)).sort((a, b) => avgScoresPerUser[a].relativeBrierScore! - avgScoresPerUser[b].relativeBrierScore!)
+    sortedIds = Object.keys(avgScoresPerUser).map(id => id).sort((a, b) => avgScoresPerUser[a].relativeBrierScore! - avgScoresPerUser[b].relativeBrierScore!)
   } else {
     sortedIds = uniqueIds
   }
@@ -180,8 +180,8 @@ function getWeightedAverageForecastOfInterval(forecastsOfCurrentIntervalbyId : D
   })
 }
 
-function getMostRecentForecasts(sortedForecastsById : [number, Forecast[]][], startOfInterval : number) : ForecastArray {
-  let mostRecentForecasts : ForecastArray = []
+function getMostRecentForecasts(sortedForecastsById : [string, Forecast[]][], startOfInterval : number) : ForecastArray {
+  let mostRecentForecasts : ForecastArray = {}
   for(const idEntry of sortedForecastsById){
     const id = idEntry[0]
     const sortedForecasts : Forecast[] = idEntry[1]

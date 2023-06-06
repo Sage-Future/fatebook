@@ -4,19 +4,19 @@ import { relativeBrierScoring } from '../../lib/_scoring'
 import { floatEquality } from "../../lib/_utils_common"
 
 let forecastid = 0
-const questionid = 0
+const questionid = "0"
 const startDate = new Date(Date.now())
 
 function addDays(date : Date, days : number) {
   return new Date(date.getTime() + (days * 1000 * 60 * 60 * 24))
 }
 
-function createForecast(userid : number, forecastValue : number, dateOffset : number)
+function createForecast(userId : string, forecastValue : number, dateOffset : number)
 {
   const forecast : Forecast = {
     id: forecastid++,
-    userId: userid,
-    profileId: userid+10,
+    userId: userId,
+    profileId: 10,
     forecast: new Prisma.Decimal(forecastValue),
     questionId: questionid,
     createdAt: addDays(startDate, dateOffset),
@@ -27,25 +27,25 @@ function createForecast(userid : number, forecastValue : number, dateOffset : nu
 }
 
 const testMultiForecasts : Forecast[] = [
-  createForecast(1, 0.9,  0),
-  createForecast(1, 0.95, 3),
-  createForecast(2, 0.25, 0),
-  createForecast(2, 0.2,  2),
-  createForecast(3, 0.99, 5)
+  createForecast("1", 0.9,  0),
+  createForecast("1", 0.95, 3),
+  createForecast("2", 0.25, 0),
+  createForecast("2", 0.2,  2),
+  createForecast("3", 0.99, 5)
 ]
 
 const testSingleForecasts : Forecast[] = [
-  createForecast(1, 0.9,  0),
-  createForecast(1, 0.95, 3)
+  createForecast("1", 0.9,  0),
+  createForecast("1", 0.95, 3)
 ]
 
 const testSinglePartForecasts : Forecast[] = [
-  createForecast(1, 0.9,  0.2)
+  createForecast("1", 0.9,  0.2)
 ]
 
 const testMultiPartForecasts : Forecast[] = [
-  createForecast(1, 0.9,  0),
-  createForecast(1, 0.95,  0.21)
+  createForecast("1", 0.9,  0),
+  createForecast("1", 0.95,  0.21)
 ]
 
 const question = getQuestion(7)
@@ -62,7 +62,7 @@ function getQuestion(days : number) : Question {
     resolveBy: startDate,
     resolved: true,
     pingedForResolution: true,
-    userId: 0,
+    userId: "0",
     profileId: 0,
     notes: null,
     hideForecastsUntil: null,

@@ -5,7 +5,7 @@ import { formatDecimalNicely, populateDetails } from "../_utils_common"
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 
-export async function buildHomeTabBlocks(teamId: string, fatebookUserId: number, allUserForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
+export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string, allUserForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
   const {recentDetails, overallDetails} = populateDetails(questionScores)
 
   const formatScore = (score: number | undefined) => {

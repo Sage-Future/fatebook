@@ -40,13 +40,17 @@ async function notifyAuthorsToResolveQuestions() {
   const allQuestionsToBeNotified = await getQuestionsToBeResolved()
 
   for (const question of allQuestionsToBeNotified) {
-    if (question.profile) {
-      await sendSlackReadyToResolveNotification(question)
-    } else if (question.user.accounts.length > 0) {
+    try {
+      if (question.profile) {
+        await sendSlackReadyToResolveNotification(question)
+      } else if (question.user.accounts.length > 0) {
       // only email notify Fatebook web users, and only about questions they haven't shared to Slack
-      await sendEmailReadyToResolveNotification(question)
-    } else {
-      console.error("No profile or accounts found for question", question.id, question.user.name)
+        await sendEmailReadyToResolveNotification(question)
+      } else {
+        console.error("No profile or accounts found for question", question.id, question.user.name)
+      }
+    } catch (err) {
+      console.error(`Error sending message on question ${question.id}: \n${err}\nContinuing...`)
     }
   }
   return allQuestionsToBeNotified
@@ -184,7 +188,7 @@ async function updateQuestionsToUnhideForecasts(){
         }
       })
     } catch(e) {
-      console.error(`Could not update question ${question.id}: ${e}`)
+      console.error(`Could not update question ${question.id}: ${e}\nContinuing...`)
     }
   }
 

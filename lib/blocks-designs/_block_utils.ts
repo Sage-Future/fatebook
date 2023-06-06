@@ -7,20 +7,20 @@ import { checkboxes } from './question_modal'
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
-  questionId: number
+  questionId: string
   answer?: 'yes' | 'no' | 'ambiguous' // can be omitted if answer is in value of dropdown
 }
 
 export interface SubmitTextForecastActionParts {
   action: 'submitTextForecast'
-  questionId: number
+  questionId: string
 }
 
 export interface QuestionModalActionParts {
   action: 'qModal'
   isCreating: boolean
   channel: string
-  questionId?: number // only required for editing
+  questionId?: string // only required for editing
 }
 
 export interface UpdateResolutionDateActionParts {
@@ -33,12 +33,12 @@ export interface UpdateHideForecastsDateActionParts {
 
 export interface OverflowAccessoryPart {
   action: 'submitTextForecast'
-  questionId: number
+  questionId: string
 }
 
 export interface ViewForecastLogBtnActionParts {
   action: 'viewForecastLog'
-  questionId: number
+  questionId: string
 }
 
 export interface SortForecastsActionParts {
@@ -49,29 +49,29 @@ export interface SortForecastsActionParts {
 
 export interface EditQuestionBtnActionParts {
   action: 'editQuestionBtn'
-  questionId: number
+  questionId: string
 }
 
 export interface UndoResolveActionParts {
   action: 'undoResolve'
-  questionId: number
+  questionId: string
 }
 
 export interface QuestionOverflowActionParts {
   action: 'questionOverflow'
-  questionId: number
+  questionId: string
 }
 
 export interface OptionsCheckBoxActionParts {
   action: 'optionsCheckBox'
-  questionId?: number // included when editing question
+  questionId?: string // included when editing question
   questionResolutionDate: Date
   isCreating: boolean
 }
 
 export interface DeleteQuestionActionParts {
   action: 'deleteQuestion'
-  questionId: number
+  questionId: string
 }
 
 export interface HomeAppPageNavigationActionParts {
@@ -103,7 +103,12 @@ export function toActionId(parts: ActionIdParts) {
 
 export function unpackBlockActionId(actionId: string) {
   try {
-    return JSON.parse(actionId) as ActionIdParts
+    let parts = JSON.parse(actionId) as any
+    if (typeof parts.questionId === "number") {
+      parts.questionId = parts.questionId.toString()
+      console.log("converted parts.questionId to string")
+    }
+    return parts as ActionIdParts
   } catch (e) {
     throw new Error("Could not parse actionId: " + actionId)
   }
@@ -218,6 +223,7 @@ export function tipsContextBlock() {
     'You can create private forecasts by DMing @Fatebook - just type /forecast',
     'You can create private forecasts by DMing @Fatebook - just type /forecast', // include twice to show up more often
     'See all existing forecasting questions by searching for `from:@Fatebook` in Slack',
+    'You can use `*bold*`, `_italics_` or `~strikethrough~` in your question\'s notes',
   ]
   return {
     'type': 'context',

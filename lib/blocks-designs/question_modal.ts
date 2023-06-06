@@ -76,7 +76,7 @@ export function buildEditQuestionModalView(question: Partial<Question>, isCreati
             },
             'action_id': toActionId({
               action: 'deleteQuestion',
-              questionId: question.id || 0,
+              questionId: question.id || "",
             })
           },
         ]
@@ -94,7 +94,7 @@ export const checkboxes : CheckboxOption[] = [
   hideCheckbox,
 ]
 
-function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hideUntil : Date, questionId?: number) {
+function optionsCheckboxes(isHidingForecasts: boolean, isCreating: boolean, hideUntil : Date, questionId?: string) {
   console.log({isHidingForecasts, hideUntil})
   const toCheckbox = (cb : CheckboxOption) => ({
     'text': textBlock(cb.label),

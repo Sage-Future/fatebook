@@ -5,7 +5,7 @@ import prisma, { backendAnalyticsEvent, getOrCreateProfile, postMessageToRespons
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 
-export async function getLastForecast(userId: number, questionId: number) {
+export async function getLastForecast(userId: string, questionId: string) {
   const forecasts = await prisma.forecast.findMany({
     where: {
       userId: userId,

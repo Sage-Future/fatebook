@@ -17,9 +17,9 @@ export function getQuestionUrl(question: Partial<Question>, useRelativePath?: bo
 export default function QuestionPage() {
   const router = useRouter()
   // allow an optional ignored slug text after `-` character
-  const id = router.query.id && parseInt((router.query.id as string).split("-")[0])
+  const id = router.query.id && (router.query.id as string).split("-")[0]
   const qQuery = api.question.getQuestion.useQuery({
-    questionId: (typeof id === "number" && !isNaN(id)) ? id : undefined
+    questionId: id
   })
 
   // const sendEmail = api.sendEmail.useMutation()

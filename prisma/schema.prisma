@@ -20,8 +20,8 @@ model Forecast {
   comment    String?
   forecast   Decimal
   profileId  Int?
-  questionId Int
-  userId     Int
+  questionId String
+  userId     String
   profile    Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -31,17 +31,17 @@ model QuestionScore {
   id                  Int      @id @default(autoincrement())
   createdAt           DateTime @default(now())
   relativeScore       Decimal?
-  questionId          Int
+  questionId          String
   userQuestionComboId String   @unique
   absoluteScore       Decimal
   rank                Int
-  userId              Int
+  userId              String
   question            Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Question {
-  id                  Int                      @id @default(autoincrement())
+  id                  String                   @id @default(cuid())
   createdAt           DateTime                 @default(now())
   comment             String?
   profileId           Int?
@@ -53,7 +53,7 @@ model Question {
   resolvedAt          DateTime?
   notes               String?
   hideForecastsUntil  DateTime?
-  userId              Int
+  userId              String
   forecasts           Forecast[]
   pingResolveMessages PingSlackMessage[]
   profile             Profile?                 @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
@@ -68,7 +68,7 @@ model Question {
 
 model ResolutionSlackMessage {
   id         Int          @id @default(autoincrement())
-  questionId Int
+  questionId String
   detailsId  Int          @unique
   profileId  Int?
   message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
@@ -78,7 +78,7 @@ model ResolutionSlackMessage {
 
 model PingSlackMessage {
   id         Int          @id @default(autoincrement())
-  questionId Int
+  questionId String
   detailsId  Int          @unique
   message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
   question   Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
@@ -86,7 +86,7 @@ model PingSlackMessage {
 
 model QuestionSlackMessage {
   id         Int          @id @default(autoincrement())
-  questionId Int
+  questionId String
   detailsId  Int          @unique
   updatedAt  DateTime     @default(now())
   message    SlackMessage @relation(fields: [detailsId], references: [id], onDelete: Cascade)
@@ -104,7 +104,7 @@ model SlackMessage {
 }
 
 model User {
-  id                  Int             @id @default(autoincrement())
+  id                  String          @id @default(cuid())
   name                String?
   createdAt           DateTime        @default(now())
   email               String          @unique
@@ -127,7 +127,7 @@ model Profile {
   createdAt          DateTime                 @default(now())
   slackId            String?
   slackTeamId        String?
-  userId             Int
+  userId             String
   forecasts          Forecast[]
   user               User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions          Question[]
@@ -146,7 +146,7 @@ model Group {
 model Target {
   id           Int        @id @default(autoincrement())
   user         User       @relation("userTarget", onDelete: Cascade, fields: [userId], references: [id])
-  userId       Int        @unique
+  userId       String        @unique
   profile      Profile?   @relation("profileTarget", fields: [profileId], references: [id], onDelete: Cascade)
   profileId    Int?       @unique
   type         TargetType
@@ -184,7 +184,7 @@ enum Resolution {
 // OAuth account, e.g. google - used by next-auth for web
 model Account {
   id                String  @id @default(cuid())
-  userId            Int
+  userId            String
   type              String
   provider          String
   providerAccountId String
@@ -204,8 +204,8 @@ model Comment {
   id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
   comment    String
-  questionId Int
-  userId     Int
+  questionId String
+  userId     String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

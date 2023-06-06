@@ -8,7 +8,7 @@ import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved
 import { averageScores, getResolutionEmoji, round } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, getDateSlackFormat, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils_server'
 
-async function dbResolveQuestion(questionid : number, resolution : Resolution) {
+async function dbResolveQuestion(questionid : string, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
   return await prisma.question.update({
     where: {
@@ -86,7 +86,7 @@ export async function scoreForecasts(scoreArray : ScoreCollection, question : Qu
       },
       create: {
         userQuestionComboId: userQuestionComboId,
-        userId: Number(id),
+        userId: id,
         questionId: question.id,
         relativeScore: relativeScore,
         absoluteScore: absoluteScore,
@@ -216,10 +216,10 @@ async function replaceQuestionResolveMessages(question : Question, newMessageDet
   })
 }
 
-export async function handleQuestionResolution(questionid : number, resolution : Resolution) {
-  console.log(`    handleQuestionResolution: ${questionid} ${resolution}`)
-  const question = await dbResolveQuestion(questionid, resolution)
-  console.log(`    handledUpdateQuestionResolution: ${questionid} ${resolution}`)
+export async function handleQuestionResolution(questionId : string, resolution : Resolution) {
+  console.log(`    handleQuestionResolution: ${questionId} ${resolution}`)
+  const question = await dbResolveQuestion(questionId, resolution)
+  console.log(`    handledUpdateQuestionResolution: ${questionId} ${resolution}`)
 
   // update ping and question message first for responsiveness
   await updateResolvePingQuestionMessages(question, "Question resolved!")
@@ -328,7 +328,7 @@ export async function buttonUndoResolution(actionParts: UndoResolveActionParts, 
   }
 }
 
-export async function slackUserCanUndoResolution(questionId: number, teamId: string, userSlackId: string, channelId: string) {
+export async function slackUserCanUndoResolution(questionId: string, teamId: string, userSlackId: string, channelId: string) {
   const questionPreUpdate = await prisma.question.findUnique({
     where: {
       id: questionId,
@@ -356,7 +356,7 @@ export async function slackUserCanUndoResolution(questionId: number, teamId: str
   return true
 }
 
-export async function undoQuestionResolution(questionId: number) {
+export async function undoQuestionResolution(questionId: string) {
   await prisma.$transaction([
     prisma.question.update({
       where: {

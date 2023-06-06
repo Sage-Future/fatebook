@@ -22,8 +22,12 @@ export default async function eventsApiHandler(req: VercelRequest, res: VercelRe
     case 'app_home_opened':
       // NB: triggers on Home tab, Messages tab, and About tab
       // we refresh the app home on all of these so it's probably ready when Home tab is opened
-      console.log(`app_home_opened, tab ${(reqbody as any).tab}`)
-      await refreshAppHome(event, reqbody.team_id)
+      console.log(`app_home_opened, tab ${event.tab}`)
+      if (event.tab === 'home' || !event.tab) {
+        await refreshAppHome(event, reqbody.team_id)
+      } else {
+        await backendAnalyticsEvent(`${event.tab}_tab_opened`, { team: reqbody.team_id, platform: 'slack', user: event.user })
+      }
       break
 
     case 'app_mention':

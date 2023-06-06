@@ -190,7 +190,7 @@ function padForecast(forecast : string, maxprepad : number = forecastPrepad, max
 }
 
 function getLatestForecastPerQuestion(forecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[]) {
-  const latestForecasts = new Map<number, ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts>()
+  const latestForecasts = new Map<string, ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts>()
   for (const forecast of forecasts) {
     if (!latestForecasts.has(forecast.questionId)) {
       latestForecasts.set(forecast.questionId, forecast)
