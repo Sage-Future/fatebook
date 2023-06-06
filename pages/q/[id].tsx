@@ -11,13 +11,15 @@ function createQuestionSlug(question: Partial<Question>) {
 }
 
 export function getQuestionUrl(question: Partial<Question>, useRelativePath?: boolean) {
-  return `${getClientBaseUrl(useRelativePath)}/q/${question.id}--${createQuestionSlug(question)}`
+  return `${getClientBaseUrl(useRelativePath)}/q/${createQuestionSlug(question)}--${question.id}`
 }
 
 export default function QuestionPage() {
   const router = useRouter()
   // allow an optional ignored slug text after `-` character
-  const id = router.query.id && (router.query.id as string).split("-")[0]
+  const parts = router.query.id && (router.query.id as string).split("--")
+
+  const id = parts && parts[parts.length - 1]
   const qQuery = api.question.getQuestion.useQuery({
     questionId: id
   })
