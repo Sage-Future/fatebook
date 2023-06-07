@@ -107,7 +107,7 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string,
 
 async function buildForecastingCultureChampionBlock(teamId: string, fatebookUserId: string) : Promise<Blocks> {
   const workspace = await prisma.workspace.findUnique({where: {teamId}})
-  const profiles = await prisma.profile.findMany({
+  const allProfiles = await prisma.profile.findMany({
     where: {
       slackTeamId: teamId,
     },
@@ -122,11 +122,17 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
     },
   })
 
-  if (!profiles || profiles.length < 2) {
+  if (!allProfiles) {
     return []
   }
 
-  const profilesSorted = profiles.sort((a, b) => b._count.questions - a._count.questions).slice(0, 5)
+  const profilesSorted = allProfiles
+    .filter(profile => profile._count.forecasts > 0 || profile._count.questions > 0)
+    .sort((a, b) => b._count.questions - a._count.questions).slice(0, 5)
+
+  if (profilesSorted.length < 2) {
+    return []
+  }
 
   return [
     dividerBlock(),
@@ -135,7 +141,6 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
       'type': 'context',
       'elements': [markdownBlock(
         profilesSorted
-          .filter(profile => profile._count.forecasts > 0 || profile._count.questions > 0)
           .map((profile, index) => (
             `${index + 1}. ${profile.slackId === fatebookUserId ? '*You*' : `<@${profile.slackId}>`}: ${
               profile._count.questions > 0 ? `${profile._count.questions} question${plural(profile._count.questions)}, ` : ""}${
