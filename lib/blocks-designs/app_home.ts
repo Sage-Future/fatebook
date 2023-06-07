@@ -1,7 +1,7 @@
 import { QuestionScore } from '@prisma/client'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
 import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, quantifiedIntuitionsUrl, slackAppId } from '../_constants'
-import { formatDecimalNicely, populateDetails } from "../_utils_common"
+import { formatDecimalNicely, plural, populateDetails } from "../_utils_common"
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
 import prisma from '../_utils_server'
@@ -138,8 +138,8 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
           .filter(profile => profile._count.forecasts > 0 || profile._count.questions > 0)
           .map((profile, index) => (
             `${index + 1}. ${profile.slackId === fatebookUserId ? '*You*' : `<@${profile.slackId}>`}: ${
-              profile._count.questions > 0 ? `${profile._count.questions} questions, ` : ""}${
-              profile._count.forecasts > 0 ? `${profile._count.forecasts} forecasts ` : ""} ${
+              profile._count.questions > 0 ? `${profile._count.questions} question${plural(profile._count.questions)}, ` : ""}${
+              profile._count.forecasts > 0 ? `${profile._count.forecasts} forecast${plural(profile._count.forecasts)} ` : ""} ${
               index + 1 === 1 ? "🥇" : ""}${index + 1 === 2 ? "🥈" : ""}${index + 1 === 3 ? "🥉" : ""}`)
           ).join('\n')
       )]

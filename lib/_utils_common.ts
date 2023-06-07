@@ -195,3 +195,7 @@ export function padAndFormatScore(score: number, maxprepad: number = scorePrepad
   const scorePadded = ' '.repeat(prepad) + '`'+ formatScoreNicely(score, maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing) + '`'
   return scorePadded
 }
+
+export function plural(num: number) {
+  return num === 1 ? "" : "s"
+}
