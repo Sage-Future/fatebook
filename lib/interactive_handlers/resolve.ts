@@ -1,12 +1,13 @@
 import { Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionWithQuestionMessagesAndForecastWithUserWithProfiles, QuestionWithScores } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithQuestionMessagesAndForecastWithUserWithProfiles, QuestionWithScores } from '../../prisma/additional'
 import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
 import { averageScores, getResolutionEmoji, round } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, getDateSlackFormat, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils_server'
+import { buildQuestionResolvedBroadcastBlocks } from '../blocks-designs/question_resolved_broadcast'
 
 async function dbResolveQuestion(questionid : string, resolution : Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -242,6 +243,7 @@ export async function handleQuestionResolution(questionId : string, resolution :
   }
   await updateForecastQuestionMessages(question, "Question resolved!")
   await messageUsers(scores, question)
+  await sendResolutionBroadcast(question)
 }
 
 export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, connectingTeamId? : string) {
@@ -420,3 +422,14 @@ export async function undoQuestionResolution(questionId: string) {
   await updateResolutionQuestionMessages(questionUpdated, "Question resolution undone!")
 }
 
+async function sendResolutionBroadcast(question: QuestionWithAuthorAndQuestionMessages) {
+  for (let i = 0; i < question.questionMessages.length; i++) {
+    const message = question.questionMessages[i]
+    await postBlockMessage(
+      message.message.teamId,
+      message.message.channel,
+      await buildQuestionResolvedBroadcastBlocks(question, message.message.teamId),
+      `Resolved ${question.resolution}: ${question.title.substring(0, 300)}`
+    )
+  }
+}
