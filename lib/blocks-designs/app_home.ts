@@ -4,6 +4,7 @@ import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, quantifiedIntuition
 import { formatDecimalNicely, populateDetails } from "../_utils_common"
 import { Blocks, dividerBlock, headerBlock, markdownBlock } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
+import prisma from '../_utils_server'
 
 export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string, allUserForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], questionScores: QuestionScore[], activePage : number = 0, closedPage : number = 0): Promise<Blocks> {
   const {recentDetails, overallDetails} = populateDetails(questionScores)
@@ -55,6 +56,7 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string,
     dividerBlock(),
     headerBlock('Your resolved forecasts'),
     ...(myClosedForecastsBlock),
+    ...(await buildForecastingCultureChampionBlock(teamId, fatebookUserId)),
     dividerBlock(),
     headerBlock('Your all-time overall score'),
     ...(myOverallScoreBlock),
@@ -100,5 +102,44 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string,
       ]
     }
 
+  ]
+}
+
+async function buildForecastingCultureChampionBlock(teamId: string, fatebookUserId: string) : Promise<Blocks> {
+  const workspace = await prisma.workspace.findUnique({where: {teamId}})
+  const profiles = await prisma.profile.findMany({
+    where: {
+      slackTeamId: teamId,
+    },
+    select: {
+      slackId: true,
+      _count: {
+        select: {
+          questions: true,
+          forecasts: true,
+        }
+      }
+    },
+  })
+
+  if (!profiles || profiles.length < 2) {
+    return []
+  }
+
+  const profilesSorted = profiles.sort((a, b) => b._count.questions - a._count.questions).slice(0, 10)
+
+  return [
+    dividerBlock(),
+    headerBlock(`Forecasting culture champions of ${workspace?.teamName || ""}`),
+    {
+      'type': 'section',
+      'text': markdownBlock(
+        profilesSorted.map((profile, index) => (
+          `${index + 1}. ${profile.slackId === fatebookUserId ? '*You*' : `<@${profile.slackId}>`}: ${
+            profile._count.questions} questions, ${profile._count.forecasts} forecasts ${
+            index + 1 === 1 ? "🥇" : ""}${index + 1 === 2 ? "🥈" : ""}${index + 1 === 3 ? "🥉" : ""}`)
+        ).join('\n')
+      )
+    },
   ]
 }
