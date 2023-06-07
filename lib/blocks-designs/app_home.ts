@@ -126,20 +126,23 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
     return []
   }
 
-  const profilesSorted = profiles.sort((a, b) => b._count.questions - a._count.questions).slice(0, 10)
+  const profilesSorted = profiles.sort((a, b) => b._count.questions - a._count.questions).slice(0, 5)
 
   return [
     dividerBlock(),
     headerBlock(`Forecasting culture champions of ${workspace?.teamName || ""}`),
     {
-      'type': 'section',
-      'text': markdownBlock(
-        profilesSorted.map((profile, index) => (
-          `${index + 1}. ${profile.slackId === fatebookUserId ? '*You*' : `<@${profile.slackId}>`}: ${
-            profile._count.questions} questions, ${profile._count.forecasts} forecasts ${
-            index + 1 === 1 ? "🥇" : ""}${index + 1 === 2 ? "🥈" : ""}${index + 1 === 3 ? "🥉" : ""}`)
-        ).join('\n')
-      )
+      'type': 'context',
+      'elements': [markdownBlock(
+        profilesSorted
+          .filter(profile => profile._count.forecasts > 0 || profile._count.questions > 0)
+          .map((profile, index) => (
+            `${index + 1}. ${profile.slackId === fatebookUserId ? '*You*' : `<@${profile.slackId}>`}: ${
+              profile._count.questions > 0 ? `${profile._count.questions} questions, ` : ""}${
+              profile._count.forecasts > 0 ? `${profile._count.forecasts} forecasts ` : ""} ${
+              index + 1 === 1 ? "🥇" : ""}${index + 1 === 2 ? "🥈" : ""}${index + 1 === 3 ? "🥉" : ""}`)
+          ).join('\n')
+      )]
     },
   ]
 }
