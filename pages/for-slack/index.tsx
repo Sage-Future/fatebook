@@ -121,6 +121,11 @@ export default function ForSlackPage() {
                 "Use the /forecast command in a direct message with @Fatebook.",
           },
           {
+            question: "I don't use Slack, can I still use Fatebook?",
+            answer:
+              "[Fatebook web](https://fatebook.io) is coming soon! [Suggest a Fatebook integration for another platform.](https://forms.gle/nRqUcj154oEVLxdZ9)"
+          },
+          {
             question: "How can I get better at forecasting?",
             answer:
                 "Try our rapid-feedback training tools on [Quantified Intuitions](https://quantifiedintuitions.org).",
