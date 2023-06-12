@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import fetch from 'node-fetch'
-import { clientId, clientSecret } from '../../../lib/_constants'
+import { clientId, clientSecret, questionWritingTipsUrl } from '../../../lib/_constants'
 import prisma, { backendAnalyticsEvent, postSlackMessage } from '../../../lib/_utils_server'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -63,7 +63,8 @@ If you want to make private forecasts, that only you can see, you can type \`/fo
 Some ideas of questions we can forecast on:\n
   :trophy: Project outcomes: \`"/forecast Will we double our users by March?"\`\n
   :chart_with_upwards_trend: Project progress: \`"/forecast Will we move office this year?"\`\n
-  :earth_africa: Project-relevant events: \`"/forecast Will GPT-5 be released before 2025?"\`\n`,
+  :earth_africa: Project-relevant events: \`"/forecast Will GPT-5 be released before 2025?"\`\n
+<${questionWritingTipsUrl}|More question ideas>\n`,
       mrkdwn: true,
     }, user)
     console.log("DMed user who installed")

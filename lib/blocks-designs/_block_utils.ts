@@ -1,6 +1,6 @@
 import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
 import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfiles, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { feedbackFormUrl } from '../_constants'
+import { feedbackFormUrl, questionWritingTipsUrl } from '../_constants'
 import { getCommunityForecast, getResolutionEmoji, round } from "../_utils_common"
 import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink } from '../_utils_server'
 import { checkboxes } from './question_modal'
@@ -242,6 +242,7 @@ export function tipsContextBlock() {
     'You can create private forecasts by DMing @Fatebook - just type /forecast', // include twice to show up more often
     'See all existing forecasting questions by searching for `from:@Fatebook` in Slack',
     'You can use `*bold*`, `_italics_` or `~strikethrough~` in your question\'s notes',
+    `Looking for inspiration? Check out some <${questionWritingTipsUrl}|tips for writing Fatebook questions>.`,
   ]
   return {
     'type': 'context',

@@ -131,7 +131,8 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
 
   const profilesSorted = allProfiles
     .filter(profile => profile._count.forecasts > 0 || profile._count.questions > 0)
-    .sort((a, b) => b._count.questions - a._count.questions).slice(0, 5)
+    .sort((a, b) => (b._count.questions * 1000 + b._count.forecasts) - (a._count.questions * 1000 + a._count.forecasts))
+    .slice(0, 5)
 
   if (profilesSorted.length < 2) {
     return []

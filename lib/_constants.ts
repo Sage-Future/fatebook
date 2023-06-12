@@ -37,6 +37,7 @@ export const ambiguousResolutionColumnSpacing  : number = forecastListColumnSpac
 
 export const feedbackFormUrl = 'https://forms.gle/nHkwvMFCjtNBHAT69'
 export const quantifiedIntuitionsUrl = 'https://quantifiedintuitions.org/'
+export const questionWritingTipsUrl = 'https://docs.google.com/document/d/1yQnNLrLCLr9dQs01vsNwIPV5-cp1PUFMcLvPuSt4KNg'
 
 // Special workspaces
 // Omit from analytics
