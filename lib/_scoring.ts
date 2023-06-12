@@ -116,19 +116,16 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
 
   // average the scores for each user
   let avgScoresPerUser : ScoreCollection = {}
-  if (uniqueIds.length != 1) {
-    for(const id of Object.keys(relativeScoreTimeSeries).map(id => parseInt(id))){
-      avgScoresPerUser[id] = {
-        relativeBrierScore : averageForScoreResolution(relativeScoreTimeSeries[id], Math.floor(days), fractionalDay),
-        absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
-        rank               : -1 //reassigned below
-      }
-    }
-  } else {
-    const id = uniqueIds[0]
+  for(const id of Object.keys(relativeScoreTimeSeries)){
     avgScoresPerUser[id] = {
-      relativeBrierScore : undefined,
-      absoluteBrierScore : averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
+      relativeBrierScore : (
+        uniqueIds.length === 1 ?
+          undefined
+          :
+          averageForScoreResolution(relativeScoreTimeSeries[id], Math.floor(days), fractionalDay)
+      ),
+      absoluteBrierScore :
+          averageForScoreResolution(absoluteScoreTimeSeries[id], Math.floor(days), fractionalDay),
       rank               : -1 //reassigned below
     }
   }
