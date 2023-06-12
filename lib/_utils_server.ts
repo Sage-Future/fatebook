@@ -554,22 +554,7 @@ export function sameDate(date1: Date, date2: Date) {
 
 export async function getCurrentTargetProgress(fatebookUserId: string, target: Target){
   let count = 0
-  const now = new Date()
-  const nowDay = now.getDay()
-  const setToday = (nowDay === dayEnumToNum(target.notifyOn)) && sameDate(target.lastFailedAt, now)
-  console.log({setToday})
-  let previousPeriodStart
-  if(setToday){
-    console.log(target.lastFailedAt.toISOString())
-    previousPeriodStart = target.lastFailedAt
-  } else {
-  // find out the date since which we should count forecasts using target.day
-    const dayTarget       = dayEnumToNum(target.notifyOn)
-    const daysSinceTarget = nowDay === dayEnumToNum(target.notifyOn) ? 7 : (nowDay - dayTarget + 7) % 7
-    console.log({daysSinceTarget})
-    previousPeriodStart   = new Date(now.getTime() - daysSinceTarget * 24 * 60 * 60 * 1000)
-  }
-  console.log(previousPeriodStart.toISOString())
+  let previousPeriodStart = target.lastNotified
   switch(target.type){
     case TargetType.FORECAST:
       count = await prisma.forecast.count({

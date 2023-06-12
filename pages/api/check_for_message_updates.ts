@@ -2,23 +2,20 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 
 import { Question, Target, User } from '@prisma/client'
 import { conciseDateTime } from "../../lib/_utils_common"
-import prisma, { dateToDayEnum, getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
+import prisma, { getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 import { sendEmail } from '../../lib/web/email'
 import { getQuestionUrl } from '../q/[id]'
 import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
 
 async function getTargetsToBeNotified(){
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  const todaysDay = dateToDayEnum(yesterday)
-  // what if the date set was at 0030?
+  const lastWeek = new Date()
+  lastWeek.setDate(lastWeek.getDate() - 7)
 
   return await prisma.target.findMany({
     where: {
-      notifyOn: todaysDay,
-      lastFailedAt: {
-        lte: yesterday
+      lastNotified: {
+        lte: lastWeek
       }
     },
     include: {
@@ -42,7 +39,17 @@ async function sendSlackTargetNotification(target : Target, slackTeamId : string
         id: target.id
       },
       data: {
-        lastFailedAt: new Date()
+        lastFailedAt: new Date(),
+        lastNotified: new Date()
+      }
+    })
+  } else {
+    await prisma.target.update({
+      where: {
+        id: target.id
+      },
+      data: {
+        lastNotified: new Date()
       }
     })
   }

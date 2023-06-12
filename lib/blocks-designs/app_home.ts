@@ -173,7 +173,7 @@ function getDay(target : Target){
   let day = ''
 
   // if it's the first day of the target being set
-  if (nowDay === dayEnumToNum(target.notifyOn) && sameDate(target.lastFailedAt, now)) {
+  if (nowDay === dayEnumToNum(target.notifyOn) && sameDate(target.lastNotified, now)) {
     day = 'next ' + dayEnumToStr(target.notifyOn)
   // if is due to be checked tomorrow in server time
   } else if (nowDay  === dayEnumToNum(target.notifyOn)){

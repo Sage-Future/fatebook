@@ -90,7 +90,8 @@ export async function buttonTargetSet(actionParts : SetTargetActionParts, payloa
     update: {
       goal: actionParts.targetValue,
       type: actionParts.targetType,
-      notifyOn: dateToDayEnum(new Date())
+      notifyOn: dateToDayEnum(new Date()),
+      lastNotified: new Date()
     },
     create: {
       user: {
