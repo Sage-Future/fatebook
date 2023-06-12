@@ -11,7 +11,8 @@ export async function buttonTriggerTargetSet(actionParts : TargetTriggerActionPa
     await postEphemeralTextMessage(teamId,
                                    payload.channel.id,
                                    payload.user.id,
-                                   `You already have a target set yet. Check out <slack://app?team=${teamId}&id=${slackAppId}&tab=home|Fatebook app home>.`)
+                                   `You already have a target set. Check out <slack://app?team=${teamId}&id=${slackAppId}&tab=home|Fatebook app home>.`)
+    return
   }
 
   await postEphemeralBlockMessage(teamId,

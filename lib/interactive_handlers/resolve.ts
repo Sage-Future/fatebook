@@ -6,7 +6,7 @@ import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-de
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
 
 import { averageScores, getResolutionEmoji, round } from "../_utils_common"
-import prisma, { backendAnalyticsEvent, getDateSlackFormat, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils_server'
+import prisma, { backendAnalyticsEvent, getDateSlackFormat, getTarget, getUserNameOrProfileLink, postBlockMessage, postEphemeralSlackMessage, postMessageToResponseUrl, updateForecastQuestionMessages, updateResolutionQuestionMessages, updateResolvePingQuestionMessages } from '../_utils_server'
 import { buildQuestionResolvedBroadcastBlocks } from '../blocks-designs/question_resolved_broadcast'
 
 async function dbResolveQuestion(questionid : string, resolution : Resolution) {
@@ -168,7 +168,7 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
     const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. `
       + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(brierScore, 4)}`)
 
-    const blocks = await buildQuestionResolvedBlocks(profile.slackTeamId!, question, scoreDetails)
+    const blocks = await buildQuestionResolvedBlocks(profile.slackTeamId!, question, scoreDetails, getTarget(user.id) != null)
     const data = await postBlockMessage(profile.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})
     if (!data?.ts || !data?.channel) {
       console.error(`Missing message.ts or message.channel in response ${JSON.stringify(data)}`)

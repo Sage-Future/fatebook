@@ -64,10 +64,15 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
 
 function forecastMoreButton(){
   return {
-    'type': 'button',
-    'text': textBlock('Want to forecast more?'),
-    'action_id': toActionId({ action: 'forecastMore' }),
-    'value': 'forecast_more',
+    'type': 'actions',
+    'elements': [
+      {
+        'type': 'button',
+        'text': textBlock('Want to forecast more?'),
+        'action_id': toActionId({ action: 'forecastMore' }),
+        'value': 'forecast_more',
+      }
+    ]
   }
 }
 
