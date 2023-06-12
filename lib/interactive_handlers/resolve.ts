@@ -429,7 +429,11 @@ async function sendResolutionBroadcast(question: QuestionWithAuthorAndQuestionMe
       message.message.teamId,
       message.message.channel,
       await buildQuestionResolvedBroadcastBlocks(question, message.message.teamId),
-      `Resolved ${question.resolution}: ${question.title.substring(0, 300)}`
+      `Resolved ${question.resolution}: ${question.title.substring(0, 300)}`,
+      {
+        unfurl_links: false,
+        unfurl_media: false
+      }
     )
   }
 }
