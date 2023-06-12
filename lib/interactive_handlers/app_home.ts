@@ -45,7 +45,6 @@ export async function refreshUserAppHome(userId: string, teamId: string, activeP
 
   const blocks = await buildHomeTabBlocks(teamId, profile.userId, allUserForecasts, allUserQuestionScores, activePage, closedPage)
 
-  console.log(`App home refreshed for user ${userId}, blocks `, JSON.stringify(blocks, null, 2))
   await callSlackApi(teamId, {
     user_id: userId,
     view: {
