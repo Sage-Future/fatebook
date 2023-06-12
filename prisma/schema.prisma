@@ -154,6 +154,7 @@ model Target {
   goal         Int
   lastFailedAt DateTime   @default(now())
   notifyOn     DayOfTheWeek
+  lastNotified DateTime   @default(now())
 }
 
 enum DayOfTheWeek {
