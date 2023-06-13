@@ -146,7 +146,7 @@ export default function ForSlackPage() {
 }
 
 ForSlackPage.getLayout = function getLayout(page: React.ReactElement) {
-  return <Layout showForSlackButton={false}>
+  return <Layout showForSlackButton={false} showCreateAccountButton={false} >
     {page}
   </Layout>
 }

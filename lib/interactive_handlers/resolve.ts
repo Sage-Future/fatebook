@@ -166,7 +166,11 @@ async function messageUsers(scoreArray : ScoreCollection, question : QuestionWit
       ? scoreDetails.brierScore
       : scoreDetails.rBrierScore
     const message = `'${question.title}' resolved ${getResolutionEmoji(question.resolution)} ${question.resolution}. `
-      + (question.resolution === "AMBIGUOUS" ? "" : `Your Brier score is ${round(brierScore, 4)}`)
+      + (question.resolution === "AMBIGUOUS" ?
+        ""
+        :
+        `Your ${(scoreDetails.rBrierScore == undefined) ? "relative " : ""}Brier score is ${round(brierScore, 4)}`
+      )
 
     const blocks = await buildQuestionResolvedBlocks(profile.slackTeamId!, question, scoreDetails, getTarget(user.id) != null)
     const data = await postBlockMessage(profile.slackTeamId!, profile.slackId!, blocks, message, {unfurl_links: false, unfurl_media:false})

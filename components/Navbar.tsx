@@ -4,8 +4,10 @@ import Link from "next/link"
 
 export function Navbar({
   showForSlackButton = true,
+  showCreateAccountButton = true,
 }: {
   showForSlackButton?: boolean
+  showCreateAccountButton?: boolean
 }) {
   const { data: session } = useSession()
 
@@ -37,7 +39,8 @@ export function Navbar({
             </ul>
           </details>
           :
-          <button className="btn normal-case" onClick={() => void signIn("google")}>Sign in or create an account</button>
+          showCreateAccountButton &&
+            <button className="btn normal-case" onClick={() => void signIn("google")}>Sign in or create an account</button>
         }
       </div>
     </div>
