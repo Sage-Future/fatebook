@@ -285,16 +285,16 @@ export async function postEphemeralTextMessage(teamId: string, channel : string,
                                   })
 }
 
-export async function postSlackMessage(teamId: string, message: PostMessagePayload, userId?: string){
-  // console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, JSON.stringify(message?.blocks))
-  const url = 'https://slack.com/api/chat.postMessage'
-  const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
+async function handleChannelNotFoundError(response: {ok: boolean, error?: string, channel?: string, ts?: string}, teamId: string, attemptedChannel: string, userId: string | undefined) {
+  console.log("in func`")
   if (response.ok === false) {
+    console.log("false")
     if (userId && response.error === "channel_not_found") {
+      console.log("bl")
       await postEphemeralSlackMessage(teamId, {
         channel: userId, // DM the user
         user: userId,
-        text: `Oops, this bot is not in that channel. Invite me to the channel first by tagging me, or use a public channel. (Note that Slack doesn't let you add bots to DMs).`,
+        text: `Oops, this bot is not in that channel. Invite me to <#${attemptedChannel}> first by tagging me, or use a public channel. (Note that Slack doesn't let you add bots to DMs).`,
       })
       console.log("Notified user about error posting Slack message channel_not_found (Bot is not in that channel).")
       return {...response, notifiedUserAboutEmptyChannel: true}
@@ -303,7 +303,15 @@ export async function postSlackMessage(teamId: string, message: PostMessagePaylo
       throw new Error(`Error posting Slack message: ${response.error}`)
     }
   }
+
   return response
+}
+
+export async function postSlackMessage(teamId: string, message: PostMessagePayload, userId?: string){
+  // console.log(`Posting message to channel: ${message.channel}, text: ${message.text}, blocks: `, JSON.stringify(message?.blocks))
+  const url = 'https://slack.com/api/chat.postMessage'
+  const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
+  return await handleChannelNotFoundError(response, teamId, message.channel, userId)
 }
 
 export async function postEphemeralSlackMessage(teamId : string, message: PostEphemeralMessagePayload){
@@ -313,11 +321,13 @@ export async function postEphemeralSlackMessage(teamId : string, message: PostEp
   return await callSlackApi(teamId, message, url) as {ok: boolean, ts: string}
 }
 
-export async function updateMessage(teamId: string, message: {channel: string, ts: string, text: string, blocks?: Blocks}, logToConsole: boolean = true){
+export async function updateMessage(teamId: string, message: {channel: string, ts: string, text: string, blocks?: Blocks}, logToConsole: boolean = true, userId?: string){
   logToConsole && console.log(`Updating message to channel: ${message.channel}, text: ${message.text}`)
 
   const url = 'https://slack.com/api/chat.update'
-  return await callSlackApi(teamId, message, url) as {ok: boolean}
+  const response = await callSlackApi(teamId, message, url, 'POST', !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
+
+  return await handleChannelNotFoundError(response, teamId, message.channel, userId)
 }
 
 export async function deleteMessage(teamId: string, channel: string, ts: string){

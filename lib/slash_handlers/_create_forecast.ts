@@ -1,35 +1,8 @@
 import { Profile, User } from '@prisma/client'
-import { VercelResponse } from '@vercel/node'
-
-import { ProfileWithUser } from '../../prisma/additional'
-import prisma, { backendAnalyticsEvent, getOrCreateProfile, postSlackMessage } from '../_utils_server'
+import prisma, { backendAnalyticsEvent, postSlackMessage } from '../_utils_server'
 import { buildQuestionBlocks } from '../blocks-designs/question'
 
-export async function createForecast(res : VercelResponse, commandArray : string[], slackUserId : string, slackTeamId : string, channelId : string) {
-  let question : string = commandArray[2]
-  let dateStr  : string = commandArray[3]
-  let forecast : string = commandArray[4]
-  console.log(`question: ${question}, date: ${dateStr}, forecast: ${forecast}`)
-
-  let profile : ProfileWithUser
-  try {
-    profile = await getOrCreateProfile(slackTeamId, slackUserId)
-  } catch (err) {
-    res.send({
-      response_type: 'ephemeral',
-      text: `I couldn't find or create your profile!`,
-    })
-    return
-  }
-
-  let forecastNum : number = Number(forecast)
-
-  //parse the date string
-  let date : Date = new Date(dateStr)
-  await createForecastingQuestion(slackTeamId, { question, date, forecastNum, profile, user : profile.user, channelId })
-}
-
-export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, channelId, notes, hideForecastsUntil }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, channelId: string, notes?: string, hideForecastsUntil?: Date | null}) {
+export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, channelId, notes, hideForecastsUntil, slackUserId }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, channelId: string, notes?: string, hideForecastsUntil?: Date | null, slackUserId?: string}) {
   console.log("creating")
   const createdQuestion = await prisma.question.create({
     data: {
@@ -78,8 +51,7 @@ export async function createForecastingQuestion(teamId: string, { question, date
       blocks: questionBlocks,
       unfurl_links: false,
       unfurl_media: false
-    }, undefined)
-    // TODO createdQuestion.profile.slackId || undefined)
+    }, slackUserId)
 
     if ((data as any)?.notifiedUserAboutEmptyChannel) {
       questionPostedSuccessfully = false

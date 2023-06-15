@@ -97,7 +97,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
   console.log("Forecast created: ", forecastCreated)
 
   if (payload.message?.ts && payload.channel?.id) {
-    await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id)
+    await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id, payload.user.id)
   } else {
     console.error(`Missing message.ts or channel.id in payload ${JSON.stringify(payload)}`)
   }
@@ -111,7 +111,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
   })
 }
 
-async function updateQuestionMessages(teamId: string, questionTs: string, channel: string) {
+async function updateQuestionMessages(teamId: string, questionTs: string, channel: string, slackUserId: string) {
   const questions = await prisma.question.findMany({
     where: {
       questionMessages: {
@@ -156,6 +156,6 @@ async function updateQuestionMessages(teamId: string, questionTs: string, channe
       channel: channel,
       blocks: questionBlocks,
       text: `New forecasts on '${question.title}'`,
-    })
+    }, true, slackUserId)
   }
 }

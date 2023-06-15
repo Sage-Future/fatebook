@@ -118,6 +118,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
       user: profile.user,
       notes,
       hideForecastsUntil,
+      slackUserId: payload.user.id,
     })
   } else {
     const updatedQuestion = await prisma.question.update({
@@ -161,7 +162,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
         ts: slackMessage.message.ts,
         text: `Question edited: *${updatedQuestion.title}*`,
         blocks: questionBlocks,
-      })
+      }, payload.user.id)
       if (!response.ok) {
         console.error("Error updating question message after edit: ", response)
       }
