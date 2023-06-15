@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["filteredRelationCount"]
 }
 
@@ -60,6 +60,7 @@ model Question {
   profile             Profile?                 @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
   user                User                     @relation("author", fields: [userId], references: [id], onDelete: Cascade)
   sharedWith          User[]                   @relation("questionsSharedWith")
+  sharedWithLists     UserList[]
   sharedPublicly      Boolean                  @default(false)
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
@@ -117,6 +118,8 @@ model User {
   questionsSharedWith Question[]      @relation("questionsSharedWith")
   comments            Comment[]
   target              Target?         @relation("userTarget")
+  authorOfLists       UserList[]      @relation(name: "author")
+  memberOfLists       UserList[]      @relation(name: "members")
 
   // Used by next-auth:
   emailVerified DateTime?
@@ -145,14 +148,14 @@ model Group {
 }
 
 model Target {
-  id           Int        @id @default(autoincrement())
-  user         User       @relation("userTarget", onDelete: Cascade, fields: [userId], references: [id])
-  userId       String        @unique
-  profile      Profile?   @relation("profileTarget", fields: [profileId], references: [id], onDelete: Cascade)
-  profileId    Int?       @unique
+  id           Int          @id @default(autoincrement())
+  user         User         @relation("userTarget", onDelete: Cascade, fields: [userId], references: [id])
+  userId       String       @unique
+  profile      Profile?     @relation("profileTarget", fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    Int?         @unique
   type         TargetType
   goal         Int
-  lastFailedAt DateTime   @default(now())
+  lastFailedAt DateTime     @default(now())
   notifyOn     DayOfTheWeek
   lastNotified DateTime   @default(now())
 }
@@ -210,4 +213,14 @@ model Comment {
   userId     String
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserList {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  name      String
+  authorId  String
+  author    User       @relation(name: "author", fields: [authorId], references: [id], onDelete: Cascade)
+  users     User[]     @relation(name: "members")
+  questions Question[]
 }
