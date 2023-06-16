@@ -131,6 +131,15 @@ export async function sendEmailReadyToResolveNotification(question: Question & {
     htmlBody: `<p>Are you ready to resolve your question: <b>${getHtmlLinkQuestionTitle(question)}</b></p>\n
 <p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>${fatebookEmailFooter()}`,
   })
+
+  await prisma.question.update({
+    where: {
+      id: question.id,
+    },
+    data: {
+      pingedForResolution: true,
+    },
+  })
 }
 
 async function sendSlackReadyToResolveNotification(question: Awaited<ReturnType<typeof getQuestionsToBeResolved>>[number]) {
