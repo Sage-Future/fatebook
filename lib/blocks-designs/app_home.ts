@@ -1,7 +1,7 @@
 import { QuestionScore, Target, TargetType } from '@prisma/client'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
 import { formatDecimalNicely, plural, populateDetails } from "../_utils_common"
-import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, quantifiedIntuitionsUrl, slackAppId, targetCronTime } from '../_constants'
+import { baseUrl, feedbackFormUrl, maxAvgScoreDecimalPlaces, quantifiedIntuitionsUrl, questionWritingTipsUrl, slackAppId, targetCronTime } from '../_constants'
 import prisma, { dayEnumToNum, dayEnumToStr, getCurrentTargetProgress, getTarget, sameDate } from '../../lib/_utils_server'
 import { Blocks, dividerBlock, headerBlock, markdownBlock, targetSetButtons } from "./_block_utils"
 import { buildGetForecastsBlocks } from "./get_forecasts"
@@ -84,6 +84,7 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string,
     {
       "type": "section",
       "text": markdownBlock(
+        `• At the top of this page, you can now set a goal for how many forecasting questions you want to write each week. We'll remind you if you're not on track to keep your streak going! Check our <${questionWritingTipsUrl}|tips for writing questions>\n` +
         '• See how well calibrated you are with our new calibration graph. Perfect calibration means things you expect to happen X% of the time do in fact happen X% of the time. This is a skill you can train, e.g. using our <https://www.quantifiedintuitions.org/calibration|calibration app>!\n' +
         '• You can now hide other forecasters’ predictions on a question to prevent anchoring. Look for the new option when you use `/forecast`\n' +
         `• Create private forecasts by <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|DMing @Fatebook> - just type \`/forecast\``
@@ -131,7 +132,7 @@ async function buildForecastingCultureChampionBlock(teamId: string, fatebookUser
 
   const profilesSorted = allProfiles
     .filter(profile => profile._count.forecasts > 0 || profile._count.questions > 0)
-    .sort((a, b) => (b._count.questions * 1000 + b._count.forecasts) - (a._count.questions * 1000 + a._count.forecasts))
+    .sort((a, b) => (b._count.questions * 100 + b._count.forecasts) - (a._count.questions * 100 + a._count.forecasts))
     .slice(0, 5)
 
   if (profilesSorted.length < 2) {
