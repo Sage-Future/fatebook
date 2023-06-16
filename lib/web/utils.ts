@@ -7,7 +7,7 @@ export function useUserId() {
   return session.data?.user.id
 }
 
-export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket: number; mean: number; count: number }[]) {
+export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket: number; mean: number; count: number }[], interactive = false, hideTitles=false) {
   return {
     type: "line",
     data: {
@@ -40,7 +40,32 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
           tension: 0.000001
         }
       },
-      scales: {
+      plugins: interactive ? {
+        legend: {
+          maxWidth: 100,
+          onClick: () => {} // overwrite default behaviour of hiding points
+        }
+      } : {},
+      scales: interactive ? {
+        y: {
+          title: {
+            display: true,
+            text: '% of questions that resolved Yes',
+            color: hideTitles ? "transparent" : "gray"
+          },
+          ticks: {
+            // Include a dollar sign in the ticks
+            callback: (value: any) =>  value + "%"
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Your forecast (bucketed by nearest 10%)',
+            color: hideTitles ? "transparent" : "gray",
+          },
+        }
+      } : {
         xAxes: [{
           display: true,
           scaleLabel: {
@@ -60,7 +85,7 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
           gridLines: {
             color: "#1e1e1e",
           }
-        }]
+        }],
       }
     },
   }
