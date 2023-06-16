@@ -368,6 +368,33 @@ export const questionRouter = router({
       })
     }),
 
+  deleteComment: publicProcedure
+    .input(
+      z.object({
+        commentId: z.number(),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      const comment = await prisma.comment.findUnique({
+        where: {
+          id: input.commentId,
+        },
+        include: {
+          user: true,
+        }
+      })
+
+      if (!comment || comment.user.id !== ctx.userId) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Comment not found" })
+      }
+
+      await prisma.comment.delete({
+        where: {
+          id: input.commentId,
+        }
+      })
+    }),
+
   getQuestionScores: publicProcedure
     .query(async ({ ctx }) => {
       if (!ctx.userId) {
@@ -389,6 +416,22 @@ export const questionRouter = router({
         return null
       }
       return await getBucketedForecasts(ctx.userId)
+    }),
+
+  deleteQuestion: publicProcedure
+    .input(
+      z.object({
+        questionId: z.string(),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      await getQuestionAssertAuthor(ctx, input.questionId)
+
+      await prisma.question.delete({
+        where: {
+          id: input.questionId,
+        }
+      })
     }),
 })
 

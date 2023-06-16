@@ -1,4 +1,6 @@
+import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
 import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import ReactTextareaAutosize from 'react-textarea-autosize'
@@ -48,7 +50,10 @@ function EventsLog({
       el: <Fragment key={c.id}>
         <span><Username user={c.user} className="font-semibold" /></span>
         <span/>
-        <span className="text-slate-400"><FormattedDate date={c.createdAt} /></span>
+        <span className="text-slate-400 inline-flex justify-between w-full">
+          <FormattedDate date={c.createdAt} className='my-auto' />
+          <DeleteCommentOverflow question={question} comment={c} />
+        </span>
         <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">{c.comment}</span>
       </Fragment>
     })),
@@ -104,29 +109,89 @@ function CommentBox({
   })
   const [localComment, setLocalComment] = useState<string>("")
 
+  const deleteQuestion = api.question.deleteQuestion.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+    }
+  })
+  const router = useRouter()
+
   return <div className='pb-4'>
     {!userId && <div className="flex w-full p-4">
       <button className="button primary mx-auto" onClick={() => void signIn("google")}>
         Sign in to add your own prediction
       </button>
     </div>}
-    <ReactTextareaAutosize
-      className="shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100"
-      placeholder={`Add a comment...`}
-      disabled={addComment.isLoading || !userId}
-      value={localComment}
-      onChange={(e) => {
-        setLocalComment(e.target.value)
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey && e.currentTarget.value.trim() !== "") {
-          addComment.mutate({
-            questionId: question.id,
-            comment: e.currentTarget.value,
-          })
-          e.preventDefault()
-        }
-      }}
-    />
+    <div className="flex gap-2">
+      <ReactTextareaAutosize
+        className="shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100"
+        placeholder={`Add a comment...`}
+        disabled={addComment.isLoading || !userId}
+        value={localComment}
+        onChange={(e) => {
+          setLocalComment(e.target.value)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey && e.currentTarget.value.trim() !== "") {
+            addComment.mutate({
+              questionId: question.id,
+              comment: e.currentTarget.value,
+            })
+            e.preventDefault()
+          }
+        }}
+      />
+      {
+        userId === question.userId && <div className="dropdown dropdown-end not-prose">
+          <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
+          <ul tabIndex={0} className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
+            <li><a onClick={() => {
+              if (confirm("Are you sure you want to delete this question? This cannot be undone")) {
+                deleteQuestion.mutate({
+                  questionId: question.id
+                })
+                if (router.asPath.startsWith("/q/")) {
+                  void router.push("/")
+                }
+              }
+            }}>Delete question</a></li>
+          </ul>
+        </div>
+      }
+    </div>
   </div>
+}
+
+function DeleteCommentOverflow({
+  question,
+  comment
+}: {
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  comment: { id: number }
+}) {
+  const userId = useUserId()
+
+  const utils = api.useContext()
+  const deleteComment = api.question.deleteComment.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+    }
+  })
+
+  if (userId !== question.userId) {
+    return <></>
+  }
+
+  return (
+    <div className="dropdown dropdown-end not-prose">
+      <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
+      <ul tabIndex={0} className="dropdown-content text-black z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
+        <li><a onClick={() => {
+          deleteComment.mutate({
+            commentId: comment.id
+          })
+        }}>Delete comment</a></li>
+      </ul>
+    </div>
+  )
 }

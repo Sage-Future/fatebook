@@ -29,7 +29,7 @@ export function SharePopover({
             {question.sharedPublicly ? (
               <><UserGroupIcon height={15} /> <span>Public</span></>
             ) :
-              question.sharedWith?.length > 0 || sharedToSlack ? (
+              question.sharedWith?.length > 0 || question.sharedWithLists?.length > 0 || sharedToSlack ? (
                 <><UsersIcon height={15} /> <span>Shared</span></>
               ) : (
                 <><UserIcon height={15} /> <span>Only me</span></>

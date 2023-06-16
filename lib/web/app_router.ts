@@ -3,7 +3,7 @@ import { sendEmailReadyToResolveNotification } from '../../pages/api/check_for_m
 import prisma, { getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { questionRouter } from './question_router'
 import { publicProcedure, router } from './trpc_base'
-import { userListRouter } from './userlist_router'
+import { userListRouter } from './userList_router'
 
 
 export const appRouter = router({

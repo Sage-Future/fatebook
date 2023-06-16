@@ -51,7 +51,9 @@ export function UpdateableLatestForecast({
                       question.resolution === null ? "text-indigo-800 ring-2" : "text-gray-600 ring-0")}
       onClick={(e) => {
         (inputRef.current as any)?.focus()
-        (question.resolution !== null || addForecast.isLoading) && (e.stopPropagation())
+        if (question.resolution !== null || addForecast.isLoading) {
+          e.stopPropagation()
+        }
       }}
     >
       {(question.resolution === null || latestForecast) && <>

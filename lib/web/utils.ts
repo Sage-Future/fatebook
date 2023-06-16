@@ -24,7 +24,7 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
         {
           backgroundColor: "#04785794",
           borderColor: "#047857e5",
-          data: buckets.map(b => b * 100),
+          data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
           label: "Perfect calibration",
           fill: false,
           pointRadius: 0,

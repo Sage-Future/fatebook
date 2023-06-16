@@ -84,7 +84,7 @@ export function Predict() {
         <form onSubmit={void handleSubmit(onSubmit)}>
           <TextareaAutosize
             className={clsx(
-              "w-full text-xl border-2 border-gray-300 rounded-md p-4 resize-none",
+              "w-full text-xl border-2 border-gray-300 rounded-md p-4 resize-none shadow-lg mb-2",
             )}
             autoFocus={true}
             placeholder="Will humans walk on Mars by 2050?"
