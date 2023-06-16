@@ -14,4 +14,7 @@
   button.white {
     @apply text-black bg-white hover:bg-gray-50 
   }
+  .btn {
+    @apply normal-case
+  }
 }

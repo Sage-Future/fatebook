@@ -1,4 +1,6 @@
+import { Question } from "@prisma/client"
 import { useSession } from "next-auth/react"
+import { getQuestionUrl } from "../../pages/q/[id]"
 
 export function useUserId() {
   const session = useSession()
@@ -62,4 +64,8 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
       }
     },
   }
+}
+
+export function getHtmlLinkQuestionTitle(question: Question) {
+  return `<a href="${getQuestionUrl(question, false)}">${question.title}</a>`
 }

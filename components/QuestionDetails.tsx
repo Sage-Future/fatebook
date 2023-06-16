@@ -1,13 +1,13 @@
+import { signIn } from 'next-auth/react'
 import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import ReactTextareaAutosize from 'react-textarea-autosize'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
+import { useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
-import { useUserId } from '../lib/web/utils'
-import { signIn } from 'next-auth/react'
 
 export function QuestionDetails({
   question
@@ -97,7 +97,7 @@ function CommentBox({
   const utils = api.useContext()
   const addComment = api.question.addComment.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
       await utils.question.getQuestion.invalidate({ questionId: question.id })
       setLocalComment("")
     }

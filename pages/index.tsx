@@ -10,7 +10,7 @@ export default function HomePage() {
   const { data: session, status: sessionStatus } = useSession()
   const router = useRouter()
 
-  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || router.query["preview"]) {
+  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test" || router.query["preview"] || process.env.WEB_PREVIEW) {
     return (
       <div className="max-sm:flex-col gap-8 md:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
         <div className="prose mx-auto">
@@ -48,7 +48,7 @@ export default function HomePage() {
 
           <p><Link href="/for-slack"><b>Fatebook for Slack</b></Link>: out now.</p>
 
-          <p><b>Fatebook for web</b>: coming soon.</p>
+          <p><b>Fatebook for web</b>: coming soon. <Link href="https://forms.gle/SRAFPXndEkbd7F4h8">Join the waitlist for early access.</Link></p>
 
           <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
 

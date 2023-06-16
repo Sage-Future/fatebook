@@ -63,7 +63,7 @@ export default function ForSlackPage() {
                   <p className="text-xl lg:text-2xl font-medium text-gray-900">{'Fatebook offers a quick, clear view into predictions across the organization. It\'s not just informative, it\'s engaging too.'}</p>
                 </div>
                 <figcaption className="flex items-center justify-center mt-6 space-x-3">
-                  <Image width={25} height={25} className="rounded-full" src="/niel.jpeg" alt="profile picture" />
+                  <Image width={25} height={25} className="rounded-full" src="/niel.jpeg" alt="" />
                   <div className="flex items-center">
                     <div className="pr-2 font-medium text-gray-900 ">Niel Bowerman</div>
                     <div className="pl-2 text-sm font-light text-gray-500">Director of Special Projects at 80,000 Hours</div>
@@ -83,7 +83,7 @@ export default function ForSlackPage() {
                   <p className="text-xl font-medium text-gray-900">{'We absolutely love this thing so far. It just came in handy today with "if we deploy XYZ as a beeta feature will we decide to deploy it universally?" Getting a quick sense of that probability is great for deciding whether to put in the work on the feature!'}</p>
                 </div>
                 <figcaption className="flex items-center justify-center mt-6 space-x-3">
-                  <Image width={25} height={25} className="object-cover h-[25px] rounded-full" src="/daniel.png" alt="profile picture" />
+                  <Image width={25} height={25} className="object-cover h-[25px] rounded-full" src="/daniel.png" alt="" />
                   <div className="flex items-center">
                     <div className="pr-2 font-medium text-gray-900 ">Daniel Reeves</div>
                     <div className="pl-2 text-sm font-light text-gray-500">Cofounder at Beeminder</div>

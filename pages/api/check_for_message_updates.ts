@@ -4,7 +4,8 @@ import { Question, Target, User } from '@prisma/client'
 import { conciseDateTime } from "../../lib/_utils_common"
 import prisma, { getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
-import { sendEmail } from '../../lib/web/email'
+import { fatebookEmailFooter, sendEmail } from '../../lib/web/email'
+import { getHtmlLinkQuestionTitle } from '../../lib/web/utils'
 import { getQuestionUrl } from '../q/[id]'
 import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
 
@@ -127,8 +128,8 @@ export async function sendEmailReadyToResolveNotification(question: Question & {
     subject: `Ready to resolve: ${question.title}`,
     to: question.user.email,
     textBody: `Are you ready to resolve your question: ${question.title}`,
-    htmlBody: `<p>Are you ready to resolve your question: <b>${question.title}</b></p>\n
-<p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>`,
+    htmlBody: `<p>Are you ready to resolve your question: <b>${getHtmlLinkQuestionTitle(question)}</b></p>\n
+<p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>${fatebookEmailFooter()}`,
   })
 }
 

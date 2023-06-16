@@ -32,3 +32,11 @@ export async function sendEmail({
     await backendAnalyticsEvent("email_sent", { platform: "web" })
   }
 }
+
+// todo add unsubscribe link
+export function fatebookEmailFooter() {
+  return `\n
+<br/>
+<p><i><a href="https://fatebook.io">Fatebook</a> helps you rapidly make and track predictions about the future.</i></p>
+`
+}

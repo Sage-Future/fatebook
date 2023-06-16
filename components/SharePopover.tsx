@@ -1,14 +1,18 @@
 import { Popover, Transition } from "@headlessui/react"
 import { UserGroupIcon, UserIcon, UsersIcon } from "@heroicons/react/20/solid"
+import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
-import React, { Fragment } from 'react'
+import React, { Fragment, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { ReactMultiEmail } from "react-multi-email"
+import 'react-multi-email/dist/style.css'
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
+import { UserListDropdown } from "./UserListDropdown"
 
 
 export function SharePopover({
@@ -64,9 +68,11 @@ const SharePanel = React.forwardRef<
     ...question.questionMessages[0]!.message,
   } : undefined)
 
-  return <Popover.Panel className="absolute z-50 w-full" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
+  return <Popover.Panel className="absolute z-50 w-full cursor-auto" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
     <div className="absolute z-50 mt-2 w-72 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
       <div className="p-4 flex flex-col gap-2">
+        <EmailInput question={question} />
+        <UserListDropdown question={question} />
         <SharePublicly question={question} />
         {sharedToSlack && <div>
           <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -ml-2 inline" alt="" />
@@ -92,7 +98,7 @@ function SharePublicly({
   const utils = api.useContext()
   const setSharedPublicly = api.question.setSharedPublicly.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
       await utils.question.getQuestion.invalidate({questionId: question.id})
     }
   })
@@ -103,6 +109,7 @@ function SharePublicly({
           <input
             id="sharePublicly"
             type="checkbox"
+            className={clsx(userId !== question.userId && "cursor-not-allowed")}
             disabled={userId !== question.userId || setSharedPublicly.isLoading}
             checked={question.sharedPublicly}
             onChange={(e) => {
@@ -120,33 +127,68 @@ function SharePublicly({
   )
 }
 
-// TODO consider adding
-// eslint-disable-next-line no-unused-vars
-// function EmailInput() {
-//   const [emails, setEmails] = useState<string[]>([])
-//   return (
-//     <>
-//       <label className="block text-sm font-medium text-gray-700">
-//       Share with
-//       </label>
-//       <ReactMultiEmail
-//         placeholder="some@email.com"
-//         emails={emails}
-//         onChange={(emails: string[]) => {
-//           setEmails(emails)
-//         }}
-//         autoFocus={true}
-//         getLabel={(email, index, removeEmail) => {
-//           return (
-//             <div data-tag key={index}>
-//               <div data-tag-item>{email}</div>
-//               <span data-tag-handle onClick={() => removeEmail(index)}>
-//                 ×
-//               </span>
-//             </div>
-//           )
-//         }}
-//       />
-//     </>
-//   )
-// }
+function EmailInput({
+  question
+}: {
+  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+}) {
+  const [emails, setEmails] = useState<string[]>(question.sharedWith.map((user) => user.email))
+  const userId = useUserId()
+  const utils = api.useContext()
+  const setSharedWith = api.question.setSharedWith.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await utils.question.getQuestion.invalidate({questionId: question.id})
+    }
+  })
+
+  if (userId !== question.userId) {
+    if (question.sharedWith.length > 0) {
+      return <label className="text-sm">
+        <span className="font-semibold">Shared with</span> {question.sharedWith.map((user) => user.email).join(", ")}
+      </label>
+    } else {
+      return <></>
+    }
+  }
+  return (
+    <>
+      <label className="block text-sm font-medium text-gray-700">
+        Share with
+      </label>
+      <ReactMultiEmail
+        className={clsx("text-sm", setSharedWith.isLoading && "opacity-50")}
+        placeholder="alice@gmail.com bob@gmail.com"
+        delimiter=" "
+        emails={emails}
+        onChange={(emails: string[]) => {
+          setEmails(emails)
+        }}
+        onBlur={() => {
+          setSharedWith.mutate({
+            questionId: question.id,
+            sharedWith: emails,
+          })
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            setSharedWith.mutate({
+              questionId: question.id,
+              sharedWith: emails,
+            })
+          }
+        }}
+        getLabel={(email, index, removeEmail) => {
+          return (
+            <div data-tag key={index}>
+              <div data-tag-item>{email}</div>
+              <span data-tag-handle onClick={() => removeEmail(index)}>
+                ×
+              </span>
+            </div>
+          )
+        }}
+      />
+    </>
+  )
+}

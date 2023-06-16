@@ -2,11 +2,14 @@ import { Prisma, Resolution } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
-import { QuestionWithForecasts } from "../../prisma/additional"
+import { getQuestionUrl } from "../../pages/q/[id]"
+import { QuestionWithForecasts, QuestionWithForecastsAndSharedWith, QuestionWithUserAndSharedWith } from "../../prisma/additional"
 import { forecastsAreHidden } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
+import { fatebookEmailFooter, sendEmail } from './email'
 import { publicProcedure, router } from "./trpc_base"
+import { getHtmlLinkQuestionTitle } from "./utils"
 
 const questionIncludes = {
   forecasts: {
@@ -16,6 +19,12 @@ const questionIncludes = {
   },
   user: true,
   sharedWith: true,
+  sharedWithLists: {
+    include: {
+      author: true,
+      users: true,
+    }
+  },
   questionMessages: {
     include: {
       message: true
@@ -50,7 +59,7 @@ export const questionRouter = router({
       return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)
     }),
 
-  getQuestionsUserCreatedOrForecastedOn: publicProcedure
+  getQuestionsUserCreatedOrForecastedOnOrIsSharedWith: publicProcedure
     .query(async ({ ctx }) => {
       if (!ctx.userId) {
         return null
@@ -64,7 +73,21 @@ export const questionRouter = router({
               some: {
                 userId: ctx.userId,
               }
-            }}
+            }},
+            {sharedWith: {
+              some: {
+                id: ctx.userId,
+              },
+            }},
+            {sharedWithLists: {
+              some: {
+                users: {
+                  some: {
+                    id: ctx.userId,
+                  }
+                }
+              }
+            }},
           ]
         },
         include: questionIncludes,
@@ -173,6 +196,56 @@ export const questionRouter = router({
       })
     }),
 
+  setSharedWith: publicProcedure
+    .input(
+      z.object({
+        questionId: z.string(),
+        sharedWith: z.array(z.string()),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      const question = await getQuestionAssertAuthor(ctx, input.questionId, {
+        user: true,
+        sharedWith: true,
+      }) as QuestionWithUserAndSharedWith
+
+      const sharedWith = Array.from(new Set(input.sharedWith))
+      const newlySharedWith = sharedWith.filter(email => !question.sharedWith.some(u => u.email === email))
+      if (newlySharedWith.length === 0) {
+        console.log("Shared with no one new")
+        return
+      }
+
+      const existingUsers = await prisma.user.findMany({
+        where: {
+          email: {
+            in: sharedWith
+          }
+        }
+      })
+
+      const nonExistingUsers = sharedWith.filter(email => !existingUsers.some(u => u.email === email))
+
+      if (nonExistingUsers.length > 0) {
+        await prisma.user.createMany({
+          data: nonExistingUsers.map(email => ({ email }))
+        })
+      }
+
+      await prisma.question.update({
+        where: {
+          id: input.questionId,
+        },
+        data: {
+          sharedWith: {
+            set: sharedWith.map(email => ({ email }))
+          }
+        }
+      })
+
+      await emailNewlySharedWithUsers(newlySharedWith, question)
+    }),
+
   addForecast: publicProcedure
     .input(
       z.object({
@@ -186,7 +259,8 @@ export const questionRouter = router({
           id: input.questionId,
         },
         include: {
-          forecasts: true
+          forecasts: true,
+          sharedWith: true,
         }
       })
 
@@ -265,6 +339,7 @@ export const questionRouter = router({
         include: {
           comments: true,
           forecasts: true,
+          sharedWith: true,
         }
       })
 
@@ -317,7 +392,21 @@ export const questionRouter = router({
     }),
 })
 
-async function getQuestionAssertAuthor(ctx: {userId: string | undefined}, questionId: string, questionInclude?: Prisma.QuestionInclude) {
+export async function emailNewlySharedWithUsers(newlySharedWith: string[], question: QuestionWithUserAndSharedWith) {
+  await Promise.all(newlySharedWith.map(async (email) => {
+    const author = question.user.name || question.user.email
+    await sendEmail({
+      to: email,
+      subject: `${author} shared a prediction with you`,
+      textBody: `"${question.title}"`,
+      htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(question)}</b></p>
+<p><a href=${getQuestionUrl(question)}>See ${author}'s prediction and add your own on Fatebook.</a></p>
+${fatebookEmailFooter()}`
+    })
+  }))
+}
+
+export async function getQuestionAssertAuthor(ctx: {userId: string | undefined}, questionId: string, questionInclude?: Prisma.QuestionInclude) {
   const question = await prisma.question.findUnique({
     where: {
       id: questionId,
@@ -335,12 +424,13 @@ async function getQuestionAssertAuthor(ctx: {userId: string | undefined}, questi
   return question
 }
 
-function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWithForecasts | null) {
+function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWithForecastsAndSharedWith | null) {
   if (question === null) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
   if (
     question?.sharedPublicly
+    || question?.sharedWith.some(u => u.id === ctx.userId)
     || question?.userId === ctx.userId
     || question?.forecasts.some(f => f.userId === ctx.userId) // for slack questions
   ) {

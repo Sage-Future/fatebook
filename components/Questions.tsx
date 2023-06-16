@@ -5,8 +5,8 @@ import { Question } from "./Question"
 export function Questions() {
   const session = useSession()
 
-  const questions = api.question.getQuestionsUserCreatedOrForecastedOn.useQuery(undefined, {
-    queryKey: ["question.getQuestionsUserCreatedOrForecastedOn", undefined]
+  const questions = api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useQuery(undefined, {
+    queryKey: ["question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith", undefined]
   })
 
   if (!session.data?.user.id) {
@@ -38,7 +38,7 @@ export function Questions() {
 
   return (
     <div>
-      <h3 className="mb-2">Your forecasts</h3>
+      <h3 className="mb-2 select-none">Your forecasts</h3>
       <div className="grid gap-6">
         {questions.data.sort(
           (a, b) => b.createdAt.getTime() - a.createdAt.getTime()

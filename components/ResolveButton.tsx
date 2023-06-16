@@ -16,14 +16,14 @@ export function ResolveButton({
   const utils = api.useContext()
   const resolveQuestion = api.question.resolveQuestion.useMutation({
     async onSettled() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
       await utils.question.getQuestion.invalidate({questionId: question.id})
       await utils.question.getQuestionScores.invalidate()
     },
   })
   const undoResolution = api.question.undoResolution.useMutation({
     async onSettled() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOn.invalidate()
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
       await utils.question.getQuestion.invalidate({questionId: question.id})
       await utils.question.getQuestionScores.invalidate()
     },
