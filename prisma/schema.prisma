@@ -120,6 +120,7 @@ model User {
   target              Target?         @relation("userTarget")
   authorOfLists       UserList[]      @relation(name: "author")
   memberOfLists       UserList[]      @relation(name: "members")
+  staleReminder       Boolean         @default(true)
 
   // Used by next-auth:
   emailVerified DateTime?

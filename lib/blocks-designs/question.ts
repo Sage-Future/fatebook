@@ -1,10 +1,10 @@
-import { Forecast, Question, Resolution } from '@prisma/client'
-import { ActionsBlock, InputBlock, SectionBlock } from '@slack/types'
+import { Forecast, Resolution } from '@prisma/client'
+import { SectionBlock } from '@slack/types'
 import { QuestionWithForecastWithUserWithProfiles, UserWithProfiles } from '../../prisma/additional'
 import { CONNECTOR_WORKSPACES, defaultDisplayPictureUrl, feedbackFormUrl, maxDecimalPlacesForQuestionForecast, maxForecastsPerUser, maxLatestForecastsVisible, noForecastsMessage } from '../_constants'
 import { displayForecast, forecastsAreHidden, getResolutionEmoji, padAndFormatScore } from '../_utils_common'
 import prisma, { getDateSlackFormat, getUserNameOrProfileLink } from '../_utils_server'
-import { Blocks, ResolveQuestionActionParts, markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock, toActionId } from './_block_utils'
+import { Blocks, ResolveQuestionActionParts, buildPredictOptions, markdownBlock, maybeQuestionResolutionBlock, questionForecastInformationBlock, textBlock, toActionId } from './_block_utils'
 
 function formatForecast(forecast: Forecast, maxDecimalPlaces : number = maxDecimalPlacesForQuestionForecast): string {
   return displayForecast(forecast, maxDecimalPlaces)
@@ -239,45 +239,4 @@ function getSortedUsersAndForecasts(question: QuestionWithForecastWithUserWithPr
   // sort the users by most recent forecast
   const sortedUsersAndForecasts = forecastsByUser.sort((a, b) => b[1].slice(-1)[0].createdAt.getTime() - a[1].slice(-1)[0].createdAt.getTime())
   return sortedUsersAndForecasts
-}
-
-function buildPredictOptions(question: Question): InputBlock | ActionsBlock {
-
-  const useFreeTextInput = true
-
-  const quickPredictOptions = [10, 30, 50, 70, 90]
-
-  if (useFreeTextInput) {
-    return {
-      'dispatch_action': true,
-      'type': 'input',
-      'element': {
-        'type': 'plain_text_input',
-        'placeholder': textBlock('XX%'),
-        'action_id': toActionId({
-          action: 'submitTextForecast',
-          questionId: question.id,
-        })
-      },
-      'label': textBlock('Make a prediction'),
-    }
-  } else {
-    return {
-      'type': 'actions',
-      'elements': [
-        ...quickPredictOptions.map((option) => ({
-          'type': 'button',
-          'text': textBlock(`${option}%`),
-          'style': 'primary',
-          'value': 'click_me_123'
-        })),
-        {
-          'type': 'button',
-          'text': textBlock('....'),
-          'value': 'click_me_123'
-        }
-      ]
-    }
-  }
-
 }

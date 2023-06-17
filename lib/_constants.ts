@@ -27,10 +27,11 @@ export const scorePrepad                : number = 3
 export const maxAvgScoreDecimalPlaces   : number = 6
 export const scoreSignificantDigits     : number = 2
 export const maxScoreDecimalPlacesListing            : number = 5
-export const maxDecimalPlacesForecastForecastListing : number = 1
 export const maxDecimalPlacesScoreForecastListing    : number = 5
 export const maxDecimalPlacesForecastLogListing      : number = 1
 
+// Forecast listing in home and reminders
+export const maxDecimalPlacesForecastForecastListing : number = 1
 export const yesResolutionColumnSpacing        : number = forecastListColumnSpacing
 export const noResolutionColumnSpacing         : number = forecastListColumnSpacing
 export const ambiguousResolutionColumnSpacing  : number = forecastListColumnSpacing-1

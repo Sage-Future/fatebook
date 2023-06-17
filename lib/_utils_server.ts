@@ -108,7 +108,6 @@ export function getUserNameOrProfileLink(teamId : string, user : UserWithProfile
   return thisTeamsProfile ? `<@${thisTeamsProfile.slackId}>` : (user.name || 'Anon User')
 }
 
-
 export async function getSlackProfileFromSlackId(teamId: string, slackId : string) {
   let data
   try {

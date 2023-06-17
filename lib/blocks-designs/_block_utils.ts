@@ -1,10 +1,10 @@
-import { Block, DividerBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfiles, QuestionWithForecasts, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { feedbackFormUrl, questionWritingTipsUrl } from '../_constants'
-import { getCommunityForecast, getResolutionEmoji, round } from "../_utils_common"
+import { ActionsBlock, Block, DividerBlock, InputBlock, KnownBlock, MrkdwnElement, PlainTextElement, SectionBlock } from "@slack/types"
+import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, QuestionWithAuthorAndQuestionMessages, QuestionWithForecastWithUserWithProfiles, QuestionWithForecasts, QuestionWithResolutionMessages, QuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
+import { ambiguousResolutionColumnSpacing, feedbackFormUrl, forecastListColumnSpacing, forecastPrepad, noResolutionColumnSpacing, questionWritingTipsUrl, slackAppId, yesResolutionColumnSpacing } from '../_constants'
+import { forecastsAreHidden, formatDecimalNicely, getCommunityForecast, getResolutionEmoji, padAndFormatScore, round } from "../_utils_common"
 import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink } from '../_utils_server'
 import { checkboxes } from './question_modal'
-import { TargetType } from "@prisma/client"
+import { Question, QuestionScore, Resolution, TargetType } from "@prisma/client"
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -14,7 +14,8 @@ export interface ResolveQuestionActionParts {
 
 export interface SubmitTextForecastActionParts {
   action: 'submitTextForecast'
-  questionId: string
+  questionId: string,
+  reminderBlockForecastIds: number[]
 }
 
 export interface QuestionModalActionParts {
@@ -104,10 +105,14 @@ export type CheckboxOption = {
   valueLabel: string
 }
 
+export interface CancelStaleReminderActionParts {
+  action: 'cancelStaleReminder'
+}
+
 export type ActionIdParts = ResolveQuestionActionParts | SubmitTextForecastActionParts | SortForecastsActionParts | QuestionModalActionParts
   | UpdateResolutionDateActionParts | EditQuestionBtnActionParts | UndoResolveActionParts | QuestionOverflowActionParts | DeleteQuestionActionParts
   | HomeAppPageNavigationActionParts | ViewForecastLogBtnActionParts | OptionsCheckBoxActionParts | UpdateHideForecastsDateActionParts
-  | SetTargetActionParts | TargetTriggerActionParts | AdjustTargetActionParts
+  | SetTargetActionParts | TargetTriggerActionParts | AdjustTargetActionParts | CancelStaleReminderActionParts
 
 export type Blocks = (KnownBlock | Block | Promise<KnownBlock> | Promise<Block>)[]
 
@@ -252,6 +257,16 @@ export function tipsContextBlock() {
   }
 }
 
+export function historyAndFeedbackFooter(teamId: string) {
+  return {
+    'type': 'context',
+    'elements': [
+      markdownBlock(`<slack://app?team=${teamId}&id=${slackAppId}&tab=home|See your full forecasting history.>`),
+      markdownBlock(`_Thanks for using <https://fatebook.io/for-slack|Fatebook for Slack>! We'd love to <${feedbackFormUrl}/|hear your feedback>_`)
+    ]
+  }
+}
+
 export function targetSetButtons(homeApp : boolean){
   return [
     {
@@ -300,4 +315,149 @@ export function targetSetButtons(homeApp : boolean){
       ]
     }
   ]
+}
+
+
+
+export async function buildForecastQuestionText(forecast : ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, questionScore : QuestionScore | undefined, maxDecimalPlaces : number) {
+  const questionTitle = await getQuestionTitleLink(forecast.question)
+
+  // get the length of the string to represent forecast.forecast as two digit decimal
+  const yourForecastValueStr    = formatDecimalNicely(100 * forecast.forecast.toNumber(), maxDecimalPlaces)
+  const yourForecastValuePadded = 'You:' + padForecast(yourForecastValueStr)
+
+  // get the length of the string to represent forecast.forecast as two digit decimal
+  const commForecastValueStr    = (forecastsAreHidden(forecast.question) ?
+    '?'
+    :
+    formatDecimalNicely(100* getCommunityForecast(forecast.question, new Date()), maxDecimalPlaces)
+  )
+  const commForecastValuePadded = 'Community:' + padForecast(commForecastValueStr)
+
+  // resolution date
+  const resolutionStr = forecast.question.resolution ?
+    `Resolved: ${getResolutionEmoji(forecast.question.resolution)} ${shortResolution(forecast.question.resolution)}`
+    :
+    `Resolves:${getDateSlackFormat(forecast.question.resolveBy, false, 'date_short_pretty')}`
+
+  const resolutionPadded = questionScore ?
+    resolutionStr + padResolution(forecast.question.resolution)
+    :
+    resolutionStr
+
+  let scoreStr
+  if(questionScore) {
+    const scoreLink = forecast.profileId && await getScoreLink(forecast.question, forecast.profileId)
+
+    const scoreStrLabel     = questionScore.relativeScore !== null ? `Relative score:` : `Brier score:`
+    const scoreStrLabelPad  = questionScore.relativeScore !== null ? `` : `      `
+    const scoreStrLinklabel = scoreLink ? `<${scoreLink}|${scoreStrLabel}>${scoreStrLabelPad}` : scoreStrLabel+scoreStrLabelPad
+
+    scoreStr = scoreStrLinklabel + padAndFormatScore(questionScore.absoluteScore.toNumber())
+  } else {
+    scoreStr = ''
+  }
+
+  return questionTitle + '\n' + yourForecastValuePadded + commForecastValuePadded + resolutionPadded + scoreStr
+}
+
+async function getScoreLink(question : QuestionWithResolutionMessages, profileId : number) {
+  const resolutionMessage = question.resolutionMessages.filter((rm) => rm.profileId == profileId)
+    .sort((b,a) => a.id - b.id)[0]?.message
+  if (resolutionMessage) {
+    return await getSlackPermalinkFromChannelAndTS(resolutionMessage.teamId, resolutionMessage.channel, resolutionMessage.ts)
+  } else {
+    return undefined
+  }
+}
+
+function shortResolution(resolution : Resolution | null){
+  switch(resolution){
+    case 'YES':
+    case 'NO':
+      return resolution
+    case 'AMBIGUOUS':
+      return 'N/A'
+    case null:
+    default:
+      return ''
+  }
+}
+
+function padResolution(resolution : Resolution | null){
+  switch(resolution){
+    case 'YES':
+      return ' '.repeat(yesResolutionColumnSpacing)
+    case 'NO':
+      return ' '.repeat(noResolutionColumnSpacing)
+    case 'AMBIGUOUS':
+      return ' '.repeat(ambiguousResolutionColumnSpacing)
+    case null:
+      return ' '.repeat(forecastListColumnSpacing)
+    default:
+      return ' '.repeat(forecastListColumnSpacing)
+  }
+}
+
+
+
+// function used to align decimal places, even when no decimal places are present
+function padForecast(forecast : string, maxprepad : number = forecastPrepad, maxpostpad : number = forecastListColumnSpacing ) : string {
+  let prepad  = maxprepad
+  let postpad = maxpostpad
+
+  if (forecast.includes('.'))
+    postpad = postpad - 4
+
+  const integerPart = forecast.split('.')[0]
+  if (integerPart.length == 2){
+    prepad = prepad - 2
+  } else if ( integerPart.length == 3){
+    prepad = prepad - 4
+  }
+
+  const forecastPadded = ' '.repeat(prepad) + '`'+ forecast + '%`' + ' '.repeat(postpad)
+  return forecastPadded
+}
+
+export function buildPredictOptions(question: Question, reminderBlockForecastIds : number[] = []): InputBlock | ActionsBlock {
+
+  const useFreeTextInput = true
+
+  const quickPredictOptions = [10, 30, 50, 70, 90]
+
+  if (useFreeTextInput) {
+    return {
+      'dispatch_action': true,
+      'type': 'input',
+      'element': {
+        'type': 'plain_text_input',
+        'placeholder': textBlock('XX%'),
+        'action_id': toActionId({
+          action: 'submitTextForecast',
+          questionId: question.id,
+          reminderBlockForecastIds
+        })
+      },
+      'label': textBlock('Make a prediction'),
+    }
+  } else {
+    return {
+      'type': 'actions',
+      'elements': [
+        ...quickPredictOptions.map((option) => ({
+          'type': 'button',
+          'text': textBlock(`${option}%`),
+          'style': 'primary',
+          'value': 'click_me_123'
+        })),
+        {
+          'type': 'button',
+          'text': textBlock('....'),
+          'value': 'click_me_123'
+        }
+      ]
+    }
+  }
+
 }

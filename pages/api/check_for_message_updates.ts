@@ -8,6 +8,8 @@ import { fatebookEmailFooter, sendEmail } from '../../lib/web/email'
 import { getHtmlLinkQuestionTitle } from '../../lib/web/utils'
 import { getQuestionUrl } from '../q/[id]'
 import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
+import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale_forecasts'
+import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from '../../prisma/additional'
 
 async function getTargetsToBeNotified(){
   const lastWeek = new Date()
@@ -271,6 +273,104 @@ async function updateQuestionsToUnhideForecasts(){
   return questionsToBeUpdated
 }
 
+async function getStaleForecasts(){
+  // get all forecasts that were made exactly 2 weeks ago
+  const LAST_X_DAYS = 14
+  const now = new Date()
+  const startDate = new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000)
+  const endDate   = new Date(now.getTime() - (LAST_X_DAYS - 1) * 24 * 60 * 60 * 1000)
+
+  const forecasts = await prisma.forecast.findMany({
+    where : {
+      createdAt: {
+        gte: startDate,
+        lte: endDate
+      },
+      question : {
+        resolved : false,
+        resolveBy : {
+          gte : now
+        }
+      },
+      user : {
+        staleReminder: true
+      }
+    },
+    include: {
+      question: {
+        include: {
+          questionMessages: {
+            include: {
+              message: true
+            }
+          },
+          resolutionMessages: {
+            include: {
+              message: true
+            }
+          },
+          forecasts: true
+        }
+      },
+      user : {
+        include : {
+          accounts : true
+        }
+      },
+      profile : true
+    }
+  })
+
+  return forecasts.filter((staleForecast) => {
+    // if there are no forecasts for this question that are more recent than this one
+    //   for this user, then this forecast is stale
+    return staleForecast.question.forecasts.filter((forecast) => forecast.userId == staleForecast.userId)
+      .filter((forecast) => {
+        return forecast.createdAt > staleForecast.createdAt
+      }).length === 0
+  })
+}
+
+async function messageStaleForecasts(){
+  const staleForecasts = await getStaleForecasts()
+
+  // get unique users of stale forecasts list
+  const staleForecastUsers = Array.from(new Set(staleForecasts.map((staleForecast) => staleForecast.user)))
+
+  for(const userWithStaleForecasts of staleForecastUsers){
+    // get staleForecasts of user
+    const staleForecastsForUser = staleForecasts.filter((staleForecast) => staleForecast.user.id === userWithStaleForecasts.id)
+    const staleForecastProfiles = Array.from(new Set(staleForecastsForUser.map((staleForecast) => staleForecast.profile)))
+    for(const staleForecastProfile of staleForecastProfiles){
+      const staleForecastsForProfile = staleForecastsForUser.filter((staleForecast) => staleForecast.profile?.id === staleForecastProfile?.id)
+      if (staleForecastProfile && staleForecastProfile.slackTeamId && staleForecastProfile.slackId) {
+        await sendSlackstaleForecastNotification(staleForecastsForProfile,
+                                                 staleForecastProfile.slackTeamId,
+                                                 staleForecastProfile.slackId)
+      } else if (userWithStaleForecasts.accounts.length > 0) {
+      // await sendEmailstaleForecastNotification(user)
+        console.error("Email notifications not set for user", userWithStaleForecasts.id)
+      } else {
+        console.error("No profile or accounts found for user", userWithStaleForecasts.id)
+      }
+    }
+  }
+  return staleForecastUsers
+}
+
+async function sendSlackstaleForecastNotification(staleForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], slackTeamId: string, slackId: string){
+  await postBlockMessage(
+    slackTeamId,
+    slackId,
+    await buildStaleForecastsReminderBlock(staleForecasts, slackTeamId),
+    "You have some forecasts you may want to update",
+    {
+      unfurl_links: false,
+      unfurl_media: false
+    }
+  )
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
   //     && (!process.env.DATABASE_URL?.includes('supabase'))) {
@@ -281,5 +381,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
   const questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
   const targetMessages           = await sendTargetMessages()
-  res.json({questionsToBeUpdated, allQuestionsToBeNotified, targetMessages})
+  const staleForecastMessages    = await messageStaleForecasts()
+  res.json({questionsToBeUpdated, allQuestionsToBeNotified, targetMessages, staleForecastMessages})
 }

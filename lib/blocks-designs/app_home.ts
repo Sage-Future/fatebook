@@ -207,6 +207,7 @@ async function targetStreak(target: Target, fatebookUserId: string){
   const goalPlural = target.goal === 1 ? '' : 's'
   const diff       = target.goal - current
   const diffPlural = diff === 1 ? '' : 's'
+  const streakPlural = streak === 1 ? '' : 's'
 
   const message = current >= target.goal ? `You've hit your goal this week! Great job`
     : current === target.goal - 1 ? `You're almost there! Make 1 more ${noun} by ${getDay(target)} to keep your streak!`
@@ -216,7 +217,7 @@ async function targetStreak(target: Target, fatebookUserId: string){
     {
       type: 'section',
       'fields': [
-        markdownBlock(`🔥 Your streak: *${streak}* weeks`),
+        markdownBlock(`🔥 Your streak: *${streak}* week${streakPlural}`),
         markdownBlock(`This week: *${current}*/${target.goal} ${noun}${goalPlural}`),
       ]
     },
