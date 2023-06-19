@@ -28,7 +28,7 @@ export function UserListDropdown({
   })
 
   return (
-    <div className="dropdown dropdown-end not-prose">
+    <div className="dropdown max-sm:dropdown-end not-prose">
       <label tabIndex={0} className="btn flex gap-0">
         {question.sharedWithLists?.length > 0 ? `Shared with ${question.sharedWithLists.length} lists` : "Share with lists"}
         <ChevronDownIcon
@@ -36,7 +36,7 @@ export function UserListDropdown({
           aria-hidden="true"
         />
       </label>
-      <ul tabIndex={0} className="dropdown-content menu shadow-2xl bg-base-100 rounded-box w-full">
+      <ul tabIndex={0} className="dropdown-content menu shadow-2xl bg-base-100 rounded-box w-full md:w-96">
         {(userListsQ.data) ?
           userListsQ.data.map(userList => {
             const currentLists = question.sharedWithLists.map(l => l.id)
@@ -107,7 +107,7 @@ function UserListDisplay({
           disabled={!isEditing || updateList.isLoading}
           onClick={(e) => e.stopPropagation()}
           className={clsx(
-            "w-28 p-1",
+            "w-28 md:w-52 p-1",
             isEditing ? "border border-gray-400 rounded-md" : "border-none",
             updateList.isLoading ? "opacity-50" : "opacity-100"
           )}
@@ -171,7 +171,7 @@ function EmailInput({
         List members
       </label>
       <ReactMultiEmail
-        className={clsx("text-sm w-44", updateList.isLoading && "opacity-50")}
+        className={clsx("text-sm w-44 md:w-80", updateList.isLoading && "opacity-50")}
         placeholder="alice@gmail.com..."
         delimiter=" "
         emails={emails}
