@@ -8,7 +8,7 @@ import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_
 
 import { buttonUndoResolution, resolve } from '../../lib/interactive_handlers/resolve'
 import { submitTextForecast } from '../../lib/interactive_handlers/submit_text_forecast'
-import { buttonTargetAdjust, buttonTargetSet, buttonTriggerTargetSet } from '../../lib/interactive_handlers/targets'
+import { buttonCancelStaleReminder, buttonTargetAdjust, buttonTargetSet, buttonTriggerTargetSet } from '../../lib/interactive_handlers/reminders'
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {
@@ -82,6 +82,10 @@ async function blockActions(payload: BlockActionPayload) {
 
       case 'forecastMore':
         await buttonTriggerTargetSet(actionParts, payload)
+        break
+
+      case 'cancelStaleReminder':
+        await buttonCancelStaleReminder(actionParts, payload)
         break
 
       default:

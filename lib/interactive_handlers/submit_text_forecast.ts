@@ -1,9 +1,10 @@
 import { Decimal } from "@prisma/client/runtime/library"
 import { BlockActionPayload, BlockActionPayloadAction } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
 import { floatEquality } from "../_utils_common"
-import prisma, { backendAnalyticsEvent, getOrCreateProfile, postMessageToResponseUrl, updateMessage } from "../_utils_server"
+import prisma, { backendAnalyticsEvent, getOrCreateProfile, postMessageToResponseUrl, updateForecastQuestionMessages, updateMessage } from "../_utils_server"
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
+import { buildStaleForecastsReminderBlock } from "../blocks-designs/stale_forecasts"
 
 export async function getLastForecast(userId: string, questionId: string) {
   const forecasts = await prisma.forecast.findMany({
@@ -96,7 +97,20 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 
   console.log("Forecast created: ", forecastCreated)
 
-  if (payload.message?.ts && payload.channel?.id) {
+  if(actionParts.reminderBlockForecastIds.length > 0){
+    const filteredForecasts = await getReminderMessageForecasts(questionId, actionParts.reminderBlockForecastIds)
+    await postMessageToResponseUrl({
+      text: `Thanks for submitting your forecast!`,
+      blocks: await buildStaleForecastsReminderBlock(
+        filteredForecasts,
+        payload.team.id
+      ),
+      replace_original: true,
+    }, payload.response_url)
+
+    const questionToUpdate = filteredForecasts.filter(forecast => forecast.questionId === questionId)[0].question
+    await updateForecastQuestionMessages(questionToUpdate, "")
+  } else if (payload.message?.ts && payload.channel?.id) {
     await updateQuestionMessages(payload.team.id, payload.message.ts, payload.channel.id, payload.user.id)
   } else {
     console.error(`Missing message.ts or channel.id in payload ${JSON.stringify(payload)}`)
@@ -109,6 +123,68 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
     question: questionId,
     forecast: number,
   })
+}
+
+async function getReminderMessageForecasts(questionId : string, forecastIds : number[]){
+  const forecasts = await prisma.forecast.findMany({
+    where: {
+      OR :
+      [
+        {
+          id: {
+            in: forecastIds
+          }
+        },
+        {
+          questionId: questionId
+        }
+      ]
+    },
+    include: {
+      user: {
+        include: {
+          profiles: true
+        }
+      },
+      question: {
+        include: {
+          user: {
+            include: {
+              profiles: true
+            }
+          },
+          questionMessages: {
+            include: {
+              message: true
+            }
+          },
+          resolutionMessages: {
+            include: {
+              message: true
+            }
+          },
+          forecasts: {
+            include: {
+              user: {
+                include: {
+                  profiles: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+
+  //filter out all the forecasts except the most recent for forecasts that have questionId
+  const mostRecentQuestionIdForecast = forecasts.filter(forecast => forecast.questionId === questionId)
+    .sort((a, b) => {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })[0]
+  const filteredForecasts = forecasts.filter(forecast => forecast.questionId !== questionId).concat(mostRecentQuestionIdForecast)
+
+  return filteredForecasts
 }
 
 async function updateQuestionMessages(teamId: string, questionTs: string, channel: string, slackUserId: string) {

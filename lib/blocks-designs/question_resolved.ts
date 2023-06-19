@@ -1,9 +1,9 @@
 import { Resolution } from '@prisma/client'
 import { QuestionWithAuthorAndQuestionMessages } from '../../prisma/additional'
-import { feedbackFormUrl, maxDecimalPlacesForResolution, slackAppId } from '../_constants'
+import { maxDecimalPlacesForResolution } from '../_constants'
 import { formatDecimalNicely, getResolutionEmoji, resolutionToString } from "../_utils_common"
 import { getUserNameOrProfileLink } from '../_utils_server'
-import { Blocks, textBlock, toActionId } from './_block_utils'
+import { Blocks, historyAndFeedbackFooter, textBlock, toActionId } from './_block_utils'
 import { dividerBlock, feedbackOverflow, getQuestionTitleLink, markdownBlock } from './_block_utils'
 
 type ResolveQuestionDetails = {
@@ -52,13 +52,7 @@ export async function buildQuestionResolvedBlocks(teamId: string, question: Ques
     ...(((question.resolution!) != Resolution.AMBIGUOUS) ? generateNonAmbiguousResolution(details!) : generateAmbiguousResolution()),
     dividerBlock(),
     ...(userHasTarget ? [] : [forecastMoreButton()]),
-    {
-      'type': 'context',
-      'elements': [
-        markdownBlock(`<slack://app?team=${teamId}&id=${slackAppId}&tab=home|See your full forecasting history.>`),
-        markdownBlock(`_Thanks for using <https://fatebook.io/for-slack|Fatebook for Slack>! We'd love to <${feedbackFormUrl}/|hear your feedback>_`)
-      ]
-    }
+    historyAndFeedbackFooter(teamId)
   ]
 }
 

@@ -1,5 +1,5 @@
 import prisma, { backendAnalyticsEvent, dateToDayEnum, getCurrentTargetProgress, getOrCreateProfile, getTarget, postBlockMessage, postEphemeralBlockMessage, postEphemeralTextMessage, postMessageToResponseUrl, userHasTarget } from "../_utils_server"
-import { AdjustTargetActionParts, SetTargetActionParts, TargetTriggerActionParts } from "../blocks-designs/_block_utils"
+import { AdjustTargetActionParts, CancelStaleReminderActionParts, SetTargetActionParts, TargetTriggerActionParts } from "../blocks-designs/_block_utils"
 import { slackAppId } from "../_constants"
 import { buildConfirmTarget, buildTargetAdjust, buildTargetNotificationText, buildTargetSet } from "../blocks-designs/target_setting"
 import { refreshUserAppHome } from "./app_home"
@@ -20,6 +20,25 @@ export async function buttonTriggerTargetSet(actionParts : TargetTriggerActionPa
                                   payload.user.id,
                                   buildTargetSet(),
                                   `Want to set a forecasting target?`)
+}
+
+export async function buttonCancelStaleReminder(actionParts : CancelStaleReminderActionParts, payload :any){
+  const teamId = payload.user.team_id
+  const profile = await getOrCreateProfile(teamId, payload.user.id)
+
+  await prisma.user.update({
+    where: {
+      id: profile.user.id,
+    },
+    data: {
+      staleReminder: false,
+    }
+  })
+
+  await postMessageToResponseUrl({
+    text: `Okay! I've cancelled your stale forecast reminders!`,
+    replace_original: true,
+  }, payload.response_url)
 }
 
 export async function buttonTargetAdjust(actionParts : AdjustTargetActionParts, payload :any){
