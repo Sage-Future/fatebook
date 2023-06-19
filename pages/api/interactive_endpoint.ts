@@ -1,14 +1,14 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
 import { QuestionModalActionParts, unpackBlockActionId } from '../../lib/blocks-designs/_block_utils'
-import { deleteQuestion, questionModalSubmitted, showEditQuestionModal, updateFromCheckboxes } from '../../lib/interactive_handlers/edit_question_modal'
+import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
+import { deleteQuestionSlack, questionModalSubmitted, showEditQuestionModal, updateFromCheckboxes } from '../../lib/interactive_handlers/edit_question_modal'
 import { showForecastLogModal } from '../../lib/interactive_handlers/question_forecast_log_modal'
 import { questionOverflowAction } from '../../lib/interactive_handlers/question_overflow'
-import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
 
+import { buttonCancelStaleReminder, buttonTargetAdjust, buttonTargetSet, buttonTriggerTargetSet } from '../../lib/interactive_handlers/reminders'
 import { buttonUndoResolution, resolve } from '../../lib/interactive_handlers/resolve'
 import { submitTextForecast } from '../../lib/interactive_handlers/submit_text_forecast'
-import { buttonCancelStaleReminder, buttonTargetAdjust, buttonTargetSet, buttonTriggerTargetSet } from '../../lib/interactive_handlers/reminders'
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {
@@ -57,7 +57,7 @@ async function blockActions(payload: BlockActionPayload) {
         break
 
       case 'deleteQuestion':
-        await deleteQuestion(actionParts, payload)
+        await deleteQuestionSlack(actionParts, payload)
         break
 
       case 'homeAppPageNavigation':

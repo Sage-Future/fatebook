@@ -6,6 +6,7 @@ import { getQuestionUrl } from "../../pages/q/[id]"
 import { QuestionWithForecasts, QuestionWithForecastsAndSharedWith, QuestionWithUserAndSharedWith } from "../../prisma/additional"
 import { forecastsAreHidden } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
+import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { fatebookEmailFooter, sendEmail } from './email'
 import { publicProcedure, router } from "./trpc_base"
@@ -366,6 +367,11 @@ export const questionRouter = router({
           user: true,
         }
       })
+
+      await backendAnalyticsEvent("comment_added", {
+        platform: "web",
+        user: ctx.userId,
+      })
     }),
 
   deleteComment: publicProcedure
@@ -392,6 +398,11 @@ export const questionRouter = router({
         where: {
           id: input.commentId,
         }
+      })
+
+      await backendAnalyticsEvent("comment_deleted", {
+        platform: "web",
+        user: ctx.userId,
       })
     }),
 
@@ -427,10 +438,61 @@ export const questionRouter = router({
     .mutation(async ({input, ctx}) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
-      await prisma.question.delete({
+      await deleteQuestion(input.questionId)
+
+      await backendAnalyticsEvent("question_deleted", {
+        platform: "web",
+        user: ctx.userId,
+      })
+    }),
+
+  editQuestion: publicProcedure
+    .input(
+      z.object({
+        questionId: z.string(),
+        title: z.string().optional(),
+        resolveBy: z.date().optional(),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      await getQuestionAssertAuthor(ctx, input.questionId)
+
+      const question = await prisma.question.update({
         where: {
           id: input.questionId,
+        },
+        data: {
+          title: input.title,
+          resolveBy: input.resolveBy,
+        },
+        include: {
+          forecasts: {
+            include: {
+              user: {
+                include: {
+                  profiles: true
+                }
+              },
+            },
+          },
+          user: {
+            include: {
+              profiles: true
+            }
+          },
+          questionMessages: {
+            include: {
+              message: true
+            }
+          }
         }
+      })
+
+      await updateForecastQuestionMessages(question, "Question edited")
+
+      await backendAnalyticsEvent("question_edited", {
+        platform: "web",
+        user: ctx.userId,
       })
     }),
 })

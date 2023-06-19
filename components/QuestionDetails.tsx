@@ -114,6 +114,12 @@ function CommentBox({
       await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
     }
   })
+  const editQuestion = api.question.editQuestion.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await utils.question.getQuestion.invalidate({ questionId: question.id })
+    }
+  })
   const router = useRouter()
 
   return <div className='pb-4'>
@@ -145,6 +151,25 @@ function CommentBox({
         userId === question.userId && <div className="dropdown dropdown-end not-prose">
           <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
           <ul tabIndex={0} className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
+            <li><a onClick={() => {
+              const newTitle = prompt("Edit the title of your question:", question.title)
+              if (newTitle && newTitle !== question.title) {
+                editQuestion.mutate({
+                  questionId: question.id,
+                  title: newTitle
+                })
+              }
+            }}>Edit question</a></li>
+            <li><a onClick={() => {
+              const newDateStr = prompt("Edit the resolution date of your question (YYYY-MM-DD):", getDateYYYYMMDD(question.resolveBy))
+              const newDate = newDateStr ? new Date(newDateStr) : undefined
+              if (newDate && newDate !== question.resolveBy) {
+                editQuestion.mutate({
+                  questionId: question.id,
+                  resolveBy: newDate,
+                })
+              }
+            }}>Edit resolve by date</a></li>
             <li><a onClick={() => {
               if (confirm("Are you sure you want to delete this question? This cannot be undone")) {
                 deleteQuestion.mutate({
