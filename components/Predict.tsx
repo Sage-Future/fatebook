@@ -10,14 +10,18 @@ import { z } from "zod"
 import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
 import { useUserId } from '../lib/web/utils'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 const predictFormSchema = z.object({
   question: z.string().min(1),
   resolveBy: z.date(),
-  predictionPercentage: z.number().max(100).min(0),
+  predictionPercentage: z.number().max(100).min(0).or(z.string().max(0)),
 })
 export function Predict() {
-  const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, setValue } = useForm<z.infer<typeof predictFormSchema>>({mode: "all"})
+  const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, setValue } = useForm<z.infer<typeof predictFormSchema>>({
+    mode: "all",
+    resolver: zodResolver(predictFormSchema),
+  })
   const userId = useUserId()
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
@@ -28,11 +32,13 @@ export function Predict() {
 
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
+    if (Object.values(errors).some(err => !!err)) return
+
     if (userId) {
       createQuestion.mutate({
         title: data.question,
         resolveBy: data.resolveBy,
-        prediction: data.predictionPercentage ? data.predictionPercentage / 100 : undefined,
+        prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number") ? data.predictionPercentage / 100 : undefined,
       }, {
         onError(error, variables, context) {
           console.error("error creating question: ", {error, variables, context})
@@ -84,7 +90,7 @@ export function Predict() {
         <form onSubmit={void handleSubmit(onSubmit)}>
           <TextareaAutosize
             className={clsx(
-              "w-full text-xl border-2 border-gray-300 rounded-md p-4 resize-none shadow-lg mb-2",
+              "w-full text-xl border-2 border-gray-300 rounded-md p-4 resize-none shadow-lg mb-2 focus:outline-indigo-700",
             )}
             autoFocus={true}
             placeholder="Will humans walk on Mars by 2050?"
@@ -110,7 +116,7 @@ export function Predict() {
               <label className="block" htmlFor="resolveBy">Resolve by</label>
               <input
                 className={clsx(
-                  "text-md border-2 border-gray-300 rounded-md p-2 resize-none",
+                  "text-md border-2 border-gray-300 rounded-md p-2 resize-none focus:outline-indigo-700",
                   errors.resolveBy && "border-red-500"
                 )}
                 type="date"
@@ -124,15 +130,20 @@ export function Predict() {
 
             <div>
               <label className="block" htmlFor="resolveBy">Make a prediction</label>
-              <input
-                className={clsx(
-                  "text-md border-2 border-gray-300 rounded-md p-2 resize-none",
-                  errors.predictionPercentage && "border-red-500"
-                )}
-                placeholder="XX%"
-                onKeyDown={onEnterSubmit}
-                {...register("predictionPercentage")}
-              />
+              <div className={clsx(
+                'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:border-indigo-700',
+                errors.predictionPercentage && "border-red-500"
+              )}>
+                <input
+                  className={clsx(
+                    "resize-none text-right w-7 flex-grow outline-none"
+                  )}
+                  placeholder="XX"
+                  onKeyDown={onEnterSubmit}
+                  {...register("predictionPercentage")}
+                />
+                <span className='ml-px'>%</span>
+              </div>
             </div>
           </div>
 
