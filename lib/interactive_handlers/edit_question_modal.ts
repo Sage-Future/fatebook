@@ -177,7 +177,7 @@ export async function questionModalSubmitted(payload: any, actionParts: Question
   }
 }
 
-export async function deleteQuestion(actionParts: DeleteQuestionActionParts, payload: any) {
+export async function deleteQuestionSlack(actionParts: DeleteQuestionActionParts, payload: any) {
   console.log({payload})
 
   // we can't close a modal from a button click, so update the modal to say the question was deleted
@@ -200,9 +200,19 @@ export async function deleteQuestion(actionParts: DeleteQuestionActionParts, pay
     }
   }, 'https://slack.com/api/views.update')
 
+  await deleteQuestion(actionParts.questionId)
+
+  await backendAnalyticsEvent("question_deleted", {
+    platform: "slack",
+    team: payload.user.team_id,
+    user: payload.user.id,
+  })
+}
+
+export async function deleteQuestion(questionId: string) {
   const question = await prisma.question.delete({
     where: {
-      id: actionParts.questionId,
+      id: questionId,
     },
     include: {
       questionMessages: {
@@ -226,13 +236,7 @@ export async function deleteQuestion(actionParts: DeleteQuestionActionParts, pay
     }
   }
 
-  console.log("Deleted question ", actionParts.questionId, " and ", messagesToDelete.length, " Slack messages")
-
-  await backendAnalyticsEvent("question_deleted", {
-    platform: "slack",
-    team: payload.user.team_id,
-    user: payload.user.id,
-  })
+  console.log("Deleted question ", questionId, " and ", messagesToDelete.length, " Slack messages")
 }
 
 export async function updateFromCheckboxes(actionParts: OptionsCheckBoxActionParts, payload: any, channel : string) {
