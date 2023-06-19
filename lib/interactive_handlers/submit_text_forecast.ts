@@ -97,7 +97,7 @@ export async function submitTextForecast(actionParts: SubmitTextForecastActionPa
 
   console.log("Forecast created: ", forecastCreated)
 
-  if(actionParts.reminderBlockForecastIds.length > 0){
+  if(actionParts.reminderBlockForecastIds && actionParts.reminderBlockForecastIds.length > 0){
     const filteredForecasts = await getReminderMessageForecasts(questionId, actionParts.reminderBlockForecastIds)
     await postMessageToResponseUrl({
       text: `Thanks for submitting your forecast!`,
