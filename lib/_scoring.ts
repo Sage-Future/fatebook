@@ -139,6 +139,7 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   }
 
   for (let i = 0; i < sortedIds.length; i++) {
+    console.log({avgScoresPerUser, sortedIds, relativeScoreTimeSeries, sortedForecastsById, forecasts})
     avgScoresPerUser[sortedIds[i]].rank = i+1
   }
 

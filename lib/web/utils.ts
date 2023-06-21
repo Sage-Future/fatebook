@@ -1,5 +1,6 @@
 import { Question } from "@prisma/client"
 import { useSession } from "next-auth/react"
+import { ReactNode } from "react"
 import { getQuestionUrl } from "../../pages/q/[id]"
 
 export function useUserId() {
@@ -93,4 +94,12 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
 
 export function getHtmlLinkQuestionTitle(question: Question) {
   return `<a href="${getQuestionUrl(question, false)}">${question.title}</a>`
+}
+
+export function getPredictionBookIdPrefix() {
+  return "pb_"
+}
+
+export function ifEmpty<T>(value: Array<T>, defaultValue: ReactNode) {
+  return (!value || value?.length === 0) ? defaultValue : value
 }

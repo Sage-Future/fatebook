@@ -1,7 +1,8 @@
-import { httpBatchLink } from '@trpc/client'
+import { TRPCClientError, httpBatchLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
 import transformer from 'trpc-transformer'
 import { AppRouter } from './app_router'
+import { toast } from 'react-hot-toast'
 
 export function getClientBaseUrl(useRelativePath = true) {
   if (typeof window !== 'undefined') {
@@ -36,6 +37,32 @@ export const api = createTRPCNext<AppRouter>({
           },
         }),
       ],
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            onError: (error) => {
+              if (typeof window === 'undefined') return false
+              if (!(error instanceof TRPCClientError)) return false
+              if (error?.data?.code === 404) return false
+              else {
+                toast.error(`Oops, there was an error on our end. \n${error.name} ${error.message}`)
+                return false
+              }
+            }
+          },
+          mutations: {
+            onError: (error) => {
+              if (typeof window === 'undefined') return false
+              if (!(error instanceof TRPCClientError)) return false
+              if (error?.data?.code === 404) return false
+              else {
+                toast.error(`Oops, there was an error on our end. \n${error.message}`)
+                return false
+              }
+            }
+          }
+        }
+      }
     }
   },
   /**

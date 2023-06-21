@@ -8,6 +8,7 @@ import "../styles/globals.css"
 import { ReactElement, ReactNode } from "react"
 import { NextPage } from "next"
 import { Layout } from "../components/Layout"
+import { Toaster } from "react-hot-toast"
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -29,6 +30,7 @@ function App({ Component, pageProps: {session, ...pageProps} }: AppPropsWithLayo
     <GoogleAnalytics trackPageViews />
     <SessionProvider session={session}>
       {getLayout(<Component {...pageProps} />)}
+      <Toaster />
     </SessionProvider>
   </>
 }
