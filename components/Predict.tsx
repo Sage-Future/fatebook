@@ -16,7 +16,7 @@ export function Predict() {
   const predictFormSchema = z.object({
     question: z.string().min(1),
     resolveBy: z.date(),
-    predictionPercentage: z.number().min(0).max(100),
+    predictionPercentage: z.number().min(0).max(100).or(z.nan()),
   })
 
   const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, setValue } = useForm<z.infer<typeof predictFormSchema>>({
@@ -39,7 +39,11 @@ export function Predict() {
       createQuestion.mutate({
         title: data.question,
         resolveBy: data.resolveBy,
-        prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number") ? data.predictionPercentage / 100 : undefined,
+        prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number" && !isNaN(data.predictionPercentage))
+          ?
+          data.predictionPercentage / 100
+          :
+          undefined,
       }, {
         onError(error, variables, context) {
           console.error("error creating question: ", {error, variables, context})
@@ -146,6 +150,7 @@ export function Predict() {
                   {...register("predictionPercentage", { valueAsNumber: true })}
                 />
                 <span className='ml-px'>%</span>
+                <span>{errors.predictionPercentage?.message}</span>
               </div>
             </div>
           </div>
