@@ -139,7 +139,8 @@ export function Predict() {
                   className={clsx(
                     "resize-none text-right w-7 flex-grow outline-none"
                   )}
-                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="XX"
                   onKeyDown={onEnterSubmit}
                   {...register("predictionPercentage", { valueAsNumber: true })}

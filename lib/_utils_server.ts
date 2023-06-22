@@ -295,7 +295,7 @@ async function handleChannelNotFoundError(response: {ok: boolean, error?: string
         user: userId,
         text: `Oops, this bot is not in that channel. Invite me to <#${attemptedChannel}> first by tagging me, or use a public channel. (Note that Slack doesn't let you add bots to DMs).`,
       })
-      console.log("Notified user about error posting Slack message channel_not_found (Bot is not in that channel).")
+      console.log("Notified user about err posting Slack message channel_not_found (Bot is not in that channel).")
       return {...response, notifiedUserAboutEmptyChannel: true}
     } else {
       console.error(`Error posting Slack message:`, response.error)
