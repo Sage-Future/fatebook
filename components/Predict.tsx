@@ -12,12 +12,13 @@ import { api } from "../lib/web/trpc"
 import { useUserId } from '../lib/web/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 
-const predictFormSchema = z.object({
-  question: z.string().min(1),
-  resolveBy: z.date(),
-  predictionPercentage: z.number().max(100).min(0).or(z.string().max(0)),
-})
 export function Predict() {
+  const predictFormSchema = z.object({
+    question: z.string().min(1),
+    resolveBy: z.date(),
+    predictionPercentage: z.number().min(0).max(100),
+  })
+
   const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, setValue } = useForm<z.infer<typeof predictFormSchema>>({
     mode: "all",
     resolver: zodResolver(predictFormSchema),
@@ -138,9 +139,10 @@ export function Predict() {
                   className={clsx(
                     "resize-none text-right w-7 flex-grow outline-none"
                   )}
+                  type="number"
                   placeholder="XX"
                   onKeyDown={onEnterSubmit}
-                  {...register("predictionPercentage")}
+                  {...register("predictionPercentage", { valueAsNumber: true })}
                 />
                 <span className='ml-px'>%</span>
               </div>
