@@ -40,7 +40,7 @@ export function ResolveButton({
         <div className='w-full'>
           <Menu.Button
             className={clsx(
-              "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75",
+              "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 disabled:opacity-30",
               resolution === "YES" ? "bg-green-500 text-white" : resolution === "NO" ? "bg-red-500 text-white" : resolution === "AMBIGUOUS" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
             )}
             disabled={resolveQuestion.isLoading || undoResolution.isLoading || question.userId !== userId}
@@ -63,7 +63,7 @@ export function ResolveButton({
           leaveTo="transform opacity-0 scale-95"
         >
           <Menu.Items className="absolute z-40 right-0 mt-2 w-40 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-            <div className="px-1 py-1 ">
+            <div className="px-1 py-1 " onClick={(e) => e.stopPropagation()}>
               {question.resolution ?
                 <Menu.Item key={resolution}>
                   {({ active }) => (
