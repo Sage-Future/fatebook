@@ -139,7 +139,10 @@ export function relativeBrierScoring(forecasts : Forecast[], question : Question
   }
 
   for (let i = 0; i < sortedIds.length; i++) {
-    avgScoresPerUser[sortedIds[i]].rank = i+1
+    // dealing with case where user has no score, but made a forecast (i.e. made forecasts only after question resolved)
+    if (avgScoresPerUser[sortedIds[i]] != undefined){
+      avgScoresPerUser[sortedIds[i]].rank = i+1
+    }
   }
 
   return avgScoresPerUser
