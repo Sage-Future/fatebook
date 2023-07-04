@@ -59,6 +59,10 @@ export type QuestionWithScores = Question & {
     questionScores: QuestionScore[]
 }
 
+export type QuestionWithForecastsAndScores = QuestionWithForecasts & {
+    questionScores: QuestionScore[]
+}
+
 export type QuestionWithUser = Question & {
     user: UserWithProfiles
 }

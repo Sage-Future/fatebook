@@ -1,6 +1,6 @@
 import { Question, QuestionScore, Resolution, SlackMessage } from '@prisma/client'
 import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionWithAuthorAndQuestionMessages, QuestionWithQuestionMessagesAndForecastWithUserWithProfiles, QuestionWithScores } from '../../prisma/additional'
+import { QuestionWithAuthorAndQuestionMessages, QuestionWithForecastsAndScores, QuestionWithQuestionMessagesAndForecastWithUserWithProfiles, QuestionWithScores } from '../../prisma/additional'
 import { ScoreCollection, ScoreTuple, relativeBrierScoring } from '../_scoring'
 import { ResolveQuestionActionParts, UndoResolveActionParts } from '../blocks-designs/_block_utils'
 import { buildQuestionResolvedBlocks } from '../blocks-designs/question_resolved'
@@ -229,8 +229,16 @@ export async function handleQuestionResolution(questionId : string, resolution :
   // update ping and question message first for responsiveness
   await updateResolvePingQuestionMessages(question, "Question resolved!")
 
-  let scores : ScoreCollection = {}
-  if(resolution != Resolution.AMBIGUOUS) {
+  let scores = await scoreQuestion(resolution, question)
+  await updateForecastQuestionMessages(question, "Question resolved!")
+  await messageUsers(scores, question)
+  await sendResolutionBroadcast(question)
+}
+
+export async function scoreQuestion(resolution: Resolution, question: QuestionWithForecastsAndScores) {
+  let scores: ScoreCollection = {}
+  if (resolution != Resolution.AMBIGUOUS) {
+    console.log("Question is unambig")
     scores = relativeBrierScoring(question.forecasts, question)
     await scoreForecasts(scores, question)
   } else {
@@ -245,9 +253,7 @@ export async function handleQuestionResolution(questionId : string, resolution :
       }
     }).reduce((a, b) => Object.assign(a, b), {})
   }
-  await updateForecastQuestionMessages(question, "Question resolved!")
-  await messageUsers(scores, question)
-  await sendResolutionBroadcast(question)
+  return scores
 }
 
 export async function resolve(actionParts: ResolveQuestionActionParts, responseUrl?: string, userSlackId?: string, actionValue?: string, connectingTeamId? : string) {

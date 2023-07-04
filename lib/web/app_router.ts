@@ -2,6 +2,7 @@ import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { sendEmailReadyToResolveNotification } from '../../pages/api/check_for_message_updates'
 import prisma, { backendAnalyticsEvent, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
+import { importRouter } from './import_router'
 import { questionRouter } from './question_router'
 import { publicProcedure, router } from './trpc_base'
 import { userListRouter } from './userList_router'
@@ -11,6 +12,8 @@ export const appRouter = router({
   question: questionRouter,
 
   userList: userListRouter,
+
+  import: importRouter,
 
   sendEmail: publicProcedure
     .input(

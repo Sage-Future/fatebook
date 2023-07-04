@@ -1,6 +1,6 @@
 import { intlFormatDistance } from "date-fns"
-import { getDateYYYYMMDD } from "../lib/_utils_common"
 import { HTMLAttributes, ReactNode } from "react"
+import { getDateYYYYMMDD } from "../lib/_utils_common"
 
 export function FormattedDate({
   date,
@@ -25,7 +25,11 @@ export function FormattedDate({
     return <></>
   }
 
-  const formattedDate = (alwaysUseDistance || (date.getTime() <= Date.now() || date.getTime() - Date.now() < oneWeekMs)) ?
+  const showDistance = alwaysUseDistance
+  || (date.getTime() <= Date.now() && ((Date.now() - date.getTime()) <= oneWeekMs * 8))
+  || (date.getTime() > Date.now() && date.getTime() - Date.now() < oneWeekMs)
+
+  const formattedDate = showDistance ?
     (
       currentDateShowToday && getDateYYYYMMDD(date) === getDateYYYYMMDD(new Date()) ?
         "today"
@@ -35,7 +39,7 @@ export function FormattedDate({
     getDateYYYYMMDD(date)
 
   return (
-    <span className={`md:tooltip ${className}`} data-tip={date.toString()}>
+    <span className={`md:tooltip ${className}`} data-tip={`${getDateYYYYMMDD(date)} at ${date.toLocaleTimeString()}`}>
       {prefix}
       {capitalise ?
         formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)

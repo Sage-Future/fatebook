@@ -46,6 +46,7 @@
     "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.9",
     "react-hook-form": "^7.43.9",
+    "react-hot-toast": "^2.4.1",
     "react-markdown": "^8.0.7",
     "react-multi-email": "^1.0.9",
     "react-textarea-autosize": "^8.4.1",

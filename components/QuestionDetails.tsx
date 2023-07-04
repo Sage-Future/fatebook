@@ -10,6 +10,8 @@ import { useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
+import remarkGfm from 'remark-gfm'
 
 export function QuestionDetails({
   question
@@ -64,7 +66,11 @@ function EventsLog({
           <span><Username user={question.user} className="font-semibold" /></span>
           <span/>
           <span className="text-slate-400"><FormattedDate date={question.createdAt} /></span>
-          <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">{question.notes}</span>
+          <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {question.notes}
+            </ReactMarkdown>
+          </span>
         </Fragment>
       }] : []),
     ],
