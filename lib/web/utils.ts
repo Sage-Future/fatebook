@@ -94,3 +94,5 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
 export function getHtmlLinkQuestionTitle(question: Question) {
   return `<a href="${getQuestionUrl(question, false)}">${question.title}</a>`
 }
+
+export const webFeedbackUrl = "https://forms.gle/mfyCqLG4pLoEqYfy9"

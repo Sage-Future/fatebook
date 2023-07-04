@@ -119,7 +119,7 @@ export function Predict() {
                   // @ts-ignore - type definition is wrong (Date not string)
                   setValue("resolveBy", newResolveBy)
                   setHighlightResolveBy(true)
-                  setTimeout(() => setHighlightResolveBy(false), 500)
+                  setTimeout(() => setHighlightResolveBy(false), 800)
                 }
               }
             }}

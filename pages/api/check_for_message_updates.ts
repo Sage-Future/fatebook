@@ -131,7 +131,7 @@ export async function sendEmailReadyToResolveNotification(question: Question & {
     to: question.user.email,
     textBody: `Are you ready to resolve your question: ${question.title}`,
     htmlBody: `<p>Are you ready to resolve your question: <b>${getHtmlLinkQuestionTitle(question)}</b></p>\n
-<p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>${fatebookEmailFooter()}`,
+<p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>${fatebookEmailFooter(question.user.email)}`,
   })
 
   await prisma.question.update({

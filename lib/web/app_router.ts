@@ -1,6 +1,7 @@
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { sendEmailReadyToResolveNotification } from '../../pages/api/check_for_message_updates'
-import prisma, { getSlackPermalinkFromChannelAndTS } from '../_utils_server'
+import prisma, { backendAnalyticsEvent, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { questionRouter } from './question_router'
 import { publicProcedure, router } from './trpc_base'
 import { userListRouter } from './userList_router'
@@ -43,6 +44,40 @@ export const appRouter = router({
     .query(async ({ input }) => {
       if (!input) { return null }
       return await getSlackPermalinkFromChannelAndTS(input.teamId, input.channel, input.ts)
+    }),
+
+  unsubscribe: publicProcedure
+    .input(
+      z.object({
+        userEmail: z.string(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const user = await prisma.user.findUnique({
+        where: {
+          email: input.userEmail,
+        },
+      })
+      if (!user) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'User not found',
+        })
+      }
+
+      await prisma.user.update({
+        where: {
+          email: input.userEmail,
+        },
+        data: {
+          unsubscribedFromEmailsAt: new Date(),
+        },
+      })
+
+      await backendAnalyticsEvent('email_unsubscribe', {
+        platform: 'web',
+        email: input.userEmail,
+      })
     }),
 })
 

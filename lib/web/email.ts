@@ -1,4 +1,5 @@
 import { ServerClient } from "postmark"
+import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
 import { backendAnalyticsEvent } from "../_utils_server"
 
@@ -33,10 +34,11 @@ export async function sendEmail({
   }
 }
 
-// todo add unsubscribe link
-export function fatebookEmailFooter() {
+export function fatebookEmailFooter(userEmailAddress: string) {
   return `\n
 <br/>
 <p><i><a href="https://fatebook.io">Fatebook</a> helps you rapidly make and track predictions about the future.</i></p>
+<br/>
+<p><a href=${getUnsubscribeUrl(userEmailAddress)}Unsubscribe from all emails from Fatebook</a></p>
 `
 }

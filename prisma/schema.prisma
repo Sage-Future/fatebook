@@ -106,21 +106,22 @@ model SlackMessage {
 }
 
 model User {
-  id                  String          @id @default(cuid())
-  name                String?
-  createdAt           DateTime        @default(now())
-  email               String          @unique
-  image               String?
-  forecasts           Forecast[]
-  profiles            Profile[]
-  questions           Question[]      @relation("author")
-  questionScores      QuestionScore[]
-  questionsSharedWith Question[]      @relation("questionsSharedWith")
-  comments            Comment[]
-  target              Target?         @relation("userTarget")
-  authorOfLists       UserList[]      @relation(name: "author")
-  memberOfLists       UserList[]      @relation(name: "members")
-  staleReminder       Boolean         @default(true)
+  id                       String          @id @default(cuid())
+  name                     String?
+  createdAt                DateTime        @default(now())
+  email                    String          @unique
+  image                    String?
+  forecasts                Forecast[]
+  profiles                 Profile[]
+  questions                Question[]      @relation("author")
+  questionScores           QuestionScore[]
+  questionsSharedWith      Question[]      @relation("questionsSharedWith")
+  comments                 Comment[]
+  target                   Target?         @relation("userTarget")
+  authorOfLists            UserList[]      @relation(name: "author")
+  memberOfLists            UserList[]      @relation(name: "members")
+  staleReminder            Boolean         @default(true)
+  unsubscribedFromEmailsAt DateTime?
 
   // Used by next-auth:
   emailVerified DateTime?
@@ -158,7 +159,7 @@ model Target {
   goal         Int
   lastFailedAt DateTime     @default(now())
   notifyOn     DayOfTheWeek
-  lastNotified DateTime   @default(now())
+  lastNotified DateTime     @default(now())
 }
 
 enum DayOfTheWeek {

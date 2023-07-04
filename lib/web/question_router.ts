@@ -506,7 +506,7 @@ export async function emailNewlySharedWithUsers(newlySharedWith: string[], quest
       textBody: `"${question.title}"`,
       htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(question)}</b></p>
 <p><a href=${getQuestionUrl(question)}>See ${author}'s prediction and add your own on Fatebook.</a></p>
-${fatebookEmailFooter()}`
+${fatebookEmailFooter(email)}`
     })
   }))
 }
