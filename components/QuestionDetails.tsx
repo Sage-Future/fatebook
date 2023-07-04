@@ -20,7 +20,7 @@ export function QuestionDetails({
 }) {
 
   return (
-    <div className="bg-slate-100 px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
+    <div className="bg-neutral-100 border-[1px] px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <CommentBox question={question} />
         {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">

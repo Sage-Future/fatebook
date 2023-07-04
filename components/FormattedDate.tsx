@@ -1,6 +1,7 @@
 import { intlFormatDistance } from "date-fns"
 import { HTMLAttributes, ReactNode } from "react"
 import { getDateYYYYMMDD } from "../lib/_utils_common"
+import clsx from "clsx"
 
 export function FormattedDate({
   date,
@@ -10,6 +11,7 @@ export function FormattedDate({
   alwaysUseDistance = false,
   capitalise = false,
   currentDateShowToday = false,
+  hoverTooltip = true,
 } : {
   date: Date | undefined
   prefix?: ReactNode | string
@@ -18,6 +20,7 @@ export function FormattedDate({
   alwaysUseDistance?: boolean
   capitalise?: boolean
   currentDateShowToday?: boolean
+  hoverTooltip?: boolean
 }) {
   const oneWeekMs = 1000 * 60 * 60 * 24 * 7
 
@@ -39,7 +42,10 @@ export function FormattedDate({
     getDateYYYYMMDD(date)
 
   return (
-    <span className={`md:tooltip ${className}`} data-tip={`${getDateYYYYMMDD(date)} at ${date.toLocaleTimeString()}`}>
+    <span
+      className={clsx(hoverTooltip && `md:tooltip`, className)}
+      data-tip={`${getDateYYYYMMDD(date)} at ${date.toLocaleTimeString()}`}
+    >
       {prefix}
       {capitalise ?
         formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)

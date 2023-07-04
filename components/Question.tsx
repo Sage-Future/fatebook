@@ -43,7 +43,8 @@ export function Question({
           <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
             <span className="col-span-2 flex gap-4 mb-1 justify-between">
               <span className={"font-semibold"} key={`${question.id}title`}>
-                <Link href={getQuestionUrl(question)} key={question.id} className={"no-underline hover:underline"}>
+                <Link href={getQuestionUrl(question)} key={question.id} className={"no-underline hover:underline"}
+                  onClick={(e) => e.stopPropagation()}>
                   {question.title}
                 </Link>
               </span>

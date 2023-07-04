@@ -144,7 +144,7 @@ export function Predict() {
                   {...register("resolveBy", { required: true, valueAsDate: true })}
                 />
                 <span className='italic text-gray-400 text-sm p-1'>
-                  <FormattedDate date={resolveByDate} alwaysUseDistance={true} capitalise={true} currentDateShowToday={true} />
+                  <FormattedDate date={resolveByDate} alwaysUseDistance={true} capitalise={true} currentDateShowToday={true} hoverTooltip={false} />
                 </span>
               </div>
 
