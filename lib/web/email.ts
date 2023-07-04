@@ -2,6 +2,7 @@ import { ServerClient } from "postmark"
 import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
 import { backendAnalyticsEvent } from "../_utils_server"
+import { webFeedbackUrl } from "./utils"
 
 export async function sendEmail({
   subject,
@@ -39,6 +40,7 @@ export function fatebookEmailFooter(userEmailAddress: string) {
 <br/>
 <p><i><a href="https://fatebook.io">Fatebook</a> helps you rapidly make and track predictions about the future.</i></p>
 <br/>
-<p><a href=${getUnsubscribeUrl(userEmailAddress)}Unsubscribe from all emails from Fatebook</a></p>
+<p><a href=${webFeedbackUrl}>Give feedback on Fatebook</a></p>
+<p><a href=${getUnsubscribeUrl(userEmailAddress)}>Unsubscribe from all emails from Fatebook</a></p>
 `
 }
