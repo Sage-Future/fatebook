@@ -334,24 +334,29 @@ async function getStaleForecasts(){
 async function messageStaleForecasts(){
   const staleForecasts = await getStaleForecasts()
 
-  // get unique users of stale forecasts list
-  const staleForecastUsers = Array.from(new Set(staleForecasts.map((staleForecast) => staleForecast.user)))
+  const allUsers = (staleForecasts.map((staleForecast) => staleForecast.user))
+  // get unique by id
+  const staleForecastUsers = Array.from(new Set(allUsers.map((user) => user.id)))
 
-  for(const userWithStaleForecasts of staleForecastUsers){
+  for(const userIdWithStaleForecasts of staleForecastUsers){
     // get staleForecasts of user
-    const staleForecastsForUser = staleForecasts.filter((staleForecast) => staleForecast.user.id === userWithStaleForecasts.id)
-    const staleForecastProfiles = Array.from(new Set(staleForecastsForUser.map((staleForecast) => staleForecast.profile)))
+    const staleForecastsForUser = staleForecasts.filter((staleForecast) => staleForecast.user.id === userIdWithStaleForecasts)
+    const staleForecastProfileIds = Array.from(new Set(staleForecastsForUser.map((staleForecast) => staleForecast.profile?.id)))
+    const staleForecastProfiles = staleForecastProfileIds.map((profileId) => staleForecastsForUser.find((staleForecast) => staleForecast.profile?.id === profileId)?.profile)
+      .filter((profile) => profile !== undefined)
     for(const staleForecastProfile of staleForecastProfiles){
       const staleForecastsForProfile = staleForecastsForUser.filter((staleForecast) => staleForecast.profile?.id === staleForecastProfile?.id)
       if (staleForecastProfile && staleForecastProfile.slackTeamId && staleForecastProfile.slackId) {
         await sendSlackstaleForecastNotification(staleForecastsForProfile,
                                                  staleForecastProfile.slackTeamId,
                                                  staleForecastProfile.slackId)
-      } else if (userWithStaleForecasts.accounts.length > 0) {
-      // await sendEmailstaleForecastNotification(user)
-        console.error("Email notifications not set for user", userWithStaleForecasts.id)
       } else {
-        console.error("No profile or accounts found for user", userWithStaleForecasts.id)
+        const user = allUsers.find(user => user.id == userIdWithStaleForecasts)
+        if(user && user.accounts.length > 0){
+          console.error("Email notifications not set for user", userIdWithStaleForecasts)
+        } else {
+          console.error("No profile or accounts found for user", userIdWithStaleForecasts)
+        }
       }
     }
   }
