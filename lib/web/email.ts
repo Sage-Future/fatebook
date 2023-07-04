@@ -1,7 +1,7 @@
 import { ServerClient } from "postmark"
 import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
-import { backendAnalyticsEvent } from "../_utils_server"
+import prisma, { backendAnalyticsEvent } from "../_utils_server"
 import { webFeedbackUrl } from "./utils"
 
 export async function sendEmail({
@@ -15,6 +15,16 @@ export async function sendEmail({
   textBody: string
   to: string
 }) {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: to,
+    },
+  })
+  if (user?.unsubscribedFromEmailsAt) {
+    console.log(`Not sending email to ${to} because they unsubscribed`)
+    return
+  }
+
   console.log("Sending email...")
   const client = new ServerClient(postmarkApiToken)
   const response = await client.sendEmail({

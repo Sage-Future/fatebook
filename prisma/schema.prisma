@@ -42,7 +42,7 @@ model QuestionScore {
 
 model Question {
   id                  String                   @id @default(cuid())
-  createdAt           DateTime                 @default(now())
+  createdAt           DateTime                 @default(now()) @unique
   comment             String? // todo remove, unused
   profileId           Int?
   title               String                   @db.VarChar(255)

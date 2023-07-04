@@ -1,7 +1,8 @@
 import { useSession } from "next-auth/react"
 import { api } from "../lib/web/trpc"
+import { Question } from "./Question"
 import { ifEmpty } from "../lib/web/utils"
-import { Question as QuestionComp } from "./Question"
+import { InView } from "react-intersection-observer"
 
 export function Questions({
   title,
@@ -12,38 +13,53 @@ export function Questions({
 }) {
   const session = useSession()
 
-  const questions = api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useQuery(undefined, {
-    queryKey: ["question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith", undefined]
-  })
+  const questionsQ = api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useInfiniteQuery(
+    {
+      limit: 10,
+    },
+    {
+      initialCursor: 0,
+      getNextPageParam: (lastPage, pages) => pages.flatMap(p => p).length,
+    }
+  )
 
-  if (!session.data?.user.id) {
+  if (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0) {
     return <></>
   }
 
-  if (!questions.data || questions.data.length === 0) {
-    return <></>
-  }
+  const questionsUnfiltered = questionsQ.data.pages.flatMap(p => p)
+  const questions = questionsUnfiltered.filter(question => (!filter || filter(question)) && question)
 
   return (
     <div>
       <h3 className="mb-2 select-none">{title || "Your forecasts"}</h3>
       <div className="grid gap-6">
         {ifEmpty(
-          questions.data.sort(
-            (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-          )
-            .filter(question => !filter || filter(question))
+          questions
             .map((question, index) => (
-              <QuestionComp question={question}
-                key={question.id}
-                startExpanded={index === 0}
-                zIndex={questions.data?.length ? (questions.data?.length - index) : undefined}
-              />
+              question ?
+                <Question question={question}
+                  key={question.id}
+                  startExpanded={index === 0}
+                  zIndex={questions?.length ? (questions?.length - index) : undefined}
+                />
+                :
+                <></>
             )),
           <div className="italic">
             No questions yet
           </div>
         )}
+        <InView>
+          {({ inView, ref }) => {
+            if (inView) {
+              void questionsQ.fetchNextPage()
+            }
+            return (
+              <div ref={ref} />
+            )
+          }}
+        </InView>
       </div>
     </div>
   )

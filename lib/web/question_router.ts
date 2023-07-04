@@ -61,12 +61,23 @@ export const questionRouter = router({
     }),
 
   getQuestionsUserCreatedOrForecastedOnOrIsSharedWith: publicProcedure
-    .query(async ({ ctx }) => {
+    .input(z.object({
+      limit: z.number().min(1).max(100).nullish(),
+      cursor: z.number(),
+    }))
+    .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
         return null
       }
 
+      const limit = input.limit || 100
+
       const questions = await prisma.question.findMany({
+        skip: input.cursor,
+        take: limit + 1,
+        orderBy: {
+          createdAt: "desc",
+        },
         where: {
           OR: [
             {userId: ctx.userId},
