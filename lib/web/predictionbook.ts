@@ -2,6 +2,7 @@ import { Resolution } from "@prisma/client"
 import prisma from "../_utils_server"
 import { getPredictionBookIdPrefix } from "./utils"
 import { scoreQuestion } from "../interactive_handlers/resolve"
+import { max } from "date-fns"
 
 interface PBUser {
   email: string
@@ -79,7 +80,15 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
       resolved: question.outcome !== null,
       resolution: question.outcome === null ? null : question.outcome ? Resolution.YES : Resolution.NO,
       resolveBy: new Date(question.deadline),
-      resolvedAt: question.outcome === null ? null : new Date(question.updated_at), // mapping is imprecise
+      resolvedAt: question.outcome === null ?
+        null
+        :
+        // PredictionBook doesn't have a "resolved_at" field, so we use the deadline
+        // or if there was an update after the deadline then just add 24 hours to the last update time
+        max([
+          new Date(new Date(question.updated_at).getTime() + 24 * 60 * 60 * 1000),
+          new Date(question.deadline)
+        ]),
       sharedPublicly: question.visibility === "visible_to_everyone",
       notes: `[This question was imported from PredictionBook](https://predictionbook.com/predictions/${question.id})`,
     }
@@ -98,7 +107,7 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
         forecasts: {
           createMany: {
             data: question.responses
-              .filter(r => r.confidence !== null)
+              .filter(r => r.confidence !== null && r.user_id === user?.user_id)
               .map((response) => ({
                 forecast: response.confidence! / 100,
                 createdAt: new Date(response.created_at),
@@ -109,7 +118,7 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
         comments: {
           createMany: {
             data: question.responses
-              .filter(r => r.comment !== null)
+              .filter(r => r.comment !== null && r.user_id === user?.user_id)
               .map((response) => ({
                 comment: response.comment!,
                 createdAt: new Date(response.created_at),

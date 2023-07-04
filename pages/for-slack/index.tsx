@@ -123,7 +123,7 @@ export default function ForSlackPage() {
           {
             question: "I don't use Slack, can I still use Fatebook?",
             answer:
-              "[Fatebook web](https://fatebook.io) is coming soon! [Suggest a Fatebook integration for another platform.](https://forms.gle/nRqUcj154oEVLxdZ9)"
+              "[Fatebook.io](https://fatebook.io) lets you make rapid predictions on the web! [Suggest a Fatebook integration for another platform.](https://forms.gle/nRqUcj154oEVLxdZ9)"
           },
           {
             question: "How can I get better at forecasting?",
