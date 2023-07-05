@@ -104,4 +104,11 @@ export function ifEmpty<T>(value: Array<T>, defaultValue: ReactNode) {
   return (!value || value?.length === 0) ? defaultValue : value
 }
 
+export async function invalidateQuestion(utils: any, question: Question) {
+  await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
+    refetchPage: (page: any) => page.items.some((item: any) => item.id === question.id)
+  })
+  await utils.question.getQuestion.invalidate({ questionId: question.id })
+}
+
 export const webFeedbackUrl = "https://forms.gle/mfyCqLG4pLoEqYfy9"

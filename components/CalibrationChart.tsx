@@ -19,7 +19,10 @@ export function CalibrationChart() {
 
   return (
     <div className="mr-4 relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <Line data={params.data} width={450} height={450}
+      <Line
+        data={params.data}
+        width={450}
+        height={450}
         // @ts-ignore
         options={{responsive: true, animation: false, ...params.options }}
       />

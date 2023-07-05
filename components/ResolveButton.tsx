@@ -3,9 +3,9 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Question, Resolution } from "@prisma/client"
 import clsx from 'clsx'
 import { Fragment } from 'react'
-import { getResolutionEmoji, toSentenceCase } from '../lib/_utils_common'
+import { toSentenceCase } from '../lib/_utils_common'
 import { api } from '../lib/web/trpc'
-import { useUserId } from '../lib/web/utils'
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 
 export function ResolveButton({
   question
@@ -16,15 +16,13 @@ export function ResolveButton({
   const utils = api.useContext()
   const resolveQuestion = api.question.resolveQuestion.useMutation({
     async onSettled() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({questionId: question.id})
+      await invalidateQuestion(utils, question)
       await utils.question.getQuestionScores.invalidate()
     },
   })
   const undoResolution = api.question.undoResolution.useMutation({
     async onSettled() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({questionId: question.id})
+      await invalidateQuestion(utils, question)
       await utils.question.getQuestionScores.invalidate()
     },
   })
@@ -96,7 +94,12 @@ export function ResolveButton({
                           })
                         }}
                       >
-                        {`${getResolutionEmoji(resolution)} ${toSentenceCase(resolution.toLowerCase())}`}
+                        <div
+                          className={clsx(
+                            'h-3 w-3 mr-2 rounded-md',
+                            resolution === "YES" ? "bg-green-500" : resolution === "NO" ? "bg-red-500" : resolution === "AMBIGUOUS" ? "bg-blue-500" : "bg-gray-200"
+                          )} />
+                        {toSentenceCase(resolution.toLowerCase())}
                       </button>
                     )}
                   </Menu.Item>

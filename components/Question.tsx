@@ -43,7 +43,10 @@ export function Question({
           <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
             <span className="col-span-2 flex gap-4 mb-1 justify-between">
               <span className={"font-semibold"} key={`${question.id}title`}>
-                <Link href={getQuestionUrl(question)} key={question.id} className={"no-underline hover:underline"}
+                <Link
+                  href={getQuestionUrl(question)}
+                  key={question.id}
+                  className={"no-underline hover:underline"}
                   onClick={(e) => e.stopPropagation()}>
                   {question.title}
                 </Link>
@@ -61,10 +64,12 @@ export function Question({
                     <FormattedDate prefix={"Resolved "} date={question.resolvedAt} />
                   </span>
                 ) : (
-                  <span className={clsx(
-                    "text-sm text-gray-400 my-auto",
-                    question.resolveBy < new Date() && "text-indigo-300"
-                  )} key={`${question.id}resolve`}>
+                  <span
+                    className={clsx(
+                      "text-sm text-gray-400 my-auto",
+                      question.resolveBy < new Date() && "text-indigo-300"
+                    )}
+                    key={`${question.id}resolve`}>
                     {question.resolveBy < new Date() ?
                       <FormattedDate prefix={<><span>Ready to resolve</span><br/>{"("}</>} date={question.resolveBy} postfix=")" />
                       :

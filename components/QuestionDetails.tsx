@@ -6,7 +6,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import ReactTextareaAutosize from 'react-textarea-autosize'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
-import { useUserId } from '../lib/web/utils'
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
@@ -108,8 +108,7 @@ function CommentBox({
   const utils = api.useContext()
   const addComment = api.question.addComment.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({ questionId: question.id })
+      await invalidateQuestion(utils, question)
       setLocalComment("")
     }
   })
@@ -122,8 +121,7 @@ function CommentBox({
   })
   const editQuestion = api.question.editQuestion.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({ questionId: question.id })
+      await invalidateQuestion(utils, question)
     }
   })
   const router = useRouter()
@@ -157,35 +155,41 @@ function CommentBox({
         userId === question.userId && <div className="dropdown dropdown-end not-prose">
           <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
           <ul tabIndex={0} className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
-            <li><a onClick={() => {
-              const newTitle = prompt("Edit the title of your question:", question.title)
-              if (newTitle && newTitle !== question.title) {
-                editQuestion.mutate({
-                  questionId: question.id,
-                  title: newTitle
-                })
-              }
-            }}>Edit question</a></li>
-            <li><a onClick={() => {
-              const newDateStr = prompt("Edit the resolution date of your question (YYYY-MM-DD):", getDateYYYYMMDD(question.resolveBy))
-              const newDate = newDateStr ? new Date(newDateStr) : undefined
-              if (newDate && newDate !== question.resolveBy) {
-                editQuestion.mutate({
-                  questionId: question.id,
-                  resolveBy: newDate,
-                })
-              }
-            }}>Edit resolve by date</a></li>
-            <li><a onClick={() => {
-              if (confirm("Are you sure you want to delete this question? This cannot be undone")) {
-                deleteQuestion.mutate({
-                  questionId: question.id
-                })
-                if (router.asPath.startsWith("/q/")) {
-                  void router.push("/")
+            <li><a
+              onClick={() => {
+                const newTitle = prompt("Edit the title of your question:", question.title)
+                if (newTitle && newTitle !== question.title) {
+                  editQuestion.mutate({
+                    questionId: question.id,
+                    title: newTitle
+                  })
                 }
-              }
-            }}>Delete question</a></li>
+              }}
+            >Edit question</a></li>
+            <li><a
+              onClick={() => {
+                const newDateStr = prompt("Edit the resolution date of your question (YYYY-MM-DD):", getDateYYYYMMDD(question.resolveBy))
+                const newDate = newDateStr ? new Date(newDateStr) : undefined
+                if (newDate && newDate !== question.resolveBy) {
+                  editQuestion.mutate({
+                    questionId: question.id,
+                    resolveBy: newDate,
+                  })
+                }
+              }}
+            >Edit resolve by date</a></li>
+            <li><a
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this question? This cannot be undone")) {
+                  deleteQuestion.mutate({
+                    questionId: question.id
+                  })
+                  if (router.asPath.startsWith("/q/")) {
+                    void router.push("/")
+                  }
+                }
+              }}
+            >Delete question</a></li>
           </ul>
         </div>
       }
@@ -205,7 +209,7 @@ function DeleteCommentOverflow({
   const utils = api.useContext()
   const deleteComment = api.question.deleteComment.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await invalidateQuestion(utils, question)
     }
   })
 
@@ -217,11 +221,13 @@ function DeleteCommentOverflow({
     <div className="dropdown dropdown-end not-prose">
       <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
       <ul tabIndex={0} className="dropdown-content text-black z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
-        <li><a onClick={() => {
-          deleteComment.mutate({
-            commentId: comment.id
-          })
-        }}>Delete comment</a></li>
+        <li><a
+          onClick={() => {
+            deleteComment.mutate({
+              commentId: comment.id
+            })
+          }}
+        >Delete comment</a></li>
       </ul>
     </div>
   )

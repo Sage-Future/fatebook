@@ -1,5 +1,7 @@
 {
-  "plugins": ["@typescript-eslint"],
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "extends": [
     "eslint:recommended",
     "next/core-web-vitals",
@@ -7,70 +9,99 @@
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project" : true,
+    "project": true,
     "tsconfigRootDir": "./"
   },
-  "rules":
-  {
-    "semi": ["error", "never"],
-    "indent": ["error",
-               2,
-               {
-                 "SwitchCase": 1,
-                 "CallExpression": {"arguments": "first"}
-               }],
+  "rules": {
+    "react/jsx-first-prop-new-line": [
+      2,
+      "multiline"
+    ],
+    "react/jsx-max-props-per-line": [
+      2,
+      {
+        "maximum": 1,
+        "when": "multiline"
+      }
+    ],
+    "react/jsx-indent-props": [
+      2,
+      2
+    ],
+    "semi": [
+      "error",
+      "never"
+    ],
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        "CallExpression": {
+          "arguments": "first"
+        }
+      }
+    ],
     "@typescript-eslint/naming-convention": [
-    "error",
-    {
-      "selector": "default",
-      "format": ["camelCase"]
-    },
-
-    {
-      "selector": "variable",
-      "format": ["camelCase", "UPPER_CASE"]
-    },
-
-    {
-      "selector": "function",
-      "format": ["camelCase", "PascalCase"] // PascalCase for React components
-    },
-
-    {
-      "selector": "property",
-      "format": null
-    },
-
-    {
-      "selector": "objectLiteralProperty",
-      "format": null
-    },
-
-    {
-      "selector": "interface",
-      "format": ["PascalCase"]
-    },
-
-    {
-      "selector": "enum",
-      "format": ["PascalCase"]
-    },
-
-
-    {
-      "selector": "enumMember",
-      "format": ["UPPER_CASE"]
-    },
-
-    {
-      "selector": "typeParameter",
-      "format": ["PascalCase"]
-    },
-
-    {
-      "selector": "typeAlias",
-      "format": ["PascalCase"]
-    }
+      "error",
+      {
+        "selector": "default",
+        "format": [
+          "camelCase"
+        ]
+      },
+      {
+        "selector": "variable",
+        "format": [
+          "camelCase",
+          "UPPER_CASE"
+        ]
+      },
+      {
+        "selector": "function",
+        "format": [
+          "camelCase",
+          "PascalCase"
+        ] // PascalCase for React components
+      },
+      {
+        "selector": "property",
+        "format": null
+      },
+      {
+        "selector": "objectLiteralProperty",
+        "format": null
+      },
+      {
+        "selector": "interface",
+        "format": [
+          "PascalCase"
+        ]
+      },
+      {
+        "selector": "enum",
+        "format": [
+          "PascalCase"
+        ]
+      },
+      {
+        "selector": "enumMember",
+        "format": [
+          "UPPER_CASE"
+        ]
+      },
+      {
+        "selector": "typeParameter",
+        "format": [
+          "PascalCase"
+        ]
+      },
+      {
+        "selector": "typeAlias",
+        "format": [
+          "PascalCase"
+        ]
+      }
     ],
     "require-await": "error",
     "@typescript-eslint/no-misused-promises": "error",

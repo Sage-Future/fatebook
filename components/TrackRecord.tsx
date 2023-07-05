@@ -1,8 +1,10 @@
+import clsx from 'clsx'
 import { ErrorBoundary } from 'react-error-boundary'
 import { populateDetails, showSignificantFigures } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
+import { InfoButton } from './InfoButton'
 
 export function TrackRecord() {
   const userId = useUserId()
@@ -23,18 +25,29 @@ export function TrackRecord() {
           ].map(({details, title}) => (
             <div key={title} className="stats shadow">
               <div className="stat">
-                <div className="stat-title">Brier score</div>
-                <div className="stat-value">{
-                  details?.brierScore ? showSignificantFigures(details.brierScore, 2) : "..."
-                }</div>
+                <div className="stat-title flex flex-row gap-2">
+                  Brier score
+                  <InfoButton tooltip="Lower is better!" className='tooltip-bottom my-auto' />
+                </div>
+                <div
+                  className={clsx(
+                    "stat-value",
+                    !details?.brierScore && "text-gray-500"
+                  )}>{
+                    details?.brierScore ? showSignificantFigures(details.brierScore, 2) : "..."
+                  }</div>
                 <div className="stat-desc">{title}</div>
               </div>
 
               {<div className="stat">
                 <div className="stat-title">Relative Brier</div>
-                <div className="stat-value">{
-                  details?.rBrierScore ? showSignificantFigures(details.rBrierScore, 2) : "..."
-                }</div>
+                <div
+                  className={clsx(
+                    "stat-value",
+                    !details?.rBrierScore && "text-gray-500"
+                  )}>{
+                    details?.rBrierScore ? showSignificantFigures(details.rBrierScore, 2) : "..."
+                  }</div>
                 <div className="stat-desc">{title}</div>
               </div>}
             </div>

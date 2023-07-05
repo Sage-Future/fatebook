@@ -31,7 +31,9 @@ export function Predict() {
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
+        refetchPage: (lastPage, index) => index === 0, // assumes the new question is on the first page (must be ordered by recent)
+      })
     }
   })
 
@@ -66,7 +68,6 @@ export function Predict() {
     if (cachedQuestionContent) {
       // User was not logged in when they tried to create a question, repopulate the form
       const cachedQuestion = SuperJSON.parse(cachedQuestionContent) as any
-      console.log({cachedQuestion})
       cachedQuestion.question && setValue("question", cachedQuestion.question)
       cachedQuestion.predictionPercentage && cachedQuestion.predictionPercentage !== "NaN" && !isNaN(cachedQuestion.predictionPercentage) && setValue("predictionPercentage", cachedQuestion.predictionPercentage)
       if (cachedQuestion.resolveBy) {
@@ -150,10 +151,11 @@ export function Predict() {
 
               <div className='min-w-fit'>
                 <label className="block" htmlFor="resolveBy">Make a prediction</label>
-                <div className={clsx(
-                  'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:border-indigo-700 relative',
-                  errors.predictionPercentage && "border-red-500",
-                )}>
+                <div
+                  className={clsx(
+                    'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:border-indigo-700 relative',
+                    errors.predictionPercentage && "border-red-500",
+                  )}>
                   <div
                     className={clsx(
                       'h-full bg-indigo-700 absolute -m-2 rounded-l pointer-events-none opacity-20 bg-gradient-to-br from-indigo-400 to-indigo-600 transition-all',
@@ -167,21 +169,31 @@ export function Predict() {
                     className={clsx(
                       "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 text-xl font-bold placeholder:font-normal"
                     )}
+                    autoComplete="off"
                     inputMode="numeric"
                     pattern="[0-9]*"
                     placeholder="XX"
                     onKeyDown={onEnterSubmit}
                     {...register("predictionPercentage", { valueAsNumber: true })}
                   />
-                  <span className={clsx(
-                    'ml-px z-10 text-md font-bold',
-                    !predictionPercentage && "text-gray-400",
-                  )}>%</span>
+                  <span
+                    className={clsx(
+                      'ml-px z-10 text-md font-bold',
+                      !predictionPercentage && "text-gray-400",
+                    )}>%</span>
                 </div>
               </div>
             </div>
             <div className="self-center">
-              <button onClick={(e) => {e.preventDefault(); void handleSubmit(onSubmit)()}}
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (userId) {
+                    void handleSubmit(onSubmit)()
+                  } else {
+                    void signIn("google")
+                  }
+                }}
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (createQuestion.isLoading || Object.values(errors).some(err => !!err))}
               >

@@ -1,7 +1,7 @@
 import clsx from "clsx"
 import { useRef, useState } from 'react'
 import { api } from "../lib/web/trpc"
-import { useUserId } from "../lib/web/utils"
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 
 export function UpdateableLatestForecast({
@@ -24,8 +24,7 @@ export function UpdateableLatestForecast({
   const utils = api.useContext()
   const addForecast = api.question.addForecast.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({ questionId: question.id })
+      await invalidateQuestion(utils, question)
     }
   })
 

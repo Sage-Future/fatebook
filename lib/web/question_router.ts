@@ -72,8 +72,9 @@ export const questionRouter = router({
 
       const limit = input.limit || 100
 
+      const skip = input.cursor
       const questions = await prisma.question.findMany({
-        skip: input.cursor,
+        skip: skip,
         take: limit + 1,
         orderBy: {
           createdAt: "desc",
@@ -105,7 +106,14 @@ export const questionRouter = router({
         include: questionIncludes,
       })
 
-      return questions.map(q => scrubHiddenForecastsFromQuestion(q, ctx.userId))
+      return {
+        items: questions
+          .map(q => scrubHiddenForecastsFromQuestion(q, ctx.userId))
+          // don't include the extra one - it's just to see if there's another page
+          .slice(0, limit),
+
+        nextCursor: (questions.length > limit) ? skip + limit : undefined,
+      }
     }),
 
 
@@ -149,8 +157,6 @@ export const questionRouter = router({
           forecast: input.prediction,
         })
       }
-
-      return question
     }),
 
   resolveQuestion: publicProcedure

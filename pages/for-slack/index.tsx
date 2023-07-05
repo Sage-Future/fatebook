@@ -94,52 +94,53 @@ export default function ForSlackPage() {
           </section>
         </div>
 
-        <Faqs faqs={[
-          {
-            question: "When I ask a question using /forecast, who can make a prediction?",
-            answer:
+        <Faqs
+          faqs={[
+            {
+              question: "When I ask a question using /forecast, who can make a prediction?",
+              answer:
                 "Anyone in the channel where you asked the question can forecast.",
-          },
-          {
-            question: "Where can I use /forecast?",
-            answer:
+            },
+            {
+              question: "Where can I use /forecast?",
+              answer:
                 "You can use /forecast in any channel."
-          },
-          {
-            question: "Does the app have access to my team's Slack messages?",
-            answer:
+            },
+            {
+              question: "Does the app have access to my team's Slack messages?",
+              answer:
                 "The app only receives messages where you use the /forecast command or mention @Fatebook."
-          },
-          // {
-          //   question: "Are my team's forecasts private?",
-          //   answer:
-          //     "Yes, only your team can see forecasts made in your Slack workspace."
-          // },
-          {
-            question: "How do I make personal predictions that aren't shared with other members of my team?",
-            answer:
+            },
+            // {
+            //   question: "Are my team's forecasts private?",
+            //   answer:
+            //     "Yes, only your team can see forecasts made in your Slack workspace."
+            // },
+            {
+              question: "How do I make personal predictions that aren't shared with other members of my team?",
+              answer:
                 "Use the /forecast command in a direct message with @Fatebook.",
-          },
-          {
-            question: "I don't use Slack, can I still use Fatebook?",
-            answer:
+            },
+            {
+              question: "I don't use Slack, can I still use Fatebook?",
+              answer:
               "[Fatebook.io](https://fatebook.io) lets you make rapid predictions on the web! [Suggest a Fatebook integration for another platform.](https://forms.gle/nRqUcj154oEVLxdZ9)"
-          },
-          {
-            question: "How can I get better at forecasting?",
-            answer:
+            },
+            {
+              question: "How can I get better at forecasting?",
+              answer:
                 "Try our rapid-feedback training tools on [Quantified Intuitions](https://quantifiedintuitions.org).",
-          },
-          {
-            question: "How can I stay up to date about Fatebook and Sage's other projects?",
-            answer:
+            },
+            {
+              question: "How can I stay up to date about Fatebook and Sage's other projects?",
+              answer:
                 "You can [join our mailing list](https://quantifiedintuitions.org) and [Discord](https://discord.gg/mt9YVB8VDE)."
-          },
-          {
-            question: "How can I submit feedback about Fatebook?",
-            answer: "You can email us at hello@sage-future.org or message us on [Discord](https://discord.gg/mt9YVB8VDE).",
-          },
-        ]} />
+            },
+            {
+              question: "How can I submit feedback about Fatebook?",
+              answer: "You can email us at hello@sage-future.org or message us on [Discord](https://discord.gg/mt9YVB8VDE).",
+            },
+          ]} />
       </div>
     </div >
   )

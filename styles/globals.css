@@ -20,4 +20,7 @@
   button {
     @apply select-none
   }
+  .btn-primary {
+    @apply text-white
+  }
 }

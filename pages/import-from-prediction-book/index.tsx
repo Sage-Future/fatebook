@@ -74,7 +74,9 @@ function PredictionBookImport() {
           <label htmlFor="predictionBookApiToken">
           Go to <Link href="https://predictionbook.com/" target="_blank">PredictionBook</Link>{", click 'Settings', generate an API token, then paste it here"}
           </label>
-          <input type="text" placeholder="Your PredictionBook API Token"
+          <input
+            type="text"
+            placeholder="Your PredictionBook API Token"
             className={clsx(
               'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:outline-indigo-700',
               errors.predictionBookApiToken && "border-red-500 focus-within:outline-red-500"

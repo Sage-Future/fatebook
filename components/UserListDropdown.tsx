@@ -5,7 +5,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { ReactMultiEmail } from 'react-multi-email'
 import { api } from "../lib/web/trpc"
-import { useUserId } from '../lib/web/utils'
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments, UserListWithAuthorAndUsers } from "../prisma/additional"
 
 export function UserListDropdown({
@@ -22,8 +22,7 @@ export function UserListDropdown({
   const userListsQ = api.userList.getUserLists.useQuery()
   const setQuestionLists = api.userList.setQuestionLists.useMutation({
     async onSuccess() {
-      await utils.question.getQuestion.invalidate({questionId: question.id})
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await invalidateQuestion(utils, question)
     }
   })
 
@@ -98,9 +97,10 @@ function UserListDisplay({
   })
 
   return (
-    <div className={clsx('flex flex-col gap-4',
-                         isEditing && "gap-2"
-    )}>
+    <div
+      className={clsx('flex flex-col gap-4',
+                      isEditing && "gap-2"
+      )}>
       <span className="flex gap-2 justify-between">
         <input
           type='text'

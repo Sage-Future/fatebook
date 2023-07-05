@@ -8,7 +8,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { ReactMultiEmail } from "react-multi-email"
 import 'react-multi-email/dist/style.css'
 import { api } from "../lib/web/trpc"
-import { useUserId } from "../lib/web/utils"
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
@@ -98,8 +98,7 @@ function SharePublicly({
   const utils = api.useContext()
   const setSharedPublicly = api.question.setSharedPublicly.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({questionId: question.id})
+      await invalidateQuestion(utils, question)
     }
   })
   return (
@@ -137,8 +136,7 @@ function EmailInput({
   const utils = api.useContext()
   const setSharedWith = api.question.setSharedWith.useMutation({
     async onSuccess() {
-      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
-      await utils.question.getQuestion.invalidate({questionId: question.id})
+      await invalidateQuestion(utils, question)
     }
   })
 
