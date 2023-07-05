@@ -377,11 +377,13 @@ async function sendSlackstaleForecastNotification(staleForecasts: ForecastWithQu
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // if ((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
-  //     && (!process.env.DATABASE_URL?.includes('supabase'))) {
-  //   console.log("Not in production, no operation on non-supabase db. Make a debug function that restricts these functions to a specific workspace.")
-  //   return
-  // }
+  if (((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
+      && (!process.env.DATABASE_URL?.includes('supabase')))
+      || req.query.key !== process.env.CHECK_UPDATES_KEY) {
+    console.error("Not in production, no operation on non-supabase db. Or - not using correct key. Make a debug function that restricts these functions to a specific workspace.")
+    res.status(403).json({error: "Invalid authorisation or environment."})
+    return
+  }
 
   const allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
   const questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
