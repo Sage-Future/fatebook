@@ -7,10 +7,12 @@ import { Question } from "./Question"
 
 export function Questions({
   title,
-  filter
+  filter,
+  noQuestionsText = "Make your first forecast to see it here.",
 }: {
   title?: string,
   filter?: (question: any) => boolean
+  noQuestionsText?: string,
 }) {
   const session = useSession()
 
@@ -52,7 +54,7 @@ export function Questions({
                 <></>
             )),
           <div className="italic text-gray-500 text-sm">
-            Make your first forecast to see it here.
+            {noQuestionsText}
           </div>
         )}
         <InView>

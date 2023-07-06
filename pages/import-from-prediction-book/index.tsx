@@ -106,6 +106,7 @@ function PredictionBookImport() {
       <div className="mt-20">
         <Questions
           title="Your questions imported from PredictionBook"
+          noQuestionsText="No questions imported from PredictionBook yet"
           filter={question => question.id.startsWith(getPredictionBookIdPrefix()) && question.userId === userId}
         />
       </div>

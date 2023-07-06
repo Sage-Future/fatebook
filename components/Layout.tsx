@@ -1,3 +1,6 @@
+import { ChartBarIcon, HomeIcon } from "@heroicons/react/24/solid"
+import clsx from "clsx"
+import { useRouter } from "next/router"
 import { ReactNode } from "react"
 import Footer from "./Footer"
 import { Navbar } from "./Navbar"
@@ -24,8 +27,41 @@ export function Layout({
         </Navbar>}
 
         {!showNavbar && main}
+
+        <BottomNav />
         <Footer />
       </div >
     </>
+  )
+}
+
+function BottomNav() {
+  const router = useRouter()
+
+  return (
+    <div className="btm-nav z-[500] lg:hidden">
+      {[
+        {
+          path: "/",
+          title: "Home",
+          icon: <HomeIcon width={24} />,
+        },
+        {
+          path: "/stats",
+          title: "Stats",
+          icon: <ChartBarIcon width={24} />,
+        }
+      ].map(({ path, icon, title }) => (
+        <button
+          key={title}
+          className={clsx(
+            "text-primary",
+            (router.pathname === path) && "active")}
+          onClick={() => void router.push(path)}>
+          {icon}
+        </button>
+      ))
+      }
+    </div>
   )
 }

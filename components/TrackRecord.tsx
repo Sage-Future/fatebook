@@ -14,7 +14,7 @@ export function TrackRecord() {
   if (!userId) return <></>
 
   return (
-    <div className="max-w-xs prose flex flex-col">
+    <div className="max-w-xs prose flex flex-col mx-auto">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <h2 className="select-none">Your track record</h2>
         <CalibrationChart />

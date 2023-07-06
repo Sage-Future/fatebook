@@ -5,6 +5,7 @@ export default function Document() {
     <Html className="overflow-y-scroll" lang="en">
       <Head>
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+        {/* <meta name="viewport" content="viewport-fit=cover" /> */}
       </Head>
       <body>
         <Main />
