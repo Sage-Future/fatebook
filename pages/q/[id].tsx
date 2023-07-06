@@ -1,12 +1,14 @@
 import { Question } from "@prisma/client"
 import { signIn, useSession } from "next-auth/react"
+import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
 import { Question as QuestionComp } from "../../components/Question"
 import { api, getClientBaseUrl } from "../../lib/web/trpc"
+import { truncateString } from "../../lib/web/utils"
 
 function createQuestionSlug(question: Partial<Question>) {
   return question.title ?
-    encodeURIComponent(question.title?.substring(0, 30).replace(/[^a-z0-9]+/gi, "-").toLowerCase())
+    encodeURIComponent(truncateString(question.title, 40, false).replace(/[^a-z0-9]+/gi, "-").toLowerCase())
     :
     ""
 }
@@ -18,10 +20,9 @@ export function getQuestionUrl(question: Partial<Question>, useRelativePath?: bo
 export default function QuestionPage() {
   const { data: session } = useSession()
   const router = useRouter()
-  // allow an optional ignored slug text after `-` character
-  const parts = router.query.id && (router.query.id as string).split("--")
-
-  const id = parts && parts[parts.length - 1]
+  // allow an optional ignored slug text before `--` character
+  const parts = router.query.id && (router.query.id as string).match(/(.*)--(.*)/)
+  const id = parts ? parts[2] : (router.query.id as string) || ""
   const qQuery = api.question.getQuestion.useQuery({
     questionId: id
   }, {
@@ -36,9 +37,10 @@ export default function QuestionPage() {
   const question = qQuery.data
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
+      {question && <NextSeo title={truncateString(question?.title, 60)} />}
       <div className="prose mx-auto">
         {
-          (qQuery.status === "error") && (!session?.user.id ?
+          (qQuery.status === "error" || (qQuery.status === "success" &&  !question)) && (!session?.user.id ?
             <h3 className="text-gray-600"><a className="font-bold" href="#" onClick={() => void signIn("google")}>Sign in</a> to view this question</h3>
             :
             <h3 className="text-gray-600">{`This question doesn't exist or your account (${session.user.email}) doesn't have access`}</h3>

@@ -69,6 +69,7 @@ function PredictionBookImport() {
 
   return (
     <>
+      <NextSeo title="Import from PredictionBook" />
       <form onSubmit={void handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2">
           <label htmlFor="predictionBookApiToken">

@@ -47,6 +47,7 @@ export function Question({
                   href={getQuestionUrl(question)}
                   key={question.id}
                   className={"no-underline hover:underline"}
+                  onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}>
                   {question.title}
                 </Link>

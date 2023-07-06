@@ -111,4 +111,22 @@ export async function invalidateQuestion(utils: any, question: Question) {
   await utils.question.getQuestion.invalidate({ questionId: question.id })
 }
 
+export function truncateString(str: string | undefined, length: number, includeEllipsis = true) {
+  if (!str) return ""
+
+  if (str.length <= length) return str
+
+  // split on words
+  const words = str.split(" ")
+
+  if (words.length === 1) return str.substring(0, length) + (includeEllipsis ? "..." : "")
+
+  let truncated = ""
+  for (const word of words) {
+    if (truncated.length + word.length > length) break
+    truncated += word + " "
+  }
+  return truncated.trim() + (includeEllipsis ? "..." : "")
+}
+
 export const webFeedbackUrl = "https://forms.gle/mfyCqLG4pLoEqYfy9"
