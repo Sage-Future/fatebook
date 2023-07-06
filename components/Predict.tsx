@@ -197,7 +197,7 @@ export function Predict() {
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (createQuestion.isLoading || Object.values(errors).some(err => !!err))}
               >
-                {userId ? "Predict" : "Sign in to predict"}
+                {userId ? "Predict" : "Sign up to predict"}
               </button>
             </div>
           </div>

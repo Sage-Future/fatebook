@@ -19,11 +19,11 @@ Privacy Policy for Fatebook
 
 _We generated this privacy policy quickly using a template - if you think something is wrong or want us to change something, get in touch at hello@sage-future.org._
 
-At Fatebook, accessible from fatebook.io and through our Slack app, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by Fatebook and how we use it.
+At Fatebook, accessible from fatebook.io and through our app for Slack, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by Fatebook and how we use it.
 
 If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.
 
-This Privacy Policy applies only to our online activities and is valid for visitors to our website and Slack app with regards to the information that they shared and/or collect in Fatebook. This policy is not applicable to any information collected offline.
+This Privacy Policy applies only to our online activities and is valid for visitors to our website and app for Slack with regards to the information that they shared and/or collect in Fatebook. This policy is not applicable to any information collected offline.
 
 Consent
 -------

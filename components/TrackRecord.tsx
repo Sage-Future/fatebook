@@ -40,7 +40,10 @@ export function TrackRecord() {
               </div>
 
               {<div className="stat">
-                <div className="stat-title">Relative Brier</div>
+                <div className="stat-title flex flex-row gap-2">
+                  Relative Brier
+                  <InfoButton tooltip="Relative to the median on each question" className='tooltip-left my-auto' />
+                </div>
                 <div
                   className={clsx(
                     "stat-value",
