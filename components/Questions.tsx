@@ -1,44 +1,71 @@
+import clsx from "clsx"
 import { useSession } from "next-auth/react"
+import { useState } from "react"
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
+import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
 import { Question } from "./Question"
 
 export function Questions({
   title,
-  filter,
+  filterClientSide,
   noQuestionsText = "Make your first forecast to see it here.",
 }: {
   title?: string,
-  filter?: (question: any) => boolean
+  filterClientSide?: (question: any) => boolean
   noQuestionsText?: string,
 }) {
   const session = useSession()
 
+  const [extraFilters, setExtraFilters] = useState<ExtraFilters>({
+    resolved: false,
+    readyToResolve: false,
+  })
+  const filtersApplied = Object.values(extraFilters).some(f => f)
+
   const questionsQ = api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useInfiniteQuery(
     {
       limit: 10,
+      extraFilters,
     },
     {
       initialCursor: 0, // NB: "cursor" language comes from TRPC, but we use take/skip method in Prisma
       getNextPageParam: (lastPage) => lastPage?.nextCursor,
+      keepPreviousData: true,
     }
   )
 
-  if (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0) {
+  if (
+    (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0)
+    && !filtersApplied // don't hide everything if user applied a filter
+  ) {
     return <></>
   }
 
-  const questionsUnfiltered = questionsQ.data.pages.flatMap(p => p?.items)
-  const questions = questionsUnfiltered.filter(question => (!filter || filter(question)) && question)
+  const questionsUnfiltered = questionsQ.data?.pages.flatMap(p => p?.items).filter(q => !!q) || []
+  // some edge cases cause duplicates, e.g. when a filter is applied and a question stops matching the filter
+  // then the question cursor logic will cause it to be duplicated in the next page
+  const questionsNoDuplicates = questionsUnfiltered.filter((question, index) => {
+    const questionIds = questionsUnfiltered.map(q => q!.id)
+    return questionIds.indexOf(question!.id) === index
+  })
+  const questions = questionsNoDuplicates
+    .filter(question => (!filterClientSide || filterClientSide(question)) && question)
 
   return (
     <div>
-      <h3 className="select-none flex gap-4 mb-2">
-        {title || "Your forecasts"}
-        {(questionsQ.isLoading) && <div className="mt-2.5"><LoaderIcon /></div>}
-      </h3>
+      <div className="flex max-sm:flex-col justify-between pt-6 pb-4">
+        <h3 className="select-none flex gap-4 my-auto">
+          {title || "Your forecasts"}
+          {(questionsQ.isLoading) && <div className="mt-2.5"><LoaderIcon /></div>}
+        </h3>
+        {(questions?.length > 0 || filtersApplied) && <FilterControls
+          extraFilters={extraFilters}
+          setExtraFilters={setExtraFilters}
+        />}
+      </div>
       <div className="grid gap-6">
         {ifEmpty(
           questions
@@ -54,7 +81,11 @@ export function Questions({
                 <></>
             )),
           <div className="italic text-gray-500 text-sm">
-            {noQuestionsText}
+            {filtersApplied ?
+              "No questions match your filters."
+              :
+              noQuestionsText
+            }
           </div>
         )}
         <InView>
@@ -69,6 +100,44 @@ export function Questions({
         </InView>
         {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && <LoaderIcon className="mx-auto" />}
       </div>
+    </div>
+  )
+}
+
+function FilterControls({
+  extraFilters,
+  setExtraFilters,
+}: {
+  extraFilters: ExtraFilters,
+  setExtraFilters: (extraFilters: ExtraFilters) => void,
+}) {
+  return (
+    <div className="flex flex-row gap-2" id="filters">
+      <button
+        onClick={() => setExtraFilters({
+          ...extraFilters,
+          resolved: false,
+          readyToResolve: !extraFilters.readyToResolve,
+        })}
+        className={clsx(
+          "btn",
+          extraFilters.readyToResolve ? "btn-primary" : "text-gray-500",
+        )}>
+          Ready to resolve
+      </button>
+
+      <button
+        onClick={() => setExtraFilters({
+          ...extraFilters,
+          readyToResolve: false,
+          resolved: !extraFilters.resolved,
+        })}
+        className={clsx(
+          "btn",
+          extraFilters.resolved ? "btn-primary" : "text-gray-500",
+        )}>
+          Resolved
+      </button>
     </div>
   )
 }

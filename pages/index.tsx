@@ -22,7 +22,6 @@ export default function HomePage() {
 
         <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
 
-        <h3 className="text-lg font-semibold mt-12">Check out Sage{"'"}s other tools on <Link href="https://www.quantifiedintuitions.org/">Quantified Intuitions</Link></h3>
       </div>
       <div className="pt-28 lg:w-[320px] max-sm:hidden">
         <TrackRecord />

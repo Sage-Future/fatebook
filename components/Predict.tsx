@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
 import { signIn } from "next-auth/react"
-import { KeyboardEvent, useEffect, useState } from "react"
+import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
@@ -96,6 +96,9 @@ export function Predict() {
 
   const [highlightResolveBy, setHighlightResolveBy] = useState(false)
 
+  const { ref: predictionInputRef, ...predictionPercentageRegister} = register("predictionPercentage", { valueAsNumber: true })
+  const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
+
   return (
     <div className="w-full">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -174,11 +177,18 @@ export function Predict() {
                     pattern="[0-9]*"
                     placeholder="XX"
                     onKeyDown={onEnterSubmit}
-                    {...register("predictionPercentage", { valueAsNumber: true })}
+                    {...predictionPercentageRegister}
+                    ref={(e) => {
+                      predictionInputRef(e)
+                      predictionInputRefMine.current = e
+                    }}
                   />
                   <span
+                    onClick={() => {
+                      (predictionInputRefMine.current as any)?.focus()
+                    }}
                     className={clsx(
-                      'ml-px z-10 text-md font-bold',
+                      'ml-px z-10 text-md font-bold select-none cursor-text',
                       !predictionPercentage && "text-gray-400",
                     )}>%</span>
                 </div>

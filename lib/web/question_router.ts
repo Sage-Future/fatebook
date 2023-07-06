@@ -38,6 +38,11 @@ const questionIncludes = {
   }
 }
 
+export type ExtraFilters = {
+  resolved: boolean,
+  readyToResolve: boolean,
+}
+
 export const questionRouter = router({
   getQuestion: publicProcedure
     .input(
@@ -64,6 +69,10 @@ export const questionRouter = router({
     .input(z.object({
       limit: z.number().min(1).max(100).nullish(),
       cursor: z.number(),
+      extraFilters: z.object({
+        resolved: z.boolean(),
+        readyToResolve: z.boolean(),
+      }).optional(),
     }))
     .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
@@ -80,27 +89,42 @@ export const questionRouter = router({
           createdAt: "desc",
         },
         where: {
-          OR: [
-            {userId: ctx.userId},
-            {forecasts: {
-              some: {
-                userId: ctx.userId,
-              }
-            }},
-            {sharedWith: {
-              some: {
-                id: ctx.userId,
-              },
-            }},
-            {sharedWithLists: {
-              some: {
-                users: {
+          AND: [
+            {
+              OR: [
+                {userId: ctx.userId},
+                {forecasts: {
+                  some: {
+                    userId: ctx.userId,
+                  }
+                }},
+                {sharedWith: {
                   some: {
                     id: ctx.userId,
+                  },
+                }},
+                {sharedWithLists: {
+                  some: {
+                    users: {
+                      some: {
+                        id: ctx.userId,
+                      }
+                    }
                   }
-                }
+                }},
+              ]
+            },
+            input.extraFilters?.resolved ? {
+              resolution: {
+                not: null,
               }
-            }},
+            } : {},
+            input.extraFilters?.readyToResolve ? {
+              resolution: null,
+              resolveBy: {
+                lte: new Date(),
+              }
+            } : {},
           ]
         },
         include: questionIncludes,
