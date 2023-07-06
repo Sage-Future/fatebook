@@ -1,17 +1,18 @@
 import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
+import clsx from 'clsx'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import ReactTextareaAutosize from 'react-textarea-autosize'
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
+import TextareaAutosize from 'react-textarea-autosize'
+import remarkGfm from 'remark-gfm'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
-import remarkGfm from 'remark-gfm'
 
 export function QuestionDetails({
   question
@@ -133,8 +134,11 @@ function CommentBox({
       </button>
     </div>}
     <div className="flex gap-2">
-      <ReactTextareaAutosize
-        className="shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100"
+      <TextareaAutosize
+        className={clsx(
+          "shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100",
+          "max-sm:text-lg", // because on iOS the browser zooms if the font size is <16px
+        )}
         placeholder={`Add a comment...`}
         disabled={addComment.isLoading || !userId}
         value={localComment}

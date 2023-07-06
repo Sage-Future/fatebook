@@ -15,7 +15,7 @@
     @apply text-black bg-white hover:bg-gray-50 
   }
   .btn {
-    @apply normal-case min-h-[40px] h-auto
+    @apply normal-case min-h-[40px] h-auto animate-none
   }
   button {
     @apply select-none

@@ -4,6 +4,7 @@ import { useRouter } from "next/router"
 import { ReactNode } from "react"
 import Footer from "./Footer"
 import { Navbar } from "./Navbar"
+import { useUserId } from "../lib/web/utils"
 
 export function Layout({
   children,
@@ -29,7 +30,10 @@ export function Layout({
         {!showNavbar && main}
 
         <BottomNav />
-        <Footer />
+        <div className="max-sm:hidden">
+          <Footer />
+        </div>
+        <div className="max-sm:py-12 bg-neutral-50"></div>
       </div >
     </>
   )
@@ -37,6 +41,10 @@ export function Layout({
 
 function BottomNav() {
   const router = useRouter()
+  const userId = useUserId()
+
+  // only show when logged in
+  if (!userId) return <></>
 
   return (
     <div className="btm-nav z-[500] lg:hidden">

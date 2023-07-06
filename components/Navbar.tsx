@@ -4,6 +4,7 @@ import { signIn, signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import { ReactNode } from "react"
+import Footer from "./Footer"
 
 export function Navbar({
   showForSlackButton = true,
@@ -61,16 +62,25 @@ export function Navbar({
         {children}
       </div>
 
-      <div className="drawer-side z-[200] mt-16 lg:hidden">
-        <label htmlFor="my-drawer" className="drawer-overlay"></label>
-        <ul className="menu p-4 w-80 h-full bg-neutral-100 text-lg text-neutral-600 font-semibold">
-          {menuItems}
-          <div className="divider" />
-          {moreMenuItems}
-        </ul>
-      </div>
+      <Drawer menuItems={menuItems} moreMenuItems={moreMenuItems} />
     </div>
   )
+}
+
+function Drawer({menuItems, moreMenuItems}: {menuItems: ReactNode, moreMenuItems: ReactNode}) {
+  return <div className="drawer-side z-[200] mt-16 lg:hidden">
+    <label htmlFor="my-drawer" className="drawer-overlay"></label>
+    <ul className="menu p-4 w-80 h-full bg-neutral-100 text-lg text-neutral-600 font-semibold flex flex-col">
+      {menuItems}
+      <div className="divider" />
+      {moreMenuItems}
+      <div className="grow"/>
+      <div className="-m-4">
+        <Footer />
+      </div>
+      <div className="py-16"/>
+    </ul>
+  </div>
 }
 
 function AccountMenu(showCreateAccountButton: boolean) {

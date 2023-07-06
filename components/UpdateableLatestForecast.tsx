@@ -73,6 +73,9 @@ export function UpdateableLatestForecast({
           ref={inputRef}
           autoFocus={autoFocus}
           type="text"
+          autoComplete="off"
+          inputMode="numeric"
+          pattern="[0-9]*"
           className={"pl-1 w-16 text-right rounded-md focus:outline-none bg-transparent"}
           value={localForecast}
           placeholder="__"

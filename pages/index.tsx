@@ -24,7 +24,7 @@ export default function HomePage() {
 
         <h3 className="text-lg font-semibold mt-12">Check out Sage{"'"}s other tools on <Link href="https://www.quantifiedintuitions.org/">Quantified Intuitions</Link></h3>
       </div>
-      <div className="pt-28 lg:w-[320px] max-sm:mx-auto">
+      <div className="pt-28 lg:w-[320px] max-sm:hidden">
         <TrackRecord />
       </div>
     </div>

@@ -23,9 +23,9 @@ export function TrackRecord() {
             {details: scoreDetails?.recentDetails, title: "Last 3 months"},
             {details: scoreDetails?.overallDetails, title: "All time"},
           ].map(({details, title}) => (
-            <div key={title} className="stats shadow">
+            <div key={title} className="stats shadow overflow-x-clip">
               <div className="stat">
-                <div className="stat-title flex flex-row gap-2">
+                <div className="stat-title flex flex-row gap-0.5 md:gap-1">
                   Brier score
                   <InfoButton tooltip="Lower is better!" className='tooltip-bottom my-auto' />
                 </div>
@@ -40,7 +40,7 @@ export function TrackRecord() {
               </div>
 
               {<div className="stat">
-                <div className="stat-title flex flex-row gap-2">
+                <div className="stat-title flex flex-row gap-0.5 md:gap-1">
                   Relative Brier
                   <InfoButton tooltip="Relative to the median on each question" className='tooltip-left my-auto' />
                 </div>
