@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm'
 import { webFeedbackUrl } from '../lib/web/utils'
 
 const about = String.raw`
-Fatebook is the fastest way to make and track your predictions.
+Fatebook aims to be the fastest way to make and track your predictions.
 
 Fatebook was made by [Adam Binks](https://adambinks.me) at [Sage](https://forum.effectivealtruism.org/users/sage).
 
