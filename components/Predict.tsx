@@ -1,3 +1,5 @@
+import { Transition } from '@headlessui/react'
+import { LightBulbIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
@@ -24,6 +26,7 @@ export function Predict() {
     mode: "all",
     resolver: zodResolver(predictFormSchema),
   })
+  const question = watch("question")
   const resolveByDate = watch("resolveBy")
   const predictionPercentage = watch("predictionPercentage")
 
@@ -99,36 +102,66 @@ export function Predict() {
   const { ref: predictionInputRef, ...predictionPercentageRegister} = register("predictionPercentage", { valueAsNumber: true })
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
+  const [showSuggestions, setShowSuggestions] = useState(false)
+
   return (
     <div className="w-full">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <form onSubmit={void handleSubmit(onSubmit)}>
-          <TextareaAutosize
-            className={clsx(
-              "w-full text-xl border-2 border-gray-300 rounded-md p-4 resize-none shadow-lg mb-2 focus:outline-indigo-700",
-            )}
-            autoFocus={true}
-            placeholder="Will humans walk on Mars by 2050?"
-            maxRows={15}
-            onKeyDown={(e) => {
-              if (onEnterSubmit(e)) return
-              if (!dirtyFields.resolveBy) {
-                const dateResult = chrono.parse(e.currentTarget.value, new Date(), { forwardDate: true })
-                const newResolveBy = (dateResult.length === 1 && dateResult[0].date()) ?
-                  getDateYYYYMMDD(dateResult[0].date())
-                  :
-                  undefined
+          <div className="w-full relative">
+            <TextareaAutosize
+              className={clsx(
+                "w-full text-xl border-2 border-gray-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg mb-2",
+                "focus:outline-indigo-700",
+              )}
+              autoFocus={true}
+              placeholder="Will humans walk on Mars by 2050?"
+              maxRows={15}
+              onKeyDown={(e) => {
+                if (onEnterSubmit(e)) return
+                if (!dirtyFields.resolveBy) {
+                  const dateResult = chrono.parse(e.currentTarget.value, new Date(), { forwardDate: true })
+                  const newResolveBy = (dateResult.length === 1 && dateResult[0].date()) ?
+                    getDateYYYYMMDD(dateResult[0].date())
+                    :
+                    undefined
 
-                if (newResolveBy && new Date(newResolveBy).getTime() !== resolveByDate.getTime()) {
+                  if (newResolveBy && new Date(newResolveBy).getTime() !== resolveByDate.getTime()) {
                   // @ts-ignore - type definition is wrong (Date not string)
-                  setValue("resolveBy", newResolveBy)
-                  setHighlightResolveBy(true)
-                  setTimeout(() => setHighlightResolveBy(false), 800)
+                    setValue("resolveBy", newResolveBy)
+                    setHighlightResolveBy(true)
+                    setTimeout(() => setHighlightResolveBy(false), 800)
+                  }
                 }
-              }
-            }}
-            {...register("question", { required: true })}
-          />
+              }}
+              {...register("question", { required: true })}
+            />
+            <button
+              className={clsx(
+                'btn btn-circle aspect-square absolute right-3 top-3 hover:opacity-100',
+                showSuggestions ? 'btn-active' : 'btn-ghost',
+                (!!question && !showSuggestions) ? 'opacity-20':  'opacity-80',
+              )}
+              onClick={(e) => {
+                setShowSuggestions(!showSuggestions)
+                e.preventDefault()
+              }}
+            >
+              <LightBulbIcon height={16} width={16} />
+            </button>
+
+            <Transition
+              show={showSuggestions}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-98 translate-y-[-0.5rem]"
+              enterTo="transform opacity-100 scale-100 translate-y-0"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100 translate-y-0 "
+              leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
+            >
+              <QuestionSuggestions chooseSuggestion={(suggestion) => {setValue("question", suggestion)}} />
+            </Transition>
+          </div>
 
           <div className="flex flex-row gap-8 flex-wrap justify-between">
             <div className='flex flex-row gap-2'>
@@ -213,6 +246,56 @@ export function Predict() {
           </div>
         </form>
       </ErrorBoundary>
+    </div>
+  )
+}
+
+function QuestionSuggestions({
+  chooseSuggestion
+}: {
+  chooseSuggestion: (suggestion: string) => void
+}) {
+  const suggestions = [
+    "Will GPT-5 be released before Jan 2025?",
+    "Will I write a blog post this week?",
+    "Will volunteering abroad make me all-things-considered happier?",
+    "Each day I’ll write down whether I want to leave or stay in my job. After 2 months, will I have chosen ‘leave’ on >30 days?",
+    "Will I judge that AI was a major topic of debate in the US election?",
+    "Will I finish my todo list today?",
+    "Will our user satisfaction rating exceed 8.0/10?",
+    "Will I win my next game of Agricola?",
+    "Will Our World in Data report that >5% of global deaths are due to air pollution by 2030?",
+    "Will I still be discussing my fear of flying with my therapist in 2024?",
+    "If we choose this HR provider, will I think it was a good idea in two month’s time?",
+    "Will AMF be funding-constrained this year?",
+    "Will I have a child by 2025?",
+    "Will my mentor agree that pivoting now was the right choice?",
+    "Will I meditate every day this week?",
+    "Will the rest of the team prefer this redesign to the current layout?",
+    "Will anyone on the animal advocacy forum share evidence that convinces me that abolitionist protests are net-beneficial?",
+    "Will >80% of my Twitter followers agree that I should keep the beard?",
+    "On December 1st, will Marco, Dawn, and Tina all agree that the biosecurity bill passed without amendments that removed its teeth?",
+    "If I survey 40 random Americans online, will our current favourite name be the most popular?"
+  ]
+
+  return (
+    <div className='w-full bg-white shadow-inner rounded-b-md px-6 pt-4 pb-6 mb-6 flex flex-col items-start gap-2 z-10'>
+      <h4 className='select-none pl-4'>{"Here's a few ideas..."}</h4>
+      {suggestions.map((suggestion) => (
+        <button
+          key={suggestion}
+          className='btn btn-ghost text-left text-gray-500 font-normal leading-normal'
+          onClick={(e) => {
+            chooseSuggestion(suggestion)
+            e.preventDefault()
+          }}
+        >
+          <span className='ml-4'>
+            <span className='text-gray-500 font-semibold mr-2 -ml-4'>+</span>
+            <span>{suggestion}</span>
+          </span>
+        </button>
+      ))}
     </div>
   )
 }
