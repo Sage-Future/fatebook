@@ -84,25 +84,6 @@ export async function getToken(teamId: string) {
   return workspace.token
 }
 
-export async function getSlackWorkspaceName(teamId: string, ) {
-  try {
-    const url = 'https://slack.com/api/team.info'
-    const response = await fetch(url, {
-      method: 'get',
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${await getToken(teamId)}`,
-      }
-    })
-    const data = await response.json()
-    console.log('data from team fetch:', data)
-    return (data as any).team.name
-  } catch (err) {
-    console.log('fetch email Error:', err)
-    throw err
-  }
-}
-
 export function getUserNameOrProfileLink(teamId : string, user : UserWithProfiles) : string {
   const thisTeamsProfile = user.profiles.find((p) => p.slackTeamId === teamId)
   return thisTeamsProfile ? `<@${thisTeamsProfile.slackId}>` : (user.name || 'Anon User')
