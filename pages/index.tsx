@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { useSession } from "next-auth/react"
-import Link from "next/link"
 import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
 import { TrackRecord } from "../components/TrackRecord"
@@ -17,10 +16,6 @@ export default function HomePage() {
 
         <Predict />
         <Questions />
-
-        <div className="py-12"/>
-
-        <p>{"We'd love your feedback at"} <a href="mailto:hello@sage-future.org">hello@sage-future.org</a> or on <Link href="https://discord.gg/mt9YVB8VDE">Discord</Link>.</p>
 
       </div>
       <div className="pt-28 lg:w-[320px] max-sm:hidden">
