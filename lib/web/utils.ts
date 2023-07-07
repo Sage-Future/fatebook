@@ -45,19 +45,6 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
         legend: {
           maxWidth: 100,
           onClick: () => {} // overwrite default behaviour of hiding points
-        },
-        beforeInit(chart) {
-          console.log("beforeInit")
-          // Get a reference to the original fit function
-          const originalFit = chart.legend.fit
-
-          // Override the fit function
-          chart.legend.fit = function fit() {
-            // Call the original function and bind scope in order to use `this` correctly inside it
-            originalFit.bind(chart.legend)()
-            // Change the height as suggested in other answers
-            this.height += 200
-          }
         }
       } : {},
       scales: interactive ? {
