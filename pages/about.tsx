@@ -20,7 +20,7 @@ export default function AboutPage() {
       <NextSeo title="About" />
       <div className="prose mx-auto">
         <h2>
-          About Fatebook
+          About
         </h2>
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {about}

@@ -107,7 +107,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
   }
 
   return user.email ?
-    <details className="dropdown dropdown-end">
+    <details className="dropdown dropdown-end z-50">
       <summary tabIndex={0} className="btn btn-ghost btn-circle avatar hover:bg-opacity-0 hover:scale-[1.03]">
         <div className="w-10 rounded-full">
           <Image src={user.imageUrl} width={40} height={40} alt={user.name} />

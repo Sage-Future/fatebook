@@ -42,28 +42,31 @@ export function Predict() {
 
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
+
+    if (!userId) {
+      localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
+      console.log("setting...")
+      void signIn("google")
+      return
+    }
+
     if (Object.values(errors).some(err => !!err)) return
 
-    if (userId) {
-      createQuestion.mutate({
-        title: data.question,
-        resolveBy: data.resolveBy,
-        prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number" && !isNaN(data.predictionPercentage))
-          ?
-          data.predictionPercentage / 100
-          :
-          undefined,
-      }, {
-        onError(error, variables, context) {
-          console.error("error creating question: ", {error, variables, context})
-        },
-      })
+    createQuestion.mutate({
+      title: data.question,
+      resolveBy: data.resolveBy,
+      prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number" && !isNaN(data.predictionPercentage))
+        ?
+        data.predictionPercentage / 100
+        :
+        undefined,
+    }, {
+      onError(error, variables, context) {
+        console.error("error creating question: ", {error, variables, context})
+      },
+    })
 
-      reset()
-    } else {
-      localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
-      void signIn("google")
-    }
+    reset()
   }
 
   useEffect(() => {
@@ -104,6 +107,24 @@ export function Predict() {
 
   const [showSuggestions, setShowSuggestions] = useState(false)
 
+  function smartUpdateResolveBy(newQuestionValue: string) {
+    if (!dirtyFields.resolveBy) {
+      const dateResult = chrono.parse(newQuestionValue, new Date(), { forwardDate: true })
+      const newResolveBy = (dateResult.length === 1 && dateResult[0].date()) ?
+        getDateYYYYMMDD(dateResult[0].date())
+        :
+        undefined
+
+      if (newResolveBy && new Date(newResolveBy).getTime() !== resolveByDate.getTime()) {
+      // @ts-ignore - type definition is wrong (Date not string)
+        setValue("resolveBy", newResolveBy)
+        setHighlightResolveBy(true)
+        setTimeout(() => setHighlightResolveBy(false), 800)
+      }
+    }
+  }
+  const {onChange: onChangeQuestion, ...registerQuestion} = register("question", { required: true })
+
   return (
     <div className="w-full">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -117,24 +138,19 @@ export function Predict() {
               autoFocus={true}
               placeholder="Will humans walk on Mars by 2050?"
               maxRows={15}
+              onChange={(e) => {
+                smartUpdateResolveBy(e.currentTarget.value)
+                void onChangeQuestion(e)
+              }}
               onKeyDown={(e) => {
                 if (onEnterSubmit(e)) return
-                if (!dirtyFields.resolveBy) {
-                  const dateResult = chrono.parse(e.currentTarget.value, new Date(), { forwardDate: true })
-                  const newResolveBy = (dateResult.length === 1 && dateResult[0].date()) ?
-                    getDateYYYYMMDD(dateResult[0].date())
-                    :
-                    undefined
-
-                  if (newResolveBy && new Date(newResolveBy).getTime() !== resolveByDate.getTime()) {
-                  // @ts-ignore - type definition is wrong (Date not string)
-                    setValue("resolveBy", newResolveBy)
-                    setHighlightResolveBy(true)
-                    setTimeout(() => setHighlightResolveBy(false), 800)
-                  }
+                // smartUpdateResolveBy(e.currentTarget.value)
+                // current value doesn't include the key just pressed! So
+                if (e.key.length === 1) {
+                  smartUpdateResolveBy(e.currentTarget.value + e.key)
                 }
               }}
-              {...register("question", { required: true })}
+              {...registerQuestion}
             />
             <button
               className={clsx(
@@ -159,7 +175,11 @@ export function Predict() {
               leaveFrom="transform opacity-100 scale-100 translate-y-0 "
               leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
             >
-              <QuestionSuggestions chooseSuggestion={(suggestion) => {setValue("question", suggestion)}} />
+              <QuestionSuggestions
+                chooseSuggestion={(suggestion) => {
+                  setValue("question", suggestion, { shouldTouch: true, shouldDirty: true, shouldValidate: true })
+                  smartUpdateResolveBy(suggestion)
+                }} />
             </Transition>
           </div>
 
@@ -231,11 +251,7 @@ export function Predict() {
               <button
                 onClick={(e) => {
                   e.preventDefault()
-                  if (userId) {
-                    void handleSubmit(onSubmit)()
-                  } else {
-                    void signIn("google")
-                  }
+                  void handleSubmit(onSubmit)()
                 }}
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (createQuestion.isLoading || Object.values(errors).some(err => !!err))}
@@ -268,7 +284,7 @@ function QuestionSuggestions({
     "Will I still be discussing my fear of flying with my therapist in 2024?",
     "If we choose this HR provider, will I think it was a good idea in two month’s time?",
     "Will AMF be funding-constrained this year?",
-    "Will I have a child by 2025?",
+    "Will I have a child by Jan 2025?",
     "Will my mentor agree that pivoting now was the right choice?",
     "Will I meditate every day this week?",
     "Will the rest of the team prefer this redesign to the current layout?",
