@@ -138,7 +138,7 @@ export function Predict() {
             />
             <button
               className={clsx(
-                'btn btn-circle aspect-square absolute right-3 top-3 hover:opacity-100',
+                'btn btn-circle aspect-square absolute right-3 top-2 hover:opacity-100',
                 showSuggestions ? 'btn-active' : 'btn-ghost',
                 (!!question && !showSuggestions) ? 'opacity-20':  'opacity-80',
               )}
