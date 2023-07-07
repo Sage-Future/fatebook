@@ -1,5 +1,5 @@
 import { Popover, Transition } from "@headlessui/react"
-import { UserGroupIcon, UserIcon, UsersIcon } from "@heroicons/react/20/solid"
+import {UserGroupIcon, UserIcon, UsersIcon, ChevronDownIcon} from '@heroicons/react/20/solid'
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
@@ -34,6 +34,10 @@ export function SharePopover({
               ) : (
                 <><UserIcon height={15} /> <span>Only me</span></>
               )}
+            <ChevronDownIcon
+              className="-mr-2 h-5 w-5 text-gray-400"
+              aria-hidden="true"
+            />
           </Popover.Button>
         </div>
 

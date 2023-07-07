@@ -4,12 +4,12 @@ import { Question, Target, User } from '@prisma/client'
 import { conciseDateTime } from "../../lib/_utils_common"
 import prisma, { getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
+import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale_forecasts'
+import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
 import { fatebookEmailFooter, sendEmail } from '../../lib/web/email'
 import { getHtmlLinkQuestionTitle } from '../../lib/web/utils'
-import { getQuestionUrl } from '../q/[id]'
-import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
-import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale_forecasts'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from '../../prisma/additional'
+import { getQuestionUrl } from '../q/[id]'
 
 async function getTargetsToBeNotified(){
   const lastWeek = new Date()

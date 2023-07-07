@@ -5,9 +5,9 @@ import { NextSeo } from 'next-seo'
 import Link from 'next/link'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Questions } from '../../components/Questions'
-import { api } from '../../lib/web/trpc'
-import { getPredictionBookIdPrefix, useUserId } from '../../lib/web/utils'
+import { Questions } from '../components/Questions'
+import { api } from '../lib/web/trpc'
+import { getPredictionBookIdPrefix, useUserId } from '../lib/web/utils'
 
 export default function ImportPage() {
 

@@ -22,9 +22,22 @@ export function CalibrationChart() {
       <Line
         data={params.data}
         width={450}
-        height={450}
+        height={490}
         // @ts-ignore
         options={{responsive: true, animation: false, ...params.options }}
+        plugins={[
+          {
+            id: "addPaddingBelowLegend",
+            beforeInit(chart: any) {
+              const originalFit = chart.legend.fit
+
+              chart.legend.fit = function fit() {
+                originalFit.bind(chart.legend)()
+                this.height += 10 // px padding
+              }
+            },
+          }
+        ]}
       />
       <button
         className={"btn btn-ghost btn-xs absolute bottom-4 left-2"}
