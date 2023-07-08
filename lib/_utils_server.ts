@@ -328,14 +328,31 @@ export async function showModal(teamId: string, triggerId: string, view: ModalVi
   return response
 }
 
+export async function getChannelInfo(teamId: string, channel: string){
+  console.log(`Getting users from channel: ${channel}`)
+
+  const url = 'https://slack.com/api/conversations.info'
+  return await callSlackApi(teamId, {channel}, url, 'GET', false) as {ok: boolean}
+}
+
+export async function channelVisible(teamId:string, channel: string){
+  const channelInfoResponse = await getChannelInfo(teamId, channel)
+  return channelInfoResponse.ok
+}
+
 export async function callSlackApi(teamId: string, message: any, url: string, method = 'POST', throwOnError = true) {
+  const postRequest = method === 'POST'
+  if (!postRequest){
+    url += `?${new URLSearchParams(message).toString()}`
+  }
+
   const response = await fetch(url, {
     method,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       Authorization: `Bearer ${await getToken(teamId)}`,
     },
-    ...(message && { body: JSON.stringify(message)}),
+    ...(postRequest && message && { body: JSON.stringify(message)}),
   })
   let data = await response.json() as {ok: boolean, error?: string, ts?: string, channel? :string, response_metadata?: any, permalink?: string}
   if (data.ok === false) {

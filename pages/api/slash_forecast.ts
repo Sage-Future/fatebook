@@ -1,12 +1,15 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { showCreateQuestionModal } from '../../lib/interactive_handlers/edit_question_modal'
-import { postEphemeralTextMessage } from '../../lib/_utils_server'
+import { channelVisible, postEphemeralTextMessage } from '../../lib/_utils_server'
 import { slackAppId } from '../../lib/_constants'
+import { showWrongChannelModalView } from '../../lib/interactive_handlers/show_error_modal'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
   const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body
 
-  if (reqbody.text === "help"){
+  if (!(await channelVisible(reqbody?.team_id, reqbody?.channel_id))) {
+    await showWrongChannelModalView(reqbody?.team_id, reqbody?.trigger_id, reqbody.channel_id, reqbody.text)
+  } else if (reqbody.text === "help"){
     await postEphemeralTextMessage(reqbody?.team_id,
                                    reqbody?.channel_id,
                                    reqbody?.user_id,
