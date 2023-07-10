@@ -1,10 +1,10 @@
 import { Question } from "@prisma/client"
-import { signIn, useSession } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
 import { Question as QuestionComp } from "../../components/Question"
 import { api, getClientBaseUrl } from "../../lib/web/trpc"
-import { truncateString } from "../../lib/web/utils"
+import { signInToFatebook, truncateString } from '../../lib/web/utils'
 
 function createQuestionSlug(question: Partial<Question>) {
   return question.title ?
@@ -41,7 +41,7 @@ export default function QuestionPage() {
       <div className="prose mx-auto">
         {
           (qQuery.status === "error" || (qQuery.status === "success" &&  !question)) && (!session?.user.id ?
-            <h3 className="text-gray-600"><a className="font-bold" href="#" onClick={() => void signIn("google")}>Sign in</a> to view this question</h3>
+            <h3 className="text-gray-600"><a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in</a> to view this question</h3>
             :
             <h3 className="text-gray-600">{`This question doesn't exist or your account (${session.user.email}) doesn't have access`}</h3>
           )

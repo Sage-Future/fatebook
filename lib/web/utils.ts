@@ -1,11 +1,23 @@
 import { Question } from "@prisma/client"
-import { useSession } from "next-auth/react"
+import isWebview from "is-ua-webview"
+import { signIn, useSession } from "next-auth/react"
 import { ReactNode } from "react"
 import { getQuestionUrl } from "../../pages/q/[id]"
+import { toast } from "react-hot-toast"
 
 export function useUserId() {
   const session = useSession()
   return session.data?.user.id
+}
+
+export async function signInToFatebook() {
+  if (isWebview(window.navigator.userAgent)) {
+    toast("Open Fatebook in Safari or Chrome to sign in.\n\nGoogle does not support this browser.", {
+      duration: 10000,
+    })
+    return
+  }
+  await signIn("google", { redirect: true })
 }
 
 export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket: number; mean: number; count: number }[], interactive = false, hideTitles=false) {

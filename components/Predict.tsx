@@ -3,7 +3,6 @@ import { LightBulbIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
-import { signIn } from "next-auth/react"
 import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
@@ -12,7 +11,7 @@ import SuperJSON from 'trpc-transformer'
 import { z } from "zod"
 import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
-import { useUserId } from '../lib/web/utils'
+import { signInToFatebook, useUserId } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
 
 export function Predict() {
@@ -45,8 +44,7 @@ export function Predict() {
 
     if (!userId) {
       localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
-      console.log("setting...")
-      void signIn("google")
+      void signInToFatebook()
       return
     }
 

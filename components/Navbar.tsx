@@ -1,12 +1,13 @@
 import { Bars3Icon, ScaleIcon } from "@heroicons/react/24/outline"
 import { ChevronDownIcon } from "@heroicons/react/24/solid"
-import { signIn, signOut, useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/router"
 import { ReactNode } from "react"
 import { api } from "../lib/web/trpc"
+import { signInToFatebook } from '../lib/web/utils'
 import Footer from "./Footer"
-import { useRouter } from "next/router"
 
 export function Navbar({
   showForSlackButton = true,
@@ -133,5 +134,5 @@ function AccountMenu(showCreateAccountButton: boolean) {
     </details>
     :
     showCreateAccountButton &&
-    <button className="btn normal-case" onClick={() => void signIn("google", { redirect: true })}>Log in or sign up</button>
+    <button className="btn normal-case" onClick={() => void signInToFatebook()}>Log in or sign up</button>
 }

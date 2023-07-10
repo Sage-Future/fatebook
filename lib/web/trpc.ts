@@ -43,7 +43,7 @@ export const api = createTRPCNext<AppRouter>({
             onError: (error) => {
               if (typeof window === 'undefined') return false
               if (!(error instanceof TRPCClientError)) return false
-              if (error?.data?.code === 404) return false
+              if (error?.data?.code === 404 || error?.data?.code === "UNAUTHORIZED") return false
               else {
                 toast.error(`Oops, something went wrong. \n${error.name} ${error.message}`)
                 return false

@@ -1,7 +1,6 @@
 import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
-import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -10,7 +9,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import remarkGfm from 'remark-gfm'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
-import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { invalidateQuestion, signInToFatebook, useUserId } from '../lib/web/utils'
 import { CommentWithUser, QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
@@ -134,7 +133,7 @@ function CommentBox({
 
   return <div className='pb-4'>
     {!userId && <div className="flex w-full p-4">
-      <button className="button primary mx-auto" onClick={() => void signIn("google")}>
+      <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
         Sign in to add your own prediction
       </button>
     </div>}
