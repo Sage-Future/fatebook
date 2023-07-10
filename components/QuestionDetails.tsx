@@ -11,7 +11,7 @@ import remarkGfm from 'remark-gfm'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
+import { CommentWithUser, QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
 
@@ -240,7 +240,7 @@ function DeleteCommentOverflow({
   comment
 }: {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
-  comment: { id: number }
+  comment: CommentWithUser
 }) {
   const userId = useUserId()
 
@@ -251,7 +251,7 @@ function DeleteCommentOverflow({
     }
   })
 
-  if (userId !== question.userId) {
+  if (userId !== comment.userId) {
     return <></>
   }
 

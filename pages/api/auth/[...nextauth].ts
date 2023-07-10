@@ -28,6 +28,33 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     secret: process.env.SECRET,
   },
+  events: {
+    linkAccount: async ({ user, profile }) => {
+      // if the user has no name or image, update it from the profile
+      // useful for when a user is created by having a question shared with them
+      if (!user.name && (profile.name)) {
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            name: profile.name,
+          },
+        })
+      }
+
+      if (!user.image && (profile.image)) {
+        await prisma.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            image: profile.image,
+          },
+        })
+      }
+    }
+  },
   callbacks: {
     session: (params: { session: Session; token: JWT }) => {
       const { session, token } = params
