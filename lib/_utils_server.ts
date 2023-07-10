@@ -332,11 +332,16 @@ export async function getChannelInfo(teamId: string, channel: string){
   console.log(`Getting users from channel: ${channel}`)
 
   const url = 'https://slack.com/api/conversations.info'
-  return await callSlackApi(teamId, {channel}, url, 'GET', false) as {ok: boolean}
+  return await callSlackApi(teamId, {channel}, url, 'GET', false) as {ok: boolean, error?: string, needed?: string}
 }
 
 export async function channelVisible(teamId:string, channel: string){
   const channelInfoResponse = await getChannelInfo(teamId, channel)
+  if (channelInfoResponse.error === 'missing_scope') {
+    console.log(`Missing scope to read channel info: ${channelInfoResponse.needed}`)
+    // because we don't have mpim:read scope to read info of group DMs Fatebook is in, we assume it's in the group DM
+    return true
+  }
   return channelInfoResponse.ok
 }
 

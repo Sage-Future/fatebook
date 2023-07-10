@@ -6,7 +6,7 @@ function displayCommand(input:string){
   return {
     'type': 'context',
     'elements': [
-      markdownBlock(`Your prompt: \`/forecast ${input}\``),
+      markdownBlock(`You said: \`/forecast ${input}\``),
     ]
   }
 }
@@ -14,19 +14,19 @@ function displayCommand(input:string){
 export function buildWrongConversationModalView(teamId: string, channelId: string, input: string) : ModalView {
   return {
     'type': 'modal',
-    'title': textBlock('Fatebook can\'t post here'),
+    'title': textBlock('Add Fatebook to channel'),
     'blocks': [
       {
         'type': 'section',
-        'text': markdownBlock(`Due to permissions on Slack, Fatebook must be invited into a group before it can create a question. Try mentioning or inviting <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|@Fatebook> in a channel!`)
+        'text': markdownBlock(`To use /forecast here, first invite <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|@Fatebook> to this channel! Do this by mentioning or inviting <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|@Fatebook>.`)
       },
       {
         'type': 'context',
         'elements': [
-          markdownBlock(`Note that Fatebook cannot be added to direct messages to other users. Or for forecasts just for you, try <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|messaging Fatebook directly>.`),
+          markdownBlock(`Note: if you want to add Fatebook to a DM, you'll need to create a new chat (that's just how Slack works, sadly!)\n\nOr if you want to make a private forecast just for you, <slack://app?team=${teamId}&id=${slackAppId}&tab=messages|message @Fatebook directly>.`),
         ]
       },
-      displayCommand(input)
+      ...((input && input.trim().length > 0) ? [displayCommand(input)] : [])
     ]
   }
 }
