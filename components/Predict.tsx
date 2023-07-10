@@ -292,10 +292,12 @@ function QuestionSuggestions({
     "If I survey 40 random Americans online, will our current favourite name be the most popular?"
   ]
 
+  const [showAll, setShowAll] = useState(false)
+
   return (
     <div className='w-full bg-white shadow-inner rounded-b-md px-6 pt-4 pb-6 mb-6 flex flex-col items-start gap-2 z-10'>
       <h4 className='select-none pl-4'>{"Here's a few ideas..."}</h4>
-      {suggestions.map((suggestion) => (
+      {suggestions.slice(0, showAll ? undefined : 8).map((suggestion) => (
         <button
           key={suggestion}
           className='btn btn-ghost text-left text-gray-500 font-normal leading-normal'
@@ -310,6 +312,14 @@ function QuestionSuggestions({
           </span>
         </button>
       ))}
+      {!showAll && <button
+        className='btn'
+        onClick={(e) => {
+          e.preventDefault()
+          setShowAll(true)
+        }}>
+        Show more
+      </button>}
     </div>
   )
 }
