@@ -82,6 +82,27 @@ export const appRouter = router({
         email: input.userEmail,
       })
     }),
+
+  editName: publicProcedure
+    .input(
+      z.object({
+        newName: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (input.newName.length === 0 || !ctx.userId) {
+        return
+      }
+
+      await prisma.user.update({
+        where: {
+          id: ctx.userId,
+        },
+        data: {
+          name: input.newName,
+        },
+      })
+    }),
 })
 
 export type AppRouter = typeof appRouter

@@ -19,16 +19,9 @@ export async function sendEmail({
     where: {
       email: to,
     },
-    include: {
-      accounts: true,
-    }
   })
   if (user?.unsubscribedFromEmailsAt) {
     console.log(`Not sending email to ${to} because they unsubscribed`)
-    return
-  }
-  if (!user?.accounts || user?.accounts.length === 0) {
-    console.error(`Error: Not sending email to ${to} because they have no web account (this should never happen)`)
     return
   }
 

@@ -45,7 +45,7 @@ export const api = createTRPCNext<AppRouter>({
               if (!(error instanceof TRPCClientError)) return false
               if (error?.data?.code === 404) return false
               else {
-                toast.error(`Oops, there was an error on our end. \n${error.name} ${error.message}`)
+                toast.error(`Oops, something went wrong. \n${error.name} ${error.message}`)
                 return false
               }
             }
@@ -56,7 +56,7 @@ export const api = createTRPCNext<AppRouter>({
               if (!(error instanceof TRPCClientError)) return false
               if (error?.data?.code === 404) return false
               else {
-                toast.error(`Oops, there was an error on our end. \n${error.message}`)
+                toast.error(`Oops, something went wrong. \n${error.message}`)
                 return false
               }
             }

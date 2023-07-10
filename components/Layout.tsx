@@ -30,10 +30,10 @@ export function Layout({
         {!showNavbar && main}
 
         <BottomNav />
-        <div className="max-sm:hidden">
+        <div className="hidden lg:block">
           <Footer />
         </div>
-        <div className="max-sm:py-12 bg-neutral-50"></div>
+        <div className="py-12 lg:hidden bg-neutral-50"></div>
       </div >
     </>
   )

@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
 import { useState } from "react"
@@ -122,8 +123,10 @@ function FilterControls({
         className={clsx(
           "btn",
           extraFilters.readyToResolve ? "btn-primary" : "text-gray-500",
-        )}>
-          Ready to resolve
+        )}
+      >
+        {extraFilters.readyToResolve && <CheckCircleIcon height={16} />}
+        Ready to resolve
       </button>
 
       <button
@@ -135,8 +138,10 @@ function FilterControls({
         className={clsx(
           "btn",
           extraFilters.resolved ? "btn-primary" : "text-gray-500",
-        )}>
-          Resolved
+        )}
+      >
+        {extraFilters.resolved && <CheckCircleIcon height={16} />}
+        Resolved
       </button>
     </div>
   )

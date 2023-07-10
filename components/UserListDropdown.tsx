@@ -13,6 +13,7 @@ export function UserListDropdown({
 } : {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
 }) {
+  const userId = useUserId()
   const utils = api.useContext()
   const createList = api.userList.createList.useMutation({
     async onSuccess() {
@@ -25,6 +26,12 @@ export function UserListDropdown({
       await invalidateQuestion(utils, question)
     }
   })
+
+  if (userId !== question.userId) {
+    return <label className="text-sm">
+      <span className="font-semibold">Shared with user lists: </span> {question.sharedWithLists?.map(list => list.name).join(", ") || "None"}
+    </label>
+  }
 
   return (
     <div className="dropdown max-sm:dropdown-end not-prose">

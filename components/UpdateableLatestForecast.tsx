@@ -1,5 +1,6 @@
 import clsx from "clsx"
 import { useRef, useState } from 'react'
+import { useDebouncedCallback } from "use-debounce"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
@@ -41,6 +42,15 @@ export function UpdateableLatestForecast({
     }
   }
 
+  const updateOrReset = (value: string) => {
+    if (defaultVal !== value && value !== "") {
+      updateForecast(value)
+    } else if (value === "" || !value) {
+      setLocalForecast(defaultVal)
+    }
+  }
+  const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
+
   if (question.resolution !== null && !latestForecast) return <span></span>
 
   const localForecastFloat = parseFloat(localForecast)
@@ -74,13 +84,17 @@ export function UpdateableLatestForecast({
           autoFocus={autoFocus}
           type="text"
           autoComplete="off"
-          inputMode="numeric"
+          inputMode="decimal"
+          enterKeyHint="go"
           pattern="[0-9]*"
           className={"pl-1 w-16 text-right rounded-md focus:outline-none bg-transparent"}
           value={localForecast}
           placeholder="__"
           onChange={(e) => {
             setLocalForecast(e.target.value)
+
+            // for mobile users - update forecast when they stop typing, e.g. if they pressed "done"
+            updateOrResetDebounced(e.target.value)
           }}
           onClick={(e) => { e.stopPropagation() }} // prevent focus being lost by parent span onClick
           onKeyDown={(e) => {
@@ -88,13 +102,7 @@ export function UpdateableLatestForecast({
               updateForecast(e.currentTarget.value)
             }
           }}
-          onBlur={(e) => {
-            if (defaultVal !== e.currentTarget.value && e.currentTarget.value !== "") {
-              updateForecast(e.currentTarget.value)
-            } else if (e.currentTarget.value === "" || !e.currentTarget.value) {
-              setLocalForecast(defaultVal)
-            }
-          }}
+          onBlur={(e) => updateOrReset(e.currentTarget.value)}
           disabled={question.resolution !== null || addForecast.isLoading || !userId} />
         <span className={"text-left"}>{"%"}</span>
       </>}

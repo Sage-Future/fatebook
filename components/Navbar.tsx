@@ -4,7 +4,9 @@ import { signIn, signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import { ReactNode } from "react"
+import { api } from "../lib/web/trpc"
 import Footer from "./Footer"
+import { useRouter } from "next/router"
 
 export function Navbar({
   showForSlackButton = true,
@@ -87,12 +89,15 @@ function Drawer({menuItems, moreMenuItems}: {menuItems: ReactNode, moreMenuItems
 
 function AccountMenu(showCreateAccountButton: boolean) {
   const { data: session, status } = useSession()
+  const router = useRouter()
 
   const user = {
     name: session?.user?.name ?? "",
     email: session?.user?.email ?? "",
     imageUrl: session?.user?.image ?? "/default_avatar.png",
   }
+
+  const editName = api.editName.useMutation()
 
   // loading skeleton
   if (status === "loading") {
@@ -115,6 +120,14 @@ function AccountMenu(showCreateAccountButton: boolean) {
       </summary>
       <ul tabIndex={0} className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-52">
         <li className="px-3 py-2 text-neutral-500 select-none">Signed in as {user.email}</li>
+        <li
+          onClick={() => {
+            const newName = prompt("Enter your new username:", user.name)
+            if (newName) {
+              editName.mutate({ newName })
+              router.reload()
+            }
+          }}><a>Change your username</a></li>
         <li onClick={() => void signOut({ redirect: true })}><a>Logout</a></li>
       </ul>
     </details>

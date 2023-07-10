@@ -1,4 +1,5 @@
 import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/router'
@@ -57,7 +58,11 @@ function EventsLog({
           <FormattedDate date={c.createdAt} className='my-auto' />
           <DeleteCommentOverflow question={question} comment={c} />
         </span>
-        <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">{c.comment}</span>
+        <span className="md:pl-7 col-span-3 pb-2 -mb-6 -mt-5">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {c.comment}
+          </ReactMarkdown>
+        </span>
       </Fragment>
     })),
     [
@@ -133,28 +138,57 @@ function CommentBox({
         Sign in to add your own prediction
       </button>
     </div>}
-    <div className="flex gap-2">
-      <TextareaAutosize
-        className={clsx(
-          "shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100",
-          "max-sm:text-lg", // because on iOS the browser zooms if the font size is <16px
-        )}
-        placeholder={`Add a comment...`}
-        disabled={addComment.isLoading || !userId}
-        value={localComment}
-        onChange={(e) => {
-          setLocalComment(e.target.value)
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey && e.currentTarget.value.trim() !== "") {
+    <form
+      className="flex gap-2"
+      onSubmit={(e) => { // triggered by iOS keyboard done button I think
+        e.preventDefault()
+        addComment.mutate({
+          questionId: question.id,
+          comment: e.currentTarget.value,
+        })
+      }}
+    >
+      <div className='grow relative'>
+        <TextareaAutosize
+          className={clsx(
+            "shadow-sm py-2 px-4 focus:border-indigo-500 block w-full border-2 border-slate-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-slate-100",
+            "pr-11 max-sm:text-lg", // because on iOS the browser zooms if the font size is <16px
+          )}
+          placeholder={`Add a comment...`}
+          disabled={addComment.isLoading || !userId}
+          value={localComment}
+          onChange={(e) => {
+            setLocalComment(e.target.value)
+          }}
+          inputMode='search'
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              if (e.currentTarget.value.trim() !== "") {
+                addComment.mutate({
+                  questionId: question.id,
+                  comment: e.currentTarget.value,
+                })
+              }
+              e.preventDefault()
+            }
+          }}
+        />
+        <button
+          className={clsx(
+            'btn btn-xs absolute right-3 bottom-2 max-sm:bottom-3 hover:opacity-100 min-h-[25px]',
+          )}
+          disabled={addComment.isLoading || !userId || localComment.trim() === ""}
+          onClick={(e) => {
+            e.preventDefault()
             addComment.mutate({
               questionId: question.id,
-              comment: e.currentTarget.value,
+              comment: localComment,
             })
-            e.preventDefault()
-          }
-        }}
-      />
+          }}
+        >
+          <PaperAirplaneIcon height={14} width={14} />
+        </button>
+      </div>
       {
         userId === question.userId && <div className="dropdown dropdown-end not-prose">
           <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
@@ -197,7 +231,7 @@ function CommentBox({
           </ul>
         </div>
       }
-    </div>
+    </form>
   </div>
 }
 
