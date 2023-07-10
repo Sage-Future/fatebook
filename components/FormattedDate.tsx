@@ -32,14 +32,20 @@ export function FormattedDate({
   || (date.getTime() <= Date.now() && ((Date.now() - date.getTime()) <= oneWeekMs * 8))
   || (date.getTime() > Date.now() && date.getTime() - Date.now() < oneWeekMs)
 
-  const formattedDate = showDistance ?
-    (
-      currentDateShowToday && getDateYYYYMMDD(date) === getDateYYYYMMDD(new Date()) ?
-        "today"
-        :
-        intlFormatDistance(date, new Date()))
-    :
-    getDateYYYYMMDD(date)
+  let formattedDate
+  try {
+    formattedDate = showDistance ?
+      (
+        currentDateShowToday && getDateYYYYMMDD(date) === getDateYYYYMMDD(new Date()) ?
+          "today"
+          :
+          intlFormatDistance(date, new Date()))
+      :
+      getDateYYYYMMDD(date)
+  } catch (e) {
+    console.error(e)
+    return <></>
+  }
 
   return (
     <span
