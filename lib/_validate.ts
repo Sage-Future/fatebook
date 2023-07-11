@@ -1,13 +1,16 @@
 import { VercelRequest } from '@vercel/node'
 import crypto from 'crypto'
 
-export function validateSlackRequest(event : VercelRequest, signingSecret : string) {
-  // Note this method is succeptible to replay attack - should check timestamp to current time
-  const requestBody = JSON.stringify(event['body'])
+export function validateSlackRequest(request : VercelRequest, signingSecret : string) {
+  const requestBody = JSON.stringify(request['body'])
 
-  const headers = event.headers
+  const headers = request.headers
 
   const timestamp = headers['x-slack-request-timestamp']
+  if(Math.abs(new Date().getTime() / 1000 - Number(timestamp)) > 60 * 5) {
+    // The request timestamp is more than five minutes from local time.
+    return false
+  }
   const slackSignature = headers['x-slack-signature']
   const baseString = 'v0:' + timestamp + ':' + requestBody
 
