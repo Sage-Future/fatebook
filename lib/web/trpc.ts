@@ -1,8 +1,8 @@
 import { TRPCClientError, httpBatchLink } from '@trpc/client'
 import { createTRPCNext } from '@trpc/next'
+import { toast } from 'react-hot-toast'
 import transformer from 'trpc-transformer'
 import { AppRouter } from './app_router'
-import { toast } from 'react-hot-toast'
 
 export function getClientBaseUrl(useRelativePath = true) {
   if (typeof window !== 'undefined') {
@@ -45,7 +45,8 @@ export const api = createTRPCNext<AppRouter>({
               if (!(error instanceof TRPCClientError)) return false
               if (error?.data?.code === 404 || error?.data?.code === "UNAUTHORIZED") return false
               else {
-                toast.error(`Oops, something went wrong. \n${error.name} ${error.message}`)
+                toast.error(`Oops, something went wrong.`
+                  + (process.env.NODE_ENV === "development" ? `\n${error.name} ${error.message}` : ""))
                 return false
               }
             }
@@ -56,7 +57,8 @@ export const api = createTRPCNext<AppRouter>({
               if (!(error instanceof TRPCClientError)) return false
               if (error?.data?.code === 404) return false
               else {
-                toast.error(`Oops, something went wrong. \n${error.message}`)
+                toast.error(`Oops, something went wrong.`
+                  + (process.env.NODE_ENV === "development" ? `\n${error.name} ${error.message}` : ""))
                 return false
               }
             }

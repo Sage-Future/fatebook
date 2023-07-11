@@ -84,6 +84,7 @@ export async function buildHomeTabBlocks(teamId: string, fatebookUserId: string,
     {
       "type": "section",
       "text": markdownBlock(
+        `• You can now use Fatebook in your browser, at <https://fatebook.io|fatebook.io>! You can share questions with anyone, including outside of your Slack workspace. If you log in with the email you use for Slack, all of your forecasts will sync between both platforms.\n` +
         `• At the top of this page, you can now set a goal for how many forecasting questions you want to write each week. We'll remind you if you're not on track to keep your streak going! Check our <${questionWritingTipsUrl}|tips for writing questions>\n` +
         '• See how well calibrated you are with our new calibration graph. Perfect calibration means things you expect to happen X% of the time do in fact happen X% of the time. This is a skill you can train, e.g. using our <https://www.quantifiedintuitions.org/calibration|calibration app>!\n' +
         '• You can now hide other forecasters’ predictions on a question to prevent anchoring. Look for the new option when you use `/forecast`\n' +

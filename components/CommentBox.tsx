@@ -81,7 +81,7 @@ export function CommentBox({
               e.preventDefault()
             }
           }} />
-        <button
+        {localComment && <button
           className={clsx(
             'btn btn-xs absolute right-3 bottom-2 max-sm:bottom-3 hover:opacity-100 min-h-[25px]'
           )}
@@ -92,7 +92,7 @@ export function CommentBox({
           }}
         >
           <PaperAirplaneIcon height={14} width={14} />
-        </button>
+        </button>}
       </div>
       {userId === question.userId && <div className="dropdown dropdown-end not-prose">
         <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
@@ -159,8 +159,8 @@ export function DeleteCommentOverflow({
   }
 
   return (
-    <div className="dropdown dropdown-end not-prose">
-      <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
+    <div className="dropdown dropdown-end not-prose max-h-4">
+      <label tabIndex={0} className="btn btn-xs btn-ghost pl-2"><EllipsisVerticalIcon height={15} /></label>
       <ul tabIndex={0} className="dropdown-content text-black z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
         <li><a
           onClick={() => {
