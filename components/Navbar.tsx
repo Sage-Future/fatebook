@@ -20,7 +20,7 @@ export function Navbar({
 }) {
   const moreMenuItems = <>
     <li><Link href="/about">About</Link></li>
-    <li><Link href="https://discord.gg/mt9YVB8VDE">Join our Discord</Link></li>
+    <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
   </>
 
@@ -120,7 +120,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
         </div>
       </summary>
       <ul tabIndex={0} className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-52">
-        <li className="px-3 py-2 text-neutral-500 select-none">Signed in as {user.email}</li>
+        <li className="px-3 py-2 text-neutral-500 select-none break-all">Signed in as {user.email}</li>
         <li
           onClick={() => {
             const newName = prompt("Enter your new username:", user.name)

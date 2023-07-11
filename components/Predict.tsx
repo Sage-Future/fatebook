@@ -252,7 +252,7 @@ export function Predict() {
                   void handleSubmit(onSubmit)()
                 }}
                 className="btn btn-primary btn-lg hover:scale-105"
-                disabled={!!userId && (createQuestion.isLoading || Object.values(errors).some(err => !!err))}
+                disabled={!!userId && (Object.values(errors).some(err => !!err))}
               >
                 {userId ? "Predict" : "Sign up to predict"}
               </button>

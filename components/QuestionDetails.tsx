@@ -1,7 +1,5 @@
 import { Fragment, ReactNode } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
-import remarkGfm from 'remark-gfm'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CommentBox, DeleteCommentOverflow } from './CommentBox'
@@ -51,10 +49,8 @@ function EventsLog({
           <FormattedDate date={c.createdAt} className='my-auto' />
           <DeleteCommentOverflow question={question} comment={c} />
         </span>
-        <span className="md:pl-7 col-span-3 pb-2 -mb-6 -mt-5">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {c.comment}
-          </ReactMarkdown>
+        <span className="md:pl-7 col-span-3 -mt-1">
+          {c.comment}
         </span>
       </Fragment>
     })),
@@ -65,10 +61,8 @@ function EventsLog({
           <span><Username user={question.user} className="font-semibold" /></span>
           <span/>
           <span className="text-slate-400"><FormattedDate date={question.createdAt} /></span>
-          <span className="md:pl-7 col-span-3 pb-2 -mt-1.5">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {question.notes}
-            </ReactMarkdown>
+          <span className="md:pl-7 col-span-3 -mt-1">
+            {question.notes}
           </span>
         </Fragment>
       }] : []),
