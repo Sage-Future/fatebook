@@ -123,7 +123,7 @@ export function ActivityNumbers({
     >
       <span>{question.forecasts?.length ?? 0} forecasts</span>
       <span>{new Set(question.forecasts.map(f => f.userId)).size} forecasters</span>
-      <span>{(question.comments?.length ?? 0) + (question.notes ? 1 : 0)} notes</span>
+      <span>{(question.comments?.length ?? 0) + (question.notes ? 1 : 0)} comments</span>
       {!alwaysExpand && <button
         className="button p-0"
       >

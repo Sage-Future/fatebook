@@ -16,7 +16,7 @@ export function InfoButton({
   return (
     <span
       className={clsx(
-        'tooltip',
+        'tooltip my-auto whitespace-normal',
         isOpen && 'tooltip-open',
         className
       )}

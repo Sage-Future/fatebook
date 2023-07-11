@@ -13,6 +13,7 @@ import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/_utils_co
 import { api } from "../lib/web/trpc"
 import { signInToFatebook, useUserId } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
+import { InfoButton } from './InfoButton'
 
 export function Predict() {
   const predictFormSchema = z.object({
@@ -184,7 +185,9 @@ export function Predict() {
           <div className="flex flex-row gap-8 flex-wrap justify-between">
             <div className='flex flex-row gap-2'>
               <div className='flex flex-col'>
-                <label className="block" htmlFor="resolveBy">Resolve by</label>
+                <label className="flex" htmlFor="resolveBy">Resolve by
+                  <InfoButton className='ml-1 tooltip-right' tooltip='When should I remind you to resolve this question?' />
+                </label>
                 <input
                   className={clsx(
                     "text-md border-2 border-gray-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
@@ -204,7 +207,9 @@ export function Predict() {
               </div>
 
               <div className='min-w-fit'>
-                <label className="block" htmlFor="resolveBy">Make a prediction</label>
+                <label className="flex" htmlFor="resolveBy">Make a prediction
+                  <InfoButton className='ml-1 tooltip-left' tooltip='How likely do you think the answer is to be YES?' />
+                </label>
                 <div
                   className={clsx(
                     'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:border-indigo-700 relative',
@@ -224,8 +229,9 @@ export function Predict() {
                       "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 text-xl font-bold placeholder:font-normal"
                     )}
                     autoComplete="off"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
+                    type='number'
+                    inputMode="decimal"
+                    pattern="[0-9[.]*"
                     placeholder="XX"
                     onKeyDown={onEnterSubmit}
                     {...predictionPercentageRegister}

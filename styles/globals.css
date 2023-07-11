@@ -30,4 +30,8 @@
     /* setting this to 0.7 rather than 1 for UpdateableTextForecast, todo do something smarter */
     -webkit-opacity:0.7;
   }
+
+  .tooltip:before {
+    max-width: 12rem
+  }
 }

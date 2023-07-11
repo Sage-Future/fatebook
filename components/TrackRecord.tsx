@@ -27,7 +27,7 @@ export function TrackRecord() {
               <div className="stat">
                 <div className="stat-title flex flex-row gap-0.5 md:gap-1">
                   Brier score
-                  <InfoButton tooltip="Lower is better!" className='tooltip-bottom my-auto' />
+                  <InfoButton tooltip="Lower is better!" className='tooltip-bottom' />
                 </div>
                 <div
                   className={clsx(
@@ -42,7 +42,7 @@ export function TrackRecord() {
               {<div className="stat">
                 <div className="stat-title flex flex-row gap-0.5 md:gap-1">
                   Relative Brier
-                  <InfoButton tooltip="Relative to the median on each question" className='tooltip-left my-auto' />
+                  <InfoButton tooltip="Relative to the median on each question" className='tooltip-left' />
                 </div>
                 <div
                   className={clsx(
@@ -53,6 +53,7 @@ export function TrackRecord() {
                   }</div>
                 <div className="stat-desc">{title}</div>
               </div>}
+
             </div>
           ))}
         </div>
