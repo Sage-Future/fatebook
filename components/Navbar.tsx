@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"
 import { api } from "../lib/web/trpc"
-import { signInToFatebook } from '../lib/web/utils'
+import { signInToFatebook, webFeedbackUrl } from '../lib/web/utils'
 import Footer from "./Footer"
 
 export function Navbar({
@@ -22,6 +22,8 @@ export function Navbar({
     <li><Link href="/about">About</Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
+    <li><Link href={webFeedbackUrl}>Submit feedback</Link></li>
+    <li><Link href={webFeedbackUrl}>Report a problem</Link></li>
   </>
 
   const menuItems = <>
