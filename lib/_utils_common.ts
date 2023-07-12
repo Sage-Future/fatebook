@@ -89,6 +89,11 @@ export function showSignificantFigures(num: number, significantFigures: number):
 export function getDateYYYYMMDD(date: Date) {
   return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
 }
+
+export function getDateTimeYYYYMMDDHHMMSS(date: Date) {
+  return `${getDateYYYYMMDD(date)} ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}:${date.getSeconds()}`
+}
+
 export function unixTimestamp(date: Date) {
   return Math.floor(date.getTime() / 1000)
 }
