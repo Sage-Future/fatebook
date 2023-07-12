@@ -8,8 +8,9 @@ import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale
 import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
 import { fatebookEmailFooter, sendEmail } from '../../lib/web/email'
 import { getHtmlLinkQuestionTitle } from '../../lib/web/utils'
-import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from '../../prisma/additional'
+import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { getQuestionUrl } from '../q/[id]'
+import { getQuestionTitleLink } from '../../lib/blocks-designs/_block_utils'
 
 async function getTargetsToBeNotified(){
   const lastWeek = new Date()
@@ -353,7 +354,11 @@ async function messageStaleForecasts(){
       } else {
         const user = allUsers.find(user => user.id == userIdWithStaleForecasts)
         if(user && user.accounts.length > 0){
-          console.error("Email notifications not set for user", userIdWithStaleForecasts)
+          try {
+            await sendEmailForStaleForecasts(staleForecastsForProfile, user)
+          } catch (e) {
+            console.error(`Could not send email for ${staleForecastsForProfile.length} stale forecasts for user ${user.id}: ${e}\nContinuing...`)
+          }
         } else {
           console.error("No profile or accounts found for user", userIdWithStaleForecasts)
         }
@@ -361,6 +366,22 @@ async function messageStaleForecasts(){
     }
   }
   return staleForecastUsers
+}
+
+async function sendEmailForStaleForecasts(staleForecastsForProfile: ForecastWithQuestionWithSlackMessagesAndForecasts[], user: User) {
+  if (staleForecastsForProfile.length > 0) {
+    await sendEmail({
+      subject: `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'`
+        + (staleForecastsForProfile.length > 0 ? ` and ${staleForecastsForProfile.length - 1} other questions` : ""),
+      to: user.email,
+      textBody: `Do you want to update your forecasts?`,
+      htmlBody: `<p>You have some forecasts you may want to update</p>`
+        + staleForecastsForProfile.map(
+          (staleForecast) => '<p>• ' + getQuestionTitleLink(staleForecast.question) + '</p>'
+        ).join("\n")
+        + `\n${fatebookEmailFooter(user.email)}`,
+    })
+  }
 }
 
 async function sendSlackstaleForecastNotification(staleForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], slackTeamId: string, slackId: string){
