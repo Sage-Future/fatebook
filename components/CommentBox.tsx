@@ -88,7 +88,7 @@ export function CommentBox({
           disabled={addComment.isLoading || !userId || localComment.trim() === ""}
           onClick={(e) => {
             e.preventDefault()
-            submitComment(e.currentTarget.value)
+            submitComment(localComment)
           }}
         >
           <PaperAirplaneIcon height={14} width={14} />
