@@ -14,7 +14,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   }
 }
 
-type Context = inferAsyncReturnType<typeof createContext>
+export type Context = inferAsyncReturnType<typeof createContext>
 const t = initTRPC.context<Context>().create({
   transformer,
 })

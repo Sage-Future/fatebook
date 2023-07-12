@@ -2,8 +2,8 @@ import { Question } from "@prisma/client"
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import { ReactNode } from "react"
-import { getQuestionUrl } from "../../pages/q/[id]"
 import { toast } from "react-hot-toast"
+import { getQuestionUrl } from "../../pages/q/[id]"
 
 export function useUserId() {
   const session = useSession()
@@ -142,3 +142,15 @@ export function truncateString(str: string | undefined, length: number, includeE
 }
 
 export const webFeedbackUrl = "https://forms.gle/mfyCqLG4pLoEqYfy9"
+
+export function downloadBlob(content: any, filename: string, contentType: string) {
+  // Create a blob
+  var blob = new Blob([content], { type: contentType })
+  var url = URL.createObjectURL(blob)
+
+  // Create a link to download it
+  var pom = document.createElement('a')
+  pom.href = url
+  pom.setAttribute('download', filename)
+  pom.click()
+}

@@ -9,8 +9,9 @@ import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from ".
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { fatebookEmailFooter, sendEmail } from './email'
-import { publicProcedure, router } from "./trpc_base"
+import { Context, publicProcedure, router } from "./trpc_base"
 import { getHtmlLinkQuestionTitle } from "./utils"
+import { questionsToCsv } from "./export"
 
 const questionIncludes = {
   forecasts: {
@@ -79,65 +80,7 @@ export const questionRouter = router({
         return null
       }
 
-      const limit = input.limit || 100
-
-      const skip = input.cursor
-      const questions = await prisma.question.findMany({
-        skip: skip,
-        take: limit + 1,
-        orderBy: {
-          createdAt: "desc",
-        },
-        where: {
-          AND: [
-            {
-              OR: [
-                {userId: ctx.userId},
-                {forecasts: {
-                  some: {
-                    userId: ctx.userId,
-                  }
-                }},
-                {sharedWith: {
-                  some: {
-                    id: ctx.userId,
-                  },
-                }},
-                {sharedWithLists: {
-                  some: {
-                    users: {
-                      some: {
-                        id: ctx.userId,
-                      }
-                    }
-                  }
-                }},
-              ]
-            },
-            input.extraFilters?.resolved ? {
-              resolution: {
-                not: null,
-              }
-            } : {},
-            input.extraFilters?.readyToResolve ? {
-              resolution: null,
-              resolveBy: {
-                lte: new Date(),
-              }
-            } : {},
-          ]
-        },
-        include: questionIncludes,
-      })
-
-      return {
-        items: questions
-          .map(q => scrubHiddenForecastsFromQuestion(q, ctx.userId))
-          // don't include the extra one - it's just to see if there's another page
-          .slice(0, limit),
-
-        nextCursor: (questions.length > limit) ? skip + limit : undefined,
-      }
+      return await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(input, ctx)
     }),
 
 
@@ -536,7 +479,96 @@ export const questionRouter = router({
         user: ctx.userId,
       })
     }),
+
+  exportAllQuestions: publicProcedure
+    .mutation(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+      const questionsQ = await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith({
+        cursor: 0,
+        limit: 100000,
+      }, ctx)
+      const questions = questionsQ.items
+
+      const csv = await questionsToCsv(questions, ctx.userId)
+
+      console.log(csv)
+
+      return csv
+    }),
 })
+
+async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
+  input: { cursor: number; limit?: number | null | undefined; extraFilters?: { resolved: boolean; readyToResolve: boolean } | undefined },
+  ctx: Context
+) {
+  const limit = input.limit || 100
+
+  const skip = input.cursor
+  const questions = await prisma.question.findMany({
+    skip: skip,
+    take: limit + 1,
+    orderBy: {
+      createdAt: "desc",
+    },
+    where: {
+      AND: [
+        {
+          OR: [
+            { userId: ctx.userId },
+            {
+              forecasts: {
+                some: {
+                  userId: ctx.userId,
+                }
+              }
+            },
+            {
+              sharedWith: {
+                some: {
+                  id: ctx.userId,
+                },
+              }
+            },
+            {
+              sharedWithLists: {
+                some: {
+                  users: {
+                    some: {
+                      id: ctx.userId,
+                    }
+                  }
+                }
+              }
+            },
+          ]
+        },
+        input.extraFilters?.resolved ? {
+          resolution: {
+            not: null,
+          }
+        } : {},
+        input.extraFilters?.readyToResolve ? {
+          resolution: null,
+          resolveBy: {
+            lte: new Date(),
+          }
+        } : {},
+      ]
+    },
+    include: questionIncludes,
+  })
+
+  return {
+    items: questions
+      .map(q => scrubHiddenForecastsFromQuestion(q, ctx.userId))
+      // don't include the extra one - it's just to see if there's another page
+      .slice(0, limit),
+
+    nextCursor: (questions.length > limit) ? skip + limit : undefined,
+  }
+}
 
 export async function emailNewlySharedWithUsers(newlySharedWith: string[], question: QuestionWithUserAndSharedWith) {
   await Promise.all(newlySharedWith.map(async (email) => {
