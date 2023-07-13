@@ -1,5 +1,11 @@
-import type { NextFetchEvent, NextRequest } from 'next/server'
+import { NextApiRequest } from 'next'
+import type { NextFetchEvent } from 'next/server'
 import { NextResponse } from 'next/server'
+import { signingSecret } from './lib/_constants'
+import { validateSlackRequest } from './lib/_validate'
+
+import type { Readable } from 'node:stream'
+
 
 const redirectUrl            : string = "/api/success_response"
 const dateInvalidRedirectUrl : string = "/api/failed_validation"
@@ -18,14 +24,35 @@ export const config = {
     '/incoming/slash_forecast',
     '/incoming/interactive_endpoint',
     '/incoming/events_endpoint'
-  ]
+  ],
+  api: {
+    bodyParser: false,
+  }
 }
 
-export default async function middleware(req: NextRequest, context: NextFetchEvent) {
-  const path = req.url
-  const asyncFetchPath = path.replace('/incoming', '/api')
+async function getRawBody(readable: Readable): Promise<Buffer> {
+  const chunks = []
+  for await (const chunk of readable) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
+  }
+  return Buffer.concat(chunks)
+}
 
-  const reqbodyParsed : any = Object.fromEntries(await req.formData())
+export default async function middleware(req: NextApiRequest, context: NextFetchEvent) {
+  const rawBody = await getRawBody(req)
+  const validationPassed = await validateSlackRequest(req, signingSecret, rawBody.toString())
+  console.log({validationPassed})
+  if (!validationPassed) {
+    return new NextResponse(
+      JSON.stringify({ success: false, message: 'slack validation failed' }),
+      { status: 401, headers: { 'content-type': 'application/json' } }
+    )
+  }
+
+  const path = req.url
+  const asyncFetchPath = path!.replace('/incoming', '/api')
+
+  const reqbodyParsed : any = JSON.parse(Buffer.from(rawBody).toString('utf8'))//Object.fromEntries(await req.formData())
 
   let payload :any = {}
   if (reqbodyParsed.payload){
