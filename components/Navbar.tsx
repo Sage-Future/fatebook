@@ -20,6 +20,10 @@ export function Navbar({
 }) {
   const exportData = api.question.exportAllQuestions.useMutation({
     onSuccess(data) {
+      if (!data || data === "") {
+        alert("Nothing to export! Make some forecasts first?")
+        return
+      }
       downloadBlob(data, "fatebook-forecasts.csv", "text/csv;charset=utf-8;")
     }
   })

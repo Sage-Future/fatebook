@@ -27,6 +27,7 @@ export function CommentBox({
   const deleteQuestion = api.question.deleteQuestion.useMutation({
     async onSuccess() {
       await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await utils.question.getForecastCountByDate.invalidate()
     }
   })
   const editQuestion = api.question.editQuestion.useMutation({
