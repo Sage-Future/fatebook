@@ -1,25 +1,42 @@
-import { VercelRequest } from '@vercel/node'
-import crypto from 'crypto'
+import { NextRequest } from "next/server"
 
-export function validateSlackRequest(request : VercelRequest, signingSecret : string) {
-  const requestBody = JSON.stringify(request['body'])
-
+export async function validateSlackRequest(request: NextRequest, signingSecret: string, body: string) {
   const headers = request.headers
 
-  const timestamp = headers['x-slack-request-timestamp']
-  if(Math.abs(new Date().getTime() / 1000 - Number(timestamp)) > 60 * 5) {
-    // The request timestamp is more than five minutes from local time.
+  const timestamp = headers.get('x-slack-request-timestamp')
+  if (!timestamp || Math.abs(new Date().getTime() / 1000 - Number(timestamp)) > 60 * 5) {
+    // The request timestamp is more than five minutes from local time (or is missing)
     return false
   }
-  const slackSignature = headers['x-slack-signature']
-  const baseString = 'v0:' + timestamp + ':' + requestBody
+  const slackSignature = headers.get('x-slack-signature')
+  if (!slackSignature) {
+    return false
+  }
 
-  const hmac = crypto
-    .createHmac('sha256', signingSecret)
-    .update(baseString)
-    .digest('hex')
-  const computedSlackSignature = 'v0=' + hmac
-  const isValid = computedSlackSignature === slackSignature
+  const enc = new TextEncoder()
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(signingSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"]
+  )
+
+  const isValid = crypto.subtle.verify(
+    "HMAC",
+    key,
+    hexToBuffer(slackSignature.substring(3)),
+    enc.encode(`v0:${timestamp}:${body}`)
+  )
 
   return isValid
+}
+
+function hexToBuffer(hexString: string) {
+  const bytes = new Uint8Array(hexString.length / 2)
+  for (let idx = 0; idx < hexString.length; idx += 2) {
+    bytes[idx / 2] = parseInt(hexString.substring(idx, idx + 2), 16)
+  }
+  return bytes.buffer
 }

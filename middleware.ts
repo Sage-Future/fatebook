@@ -1,9 +1,13 @@
 import type { NextFetchEvent, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { signingSecret } from './lib/_constants'
+import { validateSlackRequest } from './lib/_validate'
+
 
 const redirectUrl            : string = "/api/success_response"
 const dateInvalidRedirectUrl : string = "/api/failed_validation"
 const urlInvalidRedirectUrl  : string = "/api/failed_url_verification"
+const slackInvalidRedirectUrl : string = "/api/failed_slack_verification"
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 enum ValidationRedirect {
@@ -18,27 +22,36 @@ export const config = {
     '/incoming/slash_forecast',
     '/incoming/interactive_endpoint',
     '/incoming/events_endpoint'
-  ]
+  ],
+  api: {
+    bodyParser: false,
+  }
+}
+
+function reparsePayload(bufferBody: ArrayBuffer){
+  var enc = new TextDecoder("utf-8")
+  const bodyParams = new URLSearchParams(enc.decode(bufferBody))
+  return Object.fromEntries(bodyParams)
 }
 
 export default async function middleware(req: NextRequest, context: NextFetchEvent) {
-  const path = req.url
-  const asyncFetchPath = path.replace('/incoming', '/api')
-
-  const reqbodyParsed : any = Object.fromEntries(await req.formData())
-
-  let payload :any = {}
-  if (reqbodyParsed.payload){
-    payload = JSON.parse(reqbodyParsed.payload)
-    console.log('payload', payload)
+  const bufferBody = await req.arrayBuffer()
+  const validationPassed = await validateSlackRequest(req, signingSecret, Buffer.from(bufferBody).toString('utf8'))
+  if (!validationPassed) {
+    return NextResponse.redirect(new URL(slackInvalidRedirectUrl, req.url))
   }
 
-  const specialCaseHandled = checkSpecialCases(payload)
+  const path = req.url
+  const asyncFetchPath = path!.replace('/incoming', '/api')
+
+  const body = reparsePayload(bufferBody)
+
+  const specialCaseHandled = checkSpecialCases(body)
   if (!specialCaseHandled) {
     context.waitUntil(
       fetch(asyncFetchPath, {
         method: "POST",
-        body: JSON.stringify(reqbodyParsed),
+        body: JSON.stringify(body),
       })
     )
 
@@ -59,7 +72,11 @@ export default async function middleware(req: NextRequest, context: NextFetchEve
 }
 
 // Returns true iff the request was handled by this function
-function checkSpecialCases(payload: any) {
+function checkSpecialCases(body: any) {
+  if (!body.payload) {
+    return null
+  }
+  const payload = JSON.parse(body.payload)
   if (!payload.type) {
     return null
   }
