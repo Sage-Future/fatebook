@@ -16,7 +16,7 @@ export function InfoButton({
   return (
     <span
       className={clsx(
-        'tooltip my-auto whitespace-normal',
+        'tooltip my-auto whitespace-normal text-neutral-400 hover:text-neutral-500 transition-colors',
         isOpen && 'tooltip-open',
         className
       )}

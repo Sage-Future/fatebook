@@ -5,6 +5,8 @@ import prisma from "../_utils_server"
 export async function questionsToCsv(questions: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments[], userId: string) {
   const forecasts = questions.flatMap(q => q.forecasts)
 
+  if (!forecasts || forecasts.length === 0) return ""
+
   const questionScores = await prisma.questionScore.findMany({
     where: {
       userId: userId
@@ -38,6 +40,8 @@ export async function questionsToCsv(questions: QuestionWithUserAndForecastsWith
 }
 
 function jsonToCsv(json: any) {
+  if (!json) return ""
+
   const keys = Object.keys(json[0])
   const csv = keys.join(",") + "\n"
     + json.map((row: any) => keys.map(

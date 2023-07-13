@@ -28,15 +28,16 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
       datasets: [
         {
           backgroundColor: "#4e46e59c",
-          borderColor: "#4e46e5e6",
+          borderColor: "#4e46e59c",
           data: bucketedForecasts.map(f => f.mean * 100),
           label: "Your calibration",
+          borderWidth: 1,
           fill: false,
           showLine: false,
         },
         {
-          backgroundColor: "#04785794",
-          borderColor: "#047857e5",
+          backgroundColor: "#22c55e",
+          borderColor: "#22c55e",
           data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
           label: "Perfect calibration",
           fill: false,

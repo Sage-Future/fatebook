@@ -4,7 +4,7 @@ import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
 import { getQuestionUrl } from "../../pages/q/[id]"
 import { QuestionWithForecasts, QuestionWithForecastsAndSharedWith, QuestionWithUserAndSharedWith } from "../../prisma/additional"
-import { forecastsAreHidden } from "../_utils_common"
+import { forecastsAreHidden, getDateYYYYMMDD } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
@@ -83,6 +83,34 @@ export const questionRouter = router({
       return await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(input, ctx)
     }),
 
+  getForecastCountByDate: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+
+      const forecasts = await prisma.forecast.findMany({
+        where: {
+          userId: ctx.userId,
+        },
+        select: {
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+
+      // count number per day
+      const dateCounts = forecasts.map(f => getDateYYYYMMDD(f.createdAt)).reduce((acc, date) => {
+        acc[date] = (acc[date] || 0) + 1
+        return acc
+      },
+        {} as { [date: string]: number }
+      )
+
+      return { dateCounts, total: forecasts.length }
+    }),
 
   create: publicProcedure
     .input(

@@ -26,6 +26,7 @@ export function UpdateableLatestForecast({
   const addForecast = api.question.addForecast.useMutation({
     async onSuccess() {
       await invalidateQuestion(utils, question)
+      await utils.question.getForecastCountByDate.invalidate()
     }
   })
 

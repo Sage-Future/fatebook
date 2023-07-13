@@ -37,6 +37,7 @@ export function Predict() {
       await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
         refetchPage: (lastPage, index) => index === 0, // assumes the new question is on the first page (must be ordered by recent)
       })
+      await utils.question.getForecastCountByDate.invalidate()
     }
   })
 

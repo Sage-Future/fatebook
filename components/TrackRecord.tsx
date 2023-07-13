@@ -1,10 +1,13 @@
 import clsx from 'clsx'
 import { ErrorBoundary } from 'react-error-boundary'
-import { populateDetails, showSignificantFigures } from '../lib/_utils_common'
+import GitHubCalendar from 'react-github-contribution-calendar'
+import { getDateYYYYMMDD, populateDetails, showSignificantFigures } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
 import { InfoButton } from './InfoButton'
+
+// import 'react-github-contribution-calendar/default.css'
 
 export function TrackRecord() {
   const userId = useUserId()
@@ -57,8 +60,34 @@ export function TrackRecord() {
             </div>
           ))}
         </div>
+        <ForecastsCalendarHeatmap />
       </ErrorBoundary>
 
+    </div>
+  )
+}
+
+export function ForecastsCalendarHeatmap() {
+  const forecasts = api.question.getForecastCountByDate.useQuery(undefined)
+
+  return (
+    <div className="pt-12">
+      <ErrorBoundary fallback={<div>Something went wrong</div>}>
+        <GitHubCalendar
+          values={forecasts.data?.dateCounts || {}}
+          panelColors={[
+            '#f0f0f0', // background
+            '#86efac', // count=1
+            '#4ade80', // count=2
+            '#22c55e'  // count=3+
+          ]}
+          until={getDateYYYYMMDD(new Date())}
+          monthLabelAttributes={{}}
+          panelAttributes={{}}
+          weekLabelAttributes={{}}
+        />
+        <span className='ml-3'>{"You've made"} <span className='font-semibold'>{forecasts.data?.total}</span> forecasts</span>
+      </ErrorBoundary>
     </div>
   )
 }
