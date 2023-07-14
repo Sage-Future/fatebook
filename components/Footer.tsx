@@ -6,12 +6,12 @@ export default function Footer({
     showReportProblem?: boolean
 }) {
   return (
-    <footer className="bg-white border-t border-gray-200 ">
+    <footer className="bg-white border-t border-neutral-200 ">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
         {SocialIcons(showReportProblem)}
         <div className="mt-8  text-center md:mt-0 md:order-1 md:ml-8 md:text-left">
-          <p className="text-base text-gray-400">Sage Future Inc</p>
-          <p className="text-gray-300 my-1"><Link className="mr-4" href="/privacy">Privacy Policy</Link> <Link href="/terms">Terms of Use</Link></p>
+          <p className="text-base text-neutral-400">Sage Future Inc</p>
+          <p className="text-neutral-300 my-1"><Link className="mr-4" href="/privacy">Privacy Policy</Link> <Link href="/terms">Terms of Use</Link></p>
         </div>
       </div>
     </footer>
@@ -23,13 +23,13 @@ function SocialIcons(showReportProblem: boolean) {
     {showReportProblem && <a
       key={"feedbackForm"}
       href="https://forms.gle/Tcg9Gtgc1C2UBWKA8"
-      className="text-gray-400 text-xs my-auto hover:text-gray-500">
+      className="text-neutral-400 text-xs my-auto hover:text-neutral-500">
       Report a problem
     </a>}
     <a
       key={"eaforum"}
       href={"https://forum.effectivealtruism.org/users/sage"}
-      className="text-gray-400 hover:text-gray-500"
+      className="text-neutral-400 hover:text-neutral-500"
     >
       <span className="sr-only">{"EA Forum"}</span>
       <svg
@@ -94,7 +94,7 @@ function SocialIcons(showReportProblem: boolean) {
     <a
       key={"discord"}
       href={"https://discord.gg/mt9YVB8VDE"}
-      className="text-gray-400 hover:text-gray-500"
+      className="text-neutral-400 hover:text-neutral-500"
     >
       <span className="sr-only">{"Discord"}</span>
       <svg
@@ -112,7 +112,7 @@ function SocialIcons(showReportProblem: boolean) {
     <a
       key={"twitter"}
       href={"https://twitter.com/sage_future_"}
-      className="text-gray-400 hover:text-gray-500"
+      className="text-neutral-400 hover:text-neutral-500"
     >
       <span className="sr-only">{"Twitter"}</span>
       <svg

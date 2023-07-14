@@ -61,13 +61,13 @@ export function Question({
               <SharePopover question={question} />
               {
                 question.resolvedAt ? (
-                  <span className="text-sm text-gray-400 my-auto" key={`${question.id}resolve`}>
+                  <span className="text-sm text-neutral-400 my-auto" key={`${question.id}resolve`}>
                     <FormattedDate prefix={"Resolved "} date={question.resolvedAt} />
                   </span>
                 ) : (
                   <span
                     className={clsx(
-                      "text-sm text-gray-400 my-auto",
+                      "text-sm text-neutral-400 my-auto",
                       question.resolveBy < new Date() && "text-indigo-300"
                     )}
                     key={`${question.id}resolve`}>
@@ -118,7 +118,7 @@ export function ActivityNumbers({
   }) {
   return (
     <div
-      className="col-span-full flex flex-row gap-2 text-sm text-gray-400 justify-end hover:underline items-center"
+      className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:underline items-center"
       onClick={() => setManuallyExpanded(!manuallyExpanded)}
     >
       <span>{question.forecasts?.length ?? 0} forecasts</span>

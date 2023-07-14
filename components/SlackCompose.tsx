@@ -5,7 +5,7 @@ export function SlackCompose() {
   const animate = true
 
   return (
-    <div className="bg-white border-gray-200 border-4 rounded-2xl px-2 select-none">
+    <div className="bg-white border-neutral-200 border-4 rounded-2xl px-2 select-none">
       <p className="my-4 mx-2 min-h-[62px]">
         <span className="overflow-hidden border-black md:text-lg lg:md:text-xl">
           {animate ? <SlackComposeContent /> : "/forecast Will we release the podcast by Tuesday?"}

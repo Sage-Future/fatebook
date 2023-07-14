@@ -38,7 +38,7 @@ export function UserListDropdown({
       <label tabIndex={0} className="btn flex gap-0">
         {question.sharedWithLists?.length > 0 ? `Shared with ${question.sharedWithLists.length} lists` : "Share with lists"}
         <ChevronDownIcon
-          className="ml-2 -mr-2 h-5 w-5 text-gray-400"
+          className="ml-2 -mr-2 h-5 w-5 text-neutral-400"
           aria-hidden="true"
         />
       </label>
@@ -115,7 +115,7 @@ function UserListDisplay({
           onClick={(e) => e.stopPropagation()}
           className={clsx(
             "w-28 md:w-52 p-1",
-            isEditing ? "border border-gray-400 rounded-md" : "border-none",
+            isEditing ? "border border-neutral-400 rounded-md" : "border-none",
             updateList.isLoading ? "opacity-50" : "opacity-100"
           )}
           autoFocus={true}
@@ -174,7 +174,7 @@ function EmailInput({
 
   return (
     <span onClick={(e) => e.stopPropagation()}>
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-neutral-700">
         List members
       </label>
       <ReactMultiEmail

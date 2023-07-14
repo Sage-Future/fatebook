@@ -11,7 +11,7 @@ export default function HomePage() {
     <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <div className="prose mx-auto lg:w-[650px]">
         {!session?.user?.id && sessionStatus !== "loading" && <>
-          <h3 className="text-gray-600">Track your predictions, make better decisions</h3>
+          <h3 className="text-neutral-600">Track your predictions, make better decisions</h3>
         </>}
 
         <Predict />

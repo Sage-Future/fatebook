@@ -41,9 +41,9 @@ export default function QuestionPage() {
       <div className="prose mx-auto">
         {
           (qQuery.status === "error" || (qQuery.status === "success" &&  !question)) && (!session?.user.id ?
-            <h3 className="text-gray-600"><a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in</a> to view this question</h3>
+            <h3 className="text-neutral-600"><a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in</a> to view this question</h3>
             :
-            <h3 className="text-gray-600">{`This question doesn't exist or your account (${session.user.email}) doesn't have access`}</h3>
+            <h3 className="text-neutral-600">{`This question doesn't exist or your account (${session.user.email}) doesn't have access`}</h3>
           )
         }
         {
