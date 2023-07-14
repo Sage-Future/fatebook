@@ -75,7 +75,7 @@ export function Questions({
                 <Question
                   question={question}
                   key={question.id}
-                  startExpanded={index === 0}
+                  startExpanded={(index === 0 && question.userId === session.data?.user.id)}
                   zIndex={questions?.length ? (questions?.length - index) : undefined}
                 />
                 :

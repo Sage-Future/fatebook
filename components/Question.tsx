@@ -98,7 +98,7 @@ export function Question({
           leaveFrom="transform opacity-100 scale-100 translate-y-0 "
           leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
         >
-          <QuestionDetails question={question} />
+          <QuestionDetails question={question} hideOthersForecastsIfSharedWithUser={alwaysExpand} />
         </Transition>
       </div>
     </ErrorBoundary>
