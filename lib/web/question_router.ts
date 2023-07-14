@@ -3,15 +3,15 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
 import { getQuestionUrl } from "../../pages/q/[id]"
-import { QuestionWithForecasts, QuestionWithForecastsAndSharedWith, QuestionWithUserAndSharedWith } from "../../prisma/additional"
+import { QuestionWithForecasts, QuestionWithForecastsAndSharedWithAndLists, QuestionWithUserAndSharedWith } from "../../prisma/additional"
 import { forecastsAreHidden, getDateYYYYMMDD } from "../_utils_common"
 import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
 import { fatebookEmailFooter, sendEmail } from './email'
+import { questionsToCsv } from "./export"
 import { Context, publicProcedure, router } from "./trpc_base"
 import { getHtmlLinkQuestionTitle } from "./utils"
-import { questionsToCsv } from "./export"
 
 const questionIncludes = {
   forecasts: {
@@ -274,6 +274,12 @@ export const questionRouter = router({
         include: {
           forecasts: true,
           sharedWith: true,
+          sharedWithLists: {
+            include: {
+              users: true,
+              author: true,
+            }
+          }
         }
       })
 
@@ -353,6 +359,12 @@ export const questionRouter = router({
           comments: true,
           forecasts: true,
           sharedWith: true,
+          sharedWithLists: {
+            include: {
+              users: true,
+              author: true,
+            }
+          }
         }
       })
 
@@ -630,13 +642,14 @@ export async function getQuestionAssertAuthor(ctx: {userId: string | undefined},
   return question
 }
 
-function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWithForecastsAndSharedWith | null) {
+function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWithForecastsAndSharedWithAndLists | null) {
   if (question === null) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
   if (
     question?.sharedPublicly
     || question?.sharedWith.some(u => u.id === ctx.userId)
+    || question?.sharedWithLists.some(l => l.users.some(u => u.id === ctx.userId) || l.authorId === ctx.userId)
     || question?.userId === ctx.userId
     || question?.forecasts.some(f => f.userId === ctx.userId) // for slack questions
   ) {

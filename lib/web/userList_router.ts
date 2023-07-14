@@ -41,14 +41,6 @@ export const userListRouter = router({
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a list" })
       }
 
-      console.log({
-        name: input.name,
-        authorId: ctx.userId,
-        users: {
-          connect: input.userEmails?.map(email => ({ email }))
-        }
-      })
-
       const userList = await prisma.userList.create({
         data: {
           name: input.name,
