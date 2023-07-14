@@ -41,6 +41,10 @@ export type QuestionWithForecastsAndSharedWith = QuestionWithForecasts & {
     sharedWith: User[]
 }
 
+export type QuestionWithForecastsAndSharedWithAndLists = QuestionWithForecastsAndSharedWith & {
+    sharedWithLists: UserListWithAuthorAndUsers[]
+}
+
 export type QuestionWithForecastWithUserWithProfiles = Question & {
   forecasts: ForecastWithUserWithProfiles[]
   user: UserWithProfiles

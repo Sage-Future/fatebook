@@ -60,7 +60,7 @@ export function UserListDropdown({
                     currentLists.filter(id => id !== userList.id) :
                     [...currentLists, userList.id]
                 })}
-              ><a>
+              ><a className="active:bg-neutral-400">
                   {isInCurrentLists ?
                     <CheckCircleIcon className='fill-indigo-700' height={16} />
                     :
@@ -76,7 +76,7 @@ export function UserListDropdown({
         }
         <li>
           <a onClick={() => createList.mutate({ name: "New list" })}>
-            <PlusIcon height={15} /> Add list
+            <PlusIcon height={15} /> Create a new list
           </a>
         </li>
       </ul>
@@ -148,7 +148,7 @@ function UserListDisplay({
           <button
             className="btn btn-ghost btn-circle btn-xs"
             onClick={() => confirm(`Are you sure you want to delete '${userList.name}'?`) && deleteList.mutate({listId: userList.id})}
-            disabled={userList.authorId !== userId}
+            disabled={userList.authorId !== userId || isEditing}
           >
             <TrashIcon height={15} />
           </button>
