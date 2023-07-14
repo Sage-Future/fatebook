@@ -35,7 +35,7 @@ export function TrackRecord() {
                 <div
                   className={clsx(
                     "stat-value",
-                    !details?.brierScore && "text-gray-500"
+                    !details?.brierScore && "text-neutral-500"
                   )}>{
                     details?.brierScore ? showSignificantFigures(details.brierScore, 2) : "..."
                   }</div>
@@ -50,7 +50,7 @@ export function TrackRecord() {
                 <div
                   className={clsx(
                     "stat-value",
-                    !details?.rBrierScore && "text-gray-500"
+                    !details?.rBrierScore && "text-neutral-500"
                   )}>{
                     details?.rBrierScore ? showSignificantFigures(details.rBrierScore, 2) : "..."
                   }</div>

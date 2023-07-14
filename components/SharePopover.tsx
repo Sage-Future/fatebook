@@ -35,7 +35,7 @@ export function SharePopover({
                 <><UserIcon height={15} /> <span>Only me</span></>
               )}
             <ChevronDownIcon
-              className="-mr-2 h-5 w-5 text-gray-400"
+              className="-mr-2 h-5 w-5 text-neutral-400"
               aria-hidden="true"
             />
           </Popover.Button>
@@ -73,7 +73,7 @@ const SharePanel = React.forwardRef<
   } : undefined)
 
   return <Popover.Panel className="absolute z-50 w-full cursor-auto" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
-    <div className="absolute z-50 mt-2 w-72 right-0 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+    <div className="absolute z-50 mt-2 w-72 right-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
       <div className="p-4 flex flex-col gap-2">
         <EmailInput question={question} />
         <UserListDropdown question={question} />
@@ -155,7 +155,7 @@ function EmailInput({
   }
   return (
     <>
-      <label className="block text-sm font-medium text-gray-700">
+      <label className="block text-sm font-medium text-neutral-700">
         Share with
       </label>
       <ReactMultiEmail

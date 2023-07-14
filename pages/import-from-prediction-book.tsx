@@ -78,7 +78,7 @@ function PredictionBookImport() {
             type="text"
             placeholder="Your PredictionBook API Token"
             className={clsx(
-              'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:outline-indigo-700',
+              'text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:outline-indigo-700',
               errors.predictionBookApiToken && "border-red-500 focus-within:outline-red-500"
             )}
             {...register("predictionBookApiToken")}

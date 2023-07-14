@@ -132,7 +132,7 @@ export function Predict() {
           <div className="w-full relative">
             <TextareaAutosize
               className={clsx(
-                "w-full text-xl border-2 border-gray-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg mb-2",
+                "w-full text-xl border-2 border-neutral-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg mb-2",
                 "focus:outline-indigo-700",
               )}
               autoFocus={true}
@@ -188,10 +188,10 @@ export function Predict() {
               <div className='flex flex-col'>
                 <label className="flex" htmlFor="resolveBy">Resolve by
                   <InfoButton className='ml-1 tooltip-right' tooltip='When should I remind you to resolve this question?' />
-                </label>  
+                </label>
                 <input
                   className={clsx(
-                    "text-md border-2 border-gray-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
+                    "text-md border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
                     errors.resolveBy && "border-red-500",
                     highlightResolveBy && "shadow-[0_0_50px_-1px_rgba(0,0,0,1)] shadow-indigo-700 duration-100"
                   )}
@@ -202,7 +202,7 @@ export function Predict() {
                   onKeyDown={onEnterSubmit}
                   {...register("resolveBy", { required: true, valueAsDate: true })}
                 />
-                <span className='italic text-gray-400 text-sm p-1'>
+                <span className='italic text-neutral-400 text-sm p-1'>
                   <FormattedDate date={resolveByDate} alwaysUseDistance={true} capitalise={true} currentDateShowToday={true} hoverTooltip={false} />
                 </span>
               </div>
@@ -213,7 +213,7 @@ export function Predict() {
                 </label>
                 <div
                   className={clsx(
-                    'text-md bg-white border-2 border-gray-300 rounded-md p-2 flex focus-within:border-indigo-700 relative',
+                    'text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:border-indigo-700 relative',
                     errors.predictionPercentage && "border-red-500",
                   )}>
                   <div
@@ -247,7 +247,7 @@ export function Predict() {
                     }}
                     className={clsx(
                       'ml-px z-10 text-md font-bold select-none cursor-text',
-                      !predictionPercentage && "text-gray-400",
+                      !predictionPercentage && "text-neutral-400",
                     )}>%</span>
                 </div>
               </div>
@@ -307,14 +307,14 @@ function QuestionSuggestions({
       {suggestions.slice(0, showAll ? undefined : 8).map((suggestion) => (
         <button
           key={suggestion}
-          className='btn btn-ghost text-left text-gray-500 font-normal leading-normal'
+          className='btn btn-ghost text-left text-neutral-500 font-normal leading-normal'
           onClick={(e) => {
             chooseSuggestion(suggestion)
             e.preventDefault()
           }}
         >
           <span className='ml-4'>
-            <span className='text-gray-500 font-semibold mr-2 -ml-4'>+</span>
+            <span className='text-neutral-500 font-semibold mr-2 -ml-4'>+</span>
             <span>{suggestion}</span>
           </span>
         </button>

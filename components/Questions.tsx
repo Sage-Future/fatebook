@@ -81,7 +81,7 @@ export function Questions({
                 :
                 <></>
             )),
-          <div className="italic text-gray-500 text-sm">
+          <div className="italic text-neutral-500 text-sm">
             {filtersApplied ?
               "No questions match your filters."
               :
@@ -122,7 +122,7 @@ function FilterControls({
         })}
         className={clsx(
           "btn",
-          extraFilters.readyToResolve ? "btn-primary" : "text-gray-500",
+          extraFilters.readyToResolve ? "btn-primary" : "text-neutral-500",
         )}
       >
         {extraFilters.readyToResolve && <CheckCircleIcon height={16} />}
@@ -137,7 +137,7 @@ function FilterControls({
         })}
         className={clsx(
           "btn",
-          extraFilters.resolved ? "btn-primary" : "text-gray-500",
+          extraFilters.resolved ? "btn-primary" : "text-neutral-500",
         )}
       >
         {extraFilters.resolved && <CheckCircleIcon height={16} />}

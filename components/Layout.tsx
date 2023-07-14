@@ -17,7 +17,7 @@ export function Layout({
   showNavbar?: boolean
   showCreateAccountButton?: boolean
 }) {
-  const main = <main className="bg-gray-50 grow pb-8 lg:pb-12">
+  const main = <main className="bg-neutral-50 grow pb-8 lg:pb-12">
     {children}
   </main>
   return (

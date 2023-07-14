@@ -28,7 +28,7 @@ export default function UnsubscribePage() {
         </p>
         {unsubscribe.isSuccess ?
           <>
-            <h3 className="text-gray-600">You have been unsubscribed from all emails.</h3>
+            <h3 className="text-neutral-600">You have been unsubscribed from all emails.</h3>
             <p><a href={webFeedbackUrl}>Want to give us some feedback?</a></p>
           </>
           :
@@ -37,7 +37,7 @@ export default function UnsubscribePage() {
               placeholder='Your email'
               disabled={unsubscribe.isLoading}
               className={clsx(
-                "text-md border-2 border-gray-300 rounded-md p-2 resize-none focus:outline-indigo-700",
+                "text-md border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700",
               )}
               value={email}
               onChange={(e) => setEmail(e.target.value)}

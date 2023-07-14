@@ -33,8 +33,9 @@ export function Navbar({
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
     <li><a onClick={() => !exportData.isLoading && exportData.mutate()}>
-      {exportData.isLoading ? "Exporting..." : "Export all your data"}
+      {exportData.isLoading ? "Exporting..." : "Export all your forecasts"}
     </a></li>
+    <li><Link href="/api-setup">Create forecasts by API</Link></li>
     <li><Link href={webFeedbackUrl}>Submit feedback</Link></li>
     <li><Link href={webFeedbackUrl}>Report a problem</Link></li>
   </>
@@ -119,7 +120,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
   if (status === "loading") {
     return <details className="dropdown dropdown-end">
       <summary tabIndex={0} className="btn btn-ghost btn-circle avatar hover:bg-opacity-0 hover:scale-[1.03]">
-        <div className="w-10 h-10 rounded-full bg-gray-500 opacity-50" />
+        <div className="w-10 h-10 rounded-full bg-neutral-500 opacity-50" />
       </summary>
       <ul tabIndex={0} className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-52">
         <li className="px-3 py-2 text-neutral-500 select-none">Loading...</li>
