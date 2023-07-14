@@ -1,16 +1,24 @@
-import { Fragment, ReactNode } from 'react'
+import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
 import { CommentBox, DeleteCommentOverflow } from './CommentBox'
 import { FormattedDate } from "./FormattedDate"
 import { Username } from "./Username"
+import { useUserId } from '../lib/web/utils'
 
 export function QuestionDetails({
-  question
+  question,
+  hideOthersForecastsIfSharedWithUser,
 }: {
   question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments;
+  hideOthersForecastsIfSharedWithUser?: boolean;
 }) {
+  const userId = useUserId()
+  const hideOthersForecasts = hideOthersForecastsIfSharedWithUser && question.userId !== userId && !question.resolution
+   && (question.forecasts.filter(f => f.userId !== userId).length > 0
+   || question.comments.filter(c => c.userId !== userId).length > 0)
+  const [showEvents, setShowEvents] = useState<boolean>(!hideOthersForecasts)
 
   return (
     <div className="bg-neutral-100 border-[1px] px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
@@ -19,7 +27,12 @@ export function QuestionDetails({
         {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">
           {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
         </div>}
-        <EventsLog question={question} />
+        {
+          showEvents ?
+            <EventsLog question={question} />
+            :
+            <button className='btn mx-auto' onClick={() => setShowEvents(true)}>See forecasts and comments</button>
+        }
       </ErrorBoundary>
     </div>
   )

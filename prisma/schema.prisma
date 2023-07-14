@@ -45,7 +45,7 @@ model Question {
   createdAt           DateTime                 @default(now())
   comment             String? // todo remove, unused
   profileId           Int?
-  title               String                   @db.VarChar(255)
+  title               String                   @db.Text
   resolveBy           DateTime
   resolved            Boolean                  @default(false)
   pingedForResolution Boolean                  @default(false)
