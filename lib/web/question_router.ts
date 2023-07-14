@@ -42,6 +42,7 @@ const questionIncludes = {
 export type ExtraFilters = {
   resolved: boolean,
   readyToResolve: boolean,
+  resolvingSoon: boolean,
 }
 
 export const questionRouter = router({
@@ -73,6 +74,7 @@ export const questionRouter = router({
       extraFilters: z.object({
         resolved: z.boolean(),
         readyToResolve: z.boolean(),
+        resolvingSoon: z.boolean(),
       }).optional(),
     }))
     .query(async ({ input, ctx }) => {
@@ -540,7 +542,7 @@ export const questionRouter = router({
 })
 
 async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
-  input: { cursor: number; limit?: number | null | undefined; extraFilters?: { resolved: boolean; readyToResolve: boolean } | undefined },
+  input: { cursor: number; limit?: number | null | undefined; extraFilters?: ExtraFilters | undefined },
   ctx: Context
 ) {
   const limit = input.limit || 100
@@ -549,9 +551,15 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: (
+      input.extraFilters?.resolvingSoon ?
+        {
+          resolveBy: "asc",
+        }
+        :
+        {
+          createdAt: "desc",
+        }),
     where: {
       AND: [
         {
@@ -594,6 +602,12 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
           resolveBy: {
             lte: new Date(),
           }
+        } : {},
+        input.extraFilters?.resolvingSoon ? {
+          resolveBy: {
+            gte: new Date(),
+          },
+          resolution: null,
         } : {},
       ]
     },

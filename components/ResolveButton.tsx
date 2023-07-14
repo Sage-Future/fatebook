@@ -18,12 +18,14 @@ export function ResolveButton({
     async onSettled() {
       await invalidateQuestion(utils, question)
       await utils.question.getQuestionScores.invalidate()
+      await utils.question.getBucketedForecasts.invalidate()
     },
   })
   const undoResolution = api.question.undoResolution.useMutation({
     async onSettled() {
       await invalidateQuestion(utils, question)
       await utils.question.getQuestionScores.invalidate()
+      await utils.question.getBucketedForecasts.invalidate()
     },
   })
   const resolution = question.resolution

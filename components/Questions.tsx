@@ -1,7 +1,7 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useState } from 'react'
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
 import { ExtraFilters } from "../lib/web/question_router"
@@ -23,6 +23,7 @@ export function Questions({
   const [extraFilters, setExtraFilters] = useState<ExtraFilters>({
     resolved: false,
     readyToResolve: false,
+    resolvingSoon: false,
   })
   const filtersApplied = Object.values(extraFilters).some(f => f)
 
@@ -113,11 +114,28 @@ function FilterControls({
   setExtraFilters: (extraFilters: ExtraFilters) => void,
 }) {
   return (
-    <div className="flex flex-row gap-2" id="filters">
+    <div className="flex flex-row flex-wrap gap-2" id="filters">
       <button
         onClick={() => setExtraFilters({
           ...extraFilters,
           resolved: false,
+          readyToResolve: false,
+          resolvingSoon: !extraFilters.resolvingSoon,
+        })}
+        className={clsx(
+          "btn",
+          extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
+        )}
+      >
+        {extraFilters.resolvingSoon && <CheckCircleIcon height={16} />}
+        Resolving soon
+      </button>
+
+      <button
+        onClick={() => setExtraFilters({
+          ...extraFilters,
+          resolved: false,
+          resolvingSoon: false,
           readyToResolve: !extraFilters.readyToResolve,
         })}
         className={clsx(
@@ -133,6 +151,7 @@ function FilterControls({
         onClick={() => setExtraFilters({
           ...extraFilters,
           readyToResolve: false,
+          resolvingSoon: false,
           resolved: !extraFilters.resolved,
         })}
         className={clsx(
