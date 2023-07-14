@@ -188,7 +188,7 @@ export function Predict() {
               <div className='flex flex-col'>
                 <label className="flex" htmlFor="resolveBy">Resolve by
                   <InfoButton className='ml-1 tooltip-right' tooltip='When should I remind you to resolve this question?' />
-                </label>  
+                </label>
                 <input
                   className={clsx(
                     "text-md border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
