@@ -67,8 +67,8 @@ export function Question({
                 ) : (
                   <span
                     className={clsx(
-                      "text-sm text-neutral-400 my-auto",
-                      question.resolveBy < new Date() && "text-indigo-300"
+                      "text-sm my-auto",
+                      question.resolveBy < new Date() ? "text-indigo-300" : "text-neutral-400"
                     )}
                     key={`${question.id}resolve`}>
                     {question.resolveBy < new Date() ?
