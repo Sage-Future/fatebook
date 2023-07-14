@@ -103,6 +103,40 @@ export const appRouter = router({
         },
       })
     }),
+
+  getApiKey: publicProcedure
+    .query(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: ctx.userId,
+        },
+      })
+
+      return user?.apiKey
+    }),
+
+  regenerateApiKey: publicProcedure
+    .mutation(async ({ ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+
+      const newApiKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      await prisma.user.update({
+        where: {
+          id: ctx.userId,
+        },
+        data: {
+          apiKey: newApiKey,
+        },
+      })
+
+      return newApiKey
+    }),
 })
 
 export type AppRouter = typeof appRouter

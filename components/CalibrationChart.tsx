@@ -12,7 +12,7 @@ export function CalibrationChart() {
   const bucketedForecastsQ = api.question.getBucketedForecasts.useQuery()
   const [hovered, setHovered] = useState(false)
 
-  if (!bucketedForecastsQ.data) return <></>
+  if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>
 
   const { buckets, bucketedForecasts } = bucketedForecastsQ.data
   const params = getChartJsParams(buckets, bucketedForecasts, true, !hovered)
@@ -42,7 +42,7 @@ export function CalibrationChart() {
       <button
         className={"btn btn-ghost btn-xs absolute bottom-4 left-2"}
         onClick={() => setHovered(!hovered)}>
-        <QuestionMarkCircleIcon height={20} className={clsx(hovered && "fill-indigo-700")} />
+        <QuestionMarkCircleIcon height={20} className={clsx("text-neutral-400", hovered && "fill-indigo-700")} />
       </button>
     </div>
   )
