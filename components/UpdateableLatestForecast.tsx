@@ -34,7 +34,7 @@ export function UpdateableLatestForecast({
 
   function updateForecast(newForecastInput: string) {
     const newForecast = parseFloat(newForecastInput) / 100
-    if (!isNaN(newForecast) && newForecast > 0 && newForecast < 1
+    if (!isNaN(newForecast) && newForecast > 0 && newForecast <= 1
       && (!latestForecast?.forecast || newForecast !== (latestForecast.forecast as unknown as number))) {
       addForecast.mutate({
         questionId: question.id,

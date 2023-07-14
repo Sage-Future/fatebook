@@ -42,7 +42,7 @@ model QuestionScore {
 
 model Question {
   id                  String                   @id @default(cuid())
-  createdAt           DateTime                 @default(now()) @unique
+  createdAt           DateTime                 @default(now())
   comment             String? // todo remove, unused
   profileId           Int?
   title               String                   @db.VarChar(255)
@@ -121,6 +121,7 @@ model User {
   memberOfLists            UserList[]      @relation(name: "members")
   staleReminder            Boolean         @default(true)
   unsubscribedFromEmailsAt DateTime?
+  apiKey                   String?
 
   // Used by next-auth:
   emailVerified DateTime?
