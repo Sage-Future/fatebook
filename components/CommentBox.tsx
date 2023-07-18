@@ -3,6 +3,7 @@ import { PaperAirplaneIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { toast } from 'react-hot-toast'
 import TextareaAutosize from 'react-textarea-autosize'
 import { getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
@@ -113,10 +114,14 @@ export function CommentBox({
             onClick={() => {
               const newDateStr = prompt("Edit the resolution date of your question (YYYY-MM-DD):", getDateYYYYMMDD(question.resolveBy))
               const newDate = newDateStr ? new Date(newDateStr) : undefined
-              if (newDate && newDate !== question.resolveBy) {
+              if (newDate && !isNaN(newDate.getTime())) {
                 editQuestion.mutate({
                   questionId: question.id,
                   resolveBy: newDate,
+                })
+              } else {
+                toast.error("The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2023-09-30", {
+                  duration: 8000
                 })
               }
             }}
