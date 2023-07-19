@@ -13,7 +13,7 @@ import { questionsToCsv } from "./export"
 import { Context, publicProcedure, router } from "./trpc_base"
 import { getHtmlLinkQuestionTitle } from "./utils"
 
-const questionIncludes = {
+const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
     include: {
       user: true,
@@ -36,8 +36,15 @@ const questionIncludes = {
     include: {
       user: true,
     }
+  },
+  tags: {
+    where: {
+      user: {
+        id: userId,
+      }
+    }
   }
-}
+})
 
 export type ExtraFilters = {
   resolved: boolean,
@@ -61,7 +68,7 @@ export const questionRouter = router({
         where: {
           id: input.questionId,
         },
-        include: questionIncludes,
+        include: questionIncludes(ctx.userId),
       })
       assertHasAccess(ctx, question)
       return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)
@@ -611,7 +618,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
         } : {},
       ]
     },
-    include: questionIncludes,
+    include: questionIncludes(ctx.userId),
   })
 
   return {

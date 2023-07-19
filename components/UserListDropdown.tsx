@@ -6,12 +6,12 @@ import { useState } from 'react'
 import { ReactMultiEmail } from 'react-multi-email'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments, UserListWithAuthorAndUsers } from "../prisma/additional"
+import { QuestionWithStandardIncludes, UserListWithAuthorAndUsers } from "../prisma/additional"
 
 export function UserListDropdown({
   question
 } : {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
 }) {
   const userId = useUserId()
   const utils = api.useContext()

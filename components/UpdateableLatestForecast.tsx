@@ -3,13 +3,13 @@ import { useRef, useState } from 'react'
 import { useDebouncedCallback } from "use-debounce"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
+import { QuestionWithStandardIncludes } from "../prisma/additional"
 
 export function UpdateableLatestForecast({
   question,
   autoFocus,
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
   autoFocus?: boolean
 }) {
   const userId = useUserId()

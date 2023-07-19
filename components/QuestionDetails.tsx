@@ -1,17 +1,22 @@
+import { EllipsisVerticalIcon } from '@heroicons/react/20/solid'
+import { useRouter } from 'next/router'
 import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
+import { toast } from 'react-hot-toast'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
+import { api } from '../lib/web/trpc'
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CommentBox, DeleteCommentOverflow } from './CommentBox'
 import { FormattedDate } from "./FormattedDate"
+import { TagsSelect } from './TagsSelect'
 import { Username } from "./Username"
-import { useUserId } from '../lib/web/utils'
 
 export function QuestionDetails({
   question,
   hideOthersForecastsIfSharedWithUser,
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments;
+  question: QuestionWithStandardIncludes;
   hideOthersForecastsIfSharedWithUser?: boolean;
 }) {
   const userId = useUserId()
@@ -20,11 +25,33 @@ export function QuestionDetails({
    || question.comments.filter(c => c.userId !== userId).length > 0)
   const [showEvents, setShowEvents] = useState<boolean>(!hideOthersForecasts)
 
+  const utils = api.useContext()
+  const setTags = api.tags.setQuestionTags.useMutation({
+    async onSuccess() {
+      await invalidateQuestion(utils, question)
+      await utils.tags.getAll.invalidate()
+    }
+  })
+
   return (
-    <div className="bg-neutral-100 border-[1px] px-8 py-4 text-sm flex flex-col gap rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
+    <div className="bg-neutral-100 border-[1px] px-8 py-4 text-sm flex flex-col gap-4 rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
+
+        <div className='flex gap-2'>
+          <div className="grow">
+            <TagsSelect
+              tags={question.tags}
+              setTags={(tags) => {
+                setTags.mutate({
+                  questionId: question.id,
+                  tags,
+                })
+              }} />
+          </div>
+          <EditQuestionOverflow question={question} />
+        </div>
         <CommentBox question={question} />
-        {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-slate-400 italic">
+        {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
           {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
         </div>}
         {
@@ -41,7 +68,7 @@ export function QuestionDetails({
 function EventsLog({
   question
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments;
+  question: QuestionWithStandardIncludes;
 }) {
   let events: { timestamp: Date, el: ReactNode }[] = [
     question.forecasts.map(f =>({
@@ -49,7 +76,7 @@ function EventsLog({
       el: <Fragment key={f.id}>
         <Username user={f.user} className='font-semibold' />
         <span className="font-bold text-lg text-indigo-800">{displayForecast(f, 2)}</span>
-        <div className="text-slate-400"><FormattedDate date={f.createdAt} /></div>
+        <div className="text-neutral-400"><FormattedDate date={f.createdAt} /></div>
       </Fragment>
     })
     ),
@@ -58,7 +85,7 @@ function EventsLog({
       el: <Fragment key={c.id}>
         <span><Username user={c.user} className="font-semibold" /></span>
         <span/>
-        <span className="text-slate-400 inline-flex justify-between w-full">
+        <span className="text-neutral-400 inline-flex justify-between w-full">
           <FormattedDate date={c.createdAt} className='my-auto' />
           <DeleteCommentOverflow question={question} comment={c} />
         </span>
@@ -73,7 +100,7 @@ function EventsLog({
         el: <Fragment key={`${question.id} note`}>
           <span><Username user={question.user} className="font-semibold" /></span>
           <span/>
-          <span className="text-slate-400"><FormattedDate date={question.createdAt} /></span>
+          <span className="text-neutral-400"><FormattedDate date={question.createdAt} /></span>
           <span className="md:pl-7 col-span-3 -mt-1">
             {question.notes}
           </span>
@@ -86,7 +113,7 @@ function EventsLog({
         el: <Fragment key={`${question.id} resolution`}>
           <Username user={question.user} className='font-semibold' />
           <span className="italic text-indigo-800">Resolved {question.resolution}</span>
-          <span className="text-slate-400"><FormattedDate date={question.resolvedAt} /></span>
+          <span className="text-neutral-400"><FormattedDate date={question.resolvedAt} /></span>
         </Fragment>
       }] : []),
     ],
@@ -99,8 +126,76 @@ function EventsLog({
             (a, b) => b.timestamp.getTime() - a.timestamp.getTime() // reverse chronological
           ).map((event) => event?.el)
           :
-          <span className="text-sm text-slate-400 italic">No forecasts yet</span>}
+          <span className="text-sm text-neutral-400 italic">No forecasts yet</span>}
       </div>
     </ErrorBoundary>
+  )
+}
+
+function EditQuestionOverflow({
+  question
+}: {
+  question: QuestionWithStandardIncludes
+}) {
+  const utils = api.useContext()
+  const router = useRouter()
+
+  const deleteQuestion = api.question.deleteQuestion.useMutation({
+    async onSuccess() {
+      await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate()
+      await utils.question.getForecastCountByDate.invalidate()
+    }
+  })
+  const editQuestion = api.question.editQuestion.useMutation({
+    async onSuccess() {
+      await invalidateQuestion(utils, question)
+    }
+  })
+
+  return (
+    <div className="dropdown dropdown-end not-prose">
+      <label tabIndex={0} className="btn btn-xs btn-ghost"><EllipsisVerticalIcon height={15} /></label>
+      <ul tabIndex={0} className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52">
+        <li><a
+          onClick={() => {
+            const newTitle = prompt("Edit the title of your question:", question.title)
+            if (newTitle && newTitle !== question.title) {
+              editQuestion.mutate({
+                questionId: question.id,
+                title: newTitle
+              })
+            }
+          }}
+        >Edit question</a></li>
+        <li><a
+          onClick={() => {
+            const newDateStr = prompt("Edit the resolution date of your question (YYYY-MM-DD):", getDateYYYYMMDD(question.resolveBy))
+            const newDate = newDateStr ? new Date(newDateStr) : undefined
+            if (newDate && !isNaN(newDate.getTime())) {
+              editQuestion.mutate({
+                questionId: question.id,
+                resolveBy: newDate,
+              })
+            } else {
+              toast.error("The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2023-09-30", {
+                duration: 8000
+              })
+            }
+          }}
+        >Edit resolve by date</a></li>
+        <li><a
+          onClick={() => {
+            if (confirm("Are you sure you want to delete this question? This cannot be undone")) {
+              deleteQuestion.mutate({
+                questionId: question.id
+              })
+              if (router.asPath.startsWith("/q/")) {
+                void router.push("/")
+              }
+            }
+          }}
+        >Delete question</a></li>
+      </ul>
+    </div>
   )
 }

@@ -6,12 +6,15 @@ import { importRouter } from './import_router'
 import { questionRouter } from './question_router'
 import { publicProcedure, router } from './trpc_base'
 import { userListRouter } from './userList_router'
+import { tagsRouter } from './tags_router'
 
 
 export const appRouter = router({
   question: questionRouter,
 
   userList: userListRouter,
+
+  tags: tagsRouter,
 
   import: importRouter,
 
