@@ -5,7 +5,7 @@ import Link from "next/link"
 import { useState } from 'react'
 import { ErrorBoundary } from "react-error-boundary"
 import { getQuestionUrl } from "../pages/q/[id]"
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
+import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { QuestionDetails } from './QuestionDetails'
 import { ResolveButton } from "./ResolveButton"
@@ -20,7 +20,7 @@ export function Question({
   startExpanded,
   zIndex,
 } : {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
   alwaysExpand?: boolean
   startExpanded?: boolean
   zIndex?: number
@@ -111,7 +111,7 @@ export function ActivityNumbers({
   manuallyExpanded,
   setManuallyExpanded,
 } : {
-    question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+    question: QuestionWithStandardIncludes
     alwaysExpand: boolean | undefined
     manuallyExpanded: boolean
     setManuallyExpanded: (expanded: boolean) => void

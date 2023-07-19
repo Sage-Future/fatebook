@@ -1,8 +1,8 @@
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../../prisma/additional"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
 import { getDateTimeYYYYMMDDHHMMSS } from "../_utils_common"
 import prisma from "../_utils_server"
 
-export async function questionsToCsv(questions: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments[], userId: string) {
+export async function questionsToCsv(questions: QuestionWithStandardIncludes[], userId: string) {
   const forecasts = questions.flatMap(q => q.forecasts)
 
   if (!forecasts || forecasts.length === 0) return ""

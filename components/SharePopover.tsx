@@ -1,5 +1,5 @@
 import { Popover, Transition } from "@headlessui/react"
-import {UserGroupIcon, UserIcon, UsersIcon, ChevronDownIcon} from '@heroicons/react/20/solid'
+import { ChevronDownIcon, UserGroupIcon, UserIcon, UsersIcon } from '@heroicons/react/20/solid'
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
@@ -10,7 +10,7 @@ import 'react-multi-email/dist/style.css'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { getQuestionUrl } from "../pages/q/[id]"
-import { QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments } from "../prisma/additional"
+import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"
 
@@ -18,7 +18,7 @@ import { UserListDropdown } from "./UserListDropdown"
 export function SharePopover({
   question
 } : {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
 }) {
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
   return (
@@ -60,11 +60,11 @@ export function SharePopover({
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SharePanel = React.forwardRef<
   HTMLDivElement,
-  {question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments}
+  {question: QuestionWithStandardIncludes}
 >(function SharePanel({
   question
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
 }, forwardedRef) {
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
 
@@ -96,7 +96,7 @@ const SharePanel = React.forwardRef<
 function SharePublicly({
   question
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
 }) {
   const userId = useUserId()
   const utils = api.useContext()
@@ -133,7 +133,7 @@ function SharePublicly({
 function EmailInput({
   question
 }: {
-  question: QuestionWithUserAndForecastsWithUserAndSharedWithAndMessagesAndComments
+  question: QuestionWithStandardIncludes
 }) {
   const [emails, setEmails] = useState<string[]>(question.sharedWith.map((user) => user.email))
   const userId = useUserId()
