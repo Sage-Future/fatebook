@@ -95,14 +95,35 @@ export const questionRouter = router({
     }),
 
   getForecastCountByDate: publicProcedure
-    .query(async ({ ctx }) => {
+    .input(
+      z.object({
+        tags: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
       if (!ctx.userId) {
         return null
       }
 
       const forecasts = await prisma.forecast.findMany({
         where: {
-          userId: ctx.userId,
+          AND: [
+            {
+              userId: ctx.userId,
+            },
+            (input.tags && input.tags.length > 0) ? {
+              question: {
+                tags: {
+                  some: {
+                    name: {
+                      in: input.tags
+                    },
+                    userId: ctx.userId,
+                  }
+                }
+              }
+            } : {},
+          ]
         },
         select: {
           createdAt: true,
@@ -442,14 +463,36 @@ export const questionRouter = router({
     }),
 
   getQuestionScores: publicProcedure
-    .query(async ({ ctx }) => {
+    .input(
+      z.object({
+        tags: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
         return null
       }
 
       const questionScores = await prisma.questionScore.findMany({
         where: {
-          userId: ctx.userId
+          AND: [
+            {
+              userId: ctx.userId,
+            },
+            input.tags && input.tags.length > 0 ? {
+              question: {
+                tags: {
+                  some: {
+                    name: {
+                      in: input.tags
+                    },
+                    userId: ctx.userId,
+                  }
+                }
+              }
+            } : {},
+
+          ]
         },
       })
 
@@ -457,11 +500,16 @@ export const questionRouter = router({
     }),
 
   getBucketedForecasts: publicProcedure
-    .query(async ({ ctx }) => {
+    .input(
+      z.object({
+        tags: z.array(z.string()).optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
       if (!ctx.userId) {
         return null
       }
-      return await getBucketedForecasts(ctx.userId)
+      return await getBucketedForecasts(ctx.userId, input.tags)
     }),
 
   deleteQuestion: publicProcedure

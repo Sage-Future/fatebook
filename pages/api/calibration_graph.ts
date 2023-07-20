@@ -32,19 +32,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   res.send(await lineChart.toBuffer())
 }
 
-export async function getBucketedForecasts(userId: string) {
+export async function getBucketedForecasts(userId: string, tags?: string[]) {
   const questions = await prisma.question.findMany({
     where: {
-      resolution: {
-        in: [Resolution.YES, Resolution.NO]
-      },
-      forecasts: {
-        some: {
-          userId: {
-            equals: userId,
+      AND: [
+        {
+          resolution: {
+            in: [Resolution.YES, Resolution.NO]
           }
-        }
-      }
+        },
+        {
+          forecasts: {
+            some: {
+              userId: {
+                equals: userId,
+              }
+            }
+          }
+        },
+        (tags && tags.length > 0) ? {
+          tags: {
+            some: {
+              name: {
+                in: tags,
+              },
+              userId: userId
+            }
+          }
+        } : {},
+      ]
     },
     include: {
       forecasts: {

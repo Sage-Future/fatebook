@@ -1,26 +1,56 @@
+import { Transition } from '@headlessui/react'
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
+import { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import GitHubCalendar from 'react-github-contribution-calendar'
-import { getDateYYYYMMDD, populateDetails, showSignificantFigures } from '../lib/_utils_common'
+import { getDateYYYYMMDD, joinWithOr, populateDetails, showSignificantFigures } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
-import { useUserId } from "../lib/web/utils"
+import { transitionProps, useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
 import { InfoButton } from './InfoButton'
-
-// import 'react-github-contribution-calendar/default.css'
+import { TagsSelect } from './TagsSelect'
 
 export function TrackRecord() {
   const userId = useUserId()
-  const allScoresQuery = api.question.getQuestionScores.useQuery()
+  const [tags, setTags] = useState<string[]>([])
+  const allScoresQuery = api.question.getQuestionScores.useQuery({
+    tags: tags,
+  })
   const scoreDetails = allScoresQuery?.data && populateDetails(allScoresQuery?.data)
+
+  const [showFilters, setShowFilters] = useState<boolean>(false)
 
   if (!userId) return <></>
 
   return (
     <div className="max-w-xs prose flex flex-col mx-auto">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <h2 className="select-none">Your track record</h2>
-        <CalibrationChart />
+        <h2 className="select-none relative">
+            Your track record
+          <button
+            className={clsx(
+              'btn btn-circle aspect-square absolute right-3 -bottom-2 hover:opacity-100',
+              (showFilters || tags.length > 0) ? 'btn-active' : 'btn-ghost',
+            )}
+            onClick={(e) => {
+              setShowFilters(!showFilters)
+              e.preventDefault()
+            }}
+          >
+            <AdjustmentsHorizontalIcon height={16} width={16} />
+          </button>
+        </h2>
+        <Transition {...transitionProps()} show={showFilters || tags.length > 0}>
+          <div className="text-sm pb-4">
+            <TagsSelect
+              tags={tags}
+              setTags={(tags) => setTags(tags)}
+              placeholder='Filter by tags...'
+            />
+          </div>
+        </Transition>
+        <CalibrationChart tags={tags} />
         <div className="flex flex-col gap-4 pt-6">
           {[
             {details: scoreDetails?.recentDetails, title: "Last 3 months"},
@@ -60,15 +90,21 @@ export function TrackRecord() {
             </div>
           ))}
         </div>
-        <ForecastsCalendarHeatmap />
+        <ForecastsCalendarHeatmap tags={tags} />
       </ErrorBoundary>
 
     </div>
   )
 }
 
-export function ForecastsCalendarHeatmap() {
-  const forecasts = api.question.getForecastCountByDate.useQuery(undefined)
+export function ForecastsCalendarHeatmap({
+  tags,
+} : {
+  tags: string[]
+}) {
+  const forecasts = api.question.getForecastCountByDate.useQuery({
+    tags: tags,
+  })
 
   return (
     <div className="pt-12">
@@ -86,7 +122,12 @@ export function ForecastsCalendarHeatmap() {
           panelAttributes={{}}
           weekLabelAttributes={{}}
         />
-        <span className='ml-3'>{"You've made"} <span className='font-semibold'>{forecasts.data?.total}</span> forecasts</span>
+        <div className='ml-3'>
+          {"You've made "}
+          <span className='font-semibold'>{forecasts.data?.total}</span>
+          {" forecasts"}
+          {tags.length > 0 && ` tagged ${joinWithOr(tags.map(tag => `"${tag}"`))}`}
+        </div>
       </ErrorBoundary>
     </div>
   )
