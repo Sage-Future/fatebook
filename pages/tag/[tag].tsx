@@ -2,6 +2,7 @@ import { NextSeo } from 'next-seo'
 import { useRouter } from 'next/router'
 import { Questions } from '../../components/Questions'
 import { api, getClientBaseUrl } from '../../lib/web/trpc'
+import { useUserId } from '../../lib/web/utils'
 
 export function getTagPageUrl(tagName: string, useRelativePath?: boolean) {
   return `${getClientBaseUrl(useRelativePath)}/tag/${encodeURIComponent(tagName)}`
@@ -10,6 +11,7 @@ export function getTagPageUrl(tagName: string, useRelativePath?: boolean) {
 export default function TagPage() {
   const router = useRouter()
   const tagName = decodeURIComponent(router.query.tag as string)
+  const userId = useUserId()
 
   const tagQ = api.tags.getByName.useQuery({
     tagName
@@ -21,6 +23,11 @@ export default function TagPage() {
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
           {
+            !userId && <>
+              <h3 className="text-neutral-600">Sign in to view your tags</h3>
+            </>
+          }
+          {
             tagQ.data ?
               <Questions
                 title={tagQ.data?.name ? `Your “${tagQ.data.name}” questions` : "Loading..."}
@@ -28,7 +35,7 @@ export default function TagPage() {
                 noQuestionsText='No questions tagged with this tag yet.'
               />
               :
-              <h3 className="text-neutral-600">Loading...</h3>
+              <h3 className="text-neutral-600">{tagQ.isLoading ? "Loading..." : ""}</h3>
           }
         </div>
       </div>

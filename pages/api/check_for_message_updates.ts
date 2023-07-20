@@ -65,9 +65,13 @@ async function sendTargetMessages() {
   const targetsToBeNotified = await getTargetsToBeNotified()
   for (const target of targetsToBeNotified) {
     if (target.profile && target.profile.slackTeamId && target.profile.slackId) {
-      await sendSlackTargetNotification(target,
-                                        target.profile.slackTeamId,
-                                        target.profile.slackId)
+      try {
+        await sendSlackTargetNotification(target,
+                                          target.profile.slackTeamId,
+                                          target.profile.slackId)
+      } catch (err) {
+        console.error(`Error sending message on target ${target.id}: \n${err}\nContinuing...`)
+      }
     } else if (target.user.accounts.length > 0) {
       // await sendEmailTargetNotification(user)
       console.error("Email notifications not set for targets", target.id)
@@ -406,9 +410,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
-  const allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
-  const questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
-  const targetMessages           = await sendTargetMessages()
-  const staleForecastMessages    = await messageStaleForecasts()
+  // wrap everything in a try catch so that if one fails, the others still run
+  let allQuestionsToBeNotified, questionsToBeUpdated, targetMessages, staleForecastMessages
+  try {
+    allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
+  } catch (e) { console.error(e) }
+  try {
+    questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
+  } catch (e) { console.error(e) }
+  try {
+    targetMessages           = await sendTargetMessages()
+  } catch (e) { console.error(e) }
+  try {
+    staleForecastMessages    = await messageStaleForecasts()
+  } catch (e) { console.error(e) }
   res.json({questionsToBeUpdated, allQuestionsToBeNotified, targetMessages, staleForecastMessages})
 }
