@@ -50,7 +50,6 @@ export function QuestionDetails({
           </div>
           <EditQuestionOverflow question={question} />
         </div>
-        <CommentBox question={question} />
         {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
           {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
         </div>}
@@ -60,6 +59,7 @@ export function QuestionDetails({
             :
             <button className='btn mx-auto' onClick={() => setShowEvents(true)}>See forecasts and comments</button>
         }
+        <CommentBox question={question} />
       </ErrorBoundary>
     </div>
   )
@@ -123,7 +123,7 @@ function EventsLog({
       <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center">
         {events.length ?
           events.sort(
-            (a, b) => b.timestamp.getTime() - a.timestamp.getTime() // reverse chronological
+            (a, b) => a.timestamp.getTime() - b.timestamp.getTime() // chronological
           ).map((event) => event?.el)
           :
           <span className="text-sm text-neutral-400 italic">No forecasts yet</span>}

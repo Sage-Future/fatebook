@@ -50,6 +50,7 @@ export type ExtraFilters = {
   resolved: boolean,
   readyToResolve: boolean,
   resolvingSoon: boolean,
+  filterTagIds?: string[],
 }
 
 export const questionRouter = router({
@@ -82,6 +83,7 @@ export const questionRouter = router({
         resolved: z.boolean(),
         readyToResolve: z.boolean(),
         resolvingSoon: z.boolean(),
+        filterTagIds: z.array(z.string()).optional(),
       }).optional(),
     }))
     .query(async ({ input, ctx }) => {
@@ -615,6 +617,15 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
             gte: new Date(),
           },
           resolution: null,
+        } : {},
+        input.extraFilters?.filterTagIds ? {
+          tags: {
+            some: {
+              id: {
+                in: input.extraFilters.filterTagIds
+              }
+            }
+          }
         } : {},
       ]
     },

@@ -144,7 +144,7 @@ export function toSentenceCase(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export function tomorrrowDate() {
+export function tomorrowDate() {
   const tomorrow = new Date()
   tomorrow.setDate(tomorrow.getDate() + 1)
   return tomorrow

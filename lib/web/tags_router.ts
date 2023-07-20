@@ -17,6 +17,31 @@ export const tagsRouter = router({
       })
     }),
 
+  getByName: publicProcedure
+    .input(
+      z.object({
+        tagName: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        return null
+      }
+
+      const tags = await prisma.tag.findMany({
+        where: {
+          name: input.tagName,
+          userId: ctx.userId,
+        },
+      })
+
+      if (tags.length === 0) {
+        return null
+      }
+
+      return tags[0]
+    }),
+
   setQuestionTags: publicProcedure
     .input(
       z.object({
