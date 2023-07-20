@@ -1,7 +1,10 @@
 import { Tag } from '@prisma/client'
+import Link from 'next/link'
 import { useState } from 'react'
+import { components } from 'react-select'
 import Select from 'react-select/creatable'
 import { api } from '../lib/web/trpc'
+import { getTagPageUrl } from '../pages/tag/[tag]'
 
 export function TagsSelect({
   tags,
@@ -36,9 +39,11 @@ export function TagsSelect({
         }
         hideSelectedOptions={true}
         formatCreateLabel={(inputValue) => `Add new tag "${inputValue}"`}
+        className='cursor-text'
         classNames={{
-          control: () => '!bg-transparent !border-none',
-          multiValue: () => '!bg-neutral-200 px-0.5 !rounded-md',
+          control: () => '!bg-neutral-200 !border-none shadow-inner !cursor-text',
+          multiValue: () => '!bg-white shadow-sm px-0.5 !rounded-md !cursor-pointer not-prose',
+          multiValueLabel: () => 'hover:underline hover:bg-neutral-100',
           multiValueRemove: () => 'text-neutral-400 !px-0.5',
         }}
         theme={(theme) => ({
@@ -58,8 +63,9 @@ export function TagsSelect({
         }}
         noOptionsMessage={() => "Type to add a tag. Your tags are visible only to you."}
         closeMenuOnSelect={false}
-        // hide the dropdown chevron
         components={{
+          MultiValueLabel,
+          // hide the dropdown chevron
           // eslint-disable-next-line @typescript-eslint/naming-convention
           DropdownIndicator: () => null,
           // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -70,8 +76,19 @@ export function TagsSelect({
         isDisabled={disabled}
         isClearable={false}
         allowCreateWhileLoading={true}
-        placeholder="+ Add tags"
+        placeholder="Add tags..."
       />
     </div>
+  )
+}
+
+function MultiValueLabel(props: {data: { value: string }, [key: string]: any}) {
+  return (
+    <Link
+      href={getTagPageUrl(props.data.value)}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <components.MultiValueLabel {...(props as unknown as any)} />
+    </Link>
   )
 }

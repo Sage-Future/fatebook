@@ -13,10 +13,12 @@ export function Questions({
   title,
   filterClientSide,
   noQuestionsText = "Make your first forecast to see it here.",
+  filterTagIds = undefined,
 }: {
   title?: string,
   filterClientSide?: (question: any) => boolean
   noQuestionsText?: string,
+  filterTagIds?: string[],
 }) {
   const session = useSession()
 
@@ -30,7 +32,10 @@ export function Questions({
   const questionsQ = api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useInfiniteQuery(
     {
       limit: 10,
-      extraFilters,
+      extraFilters: {
+        ...extraFilters,
+        filterTagIds,
+      },
     },
     {
       initialCursor: 0, // NB: "cursor" language comes from TRPC, but we use take/skip method in Prisma

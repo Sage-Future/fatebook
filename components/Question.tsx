@@ -118,7 +118,7 @@ export function ActivityNumbers({
   }) {
   return (
     <div
-      className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:underline items-center"
+      className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center"
       onClick={() => setManuallyExpanded(!manuallyExpanded)}
     >
       <span>{question.forecasts?.length ?? 0} forecasts</span>

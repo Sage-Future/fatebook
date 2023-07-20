@@ -9,7 +9,7 @@ import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
 import SuperJSON from 'trpc-transformer'
 import { z } from "zod"
-import { getDateYYYYMMDD, tomorrrowDate as tomorrowDate } from '../lib/_utils_common'
+import { getDateYYYYMMDD, tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
 import { signInToFatebook, useUserId } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
@@ -27,7 +27,7 @@ export function Predict() {
     resolver: zodResolver(predictFormSchema),
   })
   const question = watch("question")
-  const resolveByDate = watch("resolveBy")
+  const resolveByDate = watch("resolveBy", tomorrowDate())
   const predictionPercentage = watch("predictionPercentage")
 
   const userId = useUserId()
