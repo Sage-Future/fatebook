@@ -203,3 +203,10 @@ export function padAndFormatScore(score: number, maxprepad: number = scorePrepad
 export function plural(num: number) {
   return num === 1 ? "" : "s"
 }
+
+export function joinWithOr(list: string[]) {
+  if (list.length === 0) return ""
+  if (list.length === 1) return list[0]
+  if (list.length === 2) return `${list[0]} or ${list[1]}`
+  return `${list.slice(0, -1).join(", ")}, or ${list.slice(-1)}`
+}

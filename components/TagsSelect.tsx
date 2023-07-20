@@ -1,4 +1,3 @@
-import { Tag } from '@prisma/client'
 import Link from 'next/link'
 import { useState } from 'react'
 import { components } from 'react-select'
@@ -10,12 +9,14 @@ export function TagsSelect({
   tags,
   setTags,
   disabled,
+  placeholder = "Add tags...",
 } : {
-  tags: Tag[],
+  tags: string[],
   setTags: (tags: string[]) => void
   disabled?: boolean,
+  placeholder?: string,
 }) {
-  const [localTags, setLocalTags] = useState<string[]>(tags.map(t => t.name))
+  const [localTags, setLocalTags] = useState<string[]>(tags)
   const allTagsQ = api.tags.getAll.useQuery()
   const allTags = allTagsQ.data ?? []
 
@@ -76,7 +77,7 @@ export function TagsSelect({
         isDisabled={disabled}
         isClearable={false}
         allowCreateWhileLoading={true}
-        placeholder="Add tags..."
+        placeholder={placeholder}
       />
     </div>
   )

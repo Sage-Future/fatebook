@@ -40,7 +40,7 @@ export function QuestionDetails({
         <div className='flex gap-2'>
           <div className="grow">
             <TagsSelect
-              tags={question.tags}
+              tags={question.tags.map(t => t.name)}
               setTags={(tags) => {
                 setTags.mutate({
                   questionId: question.id,

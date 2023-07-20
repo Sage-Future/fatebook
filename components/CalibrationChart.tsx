@@ -8,8 +8,14 @@ import { getChartJsParams } from "../lib/web/utils"
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement)
 
-export function CalibrationChart() {
-  const bucketedForecastsQ = api.question.getBucketedForecasts.useQuery()
+export function CalibrationChart({
+  tags,
+} : {
+  tags: string[]
+}) {
+  const bucketedForecastsQ = api.question.getBucketedForecasts.useQuery({
+    tags: tags,
+  })
   const [hovered, setHovered] = useState(false)
 
   if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>

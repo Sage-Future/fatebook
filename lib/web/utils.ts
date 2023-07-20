@@ -1,7 +1,7 @@
 import { Question } from "@prisma/client"
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
-import { ReactNode } from "react"
+import React, { ReactNode } from "react"
 import { toast } from "react-hot-toast"
 import { getQuestionUrl } from "../../pages/q/[id]"
 
@@ -154,4 +154,17 @@ export function downloadBlob(content: any, filename: string, contentType: string
   pom.href = url
   pom.setAttribute('download', filename)
   pom.click()
+}
+
+export function transitionProps() {
+  return {
+    as: React.Fragment,
+    className: "z-10",
+    enter: "transition ease-out duration-100",
+    enterFrom: "transform opacity-0 scale-98 translate-y-[-0.5rem]",
+    enterTo: "transform opacity-100 scale-100 translate-y-0",
+    leave: "transition ease-in duration-75",
+    leaveFrom: "transform opacity-100 scale-100 translate-y-0 ",
+    leaveTo: "transform opacity-0 scale-98 translate-y-[-0.5rem]",
+  }
 }
