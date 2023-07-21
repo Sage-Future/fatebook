@@ -32,6 +32,7 @@ export function Navbar({
     <li><Link href="/about">About</Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
+    <li><Link href="/import-from-spreadsheet">Import from spreadsheet</Link></li>
     <li><a onClick={() => !exportData.isLoading && exportData.mutate()}>
       {exportData.isLoading ? "Exporting..." : "Export all your forecasts"}
     </a></li>

@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import prisma from '../_utils_server'
+import prisma, { backendAnalyticsEvent } from '../_utils_server'
 import { emailNewlySharedWithUsers, getQuestionAssertAuthor } from './question_router'
 import { publicProcedure, router } from './trpc_base'
 
@@ -58,6 +58,11 @@ export const userListRouter = router({
         }
       })
 
+      await backendAnalyticsEvent("create_user_list", {
+        user: ctx.userId,
+        platform: "web",
+      })
+
       return userList
     }),
 
@@ -90,6 +95,11 @@ export const userListRouter = router({
           }
         }
       })
+
+      await backendAnalyticsEvent("update_user_list", {
+        user: ctx.userId,
+        platform: "web",
+      })
     }),
 
   deleteList: publicProcedure
@@ -112,6 +122,11 @@ export const userListRouter = router({
         where: {
           id: input.listId,
         },
+      })
+
+      await backendAnalyticsEvent("delete_user_list", {
+        user: ctx.userId,
+        platform: "web",
       })
     }),
 
@@ -171,5 +186,10 @@ export const userListRouter = router({
       ))
 
       await emailNewlySharedWithUsers(newUsersSharedWith, question)
+
+      await backendAnalyticsEvent("set_question_lists", {
+        user: ctx.userId,
+        platform: "web",
+      })
     }),
 })

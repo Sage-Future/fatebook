@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import prisma from '../_utils_server'
+import prisma, { backendAnalyticsEvent } from '../_utils_server'
 import { publicProcedure, router } from './trpc_base'
 
 export const tagsRouter = router({
@@ -86,6 +86,11 @@ export const tagsRouter = router({
             none: {},
           },
         },
+      })
+
+      await backendAnalyticsEvent("set_tags", {
+        user: ctx.userId,
+        platform: "web",
       })
     }),
 })
