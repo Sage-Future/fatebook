@@ -592,7 +592,10 @@ export const questionRouter = router({
 
       const csv = await questionsToCsv(questions, ctx.userId)
 
-      console.log(csv)
+      await backendAnalyticsEvent("exported_to_csv", {
+        user: ctx.userId,
+        platform: "web",
+      })
 
       return csv
     }),

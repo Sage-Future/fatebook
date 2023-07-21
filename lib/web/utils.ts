@@ -113,6 +113,10 @@ export function getPredictionBookIdPrefix() {
   return "pb_"
 }
 
+export function getCsvIdPrefix() {
+  return 'cs_'
+}
+
 export function ifEmpty<T>(value: Array<T>, defaultValue: ReactNode) {
   return (!value || value?.length === 0) ? defaultValue : value
 }
@@ -167,4 +171,16 @@ export function transitionProps() {
     leaveFrom: "transform opacity-100 scale-100 translate-y-0 ",
     leaveTo: "transform opacity-0 scale-98 translate-y-[-0.5rem]",
   }
+}
+
+export function hashString(str: string) {
+  var hash = 0, i, chr
+  if (str.length === 0) return hash
+  for (i = 0; i < str.length; i++) {
+    chr   = str.charCodeAt(i)
+    hash  = ((hash << 5) - hash) + chr
+    // Convert to 32bit integer
+    hash |= 0
+  }
+  return hash
 }

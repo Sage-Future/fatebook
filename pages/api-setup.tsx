@@ -72,6 +72,18 @@ export default function ApiPage() {
         </p>
 
         <p>Having trouble? Ask for help in <Link href="https://discord.gg/mt9YVB8VDE" target='_blank'>Discord</Link>.</p>
+
+        <h3>
+          Integrations that other Fatebook users have created:
+        </h3>
+        <ul>
+          <li>
+            <Link href="https://www.icloud.com/shortcuts/25903acfcd3d4fd5bed31c2f50322928">
+              An iOS shortcut to create a Fatebook question
+            </Link>
+            {" - by @JasperGo. You can add it to your homescreen or use Siri to create a question!"}
+          </li>
+        </ul>
       </div>
     </div>
   )
