@@ -34,11 +34,6 @@ export function CommentBox({
   }
 
   return <div className=''>
-    {!userId && <div className="flex w-full p-4">
-      <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
-        Sign in to add your own prediction
-      </button>
-    </div>}
     <form
       className='relative'
       onSubmit={(e) => {

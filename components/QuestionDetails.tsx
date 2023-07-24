@@ -5,7 +5,7 @@ import { ErrorBoundary } from 'react-error-boundary'
 import { toast } from 'react-hot-toast'
 import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
 import { api } from '../lib/web/trpc'
-import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import {invalidateQuestion, useUserId, signInToFatebook} from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CommentBox, DeleteCommentOverflow } from './CommentBox'
 import { FormattedDate } from "./FormattedDate"
@@ -36,10 +36,16 @@ export function QuestionDetails({
   return (
     <div className="bg-neutral-100 border-[1px] px-8 py-4 text-sm flex flex-col gap-4 rounded-b-md shadow-sm group-hover:shadow-md" onClick={(e) => e.stopPropagation()}>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
+        {!userId && <div className="flex w-full p-4">
+          <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
+            Sign in to add your own prediction
+          </button>
+        </div>}
 
-        <div className='flex gap-2'>
+        {userId && <div className='flex gap-2'>
           <div className="grow">
             <TagsSelect
+              disabled={!userId}
               tags={question.tags.map(t => t.name)}
               setTags={(tags) => {
                 setTags.mutate({
@@ -49,7 +55,7 @@ export function QuestionDetails({
               }} />
           </div>
           <EditQuestionOverflow question={question} />
-        </div>
+        </div>}
         {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
           {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}
         </div>}
