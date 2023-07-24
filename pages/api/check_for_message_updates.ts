@@ -3,6 +3,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import { Question, Target, User } from '@prisma/client'
 import { conciseDateTime } from "../../lib/_utils_common"
 import prisma, { getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
+import { getQuestionTitleLink } from '../../lib/blocks-designs/_block_utils'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale_forecasts'
 import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
@@ -10,7 +11,6 @@ import { fatebookEmailFooter, sendEmail } from '../../lib/web/email'
 import { getHtmlLinkQuestionTitle } from '../../lib/web/utils'
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
 import { getQuestionUrl } from '../q/[id]'
-import { getQuestionTitleLink } from '../../lib/blocks-designs/_block_utils'
 
 async function getTargetsToBeNotified(){
   const lastWeek = new Date()
@@ -376,12 +376,12 @@ async function sendEmailForStaleForecasts(staleForecastsForProfile: ForecastWith
   if (staleForecastsForProfile.length > 0) {
     await sendEmail({
       subject: `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'`
-        + (staleForecastsForProfile.length > 0 ? ` and ${staleForecastsForProfile.length - 1} other questions` : ""),
+        + (staleForecastsForProfile.length > 1 ? ` and ${staleForecastsForProfile.length - 1} other questions` : ""),
       to: user.email,
       textBody: `Do you want to update your forecasts?`,
-      htmlBody: `<p>You have some forecasts you may want to update</p>`
+      htmlBody: `<p>You have some forecasts you may want to update:</p>`
         + staleForecastsForProfile.map(
-          (staleForecast) => '<p>• ' + getQuestionTitleLink(staleForecast.question) + '</p>'
+          async (staleForecast) => '<p>• ' + await getQuestionTitleLink(staleForecast.question) + '</p>'
         ).join("\n")
         + `\n${fatebookEmailFooter(user.email)}`,
     })
