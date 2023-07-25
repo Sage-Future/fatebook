@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { api } from '../lib/web/trpc'
-import { invalidateQuestion, signInToFatebook, useUserId } from '../lib/web/utils'
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { CommentWithUser, QuestionWithStandardIncludes } from "../prisma/additional"
 
 export function CommentBox({
