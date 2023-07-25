@@ -3,7 +3,6 @@ import { VercelRequest, VercelResponse } from '@vercel/node'
 import { Question, Target, User } from '@prisma/client'
 import { conciseDateTime } from "../../lib/_utils_common"
 import prisma, { getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
-import { getQuestionTitleLink } from '../../lib/blocks-designs/_block_utils'
 import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
 import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale_forecasts'
 import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
@@ -374,19 +373,15 @@ async function messageStaleForecasts(){
 
 async function sendEmailForStaleForecasts(staleForecastsForProfile: ForecastWithQuestionWithSlackMessagesAndForecasts[], user: User) {
   if (staleForecastsForProfile.length > 0) {
-    const bulletList = (await Promise.all(
-      staleForecastsForProfile.map(
-        async (staleForecast) => ('<p>• ' + await getQuestionTitleLink(staleForecast.question) + '</p>')
-      ))
-    ).join("\n")
-
     await sendEmail({
       subject: `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'`
         + (staleForecastsForProfile.length > 1 ? ` and ${staleForecastsForProfile.length - 1} other questions` : ""),
       to: user.email,
       textBody: `Do you want to update your forecasts?`,
       htmlBody: `<p>You have some forecasts you may want to update</p>`
-        + bulletList
+        + staleForecastsForProfile.map(
+          (staleForecast) => ('<p>• ' + getHtmlLinkQuestionTitle(staleForecast.question) + '</p>')
+        ).join("\n")
         + `\n\n${fatebookEmailFooter(user.email)}`,
     })
   }
