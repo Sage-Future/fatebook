@@ -345,7 +345,7 @@ export async function channelVisible(teamId:string, channel: string){
   return channelInfoResponse.ok
 }
 
-export async function callSlackApi(teamId: string, message: any, url: string, method = 'POST', throwOnError = true) {
+export async function callSlackApi(teamId: string, message: any, url: string, method = 'POST', throwOnError = false) {
   const postRequest = method === 'POST'
   if (!postRequest){
     url += `?${new URLSearchParams(message).toString()}`
