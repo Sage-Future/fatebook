@@ -94,6 +94,8 @@ If you make a request, we have one month to respond to you. If you would like to
 GDPR Data Protection Rights
 ---------------------------
 
+We will retain your personal data indefinitely, so that you can continue to use the service. If you would like us to delete your data, please contact us.
+
 We would like to make sure you are fully aware of all of your data protection rights. Every user is entitled to the following:
 
 The right to access -- You have the right to request copies of your personal data. We may charge you a small fee for this service.
