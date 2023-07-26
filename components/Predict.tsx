@@ -11,14 +11,14 @@ import SuperJSON from 'trpc-transformer'
 import { z } from "zod"
 import { getDateYYYYMMDD, tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
-import { signInToFatebook, useUserId } from '../lib/web/utils'
+import { signInToFatebook, useUserId, utcDateStrToLocalDate } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
 import { InfoButton } from './InfoButton'
 
 export function Predict() {
   const predictFormSchema = z.object({
     question: z.string().min(1),
-    resolveBy: z.date(),
+    resolveBy: z.string(),
     predictionPercentage: z.number().min(0).max(100).or(z.nan()),
   })
 
@@ -27,7 +27,7 @@ export function Predict() {
     resolver: zodResolver(predictFormSchema),
   })
   const question = watch("question")
-  const resolveByDate = watch("resolveBy", tomorrowDate())
+  const resolveByUTCStr = watch("resolveBy", getDateYYYYMMDD(tomorrowDate()))
   const predictionPercentage = watch("predictionPercentage")
 
   const userId = useUserId()
@@ -54,7 +54,7 @@ export function Predict() {
 
     createQuestion.mutate({
       title: data.question,
-      resolveBy: data.resolveBy,
+      resolveBy: utcDateStrToLocalDate(data.resolveBy),
       prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number" && !isNaN(data.predictionPercentage))
         ?
         data.predictionPercentage / 100
@@ -115,8 +115,7 @@ export function Predict() {
         :
         undefined
 
-      if (newResolveBy && new Date(newResolveBy).getTime() !== resolveByDate.getTime()) {
-      // @ts-ignore - type definition is wrong (Date not string)
+      if (newResolveBy && newResolveBy !== getDateYYYYMMDD(utcDateStrToLocalDate(resolveByUTCStr))) {
         setValue("resolveBy", newResolveBy)
         setHighlightResolveBy(true)
         setTimeout(() => setHighlightResolveBy(false), 800)
@@ -200,10 +199,15 @@ export function Predict() {
                     getDateYYYYMMDD(new Date(tomorrowDate()))
                   }
                   onKeyDown={onEnterSubmit}
-                  {...register("resolveBy", { required: true, valueAsDate: true })}
+                  {...register("resolveBy", { required: true })}
                 />
                 <span className='italic text-neutral-400 text-sm p-1'>
-                  <FormattedDate date={resolveByDate} alwaysUseDistance={true} capitalise={true} currentDateShowToday={true} hoverTooltip={false} />
+                  <FormattedDate
+                    date={utcDateStrToLocalDate(resolveByUTCStr)}
+                    alwaysUseDistance={true}
+                    capitalise={true}
+                    currentDateShowToday={true}
+                    hoverTooltip={false} />
                 </span>
               </div>
 

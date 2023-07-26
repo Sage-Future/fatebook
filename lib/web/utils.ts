@@ -1,9 +1,11 @@
 import { Question } from "@prisma/client"
+import { utcToZonedTime } from 'date-fns-tz'
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import React, { ReactNode } from "react"
 import { toast } from "react-hot-toast"
 import { getQuestionUrl } from "../../pages/q/[id]"
+
 
 export function useUserId() {
   const session = useSession()
@@ -183,4 +185,11 @@ export function hashString(str: string) {
     hash |= 0
   }
   return hash
+}
+
+export function utcDateStrToLocalDate(utcDateStr: string) {
+  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const localDate = utcToZonedTime(utcDateStr, localTimezone)
+
+  return localDate
 }

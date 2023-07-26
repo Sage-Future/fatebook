@@ -18,8 +18,6 @@ function parseQuestion(str: string): Partial<Question> {
   const dateResult = chrono.parse(str, new Date(), { forwardDate: true })
   const resolveBy = (dateResult.length === 1 && dateResult[0].date()) ? dateResult[0].date() : undefined
 
-  console.log("Parsed question: ", str, "resolveBy: ", resolveBy, " dateResult: ", dateResult)
-
   return {
     title: str.trim(),
     resolveBy,
