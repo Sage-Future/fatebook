@@ -3,7 +3,7 @@ import { JWT } from "next-auth/jwt"
 import GoogleProvider from "next-auth/providers/google"
 
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import prisma from "../../../lib/_utils_server"
+import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -29,6 +29,11 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.SECRET,
   },
   events: {
+    createUser: async () => {
+      await backendAnalyticsEvent("new_user", {
+        platform: "web",
+      })
+    },
     linkAccount: async ({ user, profile }) => {
       // if the user has no name or image, update it from the profile
       // useful for when a user is created by having a question shared with them

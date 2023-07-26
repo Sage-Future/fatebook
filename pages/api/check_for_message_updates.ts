@@ -378,7 +378,7 @@ async function sendEmailForStaleForecasts(staleForecastsForProfile: ForecastWith
         + (staleForecastsForProfile.length > 1 ? ` and ${staleForecastsForProfile.length - 1} other questions` : ""),
       to: user.email,
       textBody: `Do you want to update your forecasts?`,
-      htmlBody: `<p>You have some forecasts you may want to update</p>`
+      htmlBody: `<p>You have some forecasts you may want to update:</p>`
         + staleForecastsForProfile.map(
           (staleForecast) => ('<p>• ' + getHtmlLinkQuestionTitle(staleForecast.question) + '</p>')
         ).join("\n")
