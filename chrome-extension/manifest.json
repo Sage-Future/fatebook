@@ -1,0 +1,63 @@
+{
+  "name": "Fatebook Chrome Extension",
+  "description": "",
+  "homepage_url": "https://fatebook.io/",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "action": {
+  },
+  "commands":{
+
+    "run-foo": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Run \"foo\" on the current page."
+    }
+  },
+
+  "web_accessible_resources": [{
+     "matches": [
+      "https://*/*",
+      "http://*/*"
+     ],
+     "resources": ["/*"]
+   }],
+
+  "externally_connectable": {
+    "matches": [
+      "https://*/*",
+      "http://*/*"
+    ]
+  },
+
+  "content_scripts": [
+    {
+      "run_at" : "document_start",
+      "js": ["before.js"],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ]
+    },
+    {
+      "run_at" : "document_idle",
+      "js": ["after.js"],
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ]
+}
