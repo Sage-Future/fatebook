@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import { useSession } from "next-auth/react"
 import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
