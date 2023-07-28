@@ -4,6 +4,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* is white by default, which is an issue for our embeds */
+  background-color: transparent; 
+}
+
+:root, body, #__next {
+  height: 100%;
+}
+
 @layer components {
   .button {
     @apply inline-flex gap-1 items-center px-4 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-neutral-200 hover:bg-neutral-300 text-neutral-700

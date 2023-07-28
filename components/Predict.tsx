@@ -3,7 +3,7 @@ import { LightBulbIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
-import { KeyboardEvent, useEffect, useRef, useState } from 'react'
+import React, { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
 import TextareaAutosize from 'react-textarea-autosize'
@@ -14,8 +14,14 @@ import { api } from "../lib/web/trpc"
 import { signInToFatebook, useUserId, utcDateStrToLocalDate } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
 import { InfoButton } from './InfoButton'
+import { mergeRefs } from 'react-merge-refs'
 
-export function Predict() {
+interface PredictProps{
+  /** Can optionally include a ref for the text area if parent wants to be able to control focus */
+  textAreaRef?:React.RefObject<HTMLTextAreaElement>
+}
+
+export function Predict({textAreaRef}:PredictProps) {
   const predictFormSchema = z.object({
     question: z.string().min(1),
     resolveBy: z.string(),
@@ -122,7 +128,8 @@ export function Predict() {
       }
     }
   }
-  const {onChange: onChangeQuestion, ...registerQuestion} = register("question", { required: true })
+  const {onChange: onChangeQuestion, ref:formRef, ...registerQuestion} = register("question", { required: true })
+  const ref = textAreaRef ? mergeRefs([textAreaRef, formRef]) : formRef
 
   return (
     <div className="w-full">
@@ -149,6 +156,7 @@ export function Predict() {
                   smartUpdateResolveBy(e.currentTarget.value + e.key)
                 }
               }}
+              ref={ref}
               {...registerQuestion}
             />
             <button
