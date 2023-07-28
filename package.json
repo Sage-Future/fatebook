@@ -36,6 +36,7 @@
     "crypto": "1.0.1",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
+    "discord-interactions": "^3.4.0",
     "is-ua-webview": "^1.1.2",
     "next": "^13.3.1",
     "next-auth": "^4.22.1",

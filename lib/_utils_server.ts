@@ -446,7 +446,7 @@ export function getDateSlackFormat(date: Date, includeTime: boolean = false, dat
 }
 
 export interface AnalyticsEventParams {
-  platform: 'slack' | 'web'
+  platform: 'slack' | 'web' | 'discord'
   team?: string
   [key: string]: any
 }

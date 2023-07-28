@@ -132,6 +132,7 @@ model User {
   staleReminder            Boolean         @default(true)
   unsubscribedFromEmailsAt DateTime?
   apiKey                   String?
+  discordUserId            String?         @unique
   tags                     Tag[]
 
   // Used by next-auth:
