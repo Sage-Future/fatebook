@@ -86,6 +86,7 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
           forecast: prediction / 100,
         }
       },
+      sharedPublicly: true, // so that other people in discord can see it
     },
     include: {
       forecasts: true,
