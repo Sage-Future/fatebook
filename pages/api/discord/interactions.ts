@@ -56,7 +56,7 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
   const resolveByStr = req.body.data.options?.[1]?.value
   const prediction = req.body.data.options?.[2]?.value as number
 
-  const youSaid = `\nYou said: /forecast ${title} ${resolveByStr} ${prediction}}`
+  const youSaid = `\nYou said: /forecast ${title} ${resolveByStr} ${prediction}`
 
   if (!title || !resolveByStr || prediction == undefined) {
     return sendDiscordEphemeral(res, "Please provide a question, resolve by date, and prediction" + youSaid)
@@ -72,7 +72,7 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
   const resolveBy = dateResult[0].start.date()
 
   if (isNaN(prediction)) {
-    return sendDiscordEphemeral(res, "Please provide a valid prediction (0-100%)" + youSaid)
+    return sendDiscordEphemeral(res, "Please provide a valid prediction (0-100%). Don't include the % sign! " + youSaid)
   }
 
   const question = await prisma.question.create({

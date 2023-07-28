@@ -4,6 +4,10 @@ import { clientId, clientSecret, questionWritingTipsUrl } from '../../../lib/_co
 import prisma, { backendAnalyticsEvent, postSlackMessage } from '../../../lib/_utils_server'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.query?.error && req.query?.error === 'access_denied') {
+    res.redirect("/for-slack")
+  }
+
   // user has approved the app being installed to their workspace, this is the redirect URI
   // now we need to exchange the temporary code for a permanent token
 
