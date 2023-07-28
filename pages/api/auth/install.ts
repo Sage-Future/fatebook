@@ -15,9 +15,11 @@ export default function handler(req: VercelRequest, res: VercelResponse){
       'commands',
       'users:read',
       'users:read.email',
-      'team:read',
       'channels:read',
       'groups:read',
+      'im:read',
+      'im:history',
+      'mpim:read',
       'app_mentions:read',
     ].join(',')
   }&client_id=${
