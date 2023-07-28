@@ -43,6 +43,7 @@
     {
       "run_at" : "document_idle",
       "js": ["after.js"],
+      "css":["style.css"],
       "matches": [
         "https://*/*",
         "http://*/*"
