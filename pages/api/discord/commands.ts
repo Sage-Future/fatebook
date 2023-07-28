@@ -23,11 +23,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   await installGlobalCommands(process.env.DISCORD_APP_ID, [
     {
-      name: "test",
-      description: "Basic command",
-      type: 1,
-    },
-    {
       name: "forecast",
       description: "Make a forecast on Fatebook",
       type: 1,
