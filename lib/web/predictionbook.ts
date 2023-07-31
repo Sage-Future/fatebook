@@ -1,8 +1,8 @@
 import { Resolution } from "@prisma/client"
-import prisma from "../_utils_server"
-import { getPredictionBookIdPrefix } from "./utils"
-import { scoreQuestion } from "../interactive_handlers/resolve"
 import { max } from "date-fns"
+import prisma from "../_utils_server"
+import { scoreQuestion } from "../interactive_handlers/resolve"
+import { getPredictionBookIdPrefix } from "./utils"
 
 interface PBUser {
   email: string
@@ -75,7 +75,7 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
   for (const question of questions) {
     const parts = {
       id: `${getPredictionBookIdPrefix()}_${fatebookUserId}_${question.id}`,
-      title: question.description,
+      title: question.description_with_group, // Prediction group is prepended to the prediction title, if it exists
       createdAt: new Date(question.created_at),
       resolved: question.outcome !== null,
       resolution: question.outcome === null ? null : question.outcome ? Resolution.YES : Resolution.NO,
