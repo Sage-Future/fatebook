@@ -4,7 +4,7 @@ export function DiscordCompose() {
   const animate = true
 
   return (
-    <div className="bg-neutral-700 text-neutral-100 border-neutral-500 border-4 rounded-2xl px-2 select-none">
+    <div className="bg-[#26272A] text-neutral-100 border-neutral-500 border-4 rounded-2xl px-2 select-none">
       <p className="my-4 mx-2 min-h-[62px]">
         <span className="overflow-hidden border-black md:text-lg lg:md:text-xl">
           {animate ? <DiscordComposeContent /> : "/forecast Will we release the podcast by Tuesday?"}

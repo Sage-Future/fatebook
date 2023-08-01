@@ -57,7 +57,7 @@ export default function ForDiscordPage() {
             </ul>
           </div>
 
-          <div className="my-8 px-1 py-0.5 bg-[#26312b] hover:scale-[1.02] transition-transform">
+          <div className="my-8 px-1 py-0.5 bg-[#26272B] hover:scale-[1.02] transition-transform">
             <Image src={"/discord-question-screenshot-1600-1008.png"} className="mx-auto" alt="" width={600} height={200} />
           </div>
         </div>
