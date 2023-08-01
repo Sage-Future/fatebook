@@ -30,6 +30,7 @@ export function Navbar({
 
   const moreMenuItems = <>
     <li><Link href="/about">About</Link></li>
+    <li><Link href="/public">Public questions</Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">Integrations</li>
     <li><Link href="/for-discord">Fatebook for Discord <NewDot /> </Link></li>
