@@ -67,7 +67,7 @@ export default function ForDiscordPage() {
             {
               question: "When I ask a question using /forecast, who can make a prediction?",
               answer:
-                "Questions added using the Discord bot are public by default, so anyone in your server can see them. After creating your question you can optionally restrict access to specific email addresses.",
+                "Questions added using the Discord bot are accessible to anyone with the link, so anyone in your server can see them.",
             },
             {
               question: "Where can I use /forecast?",

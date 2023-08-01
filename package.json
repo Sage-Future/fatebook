@@ -7,6 +7,7 @@
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "lint": "next lint --dir lib --dir pages",
     "studio": "prisma studio",
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios"

@@ -51,7 +51,7 @@ export function Navbar({
     <li className="hidden lg:block">
       <div className="dropdown dropdown-hover dropdown-bottom dropdown-end active:bg-neutral-200 active:text-black">
         <label className="flex gap-1" tabIndex={0}><ChevronDownIcon width={16} /> More <div className="div my-auto ml-0.5"><NewDot /></div></label>
-        <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-64 ">
+        <ul tabIndex={0} className="dropdown-content z-[9999] menu p-2 shadow bg-base-100 rounded-box w-64 ">
           {moreMenuItems}
         </ul>
       </div>
@@ -94,7 +94,7 @@ export function Navbar({
 }
 
 function Drawer({menuItems, moreMenuItems}: {menuItems: ReactNode, moreMenuItems: ReactNode}) {
-  return <div className="drawer-side z-[200] mt-16 lg:hidden">
+  return <div className="drawer-side z-[9999] mt-16 lg:hidden">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
     <ul className="menu flex flex-col flex-nowrap p-4 w-80 overflow-auto bg-neutral-100 h-full text-md text-neutral-600 font-semibold">
       <div className="overflow-y-scroll flex-shrink pb-8">
@@ -135,7 +135,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
   }
 
   return user.email ?
-    <details className="dropdown dropdown-end z-50">
+    <details className="dropdown dropdown-end z-[9999]">
       <summary tabIndex={0} className="btn btn-ghost btn-circle avatar hover:bg-opacity-0 hover:scale-[1.03]">
         <div className="w-10 rounded-full">
           <Image src={user.imageUrl} width={40} height={40} alt={user.name} />

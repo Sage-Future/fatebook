@@ -37,23 +37,13 @@ const questionIncludes = (userId: string | undefined) => ({
       user: true,
     }
   },
-  ...(
-    userId ?
-      {tags: {
-        where: {
-          user: {
-            id: userId,
-          }
-        }
-      }} :
-      {tags: {
-        where: {
-          user: {
-            id: userId,
-          }
-        }
-      }}
-  ),
+  tags: {
+    where: {
+      user: {
+        id: userId || "match with no users (because no user with this ID exists)",
+      }
+    }
+  },
 })
 
 export type ExtraFilters = {
@@ -61,6 +51,7 @@ export type ExtraFilters = {
   readyToResolve: boolean,
   resolvingSoon: boolean,
   filterTagIds?: string[],
+  showAllPublic?: boolean,
 }
 
 export const questionRouter = router({
@@ -135,6 +126,7 @@ export const questionRouter = router({
         readyToResolve: z.boolean(),
         resolvingSoon: z.boolean(),
         filterTagIds: z.array(z.string()).optional(),
+        showAllPublic: z.boolean().optional(),
       }).optional(),
     }))
     .query(async ({ input, ctx }) => {
@@ -276,7 +268,8 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
-        sharedPublicly: z.boolean(),
+        sharedPublicly: z.boolean().optional(),
+        unlisted: z.boolean().optional(),
       })
     )
     .mutation(async ({input, ctx}) => {
@@ -288,6 +281,7 @@ export const questionRouter = router({
         },
         data: {
           sharedPublicly: input.sharedPublicly,
+          unlisted: input.unlisted,
         }
       })
     }),
@@ -673,7 +667,13 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
         }),
     where: {
       AND: [
-        {
+        input.extraFilters?.showAllPublic ? {
+          AND: [
+            {sharedPublicly: true},
+            {unlisted: false},
+          ]
+        } : {
+          // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
           OR: [
             { userId: ctx.userId },
             {

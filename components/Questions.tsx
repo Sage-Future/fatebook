@@ -14,11 +14,13 @@ export function Questions({
   filterClientSide,
   noQuestionsText = "Make your first forecast to see it here.",
   filterTagIds = undefined,
+  showAllPublic = false,
 }: {
   title?: string,
   filterClientSide?: (question: any) => boolean
   noQuestionsText?: string,
   filterTagIds?: string[],
+  showAllPublic?: boolean,
 }) {
   const session = useSession()
 
@@ -35,6 +37,7 @@ export function Questions({
       extraFilters: {
         ...extraFilters,
         filterTagIds,
+        showAllPublic,
       },
     },
     {

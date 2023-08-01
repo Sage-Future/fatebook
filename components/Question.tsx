@@ -72,7 +72,12 @@ export function Question({
                     )}
                     key={`${question.id}resolve`}>
                     {question.resolveBy < new Date() ?
-                      <FormattedDate prefix={<><span>Ready to resolve</span><br/>{"("}</>} date={question.resolveBy} postfix=")" />
+                      <FormattedDate
+                        prefix={<><span>Ready to resolve</span><br/>{"("}</>}
+                        date={question.resolveBy}
+                        postfix=")"
+                        currentDateShowToday={true}
+                      />
                       :
                       <FormattedDate prefix={"Resolves "} date={question.resolveBy} />
                     }
