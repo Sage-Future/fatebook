@@ -33,6 +33,7 @@ interface PBQuestion {
   outcome: boolean | null
   prediction_group_id: number | null
   updated_at: string
+  last_judgement_at: string | null
   uuid: string
   version: number
   visibility: string
@@ -83,12 +84,15 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
       resolvedAt: question.outcome === null ?
         null
         :
-        // PredictionBook doesn't have a "resolved_at" field, so we use the deadline
-        // or if there was an update after the deadline then just add 24 hours to the last update time
-        max([
-          new Date(new Date(question.updated_at).getTime() + 24 * 60 * 60 * 1000),
-          new Date(question.deadline)
-        ]),
+        question.last_judgement_at ?
+          new Date(question.last_judgement_at)
+          :
+          // PredictionBook previously didn't have a "resolved_at" field, so we used the deadline
+          // or if there was an update after the deadline then just add 24 hours to the last update time
+          max([
+            new Date(new Date(question.updated_at).getTime() + 24 * 60 * 60 * 1000),
+            new Date(question.deadline)
+          ]),
       sharedPublicly: question.visibility === "visible_to_everyone",
       notes: `[This question was imported from PredictionBook](https://predictionbook.com/predictions/${question.id})`,
     }
