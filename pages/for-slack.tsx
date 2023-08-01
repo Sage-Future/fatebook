@@ -2,11 +2,11 @@ import { ChartBarIcon, ChatBubbleOvalLeftIcon, CheckCircleIcon, RocketLaunchIcon
 import { NextSeo } from "next-seo"
 import Image from "next/image"
 import { useRouter } from "next/router"
+import React from "react"
 import { AddToSlack } from "../components/AddToSlack"
 import Faqs from "../components/Faqs"
-import { SlackCompose } from "../components/SlackCompose"
 import { Layout } from "../components/Layout"
-import React from "react"
+import { SlackCompose } from "../components/SlackCompose"
 
 export default function ForSlackPage() {
   const router = useRouter()
@@ -124,7 +124,7 @@ export default function ForSlackPage() {
             {
               question: "I don't use Slack, can I still use Fatebook?",
               answer:
-              "[Fatebook.io](https://fatebook.io) lets you make rapid predictions on the web! [Suggest a Fatebook integration for another platform.](https://forms.gle/nRqUcj154oEVLxdZ9)"
+              "[Fatebook.io](https://fatebook.io) lets you make rapid predictions on the web, or you can use [Fatebook for Discord](/for-discord). [Suggest a Fatebook integration for another platform.](https://forms.gle/nRqUcj154oEVLxdZ9)"
             },
             {
               question: "How can I get better at forecasting?",
