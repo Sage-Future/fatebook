@@ -369,6 +369,17 @@ export const questionRouter = router({
         throw new TRPCError({ code: "BAD_REQUEST", message: "Question has already been resolved" })
       }
 
+      const lastForecastByUser = question.forecasts
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // most recent first
+        .find(f => f.userId === ctx.userId)
+
+      // disallow submitting the same forecast twice within two minutes
+      if (lastForecastByUser?.forecast.toNumber() === input.forecast
+        && new Date().getTime() - lastForecastByUser?.createdAt.getTime() < 1000 * 60 * 2
+      ) {
+        return
+      }
+
       const submittedForecast = await prisma.forecast.create({
         data: {
           user: {
