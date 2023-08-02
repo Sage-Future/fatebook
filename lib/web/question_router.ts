@@ -827,6 +827,8 @@ function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWi
 }
 
 function scrubHiddenForecastsFromQuestion<QuestionX extends QuestionWithForecasts>(question: QuestionX, userId: string | undefined) {
+  question = scrubApiKeyPropertyRecursive(question)
+
   if (!forecastsAreHidden(question)) {
     return question
   }
@@ -847,4 +849,16 @@ function scrubHiddenForecastsFromQuestion<QuestionX extends QuestionWithForecast
       })
     })
   }
+}
+
+function scrubApiKeyPropertyRecursive<T>(obj: T) {
+  // warning - this mutates the object
+  for (const key in obj) {
+    if (key === "apiKey") {
+      (obj as any).apiKey = "scrubbed"
+    } else if (typeof obj[key] === "object") {
+      obj[key] = scrubApiKeyPropertyRecursive(obj[key])
+    }
+  }
+  return obj
 }
