@@ -36,6 +36,28 @@
     predictIframe.contentWindow?.postMessage({ isFatebook: true, action: 'focus_modal' }, '*')
   }
 
+  // ==== Question iframe ====
+  const questionIframe = document.createElement('iframe')
+  questionIframe.id = 'fatebook-question-embed'
+  questionIframe.src = `${FATEBOOK_URL}embed/question-loader`
+  questionIframe.style.display = 'none'
+  questionIframe.style.border = 'none'
+  questionIframe.style.width = '100%'
+  questionIframe.style.height = '450px'
+  document.body.appendChild(questionIframe)
+
+  function loadQuestion({ questionId, popup }) {
+    console.log(1)
+    questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
+    questionIframe.style.display = 'block'
+    popup.appendChild(questionIframe)
+  }
+
+  function unloadQuestionIframe() {
+    console.log(2)
+    questionIframe.style.display = 'none'
+    document.body.appendChild(questionIframe)
+  }
 
   // ==== Listen for messages from iframes ====
   window.addEventListener('message', (event) => {
@@ -52,52 +74,52 @@
 
 
   // ==== Mutation observers ====
-  let commentParent
-  const intervalComments = setInterval(() => {
-    commentParent = document.querySelector(".docos-stream-view")
-    if (!commentParent) return
-    else {
-      clearInterval(intervalComments)
+  // let commentParent
+  // const intervalComments = setInterval(() => {
+  //   commentParent = document.querySelector(".docos-stream-view")
+  //   if (!commentParent) return
+  //   else {
+  //     clearInterval(intervalComments)
 
-      // Options for the observer (which mutations to observe)
-      const config = { attributes: true, childList: true, subtree: true }
+  //     // Options for the observer (which mutations to observe)
+  //     const config = { attributes: true, childList: true, subtree: true }
 
-      // Callback function to execute when mutations are observed
-      const callback = (mutationList, observer) => {
-        const comments = commentParent.querySelectorAll(".docos-replyview-body")
+  //     // Callback function to execute when mutations are observed
+  //     const callback = (mutationList, observer) => {
+  //       const comments = commentParent.querySelectorAll(".docos-replyview-body")
 
-        for (const comment of comments) {
-          const link = comment.querySelector("a")
-          if (!link) continue
+  //       for (const comment of comments) {
+  //         const link = comment.querySelector("a")
+  //         if (!link) continue
 
-          const ourLink = link.href.includes(FATEBOOK_URL)
+  //         const ourLink = link.href.includes(FATEBOOK_URL)
 
-          const ui = comment.querySelector("#fatebook-ui")
-          const uiIsInjected = !!ui
+  //         const ui = comment.querySelector("#fatebook-ui")
+  //         const uiIsInjected = !!ui
 
-          if (uiIsInjected && !ourLink) {
-            console.log("remove")
-            ui.remove()
-          } else if (!uiIsInjected && ourLink) {
-            console.log("append")
+  //         if (uiIsInjected && !ourLink) {
+  //           console.log("remove")
+  //           ui.remove()
+  //         } else if (!uiIsInjected && ourLink) {
+  //           console.log("append")
 
-            const div = document.createElement("iframe")
-            div.id = "fatebook-ui"
-            div.src = "https://fatebook.io/"
-            div.style.zoom = ".1"
-            div.style.width = "100%"
-            div.style.height = "2000px"
+  //           const div = document.createElement("iframe")
+  //           div.id = "fatebook-ui"
+  //           div.src = "https://fatebook.io/"
+  //           div.style.zoom = ".1"
+  //           div.style.width = "100%"
+  //           div.style.height = "2000px"
 
-            comment.appendChild(div)
-          }
-        }
-      }
+  //           comment.appendChild(div)
+  //         }
+  //       }
+  //     }
 
-      // Create an observer instance linked to the callback function
-      const observer = new MutationObserver(callback)
-      observer.observe(commentParent, config)
-    }
-  }, 1000)
+  //     // Create an observer instance linked to the callback function
+  //     const observer = new MutationObserver(callback)
+  //     observer.observe(commentParent, config)
+  //   }
+  // }, 1000)
 
   const intervalPopup = setInterval(() => {
     const popupParent = document.querySelector(".docs-linkbubble-bubble")
@@ -110,6 +132,8 @@
 
     // Callback function to execute when mutations are observed
     const callback = (mutationList, observer) => {
+      console.log(3)
+
       const link = popupParent.querySelector("a")
       if (!link) return
 
@@ -117,24 +141,13 @@
       const ourLink = href.includes(FATEBOOK_URL)
       const linkQuestionId = getQuestionIdFromUrl(link.href)
 
-
-      const ui = popupParent.querySelector("#fatebook-ui")
-      const uiIsInjected = !!ui && linkQuestionId === getQuestionIdFromUrl(ui.src)
+      const ui = popupParent.querySelector("#fatebook-question-embed")
+      const uiIsInjected = !!ui
 
       if (uiIsInjected && !ourLink) {
-      } else if (!uiIsInjected && ourLink) {
-
-        if (ui) {
-          ui.remove()
-        }
-
-        const questionIframe = document.createElement("iframe")
-        questionIframe.id = "fatebook-ui"
-        questionIframe.src = `${FATEBOOK_URL}embed/q/${linkQuestionId}`
-        questionIframe.style.width = "440px"
-        questionIframe.style.border = 'none'
-
-        popupParent.appendChild(questionIframe)
+        unloadQuestionIframe()
+      } else {
+        loadQuestion({ questionId: linkQuestionId, popup: popupParent })
       }
     }
 
@@ -143,52 +156,52 @@
     observer.observe(popupParent, config)
   }, 1000)
 
-  let commentTray
-  const commentTrayInterval = setInterval(() => {
-    commentTray = document.querySelector(".docs-instant-docos-content")
-    if (!commentTray) return
-    else {
-      clearInterval(commentTrayInterval)
+  // let commentTray
+  // const commentTrayInterval = setInterval(() => {
+  //   commentTray = document.querySelector(".docs-instant-docos-content")
+  //   if (!commentTray) return
+  //   else {
+  //     clearInterval(commentTrayInterval)
 
-      const div = document.createElement("div")
-      div.innerText = "ADD PREDICTION"
+  //     const div = document.createElement("div")
+  //     div.innerText = "ADD PREDICTION"
 
 
 
-      commentTray.appendChild(div)
+  //     commentTray.appendChild(div)
 
-      // // Options for the observer (which mutations to observe)
-      // const config = { attributes: true, childList: true, subtree: true }
+  //     // // Options for the observer (which mutations to observe)
+  //     // const config = { attributes: true, childList: true, subtree: true }
 
-      // // Callback function to execute when mutations are observed
-      // const callback = (mutationList, observer) => {
-      //    const href = popupParent.querySelector("a").href
-      //    const ourLink = href.includes(FATEBOOK_URL)
+  //     // // Callback function to execute when mutations are observed
+  //     // const callback = (mutationList, observer) => {
+  //     //    const href = popupParent.querySelector("a").href
+  //     //    const ourLink = href.includes(FATEBOOK_URL)
 
-      //    const ui = popupParent.querySelector("#fatebook-ui")
-      //    const uiIsInjected = !!ui
+  //     //    const ui = popupParent.querySelector("#fatebook-ui")
+  //     //    const uiIsInjected = !!ui
 
-      //    if (uiIsInjected && !ourLink) {
-      //       console.log("remove")
-      //       ui.remove()
-      //    } else if (!uiIsInjected && ourLink) {
-      //       console.log("append")
-      //       const div = document.createElement("iframe")
-      //       div.id = "fatebook-ui"
-      //       div.src = "https://fatebook.io/"
-      //       div.style.zoom = ".1"
-      //       div.style.width = "100%"
-      //       div.style.height = "2000px"
+  //     //    if (uiIsInjected && !ourLink) {
+  //     //       console.log("remove")
+  //     //       ui.remove()
+  //     //    } else if (!uiIsInjected && ourLink) {
+  //     //       console.log("append")
+  //     //       const div = document.createElement("iframe")
+  //     //       div.id = "fatebook-ui"
+  //     //       div.src = "https://fatebook.io/"
+  //     //       div.style.zoom = ".1"
+  //     //       div.style.width = "100%"
+  //     //       div.style.height = "2000px"
 
-      //       popupParent.appendChild(div)
-      //    }
-      // }
+  //     //       popupParent.appendChild(div)
+  //     //    }
+  //     // }
 
-      // // Create an observer instance linked to the callback function
-      // const observer = new MutationObserver(callback)
-      // observer.observe(popupParent, config)
-    }
-  }, 1000)
+  //     // // Create an observer instance linked to the callback function
+  //     // const observer = new MutationObserver(callback)
+  //     // observer.observe(popupParent, config)
+  //   }
+  // }, 1000)
 })()
 
 
