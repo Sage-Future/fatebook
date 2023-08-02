@@ -9,6 +9,7 @@
     "ssl-proxy": "npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3000 --target 3005",
     "build": "next build",
     "start": "next start",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "lint": "next lint --dir lib --dir pages",
     "studio": "prisma studio",
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios"
@@ -39,6 +40,7 @@
     "crypto": "1.0.1",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
+    "discord-interactions": "^3.4.0",
     "is-ua-webview": "^1.1.2",
     "next": "^13.3.1",
     "next-auth": "^4.22.1",

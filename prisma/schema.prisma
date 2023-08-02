@@ -61,6 +61,7 @@ model Question {
   sharedWith          User[]                   @relation("questionsSharedWith")
   sharedWithLists     UserList[]
   sharedPublicly      Boolean                  @default(false)
+  unlisted            Boolean                  @default(false)
   questionScores      QuestionScore[]
   questionMessages    QuestionSlackMessage[]
   resolutionMessages  ResolutionSlackMessage[]
@@ -132,6 +133,7 @@ model User {
   staleReminder            Boolean         @default(true)
   unsubscribedFromEmailsAt DateTime?
   apiKey                   String?
+  discordUserId            String?         @unique
   tags                     Tag[]
 
   // Used by next-auth:

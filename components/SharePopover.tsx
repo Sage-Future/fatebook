@@ -9,7 +9,6 @@ import { ReactMultiEmail } from "react-multi-email"
 import 'react-multi-email/dist/style.css'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
-import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"
@@ -108,25 +107,45 @@ function SharePublicly({
   })
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="flex gap-2 justify-between">
-        <div className="flex gap-2">
-          <input
-            id="sharePublicly"
-            type="checkbox"
-            className={clsx(userId !== question.userId && "cursor-not-allowed")}
-            disabled={userId !== question.userId || setSharedPublicly.isLoading}
-            checked={question.sharedPublicly}
-            onChange={(e) => {
-              setSharedPublicly.mutate({
-                questionId: question.id,
-                sharedPublicly: e.target.checked,
-              })
-            }}
-          />
-          <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 justify-between">
+          <div className="flex gap-2">
+            <input
+              id="sharePublicly"
+              type="checkbox"
+              className={clsx(userId !== question.userId && "cursor-not-allowed")}
+              disabled={userId !== question.userId || setSharedPublicly.isLoading}
+              checked={question.sharedPublicly}
+              onChange={(e) => {
+                setSharedPublicly.mutate({
+                  questionId: question.id,
+                  sharedPublicly: e.target.checked,
+                })
+              }}
+            />
+            <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
+          </div>
+          {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} />}
         </div>
-        {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} />}
       </div>
+      {question.sharedPublicly && <div className="flex gap-2">
+        <input
+          id="unlisted"
+          type="checkbox"
+          className={clsx(userId !== question.userId && "cursor-not-allowed")}
+          disabled={userId !== question.userId || setSharedPublicly.isLoading}
+          checked={!question.unlisted}
+          onChange={(e) => {
+            setSharedPublicly.mutate({
+              questionId: question.id,
+              unlisted: !e.target.checked,
+            })
+          }}
+        />
+        <label htmlFor="unlisted" className="text-sm my-auto">Show on the <Link href="/public">
+          public questions page
+        </Link></label>
+      </div>}
     </ErrorBoundary>
   )
 }

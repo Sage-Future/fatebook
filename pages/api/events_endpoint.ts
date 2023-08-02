@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { slackAppId } from '../../lib/_constants'
-import { backendAnalyticsEvent, postEphemeralTextMessage } from '../../lib/_utils_server'
+import { backendAnalyticsEvent, postEphemeralTextMessage, postTextMessage } from '../../lib/_utils_server'
 import { refreshAppHome } from '../../lib/interactive_handlers/app_home'
 
 export default async function eventsApiHandler(req: VercelRequest, res: VercelResponse) {
@@ -38,6 +38,20 @@ export default async function eventsApiHandler(req: VercelRequest, res: VercelRe
         + `Or <slack://app?team=${reqbody.team_id}&id=${slackAppId}&tab=home|see more info and your full forecasting history.>`
       )
       await backendAnalyticsEvent('app_mention', { team: reqbody.team_id, platform: 'slack' })
+      break
+
+    case 'message':
+      console.log("app messaged ", event.text)
+      if(!event.bot_profile && (event.subtype !== 'message_changed') && !event.thread_ts) {
+        await postTextMessage(
+          reqbody.team_id, event.channel,
+          `Hi <@${event.user}>!\nThis channel is just for making private forecasts that only you can see.\n\n`
+        + `To make a new private forecasting question, type \`/forecast\` in this channel. `
+        + `Or <slack://app?team=${reqbody.team_id}&id=${slackAppId}&tab=home|see more info and your full forecasting history.>`
+        )
+      } else{
+        console.log("Message from self or edited message, ignoring")
+      }
       break
 
     default:

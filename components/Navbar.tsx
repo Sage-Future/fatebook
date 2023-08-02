@@ -30,13 +30,18 @@ export function Navbar({
 
   const moreMenuItems = <>
     <li><Link href="/about">About</Link></li>
+    <li><Link href="/public">Public questions</Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
+    <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">Integrations</li>
+    <li><Link href="/for-discord">Fatebook for Discord <NewDot /> </Link></li>
+    <li><Link href="/api-setup">Create forecasts by API</Link></li>
+    <li className="text-gray-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">Your forecasts</li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
-    <li><Link href="/import-from-spreadsheet">Import from spreadsheet</Link></li>
+    <li><Link href="/import-from-spreadsheet">Import from spreadsheet <NewDot /></Link></li>
     <li><a onClick={() => !exportData.isLoading && exportData.mutate()}>
       {exportData.isLoading ? "Exporting..." : "Export all your forecasts"}
     </a></li>
-    <li><Link href="/api-setup">Create forecasts by API</Link></li>
+    <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">Feedback</li>
     <li><Link href={webFeedbackUrl}>Submit feedback</Link></li>
     <li><Link href={webFeedbackUrl}>Report a problem</Link></li>
   </>
@@ -46,8 +51,8 @@ export function Navbar({
     <li><Link href="https://quantifiedintuitions.org">Quantified Intuitions</Link></li>
     <li className="hidden lg:block">
       <div className="dropdown dropdown-hover dropdown-bottom dropdown-end active:bg-neutral-200 active:text-black">
-        <label className="flex gap-1" tabIndex={0}>More <ChevronDownIcon width={16} /></label>
-        <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-64 ">
+        <label className="flex gap-1" tabIndex={0}><ChevronDownIcon width={16} /> More <div className="div my-auto ml-0.5"><NewDot /></div></label>
+        <ul tabIndex={0} className="dropdown-content z-[9999] menu p-2 shadow bg-base-100 rounded-box w-64 ">
           {moreMenuItems}
         </ul>
       </div>
@@ -90,17 +95,18 @@ export function Navbar({
 }
 
 function Drawer({menuItems, moreMenuItems}: {menuItems: ReactNode, moreMenuItems: ReactNode}) {
-  return <div className="drawer-side z-[200] mt-16 lg:hidden">
+  return <div className="drawer-side z-[9999] mt-16 lg:hidden">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
-    <ul className="menu p-4 w-80 h-full bg-neutral-100 text-lg text-neutral-600 font-semibold flex flex-col">
-      {menuItems}
-      <div className="divider" />
-      {moreMenuItems}
+    <ul className="menu flex flex-col flex-nowrap p-4 w-80 overflow-auto bg-neutral-100 h-full text-md text-neutral-600 font-semibold">
+      <div className="overflow-y-scroll flex-shrink pb-8">
+        {menuItems}
+        <div className="divider" />
+        {moreMenuItems}
+      </div>
       <div className="grow"/>
-      <div className="-m-4">
+      <div className="-m-4 mb-8 z-10">
         <Footer />
       </div>
-      <div className="py-16"/>
     </ul>
   </div>
 }
@@ -130,7 +136,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
   }
 
   return user.email ?
-    <details className="dropdown dropdown-end z-50">
+    <details className="dropdown dropdown-end z-[9999]">
       <summary tabIndex={0} className="btn btn-ghost btn-circle avatar hover:bg-opacity-0 hover:scale-[1.03]">
         <div className="w-10 rounded-full">
           <Image src={user.imageUrl} width={40} height={40} alt={user.name} />
@@ -152,4 +158,8 @@ function AccountMenu(showCreateAccountButton: boolean) {
     :
     showCreateAccountButton &&
     <button className="btn normal-case" onClick={() => void signInToFatebook()}>Log in or sign up</button>
+}
+
+function NewDot() {
+  return <div className="w-2 h-2 bg-indigo-400 rounded-full" />
 }

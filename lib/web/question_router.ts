@@ -50,7 +50,8 @@ const questionIncludes = (userId: string | undefined) => ({
   tags: {
     where: {
       user: {
-        id: userId,
+        id:
+          userId || "match with no users (because no user with this ID exists)",
       },
     },
   },
@@ -61,6 +62,7 @@ export type ExtraFilters = {
   readyToResolve: boolean
   resolvingSoon: boolean
   filterTagIds?: string[]
+  showAllPublic?: boolean
 }
 
 export const questionRouter = router({
@@ -96,6 +98,7 @@ export const questionRouter = router({
             readyToResolve: z.boolean(),
             resolvingSoon: z.boolean(),
             filterTagIds: z.array(z.string()).optional(),
+            showAllPublic: z.boolean().optional(),
           })
           .optional(),
       })
@@ -254,7 +257,8 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
-        sharedPublicly: z.boolean(),
+        sharedPublicly: z.boolean().optional(),
+        unlisted: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -266,6 +270,7 @@ export const questionRouter = router({
         },
         data: {
           sharedPublicly: input.sharedPublicly,
+          unlisted: input.unlisted,
         },
       })
     }),
@@ -361,6 +366,19 @@ export const questionRouter = router({
           code: "BAD_REQUEST",
           message: "Question has already been resolved",
         })
+      }
+
+      const lastForecastByUser = question.forecasts
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // most recent first
+        .find((f) => f.userId === ctx.userId)
+
+      // disallow submitting the same forecast twice within two minutes
+      if (
+        lastForecastByUser?.forecast.toNumber() === input.forecast &&
+        new Date().getTime() - lastForecastByUser?.createdAt.getTime() <
+          1000 * 60 * 2
+      ) {
+        return
       }
 
       const submittedForecast = await prisma.forecast.create({
@@ -673,36 +691,41 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
         },
     where: {
       AND: [
-        {
-          OR: [
-            { userId: ctx.userId },
-            {
-              forecasts: {
-                some: {
-                  userId: ctx.userId,
+        input.extraFilters?.showAllPublic
+          ? {
+              AND: [{ sharedPublicly: true }, { unlisted: false }],
+            }
+          : {
+              // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
+              OR: [
+                { userId: ctx.userId },
+                {
+                  forecasts: {
+                    some: {
+                      userId: ctx.userId,
+                    },
+                  },
                 },
-              },
-            },
-            {
-              sharedWith: {
-                some: {
-                  id: ctx.userId,
-                },
-              },
-            },
-            {
-              sharedWithLists: {
-                some: {
-                  users: {
+                {
+                  sharedWith: {
                     some: {
                       id: ctx.userId,
                     },
                   },
                 },
-              },
+                {
+                  sharedWithLists: {
+                    some: {
+                      users: {
+                        some: {
+                          id: ctx.userId,
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
             },
-          ],
-        },
         input.extraFilters?.resolved
           ? {
               resolution: {

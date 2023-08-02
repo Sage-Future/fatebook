@@ -2,6 +2,7 @@ import type { NextFetchEvent, NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { signingSecret } from './lib/_constants'
 import { validateSlackRequest } from './lib/_validate'
+import { verifyDiscordRequest } from './lib/discord/utils'
 
 
 const redirectUrl            : string = "/api/success_response"
@@ -21,7 +22,9 @@ export const config = {
   matcher: [
     '/incoming/slash_forecast',
     '/incoming/interactive_endpoint',
-    '/incoming/events_endpoint'
+    '/incoming/events_endpoint',
+
+    '/api/discord/interactions',
   ],
   api: {
     bodyParser: false,
@@ -36,6 +39,19 @@ function reparsePayload(bufferBody: ArrayBuffer){
 
 export default async function middleware(req: NextRequest, context: NextFetchEvent) {
   const bufferBody = await req.arrayBuffer()
+
+  if (req.url.includes('api/discord/')) {
+    console.log("Validating Discord request: ", bufferBody)
+    const isValid = verifyDiscordRequest(req, bufferBody)
+    if (!isValid) {
+      console.log("Validation failed")
+      return NextResponse.redirect(new URL(slackInvalidRedirectUrl, req.url)) // todo make a discord invalid redirect
+    }
+
+    console.log("Validation passed")
+    return NextResponse.next()
+  }
+
   const validationPassed = await validateSlackRequest(req, signingSecret, Buffer.from(bufferBody).toString('utf8'))
   if (!validationPassed) {
     return NextResponse.redirect(new URL(slackInvalidRedirectUrl, req.url))

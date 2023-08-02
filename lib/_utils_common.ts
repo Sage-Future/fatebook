@@ -28,11 +28,11 @@ export function getGeometricCommunityForecast(question: QuestionWithForecasts, d
   const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
   // sum each forecast
   const productOfForecasts: number = uptoDateForecasts.reduce(
-    (acc, forecast) => acc * forecast,
+    (acc, forecast) => acc * (forecast/(1-forecast)),
     1
   )
-  // divide by number of forecasts
-  return Math.pow(productOfForecasts, 1 / (uptoDateForecasts.length))
+  const geoMeanOfOdds = Math.pow(productOfForecasts, 1 / (uptoDateForecasts.length))
+  return geoMeanOfOdds / (1 + geoMeanOfOdds)
 }
 
 export function getCommunityForecast(question: QuestionWithForecasts, date: Date): number {
