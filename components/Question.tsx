@@ -11,7 +11,6 @@ import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
-
 import { getQuestionUrl } from '../lib/web/question_url'
 
 export function Question({

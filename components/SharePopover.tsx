@@ -9,6 +9,7 @@ import { ReactMultiEmail } from "react-multi-email"
 import 'react-multi-email/dist/style.css'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"

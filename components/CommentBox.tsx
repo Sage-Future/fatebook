@@ -4,7 +4,7 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { api } from '../lib/web/trpc'
-import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { invalidateQuestion, signInToFatebook, useUserId } from '../lib/web/utils'
 import { CommentWithUser, QuestionWithStandardIncludes } from "../prisma/additional"
 
 export function CommentBox({
@@ -22,7 +22,7 @@ export function CommentBox({
   })
   const [localComment, setLocalComment] = useState<string>("")
 
-  const submitComment = function(value: string) {
+  const submitComment = function (value: string) {
     if (addComment.isLoading) {
       return
     }
@@ -34,6 +34,11 @@ export function CommentBox({
   }
 
   return <div className=''>
+    {!userId && <div className="flex w-full p-4">
+      <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
+        Sign in to add your own prediction
+      </button>
+    </div>}
     <form
       className='relative'
       onSubmit={(e) => {

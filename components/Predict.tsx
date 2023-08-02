@@ -38,7 +38,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
     resolver: zodResolver(predictFormSchema),
   })
   const question = watch("question")
-  const resolveByUTCStr = watch("resolveBy", getDateYYYYMMDD(tomorrowDate()))
+  const resolveByDate = watch("resolveBy", tomorrowDate())
   const predictionPercentage = watch("predictionPercentage")
 
   const userId = useUserId()
@@ -220,12 +220,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
                   {...register("resolveBy", { required: true })}
                 />
                 <span className='italic text-neutral-400 text-sm p-1'>
-                  <FormattedDate
-                    date={utcDateStrToLocalDate(resolveByUTCStr)}
-                    alwaysUseDistance={true}
-                    capitalise={true}
-                    currentDateShowToday={true}
-                    hoverTooltip={false} />
+                  <FormattedDate date={resolveByDate} alwaysUseDistance={true} capitalise={true} currentDateShowToday={true} hoverTooltip={false} />
                 </span>
               </div>
 

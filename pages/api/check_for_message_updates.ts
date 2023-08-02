@@ -16,6 +16,7 @@ import {
   ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts,
   ForecastWithQuestionWithSlackMessagesAndForecasts,
 } from "../../prisma/additional"
+import { getQuestionTitleLink } from "../../lib/blocks-designs/_block_utils"
 import { getQuestionUrl } from "../../lib/web/question_url"
 
 async function getTargetsToBeNotified() {
@@ -469,22 +470,20 @@ async function sendEmailForStaleForecasts(
     await sendEmail({
       subject:
         `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'` +
-        (staleForecastsForProfile.length > 1
+        (staleForecastsForProfile.length > 0
           ? ` and ${staleForecastsForProfile.length - 1} other questions`
           : ""),
       to: user.email,
       textBody: `Do you want to update your forecasts?`,
       htmlBody:
-        `<p>You have some forecasts you may want to update:</p>` +
+        `<p>You have some forecasts you may want to update</p>` +
         staleForecastsForProfile
           .map(
             (staleForecast) =>
-              "<p>• " +
-              getHtmlLinkQuestionTitle(staleForecast.question) +
-              "</p>"
+              "<p>• " + getQuestionTitleLink(staleForecast.question) + "</p>"
           )
           .join("\n") +
-        `\n\n${fatebookEmailFooter(user.email)}`,
+        `\n${fatebookEmailFooter(user.email)}`,
     })
   }
 }

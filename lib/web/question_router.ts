@@ -47,25 +47,13 @@ const questionIncludes = (userId: string | undefined) => ({
       user: true,
     },
   },
-  ...(userId
-    ? {
-        tags: {
-          where: {
-            user: {
-              id: userId,
-            },
-          },
-        },
-      }
-    : {
-        tags: {
-          where: {
-            user: {
-              id: userId,
-            },
-          },
-        },
-      }),
+  tags: {
+    where: {
+      user: {
+        id: userId,
+      },
+    },
+  },
 })
 
 export type ExtraFilters = {
@@ -91,50 +79,7 @@ export const questionRouter = router({
         where: {
           id: input.questionId,
         },
-        include: {
-          forecasts: {
-            include: {
-              user: true,
-            },
-          },
-          user: true,
-          sharedWith: true,
-          sharedWithLists: {
-            include: {
-              author: true,
-              users: true,
-            },
-          },
-          questionMessages: {
-            include: {
-              message: true,
-            },
-          },
-          comments: {
-            include: {
-              user: true,
-            },
-          },
-          ...(ctx.userId
-            ? {
-                tags: {
-                  where: {
-                    user: {
-                      id: ctx.userId,
-                    },
-                  },
-                },
-              }
-            : {
-                tags: {
-                  where: {
-                    id: {
-                      in: [],
-                    },
-                  },
-                },
-              }),
-        },
+        include: questionIncludes(ctx.userId),
       })
       assertHasAccess(ctx, question)
       return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)

@@ -72,7 +72,7 @@ model Tag {
   id        String     @id @default(cuid())
   createdAt DateTime   @default(now())
   name      String     @unique
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id])
   questions Question[]
   userId    String
 }
