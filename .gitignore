@@ -9,4 +9,7 @@ out
 *debugAdam.ts
 *exportContacts.ts
 
+localhost-key.pem
+localhost.pem
+
 *.code-workspace

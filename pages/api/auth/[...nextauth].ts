@@ -5,6 +5,75 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
 
+function getCookies() {
+  // https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/core/src/lib/cookie.ts#L53
+  // https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/next-auth/src/core/init.ts#L77
+  const useSecureCookies = true
+  // const useSecureCookies = process.env.NODE_ENV === "production"
+  const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+  return {
+    // default cookie options
+    sessionToken: {
+      name: `${cookiePrefix}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    callbackUrl: {
+      name: `${cookiePrefix}next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    csrfToken: {
+      // Default to __Host- for CSRF token for additional protection if using useSecureCookies
+      // NB: The `__Host-` prefix is stricter than the `__Secure-` prefix.
+      name: `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    pkceCodeVerifier: {
+      name: `${cookiePrefix}next-auth.pkce.code_verifier`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: useSecureCookies,
+        maxAge: 60 * 15, // 15 minutes in seconds
+      },
+    },
+    state: {
+      name: `${cookiePrefix}next-auth.state`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: useSecureCookies,
+        maxAge: 60 * 15, // 15 minutes in seconds
+      },
+    },
+    nonce: {
+      name: `${cookiePrefix}next-auth.nonce`,
+      options: {
+        httpOnly: true,
+        sameSite: "none",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -28,6 +97,10 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     secret: process.env.SECRET,
   },
+  useSecureCookies: true,
+
+  cookies: getCookies(),
+
   events: {
     createUser: async () => {
       await backendAnalyticsEvent("new_user", {
@@ -37,7 +110,7 @@ export const authOptions: NextAuthOptions = {
     linkAccount: async ({ user, profile }) => {
       // if the user has no name or image, update it from the profile
       // useful for when a user is created by having a question shared with them
-      if (!user.name && (profile.name)) {
+      if (!user.name && profile.name) {
         await prisma.user.update({
           where: {
             id: user.id,
@@ -48,7 +121,7 @@ export const authOptions: NextAuthOptions = {
         })
       }
 
-      if (!user.image && (profile.image)) {
+      if (!user.image && profile.image) {
         await prisma.user.update({
           where: {
             id: user.id,
@@ -58,7 +131,7 @@ export const authOptions: NextAuthOptions = {
           },
         })
       }
-    }
+    },
   },
   callbacks: {
     session: (params: { session: Session; token: JWT }) => {

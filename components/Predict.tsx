@@ -16,12 +16,17 @@ import { FormattedDate } from './FormattedDate'
 import { InfoButton } from './InfoButton'
 import { mergeRefs } from 'react-merge-refs'
 
-interface PredictProps{
+type CreateQuestionMutationOutput = NonNullable<ReturnType<typeof api.question.create.useMutation>['data']>
+
+interface PredictProps {
   /** Can optionally include a ref for the text area if parent wants to be able to control focus */
-  textAreaRef?:React.RefObject<HTMLTextAreaElement>
+  textAreaRef?: React.RefObject<HTMLTextAreaElement>
+
+  /** Can optionally include a callback for  */
+  onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
 }
 
-export function Predict({textAreaRef}:PredictProps) {
+export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const predictFormSchema = z.object({
     question: z.string().min(1),
     resolveBy: z.string(),
@@ -39,7 +44,7 @@ export function Predict({textAreaRef}:PredictProps) {
   const userId = useUserId()
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
-    async onSuccess() {
+    async onSuccess(result) {
       await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
         refetchPage: (lastPage, index) => index === 0, // assumes the new question is on the first page (must be ordered by recent)
       })
@@ -68,8 +73,13 @@ export function Predict({textAreaRef}:PredictProps) {
         undefined,
     }, {
       onError(error, variables, context) {
-        console.error("error creating question: ", {error, variables, context})
+        console.error("error creating question: ", { error, variables, context })
       },
+      onSuccess(result) {
+        if (onQuestionCreate && result) {
+          onQuestionCreate(result)
+        }
+      }
     })
 
     reset()
@@ -108,7 +118,7 @@ export function Predict({textAreaRef}:PredictProps) {
 
   const [highlightResolveBy, setHighlightResolveBy] = useState(false)
 
-  const { ref: predictionInputRef, ...predictionPercentageRegister} = register("predictionPercentage", { valueAsNumber: true })
+  const { ref: predictionInputRef, ...predictionPercentageRegister } = register("predictionPercentage", { valueAsNumber: true })
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -128,7 +138,7 @@ export function Predict({textAreaRef}:PredictProps) {
       }
     }
   }
-  const {onChange: onChangeQuestion, ref:formRef, ...registerQuestion} = register("question", { required: true })
+  const { onChange: onChangeQuestion, ref: formRef, ...registerQuestion } = register("question", { required: true })
   const ref = textAreaRef ? mergeRefs([textAreaRef, formRef]) : formRef
 
   return (
@@ -163,7 +173,7 @@ export function Predict({textAreaRef}:PredictProps) {
               className={clsx(
                 'btn btn-circle aspect-square absolute right-3 top-2 hover:opacity-100',
                 showSuggestions ? 'btn-active' : 'btn-ghost',
-                (!!question && !showSuggestions) ? 'opacity-20':  'opacity-80',
+                (!!question && !showSuggestions) ? 'opacity-20' : 'opacity-80',
               )}
               onClick={(e) => {
                 setShowSuggestions(!showSuggestions)

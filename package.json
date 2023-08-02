@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "prebuild": "prisma generate",
-    "dev": "dotenv next",
+    "dev": "dotenv next dev -- -p 3005",
+    "ssl-proxy": "npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3000 --target 3005",
     "build": "next build",
     "start": "next start",
     "lint": "next lint --dir lib --dir pages",
@@ -38,7 +39,6 @@
     "crypto": "1.0.1",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
-    "dotenv-cli": "^7.2.1",
     "is-ua-webview": "^1.1.2",
     "next": "^13.3.1",
     "next-auth": "^4.22.1",
@@ -84,6 +84,7 @@
     "postcss": "^8.4.23",
     "prisma": "^4.11.0",
     "tailwindcss": "^3.3.2",
+    "dotenv-cli": "^7.2.1",
     "typescript": "^5.0.2"
   }
 }

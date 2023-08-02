@@ -4,7 +4,7 @@ import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import React, { ReactNode } from "react"
 import { toast } from "react-hot-toast"
-import { getQuestionUrl } from "../../pages/q/[id]"
+import { getQuestionUrl } from "./question_url"
 
 
 export function useUserId() {

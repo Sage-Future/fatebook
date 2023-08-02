@@ -9,15 +9,15 @@ import { ReactMultiEmail } from "react-multi-email"
 import 'react-multi-email/dist/style.css'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
-import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"
+import { getQuestionUrl } from "../lib/web/question_url"
 
 
 export function SharePopover({
   question
-} : {
+}: {
   question: QuestionWithStandardIncludes
 }) {
   const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
@@ -60,7 +60,7 @@ export function SharePopover({
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const SharePanel = React.forwardRef<
   HTMLDivElement,
-  {question: QuestionWithStandardIncludes}
+  { question: QuestionWithStandardIncludes }
 >(function SharePanel({
   question
 }: {
@@ -124,7 +124,7 @@ function SharePublicly({
           />
           <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
         </div>
-        {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} /> }
+        {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} />}
       </div>
     </ErrorBoundary>
   )
