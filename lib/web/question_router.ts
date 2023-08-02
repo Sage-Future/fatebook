@@ -2,22 +2,32 @@ import { Prisma, Resolution } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
-import { getQuestionUrl } from "../../pages/q/[id]"
-import { QuestionWithForecasts, QuestionWithForecastsAndSharedWithAndLists, QuestionWithUserAndSharedWith } from "../../prisma/additional"
+import {
+  QuestionWithForecasts,
+  QuestionWithForecastsAndSharedWithAndLists,
+  QuestionWithUserAndSharedWith,
+} from "../../prisma/additional"
 import { forecastsAreHidden, getDateYYYYMMDD } from "../_utils_common"
-import prisma, { backendAnalyticsEvent, updateForecastQuestionMessages } from "../_utils_server"
+import prisma, {
+  backendAnalyticsEvent,
+  updateForecastQuestionMessages,
+} from "../_utils_server"
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
-import { handleQuestionResolution, undoQuestionResolution } from "../interactive_handlers/resolve"
-import { fatebookEmailFooter, sendEmail } from './email'
+import {
+  handleQuestionResolution,
+  undoQuestionResolution,
+} from "../interactive_handlers/resolve"
+import { fatebookEmailFooter, sendEmail } from "./email"
 import { questionsToCsv } from "./export"
 import { Context, publicProcedure, router } from "./trpc_base"
 import { getHtmlLinkQuestionTitle } from "./utils"
+import { getQuestionUrl } from "./question_url"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
     include: {
       user: true,
-    }
+    },
   },
   user: true,
   sharedWith: true,
@@ -25,33 +35,34 @@ const questionIncludes = (userId: string | undefined) => ({
     include: {
       author: true,
       users: true,
-    }
+    },
   },
   questionMessages: {
     include: {
-      message: true
-    }
+      message: true,
+    },
   },
   comments: {
     include: {
       user: true,
-    }
+    },
   },
   tags: {
     where: {
       user: {
-        id: userId || "match with no users (because no user with this ID exists)",
-      }
-    }
+        id:
+          userId || "match with no users (because no user with this ID exists)",
+      },
+    },
   },
 })
 
 export type ExtraFilters = {
-  resolved: boolean,
-  readyToResolve: boolean,
-  resolvingSoon: boolean,
-  filterTagIds?: string[],
-  showAllPublic?: boolean,
+  resolved: boolean
+  readyToResolve: boolean
+  resolvingSoon: boolean
+  filterTagIds?: string[]
+  showAllPublic?: boolean
 }
 
 export const questionRouter = router({
@@ -61,7 +72,7 @@ export const questionRouter = router({
         questionId: z.string().optional(),
       })
     )
-    .query(async ({input, ctx}) => {
+    .query(async ({ input, ctx }) => {
       if (!input.questionId) {
         return null
       }
@@ -74,7 +85,7 @@ export const questionRouter = router({
           forecasts: {
             include: {
               user: true,
-            }
+            },
           },
           user: true,
           sharedWith: true,
@@ -82,35 +93,37 @@ export const questionRouter = router({
             include: {
               author: true,
               users: true,
-            }
+            },
           },
           questionMessages: {
             include: {
-              message: true
-            }
+              message: true,
+            },
           },
           comments: {
             include: {
               user: true,
-            }
+            },
           },
-          ...(
-            ctx.userId ?
-              {tags: {
-                where: {
-                  user: {
-                    id: ctx.userId,
-                  }
-                }
-              }} :
-              {tags: {
-                where: {
-                  id: {
-                    in: []
-                  }
-                }
-              }}
-          ),
+          ...(ctx.userId
+            ? {
+                tags: {
+                  where: {
+                    user: {
+                      id: ctx.userId,
+                    },
+                  },
+                },
+              }
+            : {
+                tags: {
+                  where: {
+                    id: {
+                      in: [],
+                    },
+                  },
+                },
+              }),
         },
       })
       assertHasAccess(ctx, question)
@@ -118,23 +131,30 @@ export const questionRouter = router({
     }),
 
   getQuestionsUserCreatedOrForecastedOnOrIsSharedWith: publicProcedure
-    .input(z.object({
-      limit: z.number().min(1).max(100).nullish(),
-      cursor: z.number(),
-      extraFilters: z.object({
-        resolved: z.boolean(),
-        readyToResolve: z.boolean(),
-        resolvingSoon: z.boolean(),
-        filterTagIds: z.array(z.string()).optional(),
-        showAllPublic: z.boolean().optional(),
-      }).optional(),
-    }))
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).nullish(),
+        cursor: z.number(),
+        extraFilters: z
+          .object({
+            resolved: z.boolean(),
+            readyToResolve: z.boolean(),
+            resolvingSoon: z.boolean(),
+            filterTagIds: z.array(z.string()).optional(),
+            showAllPublic: z.boolean().optional(),
+          })
+          .optional(),
+      })
+    )
     .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
         return null
       }
 
-      return await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(input, ctx)
+      return await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
+        input,
+        ctx
+      )
     }),
 
   getForecastCountByDate: publicProcedure
@@ -154,19 +174,21 @@ export const questionRouter = router({
             {
               userId: ctx.userId,
             },
-            (input.tags && input.tags.length > 0) ? {
-              question: {
-                tags: {
-                  some: {
-                    name: {
-                      in: input.tags
+            input.tags && input.tags.length > 0
+              ? {
+                  question: {
+                    tags: {
+                      some: {
+                        name: {
+                          in: input.tags,
+                        },
+                        userId: ctx.userId,
+                      },
                     },
-                    userId: ctx.userId,
-                  }
+                  },
                 }
-              }
-            } : {},
-          ]
+              : {},
+          ],
         },
         select: {
           createdAt: true,
@@ -177,12 +199,12 @@ export const questionRouter = router({
       })
 
       // count number per day
-      const dateCounts = forecasts.map(f => getDateYYYYMMDD(f.createdAt)).reduce((acc, date) => {
-        acc[date] = (acc[date] || 0) + 1
-        return acc
-      },
-        {} as { [date: string]: number }
-      )
+      const dateCounts = forecasts
+        .map((f) => getDateYYYYMMDD(f.createdAt))
+        .reduce((acc, date) => {
+          acc[date] = (acc[date] || 0) + 1
+          return acc
+        }, {} as { [date: string]: number })
 
       return { dateCounts, total: forecasts.length }
     }),
@@ -195,9 +217,12 @@ export const questionRouter = router({
         prediction: z.number().max(1).min(0).optional(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a question" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to create a question",
+        })
       }
 
       const question = await prisma.question.create({
@@ -205,12 +230,14 @@ export const questionRouter = router({
           title: input.title,
           resolveBy: input.resolveBy,
           userId: ctx.userId,
-          forecasts: input.prediction ? {
-            create: {
-              userId: ctx.userId,
-              forecast: input.prediction,
-            }
-          } : undefined,
+          forecasts: input.prediction
+            ? {
+                create: {
+                  userId: ctx.userId,
+                  forecast: input.prediction,
+                },
+              }
+            : undefined,
         },
       })
 
@@ -227,6 +254,8 @@ export const questionRouter = router({
           forecast: input.prediction,
         })
       }
+
+      return { url: getQuestionUrl(question), ...input }
     }),
 
   resolveQuestion: publicProcedure
@@ -236,10 +265,13 @@ export const questionRouter = router({
         resolution: z.string(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
-      await handleQuestionResolution(input.questionId, input.resolution as Resolution)
+      await handleQuestionResolution(
+        input.questionId,
+        input.resolution as Resolution
+      )
 
       await backendAnalyticsEvent("question_resolved", {
         platform: "web",
@@ -253,7 +285,7 @@ export const questionRouter = router({
         questionId: z.string(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
       await undoQuestionResolution(input.questionId)
@@ -272,7 +304,7 @@ export const questionRouter = router({
         unlisted: z.boolean().optional(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
       await prisma.question.update({
@@ -282,7 +314,7 @@ export const questionRouter = router({
         data: {
           sharedPublicly: input.sharedPublicly,
           unlisted: input.unlisted,
-        }
+        },
       })
     }),
 
@@ -293,14 +325,16 @@ export const questionRouter = router({
         sharedWith: z.array(z.string()),
       })
     )
-    .mutation(async ({input, ctx}) => {
-      const question = await getQuestionAssertAuthor(ctx, input.questionId, {
+    .mutation(async ({ input, ctx }) => {
+      const question = (await getQuestionAssertAuthor(ctx, input.questionId, {
         user: true,
         sharedWith: true,
-      }) as QuestionWithUserAndSharedWith
+      })) as QuestionWithUserAndSharedWith
 
       const sharedWith = Array.from(new Set(input.sharedWith))
-      const newlySharedWith = sharedWith.filter(email => !question.sharedWith.some(u => u.email === email))
+      const newlySharedWith = sharedWith.filter(
+        (email) => !question.sharedWith.some((u) => u.email === email)
+      )
       if (newlySharedWith.length === 0) {
         console.log("Shared with no one new")
         return
@@ -309,16 +343,18 @@ export const questionRouter = router({
       const existingUsers = await prisma.user.findMany({
         where: {
           email: {
-            in: sharedWith
-          }
-        }
+            in: sharedWith,
+          },
+        },
       })
 
-      const nonExistingUsers = sharedWith.filter(email => !existingUsers.some(u => u.email === email))
+      const nonExistingUsers = sharedWith.filter(
+        (email) => !existingUsers.some((u) => u.email === email)
+      )
 
       if (nonExistingUsers.length > 0) {
         await prisma.user.createMany({
-          data: nonExistingUsers.map(email => ({ email }))
+          data: nonExistingUsers.map((email) => ({ email })),
         })
       }
 
@@ -328,9 +364,9 @@ export const questionRouter = router({
         },
         data: {
           sharedWith: {
-            set: sharedWith.map(email => ({ email }))
-          }
-        }
+            set: sharedWith.map((email) => ({ email })),
+          },
+        },
       })
 
       await emailNewlySharedWithUsers(newlySharedWith, question)
@@ -343,7 +379,7 @@ export const questionRouter = router({
         forecast: z.number().max(1).min(0),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       const question = await prisma.question.findUnique({
         where: {
           id: input.questionId,
@@ -355,27 +391,35 @@ export const questionRouter = router({
             include: {
               users: true,
               author: true,
-            }
-          }
-        }
+            },
+          },
+        },
       })
 
       assertHasAccess(ctx, question)
       if (question === null) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Question not found",
+        })
       }
 
       if (question.resolution) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Question has already been resolved" })
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Question has already been resolved",
+        })
       }
 
       const lastForecastByUser = question.forecasts
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // most recent first
-        .find(f => f.userId === ctx.userId)
+        .find((f) => f.userId === ctx.userId)
 
       // disallow submitting the same forecast twice within two minutes
-      if (lastForecastByUser?.forecast.toNumber() === input.forecast
-        && new Date().getTime() - lastForecastByUser?.createdAt.getTime() < 1000 * 60 * 2
+      if (
+        lastForecastByUser?.forecast.toNumber() === input.forecast &&
+        new Date().getTime() - lastForecastByUser?.createdAt.getTime() <
+          1000 * 60 * 2
       ) {
         return
       }
@@ -384,13 +428,13 @@ export const questionRouter = router({
         data: {
           user: {
             connect: {
-              id: ctx.userId
-            }
+              id: ctx.userId,
+            },
           },
           question: {
             connect: {
-              id: input.questionId
-            }
+              id: input.questionId,
+            },
           },
           forecast: input.forecast,
         },
@@ -401,27 +445,30 @@ export const questionRouter = router({
                 include: {
                   user: {
                     include: {
-                      profiles: true
-                    }
+                      profiles: true,
+                    },
                   },
-                }
+                },
               },
               questionMessages: {
                 include: {
-                  message: true
-                }
+                  message: true,
+                },
               },
               user: {
                 include: {
-                  profiles: true
-                }
-              }
-            }
-          }
-        }
+                  profiles: true,
+                },
+              },
+            },
+          },
+        },
       })
 
-      await updateForecastQuestionMessages(submittedForecast.question, "New forecast")
+      await updateForecastQuestionMessages(
+        submittedForecast.question,
+        "New forecast"
+      )
 
       await backendAnalyticsEvent("forecast_submitted", {
         platform: "web",
@@ -438,7 +485,7 @@ export const questionRouter = router({
         comment: z.string(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       const question = await prisma.question.findUnique({
         where: {
           id: input.questionId,
@@ -451,33 +498,36 @@ export const questionRouter = router({
             include: {
               users: true,
               author: true,
-            }
-          }
-        }
+            },
+          },
+        },
       })
 
       assertHasAccess(ctx, question)
       if (question === null) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Question not found",
+        })
       }
 
       await prisma.comment.create({
         data: {
           question: {
             connect: {
-              id: input.questionId
-            }
+              id: input.questionId,
+            },
           },
           user: {
             connect: {
-              id: ctx.userId
-            }
+              id: ctx.userId,
+            },
           },
           comment: input.comment,
         },
         include: {
           user: true,
-        }
+        },
       })
 
       await backendAnalyticsEvent("comment_added", {
@@ -492,14 +542,14 @@ export const questionRouter = router({
         commentId: z.number(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       const comment = await prisma.comment.findUnique({
         where: {
           id: input.commentId,
         },
         include: {
           user: true,
-        }
+        },
       })
 
       if (!comment || comment.user.id !== ctx.userId) {
@@ -509,7 +559,7 @@ export const questionRouter = router({
       await prisma.comment.delete({
         where: {
           id: input.commentId,
-        }
+        },
       })
 
       await backendAnalyticsEvent("comment_deleted", {
@@ -535,20 +585,21 @@ export const questionRouter = router({
             {
               userId: ctx.userId,
             },
-            input.tags && input.tags.length > 0 ? {
-              question: {
-                tags: {
-                  some: {
-                    name: {
-                      in: input.tags
+            input.tags && input.tags.length > 0
+              ? {
+                  question: {
+                    tags: {
+                      some: {
+                        name: {
+                          in: input.tags,
+                        },
+                        userId: ctx.userId,
+                      },
                     },
-                    userId: ctx.userId,
-                  }
+                  },
                 }
-              }
-            } : {},
-
-          ]
+              : {},
+          ],
         },
       })
 
@@ -574,7 +625,7 @@ export const questionRouter = router({
         questionId: z.string(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
       await deleteQuestion(input.questionId)
@@ -593,7 +644,7 @@ export const questionRouter = router({
         resolveBy: z.date().optional(),
       })
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
       const question = await prisma.question.update({
@@ -609,22 +660,22 @@ export const questionRouter = router({
             include: {
               user: {
                 include: {
-                  profiles: true
-                }
+                  profiles: true,
+                },
               },
             },
           },
           user: {
             include: {
-              profiles: true
-            }
+              profiles: true,
+            },
           },
           questionMessages: {
             include: {
-              message: true
-            }
-          }
-        }
+              message: true,
+            },
+          },
+        },
       })
 
       await updateForecastQuestionMessages(question, "Question edited")
@@ -635,30 +686,37 @@ export const questionRouter = router({
       })
     }),
 
-  exportAllQuestions: publicProcedure
-    .mutation(async ({ ctx }) => {
-      if (!ctx.userId) {
-        return null
-      }
-      const questionsQ = await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith({
-        cursor: 0,
-        limit: 100000,
-      }, ctx)
-      const questions = questionsQ.items
+  exportAllQuestions: publicProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.userId) {
+      return null
+    }
+    const questionsQ =
+      await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
+        {
+          cursor: 0,
+          limit: 100000,
+        },
+        ctx
+      )
+    const questions = questionsQ.items
 
-      const csv = await questionsToCsv(questions, ctx.userId)
+    const csv = await questionsToCsv(questions, ctx.userId)
 
-      await backendAnalyticsEvent("exported_to_csv", {
-        user: ctx.userId,
-        platform: "web",
-      })
+    await backendAnalyticsEvent("exported_to_csv", {
+      user: ctx.userId,
+      platform: "web",
+    })
 
-      return csv
-    }),
+    return csv
+  }),
 })
 
 async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
-  input: { cursor: number; limit?: number | null | undefined; extraFilters?: ExtraFilters | undefined },
+  input: {
+    cursor: number
+    limit?: number | null | undefined
+    extraFilters?: ExtraFilters | undefined
+  },
   ctx: Context
 ) {
   const limit = input.limit || 100
@@ -667,162 +725,196 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
-    orderBy: (
-      input.extraFilters?.resolvingSoon ?
-        {
+    orderBy: input.extraFilters?.resolvingSoon
+      ? {
           resolveBy: "asc",
         }
-        :
-        {
+      : {
           createdAt: "desc",
-        }),
+        },
     where: {
       AND: [
-        input.extraFilters?.showAllPublic ? {
-          AND: [
-            {sharedPublicly: true},
-            {unlisted: false},
-          ]
-        } : {
-          // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
-          OR: [
-            { userId: ctx.userId },
-            {
-              forecasts: {
-                some: {
-                  userId: ctx.userId,
-                }
-              }
-            },
-            {
-              sharedWith: {
-                some: {
-                  id: ctx.userId,
+        input.extraFilters?.showAllPublic
+          ? {
+              AND: [{ sharedPublicly: true }, { unlisted: false }],
+            }
+          : {
+              // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
+              OR: [
+                { userId: ctx.userId },
+                {
+                  forecasts: {
+                    some: {
+                      userId: ctx.userId,
+                    },
+                  },
                 },
-              }
-            },
-            {
-              sharedWithLists: {
-                some: {
-                  users: {
+                {
+                  sharedWith: {
                     some: {
                       id: ctx.userId,
-                    }
-                  }
-                }
-              }
+                    },
+                  },
+                },
+                {
+                  sharedWithLists: {
+                    some: {
+                      users: {
+                        some: {
+                          id: ctx.userId,
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
             },
-          ]
-        },
-        input.extraFilters?.resolved ? {
-          resolution: {
-            not: null,
-          }
-        } : {},
-        input.extraFilters?.readyToResolve ? {
-          resolution: null,
-          resolveBy: {
-            lte: new Date(),
-          }
-        } : {},
-        input.extraFilters?.resolvingSoon ? {
-          resolveBy: {
-            gte: new Date(),
-          },
-          resolution: null,
-        } : {},
-        input.extraFilters?.filterTagIds ? {
-          tags: {
-            some: {
-              id: {
-                in: input.extraFilters.filterTagIds
-              }
+        input.extraFilters?.resolved
+          ? {
+              resolution: {
+                not: null,
+              },
             }
-          }
-        } : {},
-      ]
+          : {},
+        input.extraFilters?.readyToResolve
+          ? {
+              resolution: null,
+              resolveBy: {
+                lte: new Date(),
+              },
+            }
+          : {},
+        input.extraFilters?.resolvingSoon
+          ? {
+              resolveBy: {
+                gte: new Date(),
+              },
+              resolution: null,
+            }
+          : {},
+        input.extraFilters?.filterTagIds
+          ? {
+              tags: {
+                some: {
+                  id: {
+                    in: input.extraFilters.filterTagIds,
+                  },
+                },
+              },
+            }
+          : {},
+      ],
     },
     include: questionIncludes(ctx.userId),
   })
 
   return {
     items: questions
-      .map(q => scrubHiddenForecastsFromQuestion(q, ctx.userId))
+      .map((q) => scrubHiddenForecastsFromQuestion(q, ctx.userId))
       // don't include the extra one - it's just to see if there's another page
       .slice(0, limit),
 
-    nextCursor: (questions.length > limit) ? skip + limit : undefined,
+    nextCursor: questions.length > limit ? skip + limit : undefined,
   }
 }
 
-export async function emailNewlySharedWithUsers(newlySharedWith: string[], question: QuestionWithUserAndSharedWith) {
-  await Promise.all(newlySharedWith.map(async (email) => {
-    const author = question.user.name || question.user.email
-    await sendEmail({
-      to: email,
-      subject: `${author} shared a prediction with you`,
-      textBody: `"${question.title}"`,
-      htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(question)}</b></p>
-<p><a href=${getQuestionUrl(question)}>See ${author}'s prediction and add your own on Fatebook.</a></p>
-${fatebookEmailFooter(email)}`
+export async function emailNewlySharedWithUsers(
+  newlySharedWith: string[],
+  question: QuestionWithUserAndSharedWith
+) {
+  await Promise.all(
+    newlySharedWith.map(async (email) => {
+      const author = question.user.name || question.user.email
+      await sendEmail({
+        to: email,
+        subject: `${author} shared a prediction with you`,
+        textBody: `"${question.title}"`,
+        htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(
+          question
+        )}</b></p>
+<p><a href=${getQuestionUrl(
+          question
+        )}>See ${author}'s prediction and add your own on Fatebook.</a></p>
+${fatebookEmailFooter(email)}`,
+      })
     })
-  }))
+  )
 }
 
-export async function getQuestionAssertAuthor(ctx: {userId: string | undefined}, questionId: string, questionInclude?: Prisma.QuestionInclude) {
+export async function getQuestionAssertAuthor(
+  ctx: { userId: string | undefined },
+  questionId: string,
+  questionInclude?: Prisma.QuestionInclude
+) {
   const question = await prisma.question.findUnique({
     where: {
       id: questionId,
     },
-    include: questionInclude
+    include: questionInclude,
   })
 
   if (!question) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
   if (question.userId !== ctx.userId) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "Only the question's author can do that" })
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Only the question's author can do that",
+    })
   }
 
   return question
 }
 
-function assertHasAccess(ctx: {userId: string | undefined}, question: QuestionWithForecastsAndSharedWithAndLists | null) {
+function assertHasAccess(
+  ctx: { userId: string | undefined },
+  question: QuestionWithForecastsAndSharedWithAndLists | null
+) {
   if (question === null) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
   if (
-    question?.sharedPublicly
-    || question?.sharedWith.some(u => u.id === ctx.userId)
-    || question?.sharedWithLists.some(l => l.users.some(u => u.id === ctx.userId) || l.authorId === ctx.userId)
-    || question?.userId === ctx.userId
-    || question?.forecasts.some(f => f.userId === ctx.userId) // for slack questions
+    question?.sharedPublicly ||
+    question?.sharedWith.some((u) => u.id === ctx.userId) ||
+    question?.sharedWithLists.some(
+      (l) =>
+        l.users.some((u) => u.id === ctx.userId) || l.authorId === ctx.userId
+    ) ||
+    question?.userId === ctx.userId ||
+    question?.forecasts.some((f) => f.userId === ctx.userId) // for slack questions
   ) {
     return question as QuestionWithForecasts
   } else {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to that question" })
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You don't have access to that question",
+    })
   }
 }
 
-function scrubHiddenForecastsFromQuestion<QuestionX extends QuestionWithForecasts>(question: QuestionX, userId: string | undefined) {
+function scrubHiddenForecastsFromQuestion<
+  QuestionX extends QuestionWithForecasts
+>(question: QuestionX, userId: string | undefined) {
   if (!forecastsAreHidden(question)) {
     return question
   }
 
   return {
     ...question,
-    forecasts: question.forecasts.map(f => {
-      const hideForecast = (f.userId !== userId && userId)
-      return ({
+    forecasts: question.forecasts.map((f) => {
+      const hideForecast = f.userId !== userId && userId
+      return {
         ...f,
-        ...(hideForecast ? {
-          forecast: null,
-          userId: null,
-          user: null,
-          profileId: null,
-          profile: null,
-        } : {}),
-      })
-    })
+        ...(hideForecast
+          ? {
+              forecast: null,
+              userId: null,
+              user: null,
+              profileId: null,
+              profile: null,
+            }
+          : {}),
+      }
+    }),
   }
 }

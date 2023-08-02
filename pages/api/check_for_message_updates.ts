@@ -1,59 +1,70 @@
-import { VercelRequest, VercelResponse } from '@vercel/node'
+import { VercelRequest, VercelResponse } from "@vercel/node"
 
-import { Question, Target, User } from '@prisma/client'
+import { Question, Target, User } from "@prisma/client"
 import { conciseDateTime } from "../../lib/_utils_common"
-import prisma, { getCurrentTargetProgress, postBlockMessage, updateForecastQuestionMessages } from '../../lib/_utils_server'
-import { buildResolveQuestionBlocks } from '../../lib/blocks-designs/resolve_question'
-import { buildStaleForecastsReminderBlock } from '../../lib/blocks-designs/stale_forecasts'
-import { buildTargetNotification } from '../../lib/blocks-designs/target_setting'
-import { fatebookEmailFooter, sendEmail } from '../../lib/web/email'
-import { getHtmlLinkQuestionTitle } from '../../lib/web/utils'
-import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts, ForecastWithQuestionWithSlackMessagesAndForecasts } from '../../prisma/additional'
-import { getQuestionUrl } from '../q/[id]'
+import prisma, {
+  getCurrentTargetProgress,
+  postBlockMessage,
+  updateForecastQuestionMessages,
+} from "../../lib/_utils_server"
+import { buildResolveQuestionBlocks } from "../../lib/blocks-designs/resolve_question"
+import { buildStaleForecastsReminderBlock } from "../../lib/blocks-designs/stale_forecasts"
+import { buildTargetNotification } from "../../lib/blocks-designs/target_setting"
+import { fatebookEmailFooter, sendEmail } from "../../lib/web/email"
+import { getHtmlLinkQuestionTitle } from "../../lib/web/utils"
+import {
+  ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts,
+  ForecastWithQuestionWithSlackMessagesAndForecasts,
+} from "../../prisma/additional"
+import { getQuestionUrl } from "../../lib/web/question_url"
 
-async function getTargetsToBeNotified(){
+async function getTargetsToBeNotified() {
   const lastWeek = new Date()
   lastWeek.setDate(lastWeek.getDate() - 7)
 
   return await prisma.target.findMany({
     where: {
       lastNotified: {
-        lte: lastWeek
-      }
+        lte: lastWeek,
+      },
     },
     include: {
       profile: true,
       user: {
         include: {
           accounts: true,
-        }
-      }
-    }
+        },
+      },
+    },
   })
 }
 
-async function sendSlackTargetNotification(target : Target, slackTeamId : string, slackId : string) {
+async function sendSlackTargetNotification(
+  target: Target,
+  slackTeamId: string,
+  slackId: string
+) {
   const current = await getCurrentTargetProgress(target.userId, target)
   const blocks = buildTargetNotification(target, current)
 
   if (current < target.goal) {
     await prisma.target.update({
       where: {
-        id: target.id
+        id: target.id,
       },
       data: {
         lastFailedAt: new Date(),
-        lastNotified: new Date()
-      }
+        lastNotified: new Date(),
+      },
     })
   } else {
     await prisma.target.update({
       where: {
-        id: target.id
+        id: target.id,
       },
       data: {
-        lastNotified: new Date()
-      }
+        lastNotified: new Date(),
+      },
     })
   }
 
@@ -63,13 +74,21 @@ async function sendSlackTargetNotification(target : Target, slackTeamId : string
 async function sendTargetMessages() {
   const targetsToBeNotified = await getTargetsToBeNotified()
   for (const target of targetsToBeNotified) {
-    if (target.profile && target.profile.slackTeamId && target.profile.slackId) {
+    if (
+      target.profile &&
+      target.profile.slackTeamId &&
+      target.profile.slackId
+    ) {
       try {
-        await sendSlackTargetNotification(target,
-                                          target.profile.slackTeamId,
-                                          target.profile.slackId)
+        await sendSlackTargetNotification(
+          target,
+          target.profile.slackTeamId,
+          target.profile.slackId
+        )
       } catch (err) {
-        console.error(`Error sending message on target ${target.id}: \n${err}\nContinuing...`)
+        console.error(
+          `Error sending message on target ${target.id}: \n${err}\nContinuing...`
+        )
       }
     } else if (target.user.accounts.length > 0) {
       // await sendEmailTargetNotification(user)
@@ -81,12 +100,12 @@ async function sendTargetMessages() {
   return targetsToBeNotified
 }
 
-async function getQuestionsToBeResolved()  {
+async function getQuestionsToBeResolved() {
   // check if any questions need to be resolved by time
   const allQuestionsToBeNotified = await prisma.question.findMany({
     where: {
       resolveBy: {
-        lte: new Date()
+        lte: new Date(),
       },
       resolved: false,
       pingedForResolution: false,
@@ -97,14 +116,14 @@ async function getQuestionsToBeResolved()  {
         include: {
           profiles: true,
           accounts: true,
-        }
+        },
       },
       questionMessages: {
         include: {
-          message: true
-        }
-      }
-    }
+          message: true,
+        },
+      },
+    },
   })
   return allQuestionsToBeNotified
 }
@@ -117,25 +136,39 @@ async function notifyAuthorsToResolveQuestions() {
       if (question.profile) {
         await sendSlackReadyToResolveNotification(question)
       } else if (question.user.accounts.length > 0) {
-      // only email notify Fatebook web users, and only about questions they haven't shared to Slack
+        // only email notify Fatebook web users, and only about questions they haven't shared to Slack
         await sendEmailReadyToResolveNotification(question)
       } else {
-        console.error("No profile or accounts found for question", question.id, question.user.name)
+        console.error(
+          "No profile or accounts found for question",
+          question.id,
+          question.user.name
+        )
       }
     } catch (err) {
-      console.error(`Error sending message on question ${question.id}: \n${err}\nContinuing...`)
+      console.error(
+        `Error sending message on question ${question.id}: \n${err}\nContinuing...`
+      )
     }
   }
   return allQuestionsToBeNotified
 }
 
-export async function sendEmailReadyToResolveNotification(question: Question & { user: User }) {
+export async function sendEmailReadyToResolveNotification(
+  question: Question & { user: User }
+) {
   await sendEmail({
     subject: `Ready to resolve: ${question.title}`,
     to: question.user.email,
     textBody: `Are you ready to resolve your question: ${question.title}`,
-    htmlBody: `<p>Are you ready to resolve your question: <b>${getHtmlLinkQuestionTitle(question)}</b></p>\n
-<p><a href=${getQuestionUrl(question)}>Resolve your question</a>.</p>${fatebookEmailFooter(question.user.email)}`,
+    htmlBody: `<p>Are you ready to resolve your question: <b>${getHtmlLinkQuestionTitle(
+      question
+    )}</b></p>\n
+<p><a href=${getQuestionUrl(
+      question
+    )}>Resolve your question</a>.</p>${fatebookEmailFooter(
+      question.user.email
+    )}`,
   })
 
   await prisma.question.update({
@@ -148,9 +181,13 @@ export async function sendEmailReadyToResolveNotification(question: Question & {
   })
 }
 
-async function sendSlackReadyToResolveNotification(question: Awaited<ReturnType<typeof getQuestionsToBeResolved>>[number]) {
+async function sendSlackReadyToResolveNotification(
+  question: Awaited<ReturnType<typeof getQuestionsToBeResolved>>[number]
+) {
   if (!question.profile) {
-    console.error(`No profile found for question ${question.id}, author ${question.user.name}. Todo add email notification instead`)
+    console.error(
+      `No profile found for question ${question.id}, author ${question.user.name}. Todo add email notification instead`
+    )
     return
   }
 
@@ -161,19 +198,28 @@ async function sendSlackReadyToResolveNotification(question: Awaited<ReturnType<
   }
   const slackId = question.profile.slackId!
   try {
-    const resolveQuestionBlock = await buildResolveQuestionBlocks(slackTeamId, question)
-    const data = await postBlockMessage(slackTeamId,
-                                        slackId,
-                                        resolveQuestionBlock,
-                                        `Ready to resolve your question? "${question.title.substring(0, 250)}"`,
-                                        { unfurl_links: false, unfurl_media: false })
+    const resolveQuestionBlock = await buildResolveQuestionBlocks(
+      slackTeamId,
+      question
+    )
+    const data = await postBlockMessage(
+      slackTeamId,
+      slackId,
+      resolveQuestionBlock,
+      `Ready to resolve your question? "${question.title.substring(0, 250)}"`,
+      { unfurl_links: false, unfurl_media: false }
+    )
 
     if (!data?.ts || !data?.channel) {
-      console.error(`Missing message.ts or channel in response ${JSON.stringify(data)}`)
+      console.error(
+        `Missing message.ts or channel in response ${JSON.stringify(data)}`
+      )
       throw new Error("Missing message.ts or channel in response")
     }
 
-    console.log(`Sent message to ${question.profile.slackId} for question ${question.id}`)
+    console.log(
+      `Sent message to ${question.profile.slackId} for question ${question.id}`
+    )
 
     // OPTIMISATION:: move these intro a transaction
     await prisma.question.update({
@@ -189,10 +235,10 @@ async function sendSlackReadyToResolveNotification(question: Awaited<ReturnType<
                 ts: data.ts,
                 teamId: slackTeamId,
                 channel: data.channel,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
     })
 
@@ -202,57 +248,64 @@ async function sendSlackReadyToResolveNotification(question: Awaited<ReturnType<
   }
 }
 
-async function updateQuestionsToUnhideForecasts(){
+async function updateQuestionsToUnhideForecasts() {
   const now = new Date()
   const LAST_X_DAYS = 7
-  console.log(`Checking for questions to unhide forecasts for between ${conciseDateTime(now)} ${conciseDateTime(new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000))}`)
-  const questionsToCheck= await prisma.question.findMany({
+  console.log(
+    `Checking for questions to unhide forecasts for between ${conciseDateTime(
+      now
+    )} ${conciseDateTime(
+      new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000)
+    )}`
+  )
+  const questionsToCheck = await prisma.question.findMany({
     where: {
       hideForecastsUntil: {
         lte: now,
-        gte: new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000)
-      }
+        gte: new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000),
+      },
     },
     include: {
       forecasts: {
         include: {
           user: {
             include: {
-              profiles: true
-            }
-          }
-        }
+              profiles: true,
+            },
+          },
+        },
       },
       user: {
         include: {
-          profiles: true
-        }
+          profiles: true,
+        },
       },
       questionMessages: {
         include: {
-          message: true
-        }
+          message: true,
+        },
       },
       resolutionMessages: {
         include: {
-          message: true
-        }
+          message: true,
+        },
       },
       pingResolveMessages: {
         include: {
-          message: true
-        }
+          message: true,
+        },
       },
       questionScores: true,
-    }
+    },
   })
 
   // if the date of any message last updated is before the hideForecastsUntil date
   //   then needs to be updated
-  const questionsToBeUpdated = questionsToCheck.filter((question) =>
-    question.questionMessages.filter((qm) =>
-      qm.updatedAt < question.hideForecastsUntil!
-    ).length > 0
+  const questionsToBeUpdated = questionsToCheck.filter(
+    (question) =>
+      question.questionMessages.filter(
+        (qm) => qm.updatedAt < question.hideForecastsUntil!
+      ).length > 0
   )
 
   for (const question of questionsToBeUpdated) {
@@ -262,108 +315,145 @@ async function updateQuestionsToUnhideForecasts(){
         // select all ids of question messages that are in the question
         where: {
           id: {
-            in: question.questionMessages.map((qm) => qm.id)
-          }
+            in: question.questionMessages.map((qm) => qm.id),
+          },
         },
         data: {
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       })
-    } catch(e) {
-      console.error(`Could not update question ${question.id}: ${e}\nContinuing...`)
+    } catch (e) {
+      console.error(
+        `Could not update question ${question.id}: ${e}\nContinuing...`
+      )
     }
   }
 
   return questionsToBeUpdated
 }
 
-async function getStaleForecasts(){
+async function getStaleForecasts() {
   // get all forecasts that were made exactly 2 weeks ago
   const LAST_X_DAYS = 14
   const now = new Date()
   const startDate = new Date(now.getTime() - LAST_X_DAYS * 24 * 60 * 60 * 1000)
-  const endDate   = new Date(now.getTime() - (LAST_X_DAYS - 1) * 24 * 60 * 60 * 1000)
+  const endDate = new Date(
+    now.getTime() - (LAST_X_DAYS - 1) * 24 * 60 * 60 * 1000
+  )
 
   const forecasts = await prisma.forecast.findMany({
-    where : {
+    where: {
       createdAt: {
         gte: startDate,
-        lte: endDate
+        lte: endDate,
       },
-      question : {
-        resolved : false,
-        resolveBy : {
-          gte : now
-        }
+      question: {
+        resolved: false,
+        resolveBy: {
+          gte: now,
+        },
       },
-      user : {
-        staleReminder: true
-      }
+      user: {
+        staleReminder: true,
+      },
     },
     include: {
       question: {
         include: {
           questionMessages: {
             include: {
-              message: true
-            }
+              message: true,
+            },
           },
           resolutionMessages: {
             include: {
-              message: true
-            }
+              message: true,
+            },
           },
-          forecasts: true
-        }
+          forecasts: true,
+        },
       },
-      user : {
-        include : {
-          accounts : true
-        }
+      user: {
+        include: {
+          accounts: true,
+        },
       },
-      profile : true
-    }
+      profile: true,
+    },
   })
 
   return forecasts.filter((staleForecast) => {
     // if there are no forecasts for this question that are more recent than this one
     //   for this user, then this forecast is stale
-    return staleForecast.question.forecasts.filter((forecast) => forecast.userId == staleForecast.userId)
-      .filter((forecast) => {
-        return forecast.createdAt > staleForecast.createdAt
-      }).length === 0
+    return (
+      staleForecast.question.forecasts
+        .filter((forecast) => forecast.userId == staleForecast.userId)
+        .filter((forecast) => {
+          return forecast.createdAt > staleForecast.createdAt
+        }).length === 0
+    )
   })
 }
 
-async function messageStaleForecasts(){
+async function messageStaleForecasts() {
   const staleForecasts = await getStaleForecasts()
 
-  const allUsers = (staleForecasts.map((staleForecast) => staleForecast.user))
+  const allUsers = staleForecasts.map((staleForecast) => staleForecast.user)
   // get unique by id
-  const staleForecastUsers = Array.from(new Set(allUsers.map((user) => user.id)))
+  const staleForecastUsers = Array.from(
+    new Set(allUsers.map((user) => user.id))
+  )
 
-  for(const userIdWithStaleForecasts of staleForecastUsers){
+  for (const userIdWithStaleForecasts of staleForecastUsers) {
     // get staleForecasts of user
-    const staleForecastsForUser = staleForecasts.filter((staleForecast) => staleForecast.user.id === userIdWithStaleForecasts)
-    const staleForecastProfileIds = Array.from(new Set(staleForecastsForUser.map((staleForecast) => staleForecast.profile?.id)))
-    const staleForecastProfiles = staleForecastProfileIds.map((profileId) => staleForecastsForUser.find((staleForecast) => staleForecast.profile?.id === profileId)?.profile)
+    const staleForecastsForUser = staleForecasts.filter(
+      (staleForecast) => staleForecast.user.id === userIdWithStaleForecasts
+    )
+    const staleForecastProfileIds = Array.from(
+      new Set(
+        staleForecastsForUser.map((staleForecast) => staleForecast.profile?.id)
+      )
+    )
+    const staleForecastProfiles = staleForecastProfileIds
+      .map(
+        (profileId) =>
+          staleForecastsForUser.find(
+            (staleForecast) => staleForecast.profile?.id === profileId
+          )?.profile
+      )
       .filter((profile) => profile !== undefined)
-    for(const staleForecastProfile of staleForecastProfiles){
-      const staleForecastsForProfile = staleForecastsForUser.filter((staleForecast) => staleForecast.profile?.id === staleForecastProfile?.id)
-      if (staleForecastProfile && staleForecastProfile.slackTeamId && staleForecastProfile.slackId) {
-        await sendSlackstaleForecastNotification(staleForecastsForProfile,
-                                                 staleForecastProfile.slackTeamId,
-                                                 staleForecastProfile.slackId)
+    for (const staleForecastProfile of staleForecastProfiles) {
+      const staleForecastsForProfile = staleForecastsForUser.filter(
+        (staleForecast) =>
+          staleForecast.profile?.id === staleForecastProfile?.id
+      )
+      if (
+        staleForecastProfile &&
+        staleForecastProfile.slackTeamId &&
+        staleForecastProfile.slackId
+      ) {
+        await sendSlackstaleForecastNotification(
+          staleForecastsForProfile,
+          staleForecastProfile.slackTeamId,
+          staleForecastProfile.slackId
+        )
       } else {
-        const user = allUsers.find(user => user.id == userIdWithStaleForecasts)
-        if(user && user.accounts.length > 0){
+        const user = allUsers.find(
+          (user) => user.id == userIdWithStaleForecasts
+        )
+        if (user && user.accounts.length > 0) {
           try {
             await sendEmailForStaleForecasts(staleForecastsForProfile, user)
           } catch (e) {
-            console.error(`Could not send email for ${staleForecastsForProfile.length} stale forecasts for user ${user.id}: ${e}\nContinuing...`)
+            console.error(
+              `Could not send email for ${staleForecastsForProfile.length} stale forecasts for user ${user.id}: ${e}\nContinuing...`
+            )
           }
         } else {
-          console.error("No profile or accounts found for user", userIdWithStaleForecasts)
+          console.error(
+            "No profile or accounts found for user",
+            userIdWithStaleForecasts
+          )
         }
       }
     }
@@ -371,23 +461,39 @@ async function messageStaleForecasts(){
   return staleForecastUsers
 }
 
-async function sendEmailForStaleForecasts(staleForecastsForProfile: ForecastWithQuestionWithSlackMessagesAndForecasts[], user: User) {
+async function sendEmailForStaleForecasts(
+  staleForecastsForProfile: ForecastWithQuestionWithSlackMessagesAndForecasts[],
+  user: User
+) {
   if (staleForecastsForProfile.length > 0) {
     await sendEmail({
-      subject: `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'`
-        + (staleForecastsForProfile.length > 1 ? ` and ${staleForecastsForProfile.length - 1} other questions` : ""),
+      subject:
+        `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'` +
+        (staleForecastsForProfile.length > 1
+          ? ` and ${staleForecastsForProfile.length - 1} other questions`
+          : ""),
       to: user.email,
       textBody: `Do you want to update your forecasts?`,
-      htmlBody: `<p>You have some forecasts you may want to update:</p>`
-        + staleForecastsForProfile.map(
-          (staleForecast) => ('<p>• ' + getHtmlLinkQuestionTitle(staleForecast.question) + '</p>')
-        ).join("\n")
-        + `\n\n${fatebookEmailFooter(user.email)}`,
+      htmlBody:
+        `<p>You have some forecasts you may want to update:</p>` +
+        staleForecastsForProfile
+          .map(
+            (staleForecast) =>
+              "<p>• " +
+              getHtmlLinkQuestionTitle(staleForecast.question) +
+              "</p>"
+          )
+          .join("\n") +
+        `\n\n${fatebookEmailFooter(user.email)}`,
     })
   }
 }
 
-async function sendSlackstaleForecastNotification(staleForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[], slackTeamId: string, slackId: string){
+async function sendSlackstaleForecastNotification(
+  staleForecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[],
+  slackTeamId: string,
+  slackId: string
+) {
   await postBlockMessage(
     slackTeamId,
     slackId,
@@ -395,33 +501,54 @@ async function sendSlackstaleForecastNotification(staleForecasts: ForecastWithQu
     "You have some forecasts you may want to update",
     {
       unfurl_links: false,
-      unfurl_media: false
+      unfurl_media: false,
     }
   )
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (((process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')
-      && (!process.env.DATABASE_URL?.includes('supabase')))
-      || req.query.key !== process.env.CHECK_UPDATES_KEY) {
-    console.error("Not in production, no operation on non-supabase db. Or - not using correct key. Make a debug function that restricts these functions to a specific workspace.")
-    res.status(403).json({error: "Invalid authorisation or environment."})
+  if (
+    ((process.env.NODE_ENV === "development" ||
+      process.env.NODE_ENV === "test") &&
+      !process.env.DATABASE_URL?.includes("supabase")) ||
+    req.query.key !== process.env.CHECK_UPDATES_KEY
+  ) {
+    console.error(
+      "Not in production, no operation on non-supabase db. Or - not using correct key. Make a debug function that restricts these functions to a specific workspace."
+    )
+    res.status(403).json({ error: "Invalid authorisation or environment." })
     return
   }
 
   // wrap everything in a try catch so that if one fails, the others still run
-  let allQuestionsToBeNotified, questionsToBeUpdated, targetMessages, staleForecastMessages
+  let allQuestionsToBeNotified,
+    questionsToBeUpdated,
+    targetMessages,
+    staleForecastMessages
   try {
     allQuestionsToBeNotified = await notifyAuthorsToResolveQuestions()
-  } catch (e) { console.error(e) }
+  } catch (e) {
+    console.error(e)
+  }
   try {
-    questionsToBeUpdated     = await updateQuestionsToUnhideForecasts()
-  } catch (e) { console.error(e) }
+    questionsToBeUpdated = await updateQuestionsToUnhideForecasts()
+  } catch (e) {
+    console.error(e)
+  }
   try {
-    targetMessages           = await sendTargetMessages()
-  } catch (e) { console.error(e) }
+    targetMessages = await sendTargetMessages()
+  } catch (e) {
+    console.error(e)
+  }
   try {
-    staleForecastMessages    = await messageStaleForecasts()
-  } catch (e) { console.error(e) }
-  res.json({questionsToBeUpdated, allQuestionsToBeNotified, targetMessages, staleForecastMessages})
+    staleForecastMessages = await messageStaleForecasts()
+  } catch (e) {
+    console.error(e)
+  }
+  res.json({
+    questionsToBeUpdated,
+    allQuestionsToBeNotified,
+    targetMessages,
+    staleForecastMessages,
+  })
 }

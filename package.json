@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "prebuild": "prisma generate",
-    "dev": "dotenv next",
+    "dev": "dotenv next dev -- -p 3005",
+    "ssl-proxy": "npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3000 --target 3005",
     "build": "next build",
     "start": "next start",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
@@ -86,6 +87,7 @@
     "postcss": "^8.4.23",
     "prisma": "^4.11.0",
     "tailwindcss": "^3.3.2",
+    "dotenv-cli": "^7.2.1",
     "typescript": "^5.0.2"
   }
 }
