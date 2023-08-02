@@ -50,6 +50,7 @@ export function Questions({
   if (
     (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0)
     && !filtersApplied // don't hide everything if user applied a filter
+    && !showAllPublic // don't hide for logged out users if showing all public
   ) {
     return <></>
   }

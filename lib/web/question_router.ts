@@ -130,7 +130,7 @@ export const questionRouter = router({
       }).optional(),
     }))
     .query(async ({ input, ctx }) => {
-      if (!ctx.userId) {
+      if (!ctx.userId && !input.extraFilters?.showAllPublic) {
         return null
       }
 
