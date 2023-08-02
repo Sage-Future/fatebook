@@ -1,4 +1,4 @@
-import { Prisma, Resolution } from "@prisma/client"
+import { Prisma, Resolution, Tag } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -193,11 +193,21 @@ export const questionRouter = router({
         title: z.string(),
         resolveBy: z.date(),
         prediction: z.number().max(1).min(0).optional(),
+        tags: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({input, ctx}) => {
       if (!ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a question" })
+      }
+
+      let tags: Tag[] = []
+      if (input.tags && input.tags.length > 0) {
+        tags = await prisma.tag.findMany({
+          where: {
+            userId: ctx.userId,
+          }
+        })
       }
 
       const question = await prisma.question.create({
@@ -211,6 +221,18 @@ export const questionRouter = router({
               forecast: input.prediction,
             }
           } : undefined,
+          tags: (input.tags && input.tags.length > 0) ? {
+            connectOrCreate: input.tags.map(tag => ({
+              where: {
+                id: tags.find(t => t.name === tag)?.id || "no tag with this id exists",
+              },
+              create: {
+                name: tag,
+                userId: (ctx.userId as string),
+              }
+            }))
+          } : undefined,
+
         },
       })
 

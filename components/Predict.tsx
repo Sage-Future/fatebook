@@ -52,19 +52,23 @@ export function Predict() {
 
     if (Object.values(errors).some(err => !!err)) return
 
+    const questionWithoutTags = data.question.replace(/#\w+/g, "").trim()
     createQuestion.mutate({
-      title: data.question,
+      title: questionWithoutTags || data.question,
       resolveBy: utcDateStrToLocalDate(data.resolveBy),
       prediction: (data.predictionPercentage && typeof data.predictionPercentage === "number" && !isNaN(data.predictionPercentage))
         ?
         data.predictionPercentage / 100
         :
         undefined,
+      tags: tagsPreview,
     }, {
       onError(error, variables, context) {
         console.error("error creating question: ", {error, variables, context})
       },
     })
+
+    setTagsPreview([])
 
     reset()
   }
@@ -122,6 +126,17 @@ export function Predict() {
       }
     }
   }
+  function getTags(question: string) {
+    const tags = question.match(/#\w+/g)
+    return tags?.map(t => t.replace("#", "")) || []
+  }
+  const [tagsPreview, setTagsPreview] = useState<string[]>([])
+  function updateTagsPreview(question: string) {
+    const tags = getTags(question)
+    if (tags.length > 0 || tagsPreview.length > 0) {
+      setTagsPreview(tags)
+    }
+  }
   const {onChange: onChangeQuestion, ...registerQuestion} = register("question", { required: true })
 
   return (
@@ -139,11 +154,11 @@ export function Predict() {
               maxRows={15}
               onChange={(e) => {
                 smartUpdateResolveBy(e.currentTarget.value)
+                updateTagsPreview(e.currentTarget.value)
                 void onChangeQuestion(e)
               }}
               onKeyDown={(e) => {
                 if (onEnterSubmit(e)) return
-                // smartUpdateResolveBy(e.currentTarget.value)
                 // current value doesn't include the key just pressed! So
                 if (e.key.length === 1) {
                   smartUpdateResolveBy(e.currentTarget.value + e.key)
@@ -181,6 +196,10 @@ export function Predict() {
                 }} />
             </Transition>
           </div>
+
+          {tagsPreview?.length > 0 && <div className='italic text-neutral-400 text-sm p-1 mb-2'>
+            Tagging this question: {tagsPreview.join(", ")}
+          </div>}
 
           <div className="flex flex-row gap-8 flex-wrap justify-between">
             <div className='flex flex-row gap-2'>
