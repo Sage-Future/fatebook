@@ -19,25 +19,36 @@ export function Question({
   alwaysExpand,
   startExpanded,
   zIndex,
+  embeded
 }: {
   question: QuestionWithStandardIncludes
   alwaysExpand?: boolean
   startExpanded?: boolean
   zIndex?: number
+  embeded?: boolean
 }) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="hover:scale-[1.01] transition-transform group" style={zIndex ? { zIndex } : undefined}>
+      <div className={clsx("transition-transform group", !embeded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
         <div
-          className={clsx("rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10 outline-1 outline",
+          className={clsx(
+            "rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10",
+
+            !embeded && "outline-1 outline",
+
             (manuallyExpanded || alwaysExpand) && "rounded-b-none",
+
             question.resolution ?
-              "bg-neutral-50 outline-[#eceff5] bg-gradient-to-tl via-neutral-50 via-[30%] group-hover:via-[40%]"
-              :
+              "bg-neutral-50 outline-[#eceff5] bg-gradient-to-tl via-neutral-50 via-[30%] group-hover:via-[40%]" :
               "bg-white outline-neutral-200",
-            question.resolution === 'YES' ? "from-green-100" : question.resolution === 'NO' ? "from-red-100" : question.resolution === 'AMBIGUOUS' ? "from-blue-100" : "from-white",)}
+
+            question.resolution === 'YES' ? "from-green-100" :
+              question.resolution === 'NO' ? "from-red-100" :
+                question.resolution === 'AMBIGUOUS' ? "from-blue-100" :
+                  "from-white"
+          )}
           onClick={() => setManuallyExpanded(!manuallyExpanded)}
         >
           <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
@@ -94,6 +105,7 @@ export function Question({
             </div>
           </div>
         </div>
+
         <Transition
           show={alwaysExpand || manuallyExpanded}
           enter="transition ease-out duration-100"

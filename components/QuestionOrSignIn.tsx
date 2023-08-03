@@ -9,7 +9,7 @@ import { useQuestionId } from "../lib/web/question_url"
 
 
 
-export function QuestionOrSignIn() {
+export function QuestionOrSignIn({ embeded, alwaysExpand }: { embeded: boolean, alwaysExpand: boolean }) {
   const { data: session } = useSession()
 
   const questionId = useQuestionId()
@@ -34,7 +34,7 @@ export function QuestionOrSignIn() {
   return (
     <div className="grid grid-cols-1" key={question.id}>
       <NextSeo title={truncateString(question?.title, 60)} />
-      <QuestionComp question={question} alwaysExpand={true} />
+      <QuestionComp embeded={embeded} question={question} alwaysExpand={alwaysExpand} />
     </div>
   )
 }

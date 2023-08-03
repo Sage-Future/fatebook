@@ -3,7 +3,7 @@ import { QuestionOrSignIn } from "../../../components/QuestionOrSignIn"
 
 
 export default function QuestionEmbed() {
-  return <QuestionOrSignIn></QuestionOrSignIn>
+  return <QuestionOrSignIn embeded={true} alwaysExpand={false}></QuestionOrSignIn>
 }
 
 // Strips away the header and footer

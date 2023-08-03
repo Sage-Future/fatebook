@@ -11,6 +11,11 @@
 
   const FATEBOOK_URL = extensionInfo.isDev ? 'https://localhost:3000/' : 'https://fatebook.io/'
 
+  // ==== Inject "direct_inject" so we have direct dom access ====
+  var scriptElement = document.createElement("script");
+  scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject.js'));
+  document.head.appendChild(scriptElement);
+
 
   // ==== Listen for messages from extension background script ====
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -40,23 +45,19 @@
   const questionIframe = document.createElement('iframe')
   questionIframe.id = 'fatebook-question-embed'
   questionIframe.src = `${FATEBOOK_URL}embed/question-loader`
-  questionIframe.style.display = 'none'
+  // questionIframe.style.display = 'none'
   questionIframe.style.border = 'none'
-  questionIframe.style.width = '100%'
-  questionIframe.style.height = '450px'
+  questionIframe.style.width = '500px'
+  questionIframe.style.height = '180px'
   document.body.appendChild(questionIframe)
 
-  function loadQuestion({ questionId, popup }) {
-    console.log(1)
+  function loadQuestion({ questionId }) {
     questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
     questionIframe.style.display = 'block'
-    popup.appendChild(questionIframe)
   }
 
   function unloadQuestionIframe() {
-    console.log(2)
     questionIframe.style.display = 'none'
-    document.body.appendChild(questionIframe)
   }
 
   // ==== Listen for messages from iframes ====
@@ -67,8 +68,8 @@
       predictIframe.style.display = 'none'
     } else if (event.data.action === 'focus_parent') {
       document.querySelector('.kix-canvas-tile-content').click()
-    } else {
-      throw new Error(`unknown action "${event.data.action}"`)
+    } else if (event.data.action === 'asdf_asdf') {
+
     }
   })
 
@@ -121,40 +122,79 @@
   //   }
   // }, 1000)
 
-  const intervalPopup = setInterval(() => {
-    const popupParent = document.querySelector(".docs-linkbubble-bubble")
-    if (!popupParent) return
+  // set up mutation observer for .kix-appview-editor
+  // listen for the link bubble, and then de-register it
 
-    clearInterval(intervalPopup)
+  waitForLinkPopupToExist()
 
-    // Options for the observer (which mutations to observe)
-    const config = { attributes: true, childList: true, subtree: true }
+  function waitForQuestionLoaderListening() {
+    return new Promise((resolve) => {
+      window.addEventListener('message', (event) => {
+        if (typeof event.data !== 'object' || !event.data.isFatebook) return
 
-    // Callback function to execute when mutations are observed
-    const callback = (mutationList, observer) => {
-      console.log(3)
+        if (event.data.action === 'question_loader_listening') {
+          resolve(null)
+        }
+      })
+    })
+  }
 
-      const link = popupParent.querySelector("a")
-      if (!link) return
+  // The div that contains the popup doesn't exist initially, so we must watch for it
+  function waitForLinkPopupToExist() {
+    const kixEditor = document.querySelector(".kix-appview-editor")
+    if (!kixEditor) return
+    // todo: handle if not found
 
-      const href = link.href
-      const ourLink = href.includes(FATEBOOK_URL)
-      const linkQuestionId = getQuestionIdFromUrl(link.href)
+    const reactToChange = async (mutationList, observer) => {
+      const linkPopup = document.querySelector(".docs-linkbubble-bubble")
+      if (linkPopup) {
+        observer.disconnect()
+        linkPopup.appendChild(questionIframe)
 
-      const ui = popupParent.querySelector("#fatebook-question-embed")
-      const uiIsInjected = !!ui
+        // temp workaround, moving the iframe triggers a reload
+        await waitForQuestionLoaderListening()
 
-      if (uiIsInjected && !ourLink) {
-        unloadQuestionIframe()
-      } else {
-        loadQuestion({ questionId: linkQuestionId, popup: popupParent })
+        watchLinkPopup(linkPopup)
       }
     }
 
-    // Create an observer instance linked to the callback function
-    const observer = new MutationObserver(callback)
-    observer.observe(popupParent, config)
-  }, 1000)
+    const observer = new MutationObserver(reactToChange)
+    observer.observe(kixEditor, { attributes: false, childList: true, subtree: false })
+
+    reactToChange()
+  }
+
+  // Watch the link popup for changes so we can insert our markup
+  function watchLinkPopup(linkPopup) {
+    const reactToChange = () => {
+      const link = linkPopup.querySelector("a")
+      if (!link) return
+
+      const isFatebookLink = link.href.includes(FATEBOOK_URL)
+
+      const fatebookQuestionUI = linkPopup.querySelector("#fatebook-question-embed")
+      const isUIInjected = !!fatebookQuestionUI
+
+      // If it's not a fatebook link, then unload our ui if it's in there
+      if (!isFatebookLink) {
+        if (isUIInjected) {
+          unloadQuestionIframe()
+        }
+        return
+      }
+
+      // If it is a fatebook link, then load our ui if needed
+      if (!isUIInjected || link.href !== fatebookQuestionUI.src) {
+        const linkQuestionId = getQuestionIdFromUrl(link.href)
+        loadQuestion({ questionId: linkQuestionId })
+      }
+    }
+
+    reactToChange()
+
+    new MutationObserver(reactToChange).observe(linkPopup, { attributes: false, childList: true, subtree: true })
+  }
+
 
   // let commentTray
   // const commentTrayInterval = setInterval(() => {
