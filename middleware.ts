@@ -125,7 +125,7 @@ function dateValid(payload: any){
       resolutionDate &&
       // if the resolution date is in the past, it's invalid
       // (we allow the user to set the resolution date to now -  24h, to allow for timezones)
-      new Date(resolutionDate) < new Date(new Date().getTime() - 1000 * 60 * 60 * 24)) {
+      new Date(resolutionDate) < new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * 2)) {
     return false
   } else {
     return true
