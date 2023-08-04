@@ -8,3 +8,5 @@ out
 .DS_Store
 *debugAdam.ts
 *exportContacts.ts
+*localhost.pem
+*localhost-key.pem
