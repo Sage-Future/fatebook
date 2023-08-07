@@ -16,7 +16,7 @@ function focusParent() {
 }
 
 export default function PredictModal() {
-  // Listen requests to focus the prediction modal
+  // Listen for requests to focus the prediction modal
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   useEffect(() => {
     if (!textAreaRef.current) return

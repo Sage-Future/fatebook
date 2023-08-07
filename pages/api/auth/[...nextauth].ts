@@ -6,8 +6,10 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
 
 function getCookies() {
-  // https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/core/src/lib/cookie.ts#L53
-  // https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/next-auth/src/core/init.ts#L77
+  /* Copied from:
+    https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/core/src/lib/cookie.ts#L53
+    https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/next-auth/src/core/init.ts#L77
+  */
   return {
     sessionToken: {
       name: `next-auth.session-token`,
