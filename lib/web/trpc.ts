@@ -1,15 +1,15 @@
-import { TRPCClientError, httpBatchLink } from '@trpc/client'
-import { createTRPCNext } from '@trpc/next'
-import { toast } from 'react-hot-toast'
-import transformer from 'trpc-transformer'
-import { AppRouter } from './app_router'
+import { TRPCClientError, httpBatchLink } from "@trpc/client"
+import { createTRPCNext } from "@trpc/next"
+import { toast } from "react-hot-toast"
+import transformer from "trpc-transformer"
+import { AppRouter } from "./app_router"
 
 export function getClientBaseUrl(useRelativePath = true) {
-  if (typeof window !== 'undefined') {
-    return useRelativePath ? '' : window.location.origin
+  if (typeof window !== "undefined") {
+    return useRelativePath ? "" : window.location.origin
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     return "https://fatebook.io"
   }
 
@@ -18,7 +18,7 @@ export function getClientBaseUrl(useRelativePath = true) {
   }
 
   // assume localhost
-  return `http://localhost:${process.env.PORT ?? 3000}`
+  return `https://localhost:3000`
 }
 
 export const api = createTRPCNext<AppRouter>({
@@ -45,30 +45,42 @@ export const api = createTRPCNext<AppRouter>({
         defaultOptions: {
           queries: {
             onError: (error) => {
-              if (typeof window === 'undefined') return false
+              if (typeof window === "undefined") return false
               if (!(error instanceof TRPCClientError)) return false
-              if (error?.data?.code === 404 || error?.data?.code === "UNAUTHORIZED") return false
+              if (
+                error?.data?.code === 404 ||
+                error?.data?.code === "UNAUTHORIZED"
+              )
+                return false
               else {
-                toast.error(`Oops, something went wrong.`
-                  + (process.env.NODE_ENV === "development" ? `\n${error.name} ${error.message}` : ""))
+                toast.error(
+                  `Oops, something went wrong.` +
+                    (process.env.NODE_ENV === "development"
+                      ? `\n${error.name} ${error.message}`
+                      : "")
+                )
                 return false
               }
-            }
+            },
           },
           mutations: {
             onError: (error) => {
-              if (typeof window === 'undefined') return false
+              if (typeof window === "undefined") return false
               if (!(error instanceof TRPCClientError)) return false
               if (error?.data?.code === 404) return false
               else {
-                toast.error(`Oops, something went wrong.`
-                  + (process.env.NODE_ENV === "development" ? `\n${error.name} ${error.message}` : ""))
+                toast.error(
+                  `Oops, something went wrong.` +
+                    (process.env.NODE_ENV === "development"
+                      ? `\n${error.name} ${error.message}`
+                      : "")
+                )
                 return false
               }
-            }
-          }
-        }
-      }
+            },
+          },
+        },
+      },
     }
   },
   /**
