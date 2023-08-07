@@ -19,24 +19,24 @@ export function Question({
   alwaysExpand,
   startExpanded,
   zIndex,
-  embeded
+  embedded
 }: {
   question: QuestionWithStandardIncludes
   alwaysExpand?: boolean
   startExpanded?: boolean
   zIndex?: number
-  embeded?: boolean
+  embedded?: boolean
 }) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className={clsx("transition-transform group", !embeded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
+      <div className={clsx("transition-transform group", !embedded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
         <div
           className={clsx(
             "rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10",
 
-            !embeded && "outline-1 outline",
+            !embedded && "outline-1 outline",
 
             (manuallyExpanded || alwaysExpand) && "rounded-b-none",
 
@@ -57,6 +57,7 @@ export function Question({
                 <Link
                   href={getQuestionUrl(question)}
                   key={question.id}
+                  target={embedded ? "_blank" : ""}
                   className={"no-underline hover:underline"}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}>

@@ -37,7 +37,7 @@ export function UpdateableLatestForecast({
   const inputRef = useRef(null)
 
   function updateForecast(newForecastInput: string) {
-    closeLinkPopup() // closes the gdoc popover if embeded
+    closeLinkPopup() // closes the gdoc popover if embedded
 
     const newForecast = parseFloat(newForecastInput) / 100
     if (!isNaN(newForecast) && newForecast > 0 && newForecast <= 1

@@ -45,7 +45,7 @@
   const questionIframe = document.createElement('iframe')
   questionIframe.id = 'fatebook-question-embed'
   questionIframe.src = `${FATEBOOK_URL}embed/question-loader`
-  // questionIframe.style.display = 'none'
+  questionIframe.style.display = 'none'
   questionIframe.style.border = 'none'
   questionIframe.style.width = '500px'
   questionIframe.style.height = '180px'

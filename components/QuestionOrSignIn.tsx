@@ -7,20 +7,36 @@ import { truncateString, signInToFatebook } from "../lib/web/utils"
 import { Question as QuestionComp } from "./Question"
 import { useQuestionId } from "../lib/web/question_url"
 
-
-
-export function QuestionOrSignIn({ embeded, alwaysExpand }: { embeded: boolean, alwaysExpand: boolean }) {
+export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean, alwaysExpand: boolean }) {
   const { data: session } = useSession()
 
   const questionId = useQuestionId()
 
   // allow an optional ignored slug text before `--` character
-  const qQuery = api.question.getQuestion.useQuery({ questionId }, { retry: false })
+  const qQuery = api.question.getQuestion.useQuery({
+    questionId: questionId
+  }, {
+    retry(failureCount, error) {
+      if (error.data?.httpStatus === 401) {
+        return false
+      }
+      return false
+    },
+  })
+
   const question = qQuery.data
 
   // check signed in
   if (!session?.user.id) {
-    return <h3 className="text-neutral-600"><a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in</a> to view this question</h3>
+    return (
+      <h3 className="text-neutral-600">
+        {embedded ?
+          <a className="font-bold" href="/" target="_blank">Sign in </a> :
+          <a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in </a>
+        }
+        to view this question
+      </h3>
+    )
   }
 
   // check question came
@@ -34,7 +50,7 @@ export function QuestionOrSignIn({ embeded, alwaysExpand }: { embeded: boolean, 
   return (
     <div className="grid grid-cols-1" key={question.id}>
       <NextSeo title={truncateString(question?.title, 60)} />
-      <QuestionComp embeded={embeded} question={question} alwaysExpand={alwaysExpand} />
+      <QuestionComp embedded={embedded} question={question} alwaysExpand={alwaysExpand} />
     </div>
   )
 }

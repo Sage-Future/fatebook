@@ -3,7 +3,9 @@ import { QuestionOrSignIn } from "../../../components/QuestionOrSignIn"
 
 
 export default function QuestionEmbed() {
-  return <QuestionOrSignIn embeded={true} alwaysExpand={false}></QuestionOrSignIn>
+  return <div className="flex h-full items-center justify-center">
+    <QuestionOrSignIn embedded={true} alwaysExpand={false}></QuestionOrSignIn>
+  </div>
 }
 
 // Strips away the header and footer

@@ -1,4 +1,4 @@
-// Exposes the Prediction component solo so it can be embeded as desired
+// Exposes the Prediction component solo so it can be embedded as desired
 
 import React from "react"
 import PredictModal from "../../components/PredictModal"
