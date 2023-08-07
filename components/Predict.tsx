@@ -22,7 +22,7 @@ interface PredictProps {
   /** Can optionally include a ref for the text area if parent wants to be able to control focus */
   textAreaRef?: React.RefObject<HTMLTextAreaElement>
 
-  /** Can optionally include a callback for  */
+  /** Can optionally include a callback for when questions are created */
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
 }
 
