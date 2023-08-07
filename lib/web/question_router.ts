@@ -1,4 +1,4 @@
-import { Prisma, Resolution } from "@prisma/client"
+import { Prisma, Resolution, Tag } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -147,7 +147,7 @@ export const questionRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      if (!ctx.userId) {
+      if (!ctx.userId && !input.extraFilters?.showAllPublic) {
         return null
       }
 
@@ -215,6 +215,7 @@ export const questionRouter = router({
         title: z.string(),
         resolveBy: z.date(),
         prediction: z.number().max(1).min(0).optional(),
+        tags: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -222,6 +223,15 @@ export const questionRouter = router({
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You must be logged in to create a question",
+        })
+      }
+
+      let tags: Tag[] = []
+      if (input.tags && input.tags.length > 0) {
+        tags = await prisma.tag.findMany({
+          where: {
+            userId: ctx.userId,
+          },
         })
       }
 
@@ -238,6 +248,22 @@ export const questionRouter = router({
                 },
               }
             : undefined,
+          tags:
+            input.tags && input.tags.length > 0
+              ? {
+                  connectOrCreate: input.tags.map((tag) => ({
+                    where: {
+                      id:
+                        tags.find((t) => t.name === tag)?.id ||
+                        "no tag with this id exists",
+                    },
+                    create: {
+                      name: tag,
+                      userId: ctx.userId as string,
+                    },
+                  })),
+                }
+              : undefined,
         },
       })
 
@@ -895,6 +921,8 @@ function assertHasAccess(
 function scrubHiddenForecastsFromQuestion<
   QuestionX extends QuestionWithForecasts
 >(question: QuestionX, userId: string | undefined) {
+  question = scrubApiKeyPropertyRecursive(question)
+
   if (!forecastsAreHidden(question)) {
     return question
   }
@@ -917,4 +945,16 @@ function scrubHiddenForecastsFromQuestion<
       }
     }),
   }
+}
+
+function scrubApiKeyPropertyRecursive<T>(obj: T) {
+  // warning - this mutates the object
+  for (const key in obj) {
+    if (key === "apiKey") {
+      ;(obj as any).apiKey = "scrubbed"
+    } else if (typeof obj[key] === "object") {
+      obj[key] = scrubApiKeyPropertyRecursive(obj[key])
+    }
+  }
+  return obj
 }

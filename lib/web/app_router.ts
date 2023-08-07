@@ -89,11 +89,12 @@ export const appRouter = router({
   editName: publicProcedure
     .input(
       z.object({
-        newName: z.string(),
+        newName: z.string().optional(),
+        newImage: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      if (input.newName.length === 0 || !ctx.userId) {
+      if ((input.newName !== undefined && input.newName.length === 0) || !ctx.userId) {
         return
       }
 
@@ -103,6 +104,7 @@ export const appRouter = router({
         },
         data: {
           name: input.newName,
+          image: input.newImage,
         },
       })
     }),

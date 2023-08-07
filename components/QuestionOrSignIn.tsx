@@ -13,29 +13,17 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
   const questionId = useQuestionId()
 
   // allow an optional ignored slug text before `--` character
-  const qQuery = api.question.getQuestion.useQuery({
-    questionId: questionId
-  }, {
-    retry(failureCount, error) {
-      if (error.data?.httpStatus === 401) {
-        return false
-      }
-      return false
-    },
-  })
-
+  const qQuery = api.question.getQuestion.useQuery({ questionId }, { retry: false })
   const question = qQuery.data
 
   // check signed in
   if (!session?.user.id) {
     return (
-      <h3 className="text-neutral-600">
-        {embedded ?
-          <a className="font-bold" href="/" target="_blank">Sign in </a> :
-          <a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in </a>
-        }
-        to view this question
-      </h3>
+      embedded ?
+        <div className="flex h-full items-center justify-center">
+          <h3 className="text-neutral-600"><a className="font-bold" href="/" target="_blank">Sign in </a>to view this question</h3>
+        </div> :
+        <h3 className="text-neutral-600"><a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in </a> to view this question</h3>
     )
   }
 

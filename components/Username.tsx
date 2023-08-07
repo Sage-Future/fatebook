@@ -18,7 +18,7 @@ export function Username({
         src={user?.image || '/default_avatar.png'}
         width={20}
         height={20}
-        className="inline m-0 mr-2 rounded-full select-none"
+        className="inline m-0 mr-2 rounded-full select-none aspect-square"
         alt=""
       />
       <span>{user?.name || "Unknown user"}</span>

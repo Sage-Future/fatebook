@@ -5,6 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"
+import { toast } from "react-hot-toast"
 import { api } from "../lib/web/trpc"
 import { downloadBlob, signInToFatebook, webFeedbackUrl } from '../lib/web/utils'
 import Footer from "./Footer"
@@ -30,14 +31,14 @@ export function Navbar({
 
   const moreMenuItems = <>
     <li><Link href="/about">About</Link></li>
-    <li><Link href="/public">Public questions</Link></li>
+    <li><Link href="/public">Public predictions <NewDot /></Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">Integrations</li>
     <li><Link href="/for-discord">Fatebook for Discord <NewDot /> </Link></li>
     <li><Link href="/api-setup">Create forecasts by API</Link></li>
     <li className="text-gray-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">Your forecasts</li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
-    <li><Link href="/import-from-spreadsheet">Import from spreadsheet <NewDot /></Link></li>
+    <li><Link href="/import-from-spreadsheet">Import from spreadsheet</Link></li>
     <li><a onClick={() => !exportData.isLoading && exportData.mutate()}>
       {exportData.isLoading ? "Exporting..." : "Export all your forecasts"}
     </a></li>
@@ -142,7 +143,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
           <Image src={user.imageUrl} width={40} height={40} alt={user.name} />
         </div>
       </summary>
-      <ul tabIndex={0} className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-52">
+      <ul tabIndex={0} className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-64">
         <li className="px-3 py-2 text-neutral-500 select-none break-all">Signed in as {user.email}</li>
         <li
           onClick={() => {
@@ -152,6 +153,17 @@ function AccountMenu(showCreateAccountButton: boolean) {
               router.reload()
             }
           }}><a>Change your username</a></li>
+        <li
+          onClick={() => {
+            const newImage = prompt("Enter the URL of your new profile picture. You can upload it to a site like imgur.com.", user.imageUrl)
+            if (newImage) {
+              editName.mutate({ newImage })
+              toast.success("Profile picture updated! Sign in again to see the change.")
+              setTimeout(() => {
+                void signOut()
+              }, 2000)
+            }
+          }}><a>Change your profile picture</a></li>
         <li onClick={() => void signOut({ redirect: true })}><a>Logout</a></li>
       </ul>
     </details>
