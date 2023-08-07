@@ -10,7 +10,7 @@ function getCookies() {
   // https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/next-auth/src/core/init.ts#L77
   const useSecureCookies = true
   // const useSecureCookies = process.env.NODE_ENV === "production"
-  const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+  const cookiePrefix = ""
   return {
     // default cookie options
     sessionToken: {
@@ -34,7 +34,7 @@ function getCookies() {
     csrfToken: {
       // Default to __Host- for CSRF token for additional protection if using useSecureCookies
       // NB: The `__Host-` prefix is stricter than the `__Secure-` prefix.
-      name: `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`,
+      name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: "none",
