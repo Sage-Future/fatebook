@@ -167,7 +167,6 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
                 "w-full text-xl border-2 border-neutral-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
                 "focus:outline-indigo-700",
               )}
-              autoFocus={true}
               placeholder="Will humans walk on Mars by 2050?"
               maxRows={15}
               onChange={(e) => {

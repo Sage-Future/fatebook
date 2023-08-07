@@ -50,6 +50,7 @@ export function FormattedDate({
   return (
     <span
       className={clsx(hoverTooltip && `md:tooltip`, className)}
+      suppressHydrationWarning={true}
       data-tip={`${getDateYYYYMMDD(date)} at ${date.toLocaleTimeString()}`}
     >
       {prefix}

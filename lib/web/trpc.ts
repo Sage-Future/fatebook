@@ -17,8 +17,12 @@ export function getClientBaseUrl(useRelativePath = true) {
     return `https://${process.env.VERCEL_URL}`
   }
 
+  if (process.env.HOST_URL) {
+    return `https://${process.env.HOST_URL}`
+  }
+
   // assume localhost
-  return `https://localhost:3000`
+  return `http://localhost:${process.env.PORT ?? 3000}`
 }
 
 export const api = createTRPCNext<AppRouter>({
