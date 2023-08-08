@@ -27,6 +27,18 @@
   });
 
 
+  // ==== Register open modal shortcut ====
+  const eventTarget = document.querySelector('.docs-texteventtarget-iframe')
+  // @ts-ignore
+  if (eventTarget && eventTarget.contentDocument && eventTarget.contentDocument.activeElement) {
+    // @ts-ignore
+    eventTarget.contentDocument.activeElement.addEventListener('keydown', (e) => {
+      if (e.key === '`') {
+        openModal()
+      }
+    })
+  }
+
   // ==== Prediction iframe ====
   const predictIframe = document.createElement('iframe')
   predictIframe.className = 'fatebook-predict-embed'
@@ -35,7 +47,6 @@
   document.body.appendChild(predictIframe) // append to load content
 
   function openModal() {
-    document.body.appendChild(predictIframe) // re-append to ensure we're at the botton
     predictIframe.style.display = 'block'
     predictIframe.focus()
     predictIframe.contentWindow?.postMessage({ isFatebook: true, action: 'focus_modal' }, '*')
@@ -46,17 +57,30 @@
   questionIframe.id = 'fatebook-question-embed'
   questionIframe.src = `${FATEBOOK_URL}embed/question-loader`
   questionIframe.style.display = 'none'
+  questionIframe.style.position = 'absolute'
   questionIframe.style.border = 'none'
   questionIframe.style.width = '500px'
   questionIframe.style.height = '180px'
-  document.body.appendChild(questionIframe)
+  questionIframe.style.zIndex = '999999999'
+  document.querySelector('.kix-appview-editor').appendChild(questionIframe)
+
+  const questionBlockingElement = document.createElement('div')
+  questionBlockingElement.style.width = '500px'
+  questionBlockingElement.style.height = '180px'
 
   function loadQuestion({ questionId }) {
-    questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
+    // set blocking code to display
+    // position element
     questionIframe.style.display = 'block'
+    questionBlockingElement.style.display = 'block'
+
+    questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
+
+    overlapElements(questionIframe, questionBlockingElement)
   }
 
   function unloadQuestionIframe() {
+    questionBlockingElement.style.display = 'none'
     questionIframe.style.display = 'none'
   }
 
@@ -127,18 +151,6 @@
 
   waitForLinkPopupToExist()
 
-  function waitForQuestionLoaderListening() {
-    return new Promise((resolve) => {
-      window.addEventListener('message', (event) => {
-        if (typeof event.data !== 'object' || !event.data.isFatebook) return
-
-        if (event.data.action === 'question_loader_listening') {
-          resolve(null)
-        }
-      })
-    })
-  }
-
   // The div that contains the popup doesn't exist initially, so we must watch for it
   function waitForLinkPopupToExist() {
     const kixEditor = document.querySelector(".kix-appview-editor")
@@ -149,10 +161,7 @@
       const linkPopup = document.querySelector(".docs-linkbubble-bubble")
       if (linkPopup) {
         observer.disconnect()
-        linkPopup.appendChild(questionIframe)
-
-        // temp workaround, moving the iframe triggers a reload
-        await waitForQuestionLoaderListening()
+        linkPopup.appendChild(questionBlockingElement)
 
         watchLinkPopup(linkPopup)
       }
@@ -167,12 +176,17 @@
   // Watch the link popup for changes so we can insert our markup
   function watchLinkPopup(linkPopup) {
     const reactToChange = () => {
+      if (linkPopup.style.display === "none") {
+        unloadQuestionIframe()
+        return
+      }
+
       const link = linkPopup.querySelector("a")
       if (!link) return
 
       const isFatebookLink = link.href.includes(FATEBOOK_URL)
 
-      const fatebookQuestionUI = linkPopup.querySelector("#fatebook-question-embed")
+      const fatebookQuestionUI = linkPopup.contains(questionBlockingElement) && questionBlockingElement.style.display === "block"
       const isUIInjected = !!fatebookQuestionUI
 
       // If it's not a fatebook link, then unload our ui if it's in there
@@ -192,7 +206,7 @@
 
     reactToChange()
 
-    new MutationObserver(reactToChange).observe(linkPopup, { attributes: false, childList: true, subtree: true })
+    new MutationObserver(reactToChange).observe(linkPopup, { attributes: true, childList: true, subtree: true })
   }
 
 
@@ -251,4 +265,20 @@ function getQuestionIdFromUrl(url) {
   // allow an optional ignored slug text before `--` character
   const parts = lastSegment.match(/(.*)--(.*)/)
   return parts ? parts[2] : (lastSegment) || ""
+}
+
+function overlapElements(absoluteElement, targetElement) {
+  // Get the bounding rectangles of the elements relative to their parent elements
+  const absoluteRect = absoluteElement.getBoundingClientRect();
+  const targetRect = targetElement.getBoundingClientRect();
+
+  // Calculate the differences in positions relative to the parent elements
+  const topDiff = targetRect.top - absoluteRect.top;
+  const leftDiff = targetRect.left - absoluteRect.left;
+
+  // Update the CSS properties of the absolute element
+  const currentAbsoluteTop = parseFloat(absoluteElement.style.top || 0);
+  const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0);
+  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`;
+  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`;
 }

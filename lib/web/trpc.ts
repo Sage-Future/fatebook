@@ -18,7 +18,7 @@ export function getClientBaseUrl(useRelativePath = true) {
   }
 
   if (process.env.HOST_URL) {
-    return `https://${process.env.HOST_URL}`
+    return process.env.HOST_URL
   }
 
   // assume localhost
