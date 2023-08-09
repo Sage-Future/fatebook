@@ -361,7 +361,13 @@ export async function callSlackApi(teamId: string, message: any, url: string, me
   })
   let data = await response.json() as {ok: boolean, error?: string, ts?: string, channel? :string, response_metadata?: any, permalink?: string}
   if (data.ok === false) {
-    console.error('Error calling Slack API:', {response: JSON.stringify(data), message, url}, JSON.stringify(message, null, 2))
+    if((data.error == 'channel_not_found' && url.startsWith('https://slack.com/api/conversations.info')) // expect channel_not_found when checking if channel is visible
+       || (data.error == 'missing_scope'  && url.startsWith('https://slack.com/api/conversations.info')) // older slacks don't have right scopes
+    ){
+      console.log('Error calling Slack API:', {response: JSON.stringify(data), message, url}, JSON.stringify(message, null, 2))
+    }else{
+      console.error('Error calling Slack API:', {response: JSON.stringify(data), message, url}, JSON.stringify(message, null, 2))
+    }
     if (throwOnError) throw new Error(`Error calling Slack API ${data.error} ${JSON.stringify(data.response_metadata)}`)
   }
   return data
