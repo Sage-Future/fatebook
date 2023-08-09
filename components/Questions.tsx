@@ -46,6 +46,7 @@ export function Questions({
       keepPreviousData: true,
     }
   )
+  const orderedBy = extraFilters?.resolvingSoon ? "resolveBy" : "createdAt"
 
   if (
     (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0)
@@ -84,7 +85,7 @@ export function Questions({
               question ?
                 <>
                   <DateSeparator
-                    header={groupDatesByBuckets(question.createdAt, array[index - 1]?.createdAt)}
+                    header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
                   />
                   <Question
                     question={question}
@@ -202,22 +203,45 @@ function bucketDate(date: Date | undefined) {
 
   const now = new Date()
   const daysSince = Math.floor((now.getTime() - date.getTime()) / (1000 * 3600 * 24))
-  if (daysSince < 1) {
-    return undefined
-  }
-  if (date.getDay() < now.getDay() && daysSince < 7) {
-    return "Earlier this week"
+
+  if (daysSince >= 0) {
+    if (daysSince < 1 && daysSince > -1) {
+      return undefined
+    }
+    if (date.getDay() < now.getDay() && daysSince < 7) {
+      return "Earlier this week"
+    }
+
+    if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+      return "Earlier this month"
+    }
+
+    if (date.getFullYear() === now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long' })
+    }
+
+    if (date.getFullYear() < now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long', year: 'numeric' })
+    }
   }
 
-  if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
-    return "Earlier this month"
-  }
+  // future dates
+  if (daysSince < 0) {
+    const daysUntil = Math.floor((date.getTime() - now.getTime()) / (1000 * 3600 * 24))
+    if (date.getDay() > now.getDay() && daysUntil > -7) {
+      return "Later this week"
+    }
 
-  if (date.getFullYear() === now.getFullYear()) {
-    return date.toLocaleString('default', { month: 'long' })
-  }
+    if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+      return "Later this month"
+    }
 
-  if (date.getFullYear() < now.getFullYear()) {
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' })
+    if (date.getFullYear() === now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long' })
+    }
+
+    if (date.getFullYear() > now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long', year: 'numeric' })
+    }
   }
 }
