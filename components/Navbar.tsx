@@ -172,6 +172,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
     <button className="btn normal-case" onClick={() => void signInToFatebook()}>Log in or sign up</button>
 }
 
+// eslint-disable-next-line no-unused-vars
 function NewDot() {
   return <div className="w-2 h-2 bg-indigo-400 rounded-full" />
 }
