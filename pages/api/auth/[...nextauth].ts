@@ -15,7 +15,7 @@ function getCookies() {
       name: `next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "none",
+        sameSite:"none" as "none",
         path: "/",
         secure: true,
       },
@@ -24,7 +24,7 @@ function getCookies() {
       name: `next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: "none" as "none",
         path: "/",
         secure: true,
       },
@@ -33,7 +33,7 @@ function getCookies() {
       name: `next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: "none" as "none",
         path: "/",
         secure: true,
       },
@@ -42,7 +42,7 @@ function getCookies() {
       name: `next-auth.pkce.code_verifier`,
       options: {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: "none" as "none",
         path: "/",
         secure: true,
         maxAge: 60 * 15, // 15 minutes in seconds
@@ -52,7 +52,7 @@ function getCookies() {
       name: `next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: "none" as "none",
         path: "/",
         secure: true,
         maxAge: 60 * 15, // 15 minutes in seconds
@@ -62,7 +62,7 @@ function getCookies() {
       name: `next-auth.nonce`,
       options: {
         httpOnly: true,
-        sameSite: "none",
+        sameSite: "none" as "none",
         path: "/",
         secure: true,
       },
