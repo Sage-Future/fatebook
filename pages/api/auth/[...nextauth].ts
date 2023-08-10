@@ -5,6 +5,7 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
 
+// eslint-disable-next-line no-unused-vars
 function getCookies() {
   /* Copied from:
     https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/core/src/lib/cookie.ts#L53
@@ -93,9 +94,9 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     secret: process.env.SECRET,
   },
-  useSecureCookies: true,
+  // useSecureCookies: true,
 
-  cookies: getCookies(),
+  // cookies: getCookies(),
 
   events: {
     createUser: async () => {
