@@ -44,7 +44,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const userId = useUserId()
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
-    async onSuccess(result) {
+    async onSuccess() {
       await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
         refetchPage: (lastPage, index) => index === 0, // assumes the new question is on the first page (must be ordered by recent)
       })

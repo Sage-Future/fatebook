@@ -228,7 +228,7 @@ function bucketDate(date: Date | undefined) {
   // future dates
   if (daysSince < 0) {
     const daysUntil = Math.floor((date.getTime() - now.getTime()) / (1000 * 3600 * 24))
-    if (date.getDay() > now.getDay() && daysUntil > -7) {
+    if (date.getDay() > now.getDay() && daysUntil < 7) {
       return "Later this week"
     }
 
