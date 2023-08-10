@@ -1,22 +1,13 @@
 {
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "extends": [
-    "eslint:recommended",
-    "next/core-web-vitals",
-    "prettier"
-  ],
+  "plugins": ["@typescript-eslint"],
+  "extends": ["eslint:recommended", "next/core-web-vitals", "prettier"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": true,
     "tsconfigRootDir": "./"
   },
   "rules": {
-    "react/jsx-first-prop-new-line": [
-      2,
-      "multiline"
-    ],
+    "react/jsx-first-prop-new-line": [2, "multiline"],
     "react/jsx-max-props-per-line": [
       2,
       {
@@ -24,45 +15,21 @@
         "when": "multiline"
       }
     ],
-    "react/jsx-indent-props": [
-      2,
-      2
-    ],
-    "semi": [
-      "error",
-      "never"
-    ],
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1,
-        "CallExpression": {
-          "arguments": "first"
-        }
-      }
-    ],
+    "react/jsx-indent-props": [2, 2],
+    "semi": ["error", "never"],
     "@typescript-eslint/naming-convention": [
       "error",
       {
         "selector": "default",
-        "format": [
-          "camelCase"
-        ]
+        "format": ["camelCase"]
       },
       {
         "selector": "variable",
-        "format": [
-          "camelCase",
-          "UPPER_CASE"
-        ]
+        "format": ["camelCase", "UPPER_CASE"]
       },
       {
         "selector": "function",
-        "format": [
-          "camelCase",
-          "PascalCase"
-        ] // PascalCase for React components
+        "format": ["camelCase", "PascalCase"] // PascalCase for React components
       },
       {
         "selector": "property",
@@ -74,33 +41,23 @@
       },
       {
         "selector": "interface",
-        "format": [
-          "PascalCase"
-        ]
+        "format": ["PascalCase"]
       },
       {
         "selector": "enum",
-        "format": [
-          "PascalCase"
-        ]
+        "format": ["PascalCase"]
       },
       {
         "selector": "enumMember",
-        "format": [
-          "UPPER_CASE"
-        ]
+        "format": ["UPPER_CASE"]
       },
       {
         "selector": "typeParameter",
-        "format": [
-          "PascalCase"
-        ]
+        "format": ["PascalCase"]
       },
       {
         "selector": "typeAlias",
-        "format": [
-          "PascalCase"
-        ]
+        "format": ["PascalCase"]
       }
     ],
     "require-await": "error",

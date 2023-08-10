@@ -5,6 +5,10 @@ import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 
+function closeLinkPopup() {
+  window.parent.postMessage({ isFatebook: true, action: "close_link_popup" }, '*')
+}
+
 export function UpdateableLatestForecast({
   question,
   autoFocus,
@@ -33,6 +37,8 @@ export function UpdateableLatestForecast({
   const inputRef = useRef(null)
 
   function updateForecast(newForecastInput: string) {
+    closeLinkPopup() // closes the gdoc popover if embedded
+
     const newForecast = parseFloat(newForecastInput) / 100
     if (!isNaN(newForecast) && newForecast > 0 && newForecast <= 1
       && (!latestForecast?.forecast || newForecast !== (latestForecast.forecast as unknown as number))) {
@@ -59,8 +65,8 @@ export function UpdateableLatestForecast({
   return (
     <span
       className={clsx("mr-1.5 font-bold text-2xl h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative",
-                      addForecast.isLoading && "opacity-50",
-                      question.resolution === null ? "text-indigo-800 ring-2" : "text-neutral-600 ring-0")}
+        addForecast.isLoading && "opacity-50",
+        question.resolution === null ? "text-indigo-800 ring-2" : "text-neutral-600 ring-0")}
       onClick={(e) => {
         (inputRef.current as any)?.focus()
         if (question.resolution === null || addForecast.isLoading) {

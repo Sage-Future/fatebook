@@ -4,7 +4,6 @@ import clsx from "clsx"
 import Link from "next/link"
 import { useState } from 'react'
 import { ErrorBoundary } from "react-error-boundary"
-import { getQuestionUrl } from "../pages/q/[id]"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { FormattedDate } from "./FormattedDate"
 import { QuestionDetails } from './QuestionDetails'
@@ -13,31 +12,43 @@ import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
 
+import { getQuestionUrl } from '../lib/web/question_url'
 
 export function Question({
   question,
   alwaysExpand,
   startExpanded,
   zIndex,
-} : {
+  embedded
+}: {
   question: QuestionWithStandardIncludes
   alwaysExpand?: boolean
   startExpanded?: boolean
   zIndex?: number
+  embedded?: boolean
 }) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="hover:scale-[1.01] transition-transform group" style={zIndex ? {zIndex} : undefined}>
+      <div className={clsx("transition-transform group", !embedded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
         <div
-          className={clsx("rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10 outline-1 outline",
-                          (manuallyExpanded || alwaysExpand) && "rounded-b-none",
-                          question.resolution ?
-                            "bg-neutral-50 outline-[#eceff5] bg-gradient-to-tl via-neutral-50 via-[30%] group-hover:via-[40%]"
-                            :
-                            "bg-white outline-neutral-200",
-                          question.resolution === 'YES' ? "from-green-100" : question.resolution === 'NO' ? "from-red-100" : question.resolution === 'AMBIGUOUS' ? "from-blue-100" : "from-white",)}
+          className={clsx(
+            "rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10",
+
+            !embedded && "outline-1 outline",
+
+            (manuallyExpanded || alwaysExpand) && "rounded-b-none",
+
+            question.resolution ?
+              "bg-neutral-50 outline-[#eceff5] bg-gradient-to-tl via-neutral-50 via-[30%] group-hover:via-[40%]" :
+              "bg-white outline-neutral-200",
+
+            question.resolution === 'YES' ? "from-green-100" :
+              question.resolution === 'NO' ? "from-red-100" :
+                question.resolution === 'AMBIGUOUS' ? "from-blue-100" :
+                  "from-white"
+          )}
           onClick={() => setManuallyExpanded(!manuallyExpanded)}
         >
           <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
@@ -46,6 +57,7 @@ export function Question({
                 <Link
                   href={getQuestionUrl(question)}
                   key={question.id}
+                  target={embedded ? "_blank" : ""}
                   className={"no-underline hover:underline"}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}>
@@ -73,7 +85,7 @@ export function Question({
                     key={`${question.id}resolve`}>
                     {question.resolveBy < new Date() ?
                       <FormattedDate
-                        prefix={<><span>Ready to resolve</span><br/>{"("}</>}
+                        prefix={<><span>Ready to resolve</span><br />{"("}</>}
                         date={question.resolveBy}
                         postfix=")"
                         currentDateShowToday={true}
@@ -94,6 +106,7 @@ export function Question({
             </div>
           </div>
         </div>
+
         <Transition
           show={alwaysExpand || manuallyExpanded}
           enter="transition ease-out duration-100"
@@ -115,12 +128,12 @@ export function ActivityNumbers({
   alwaysExpand,
   manuallyExpanded,
   setManuallyExpanded,
-} : {
-    question: QuestionWithStandardIncludes
-    alwaysExpand: boolean | undefined
-    manuallyExpanded: boolean
-    setManuallyExpanded: (expanded: boolean) => void
-  }) {
+}: {
+  question: QuestionWithStandardIncludes
+  alwaysExpand: boolean | undefined
+  manuallyExpanded: boolean
+  setManuallyExpanded: (expanded: boolean) => void
+}) {
   return (
     <div
       className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center"
@@ -134,7 +147,7 @@ export function ActivityNumbers({
       >
         <ChevronDownIcon
           className={clsx("h-5 w-5 transition-transform",
-                          !manuallyExpanded && "transform rotate-90")}
+            !manuallyExpanded && "transform rotate-90")}
           aria-hidden="true"
         />
       </button>}

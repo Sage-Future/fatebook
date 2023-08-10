@@ -1,14 +1,11 @@
-import { User } from '@prisma/client'
-import { VercelRequest, VercelResponse } from '@vercel/node'
-import * as chrono from 'chrono-node'
-import {
-  InteractionResponseType,
-  InteractionType
-} from 'discord-interactions'
-import prisma, { backendAnalyticsEvent } from '../../../lib/_utils_server'
-import { sendDiscordEphemeral } from '../../../lib/discord/utils'
-import { QuestionWithUserAndForecasts } from '../../../prisma/additional'
-import { getQuestionUrl } from '../../q/[id]'
+import { User } from "@prisma/client"
+import { VercelRequest, VercelResponse } from "@vercel/node"
+import * as chrono from "chrono-node"
+import { InteractionResponseType, InteractionType } from "discord-interactions"
+import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
+import { sendDiscordEphemeral } from "../../../lib/discord/utils"
+import { QuestionWithUserAndForecasts } from "../../../prisma/additional"
+import { getQuestionUrl } from "../../../lib/web/question_url"
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log("Handling interaction")
@@ -25,11 +22,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (type === InteractionType.APPLICATION_COMMAND) {
     const { name } = data
 
-    if (name === 'test') {
+    if (name === "test") {
       return sendDiscordEphemeral(res, "Tested!")
     }
 
-    if (name === 'forecast') {
+    if (name === "forecast") {
       const user = await getFatebookUser(req)
       if (!user) {
         return showApiInputModal(res)
@@ -51,7 +48,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-async function createForecast(req: VercelRequest, res: VercelResponse, user: User) {
+async function createForecast(
+  req: VercelRequest,
+  res: VercelResponse,
+  user: User
+) {
   const title = req.body.data.options?.[0]?.value
   const resolveByStr = req.body.data.options?.[1]?.value
   const prediction = req.body.data.options?.[2]?.value as number
@@ -59,20 +60,30 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
   const youSaid = `\nYou said: /forecast ${title} ${resolveByStr} ${prediction}`
 
   if (!title || !resolveByStr || prediction == undefined) {
-    return sendDiscordEphemeral(res, "Please provide a question, resolve by date, and prediction" + youSaid)
+    return sendDiscordEphemeral(
+      res,
+      "Please provide a question, resolve by date, and prediction" + youSaid
+    )
   }
 
-  const dateResult = chrono.parse(resolveByStr, new Date(), { forwardDate: true })
+  const dateResult = chrono.parse(resolveByStr, new Date(), {
+    forwardDate: true,
+  })
   if (!dateResult || dateResult.length === 0) {
     return sendDiscordEphemeral(
       res,
-      "Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and 2023/12/5" + youSaid
+      "Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and 2023/12/5" +
+        youSaid
     )
   }
   const resolveBy = dateResult[0].start.date()
 
   if (isNaN(prediction)) {
-    return sendDiscordEphemeral(res, "Please provide a valid prediction (0-100%). Don't include the % sign! " + youSaid)
+    return sendDiscordEphemeral(
+      res,
+      "Please provide a valid prediction (0-100%). Don't include the % sign! " +
+        youSaid
+    )
   }
 
   const question = await prisma.question.create({
@@ -84,7 +95,7 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
         create: {
           userId: user.id,
           forecast: prediction / 100,
-        }
+        },
       },
       sharedPublicly: true, // so that other people in discord can see it
       unlisted: true,
@@ -92,7 +103,7 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
     include: {
       forecasts: true,
       user: true,
-    }
+    },
   })
 
   await backendAnalyticsEvent("question_created", {
@@ -112,7 +123,8 @@ async function createForecast(req: VercelRequest, res: VercelResponse, user: Use
   return question
 }
 
-function postQuestionMessage(res: VercelResponse,
+function postQuestionMessage(
+  res: VercelResponse,
   question: QuestionWithUserAndForecasts,
   authorDiscordName: string | undefined,
   authorForecastPercent: number
@@ -130,25 +142,27 @@ function postQuestionMessage(res: VercelResponse,
               label: `Add your own prediction`,
               url: questionUrl,
               disabled: false,
-              type: 2
-            }
-          ]
-        }
+              type: 2,
+            },
+          ],
+        },
       ],
       embeds: [
         {
           type: "rich",
           title: question.title,
-          description: (`${authorDiscordName}` || question.user.name) + ` predicted ${authorForecastPercent}%`,
+          description:
+            (`${authorDiscordName}` || question.user.name) +
+            ` predicted ${authorForecastPercent}%`,
           color: 0x4f46e5,
           timestamp: question.resolveBy.toISOString(),
           footer: {
-            text: `Resolves by`
+            text: `Resolves by`,
           },
-          url: questionUrl
-        }
-      ]
-    }
+          url: questionUrl,
+        },
+      ],
+    },
   })
 }
 
@@ -156,7 +170,7 @@ async function getFatebookUser(req: VercelRequest) {
   return await prisma.user.findUnique({
     where: {
       discordUserId: req.body.member.user.id,
-    }
+    },
   })
 }
 
@@ -166,21 +180,25 @@ function showApiInputModal(res: VercelResponse) {
     data: {
       custom_id: "login_modal",
       title: "Connect your Fatebook.io account",
-      components: [{
-        type: 1,
-        components: [{
-          type: 4,
-          custom_id: "api_key",
-          label: "Your fatebook.io API key",
-          style: 1,
-          min_length: 1,
-          max_length: 100,
-          placeholder: "Go to fatebook.io/api-setup to get your API key",
-          required: true,
-          value: "Go to fatebook.io/api-setup to get your API key",
-        }]
-      }]
-    }
+      components: [
+        {
+          type: 1,
+          components: [
+            {
+              type: 4,
+              custom_id: "api_key",
+              label: "Your fatebook.io API key",
+              style: 1,
+              min_length: 1,
+              max_length: 100,
+              placeholder: "Go to fatebook.io/api-setup to get your API key",
+              required: true,
+              value: "Go to fatebook.io/api-setup to get your API key",
+            },
+          ],
+        },
+      ],
+    },
   })
 }
 
@@ -196,7 +214,7 @@ async function handleLoginModalSubmit(req: VercelRequest, res: VercelResponse) {
     },
     data: {
       discordUserId: req.body.member.user.id,
-    }
+    },
   })
 
   if (users.count === 0) {
@@ -207,5 +225,8 @@ async function handleLoginModalSubmit(req: VercelRequest, res: VercelResponse) {
     throw new Error("Multiple users found with that API key")
   }
 
-  return sendDiscordEphemeral(res, `Your Fatebook account is connected! Now you can use /forecast to make a prediction`)
+  return sendDiscordEphemeral(
+    res,
+    `Your Fatebook account is connected! Now you can use /forecast to make a prediction`
+  )
 }
