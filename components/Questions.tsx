@@ -46,6 +46,7 @@ export function Questions({
       keepPreviousData: true,
     }
   )
+  const orderedBy = extraFilters?.resolvingSoon ? "resolveBy" : "createdAt"
 
   if (
     (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0)
@@ -80,14 +81,19 @@ export function Questions({
       <div className="grid gap-6">
         {ifEmpty(
           questions
-            .map((question, index) => (
+            .map((question, index, array) => (
               question ?
-                <Question
-                  question={question}
-                  key={question.id}
-                  startExpanded={(index === 0 && question.userId === session.data?.user.id)}
-                  zIndex={questions?.length ? (questions?.length - index) : undefined}
-                />
+                <>
+                  <DateSeparator
+                    header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
+                  />
+                  <Question
+                    question={question}
+                    key={question.id}
+                    startExpanded={(index === 0 && question.userId === session.data?.user.id)}
+                    zIndex={questions?.length ? (questions?.length - index) : undefined}
+                  />
+                </>
                 :
                 <></>
             )),
@@ -111,6 +117,18 @@ export function Questions({
         </InView>
         {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && <LoaderIcon className="mx-auto" />}
       </div>
+    </div>
+  )
+}
+
+function DateSeparator({ header } : { header: string | undefined }) {
+  if (!header) return <></>
+
+  return (
+    <div className="flex gap-4 -mb-2 text-neutral-400 text-sm text-center select-none mx-auto px-4 w-full">
+      <div className="border-b border-neutral-200 opacity-70 inline-block grow my-auto" />
+      {header}
+      <div className="border-b border-neutral-200 opacity-70 inline-block grow my-auto" />
     </div>
   )
 }
@@ -173,4 +191,57 @@ function FilterControls({
       </button>
     </div>
   )
+}
+
+function groupDatesByBuckets(thisDate: Date, prevDate: Date | undefined) {
+  // only show it if it's a different bucket to the previous one
+  return bucketDate(thisDate) !== bucketDate(prevDate) ? bucketDate(thisDate) : undefined
+}
+
+function bucketDate(date: Date | undefined) {
+  if (!date) return undefined
+
+  const now = new Date()
+  const daysSince = Math.floor((now.getTime() - date.getTime()) / (1000 * 3600 * 24))
+
+  if (daysSince >= 0) {
+    if (daysSince < 1 && daysSince > -1) {
+      return undefined
+    }
+    if (date.getDay() < now.getDay() && daysSince < 7) {
+      return "Earlier this week"
+    }
+
+    if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+      return "Earlier this month"
+    }
+
+    if (date.getFullYear() === now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long' })
+    }
+
+    if (date.getFullYear() < now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long', year: 'numeric' })
+    }
+  }
+
+  // future dates
+  if (daysSince < 0) {
+    const daysUntil = Math.floor((date.getTime() - now.getTime()) / (1000 * 3600 * 24))
+    if (date.getDay() > now.getDay() && daysUntil > -7) {
+      return "Later this week"
+    }
+
+    if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+      return "Later this month"
+    }
+
+    if (date.getFullYear() === now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long' })
+    }
+
+    if (date.getFullYear() > now.getFullYear()) {
+      return date.toLocaleString('default', { month: 'long', year: 'numeric' })
+    }
+  }
 }

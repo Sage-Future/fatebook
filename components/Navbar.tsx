@@ -31,10 +31,10 @@ export function Navbar({
 
   const moreMenuItems = <>
     <li><Link href="/about">About</Link></li>
-    <li><Link href="/public">Public predictions <NewDot /></Link></li>
+    <li><Link href="/public">Public predictions</Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
     <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">Integrations</li>
-    <li><Link href="/for-discord">Fatebook for Discord <NewDot /> </Link></li>
+    <li><Link href="/for-discord">Fatebook for Discord</Link></li>
     <li><Link href="/api-setup">Create forecasts by API</Link></li>
     <li className="text-gray-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">Your forecasts</li>
     <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
@@ -52,7 +52,7 @@ export function Navbar({
     <li><Link href="https://quantifiedintuitions.org">Quantified Intuitions</Link></li>
     <li className="hidden lg:block">
       <div className="dropdown dropdown-hover dropdown-bottom dropdown-end active:bg-neutral-200 active:text-black">
-        <label className="flex gap-1" tabIndex={0}><ChevronDownIcon width={16} /> More <div className="div my-auto ml-0.5"><NewDot /></div></label>
+        <label className="flex gap-1" tabIndex={0}><ChevronDownIcon width={16} /> More <div className="div my-auto ml-0.5"></div></label>
         <ul tabIndex={0} className="dropdown-content z-[9999] menu p-2 shadow bg-base-100 rounded-box w-64 ">
           {moreMenuItems}
         </ul>
@@ -172,6 +172,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
     <button className="btn normal-case" onClick={() => void signInToFatebook()}>Log in or sign up</button>
 }
 
+// eslint-disable-next-line no-unused-vars
 function NewDot() {
   return <div className="w-2 h-2 bg-indigo-400 rounded-full" />
 }
