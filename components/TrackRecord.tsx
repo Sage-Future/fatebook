@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react'
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid'
+import { AdjustmentsHorizontalIcon, TrophyIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -10,6 +10,7 @@ import { transitionProps, useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
 import { InfoButton } from './InfoButton'
 import { TagsSelect } from './TagsSelect'
+import Link from 'next/link'
 
 export function TrackRecord() {
   const userId = useUserId()
@@ -51,6 +52,16 @@ export function TrackRecord() {
           </div>
         </Transition>
         <CalibrationChart tags={tags} />
+
+        <div className='text-sm flex gap-2 text-gray-500 text-center mx-auto'>
+          <Link className='' href="https://quantifiedintuitions.org/calibration">
+            <button className='btn'>
+              <TrophyIcon width={16} height={16} className='text-indigo-600' />
+              Train your calibration skills
+            </button>
+          </Link>
+        </div>
+
         <div className="flex flex-col gap-4 pt-6">
           {[
             {details: scoreDetails?.recentDetails, title: "Last 3 months"},
