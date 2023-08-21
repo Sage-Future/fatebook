@@ -63,7 +63,10 @@ export const tagsRouter = router({
             set: [],
             connectOrCreate: input.tags.map((name) => ({
               where: {
-                name,
+                name_userId: {
+                  name,
+                  userId: ctx.userId || "",
+                }
               },
               create: {
                 name,

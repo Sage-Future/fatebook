@@ -111,11 +111,11 @@ export default function ForSlackPage() {
               answer:
                 "The app only receives messages where you use the /forecast command or mention @Fatebook."
             },
-            // {
-            //   question: "Are my team's forecasts private?",
-            //   answer:
-            //     "Yes, only your team can see forecasts made in your Slack workspace."
-            // },
+            {
+              question: "Are my team's forecasts private?",
+              answer:
+                "Yes, only your team can see forecasts made in your Slack workspace. If you create a question in Slack, you can also see it on [fatebook.io](https://fatebook.io) if you log in with the same email address - your question will be private by default, and you can optionally share it with people outside of your Slack."
+            },
             {
               question: "How do I make personal predictions that aren't shared with other members of my team?",
               answer:

@@ -103,7 +103,10 @@ export const importRouter = router({
           }
           const tagParts = row.tags?.split(",").filter(tag => !!tag && tag.trim().length > 0).map((name) => ({
             where: {
-              name: name.trim(),
+              name_userId: {
+                name: name.trim(),
+                userId: ctx.userId || "",
+              }
             },
             create: {
               name: name.trim(),
