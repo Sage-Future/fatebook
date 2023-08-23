@@ -87,7 +87,7 @@ export function Questions({
                   <DateSeparator
                     key={question.id + "header"}
                     header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
-                  />,
+                  />
                   <Question
                     question={question}
                     key={question.id}
