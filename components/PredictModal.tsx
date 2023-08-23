@@ -21,7 +21,7 @@ function predictionSuccess() {
 }
 
 export default function PredictModal() {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
 
   // Listen for requests to focus the prediction modal
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -33,7 +33,7 @@ export default function PredictModal() {
         textAreaRef.current!.focus()
       }
     })
-  }, [textAreaRef.current])
+  }, [])
 
   // Listen for escape key within this iframe, close modal
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function PredictModal() {
     closeModal()
     focusParent()
     predictionSuccess()
-  }, [session?.user])
+  }, [session])
 
   return <div className="flex items-center justify-center w-full h-full bg-black/80 p-12" onClick={() => closeModal()}>
     <div className="relative max-w-10xl p-10 pb-8 bg-neutral-50 rounded-sm" onClick={e => e.stopPropagation()}>

@@ -1,11 +1,9 @@
-import { Question } from "@prisma/client"
 import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
-import { useRouter } from "next/router"
-import { getClientBaseUrl, api } from "../lib/web/trpc"
-import { truncateString, signInToFatebook } from "../lib/web/utils"
-import { Question as QuestionComp } from "./Question"
 import { useQuestionId } from "../lib/web/question_url"
+import { api } from "../lib/web/trpc"
+import { signInToFatebook, truncateString } from "../lib/web/utils"
+import { Question as QuestionComp } from "./Question"
 
 export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean, alwaysExpand: boolean }) {
   const { data: session, status: authStatus } = useSession()

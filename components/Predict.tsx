@@ -44,7 +44,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const userId = useUserId()
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
-    async onSuccess(result) {
+    async onSuccess() {
       await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
         refetchPage: (lastPage, index) => index === 0, // assumes the new question is on the first page (must be ordered by recent)
       })
@@ -55,6 +55,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
 
+    console.log("submit")
     if (!userId) {
       localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
       void signInToFatebook()
@@ -293,18 +294,17 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
                 </div>
               </div>
             </div>
-            
+
             <div className="self-center">
               <button
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.preventDefault()
-
-                  // if there's no question in the field and no user then log us in ()
-                  if (Object.values(errors).some(err => !!err) && !userId) {
-                    void signInToFatebook()
-                  } else {
-                    handleSubmit(onSubmit)()
-                  }
+                  void handleSubmit(onSubmit, () => {
+                    // on invalid:
+                    if (!userId) {
+                      void signInToFatebook()
+                    }
+                  })()
                 }}
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (Object.values(errors).some(err => !!err))}

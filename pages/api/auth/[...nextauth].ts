@@ -5,66 +5,73 @@ import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
 
-function getCookies() {
-  /* Copied from:
+// eslint-disable-next-line no-unused-vars
+export function getCookies() {
+    /* Copied from:
     https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/core/src/lib/cookie.ts#L53
     https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/next-auth/src/core/init.ts#L77
   */
+
+  const useSecureCookies = true
+  const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+
   return {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: `${cookiePrefix}next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite:"none" as "none",
+        sameSite: "none" as "none",
         path: "/",
-        secure: true,
+        secure: useSecureCookies,
       },
     },
     callbackUrl: {
-      name: `next-auth.callback-url`,
+      name: `${cookiePrefix}next-auth.callback-url`,
       options: {
         httpOnly: true,
         sameSite: "none" as "none",
         path: "/",
-        secure: true,
+        secure: useSecureCookies,
       },
     },
     csrfToken: {
-      name: `next-auth.csrf-token`,
+      // Default to __Host- for CSRF token for additional protection if using useSecureCookies
+      // NB: The `__Host-` prefix is stricter than the `__Secure-` prefix.
+      name: `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: "none" as "none",
         path: "/",
-        secure: true,
+        secure: useSecureCookies,
       },
     },
     pkceCodeVerifier: {
-      name: `next-auth.pkce.code_verifier`,
+      name: `${cookiePrefix}next-auth.pkce.code_verifier`,
       options: {
         httpOnly: true,
         sameSite: "none" as "none",
         path: "/",
-        secure: true,
+        secure: useSecureCookies,
         maxAge: 60 * 15, // 15 minutes in seconds
       },
     },
     state: {
-      name: `next-auth.state`,
+      name: `${cookiePrefix}next-auth.state`,
       options: {
         httpOnly: true,
         sameSite: "none" as "none",
         path: "/",
-        secure: true,
+        secure: useSecureCookies,
         maxAge: 60 * 15, // 15 minutes in seconds
       },
     },
     nonce: {
-      name: `next-auth.nonce`,
+      name: `${cookiePrefix}next-auth.nonce`,
       options: {
         httpOnly: true,
         sameSite: "none" as "none",
         path: "/",
-        secure: true,
+        secure: useSecureCookies,
       },
     },
   }

@@ -72,10 +72,11 @@ model Question {
 model Tag {
   id        String     @id @default(cuid())
   createdAt DateTime   @default(now())
-  name      String     @unique
+  name      String
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions Question[]
   userId    String
+  @@unique([name, userId])
 }
 
 model ResolutionSlackMessage {
