@@ -81,7 +81,7 @@ export function Questions({
       <div className="grid gap-6">
         {ifEmpty(
           questions
-            .flatMap((question, index, array) => (
+            .map((question, index, array) => (
               question ?
                 <React.Fragment key={question.id}>
                   <DateSeparator
@@ -90,13 +90,13 @@ export function Questions({
                   />,
                   <Question
                     question={question}
-                    key={'question' + question.id}
+                    key={question.id}
                     startExpanded={(index === 0 && question.userId === session.data?.user.id)}
                     zIndex={questions?.length ? (questions?.length - index) : undefined}
                   />
                 </React.Fragment>
                 :
-                []
+                <></>
             )),
           <div className="italic text-neutral-500 text-sm">
             {filtersApplied ?

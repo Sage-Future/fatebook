@@ -90,7 +90,7 @@
   let counter = 0
   async function loadQuestion({ questionId }) {
     let localCounter = counter + 1
-    await questionLoaderLoaded
+    await questionLoaderLoaded // if someone clicks on link before the question iframe loads then we need to wait. if this happens multiple times, "counter" ensures no issues
     if(counter > localCounter) return
 
     // set blocking code to display
@@ -159,55 +159,6 @@
         }
       })
     }
-
-
-    // ==== Mutation observers ====
-    // let commentParent
-    // const intervalComments = setInterval(() => {
-    //   commentParent = document.querySelector(".docos-stream-view")
-    //   if (!commentParent) return
-    //   else {
-    //     clearInterval(intervalComments)
-
-    //     // Options for the observer (which mutations to observe)
-    //     const config = { attributes: true, childList: true, subtree: true }
-
-    //     // Callback function to execute when mutations are observed
-    //     const callback = (mutationList, observer) => {
-    //       const comments = commentParent.querySelectorAll(".docos-replyview-body")
-
-    //       for (const comment of comments) {
-    //         const link = comment.querySelector("a")
-    //         if (!link) continue
-
-    //         const ourLink = link.href.includes(FATEBOOK_URL)
-
-    //         const ui = comment.querySelector("#fatebook-ui")
-    //         const uiIsInjected = !!ui
-
-    //         if (uiIsInjected && !ourLink) {
-    //           console.log("remove")
-    //           ui.remove()
-    //         } else if (!uiIsInjected && ourLink) {
-    //           console.log("append")
-
-    //           const div = document.createElement("iframe")
-    //           div.id = "fatebook-ui"
-    //           div.src = "https://fatebook.io/"
-    //           div.style.zoom = ".1"
-    //           div.style.width = "100%"
-    //           div.style.height = "2000px"
-
-    //           comment.appendChild(div)
-    //         }
-    //       }
-    //     }
-
-    //     // Create an observer instance linked to the callback function
-    //     const observer = new MutationObserver(callback)
-    //     observer.observe(commentParent, config)
-    //   }
-    // }, 1000)
 
     // set up mutation observer for .kix-appview-editor
     // listen for the link bubble, and then de-register it
