@@ -1,8 +1,10 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { baseUrl, clientId } from '../../../lib/_constants'
+import { clientId } from '../../../lib/_constants'
+import { getClientBaseUrl } from '../../../lib/web/trpc'
 
 export default function handler(req: VercelRequest, res: VercelResponse){
-  const redirectUrl = baseUrl + "/api/auth/install_approved"
+  const redirectUrlBase = (process.env.NODE_ENV === "production") ? "https://fatebook.io" : getClientBaseUrl(false)
+  const redirectUrl = redirectUrlBase + "/api/auth/install_approved"
 
   console.log("redirecting to slack for install approval. ", {
     clientId,
