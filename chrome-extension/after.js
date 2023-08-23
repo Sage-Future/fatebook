@@ -49,10 +49,10 @@
   document.body.appendChild(toastIframe) // append to load content
 
   function toast(type, text) {
-    toastIframe.style.zIndex = '9999'
+    toastIframe.className += ' fatebook-toast-embed-visible'
     toastIframe.contentWindow?.postMessage({ isFatebook: true, action: 'toast', type, text}, '*')
     setTimeout(() => {
-      toastIframe.style.zIndex = '0'
+      toastIframe.className = toastIframe.className.replace(' fatebook-toast-embed-visible', '')
     }, 2200)
   }
 
@@ -93,7 +93,7 @@
   let counter = 0
   async function loadQuestion({ questionId }) {
     counter = counter + 1
-    let localCounter = 
+    let localCounter = counter
     await questionLoaderLoaded // if someone clicks on link before the question iframe loads then we need to wait. if this happens multiple times, "counter" ensures no issues
     if(counter > localCounter) return
 
@@ -164,7 +164,7 @@
     if (eventTarget && eventTarget.contentDocument && eventTarget.contentDocument.activeElement) {
       // @ts-ignore
       eventTarget.contentDocument.activeElement.addEventListener('keydown', (e) => {
-        if (e.key === '`') {
+        if (e.altKey && e.key === '`') {
           openModal()
         }
       })
@@ -238,7 +238,7 @@
 
     // listen for '`'
     document.body.addEventListener('keydown', (e) => {
-      if (e.key === '`') {
+      if (e.altKey && e.key === '`') {
         openModal()
       }
     })

@@ -12,13 +12,14 @@ export default function QuestionLoaderEmbed() {
   const router = useRouter()
 
   useEffect(() => {
-    if(!router) return
+    if (!router) return
 
     window.addEventListener('message', (event:MessageEvent<any>) => {
       if (typeof event.data === 'object' && event.data.isFatebook && event.data.action === 'load_question') {
         router.push(`/embed/q/${event.data.questionId}`).catch(e => console.error(e))
       }
     })
+
     sendLoaderListening()
   }, [router])
 

@@ -54,7 +54,7 @@ export default function PredictModal() {
 
   return <div className="flex items-center justify-center w-full h-full bg-black/80 p-12" onClick={() => closeModal()}>
     <div className="relative max-w-10xl p-10 pb-8 bg-neutral-50 rounded-sm" onClick={e => e.stopPropagation()}>
-      <Predict textAreaRef={textAreaRef} onQuestionCreate={onQuestionCreate} />
+      <Predict textAreaRef={textAreaRef} onQuestionCreate={onQuestionCreate} embedded={true}/>
 
       <div className="absolute w-[20px] h-[20px] top-[8px] right-[6px] text-neutral-400 cursor-pointer" onClick={() => closeModal()}>
         <XCircleIcon></XCircleIcon>

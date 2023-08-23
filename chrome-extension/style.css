@@ -14,7 +14,13 @@
   top: 0;
   right: 0;
   z-index: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
+.fatebook-toast-embed-visible {
+  z-index: 9999;
   width: 400px;
   height: 100px;
-  overflow: visible;
 }

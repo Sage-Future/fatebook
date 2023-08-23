@@ -34,9 +34,9 @@ export function Question({
       <div className={clsx("transition-transform group", !embedded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
         <div
           className={clsx(
-            "rounded-md shadow-sm group-hover:shadow-md transition-all cursor-pointer z-10",
+            "rounded-md shadow-sm group-hover:shadow-md transition-all z-10",
 
-            !embedded && "outline-1 outline",
+            !embedded && "outline-1 outline cursor-pointer",
 
             (manuallyExpanded || alwaysExpand) && "rounded-b-none",
 
@@ -49,7 +49,11 @@ export function Question({
                 question.resolution === 'AMBIGUOUS' ? "from-blue-100" :
                   "from-white"
           )}
-          onClick={() => setManuallyExpanded(!manuallyExpanded)}
+          onClick={() => {
+            if (!embedded) {
+              setManuallyExpanded(!manuallyExpanded)
+            }
+          }}
         >
           <div className="grid grid-cols-1 p-4 gap-1 relative" key={question.id}>
             <span className="col-span-2 flex gap-4 mb-1 justify-between">
