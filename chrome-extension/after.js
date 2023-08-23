@@ -92,7 +92,7 @@
     // set blocking code to display
     questionIframe.style.display = 'block'
     questionBlockingElement.style.display = 'block'
-    
+
     questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
     
     // position element
@@ -124,9 +124,9 @@
   }
 
   function locationGoogleDocs() {
-    // ==== Inject "direct_inject" so we have direct dom access ====
+    // ==== Inject "direct_inject_gdocs.js" so we have direct dom access ====
     var scriptElement = document.createElement("script");
-    scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject.js'));
+    scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject_gdocs.js'));
     document.head.appendChild(scriptElement);
 
     

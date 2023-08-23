@@ -10,7 +10,7 @@
       eventObj.keyCode = 27;
 
       const receiver = document.querySelector(".docs-linkbubble-bubble")
-      if(receiver) {
+      if (receiver) {
         receiver.dispatchEvent(eventObj);
       }
     }
