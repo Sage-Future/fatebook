@@ -18,7 +18,7 @@ export default function HomePage() {
         <Questions />
 
         {
-          !session?.user?.id && <SignedOutInfo />
+          sessionStatus !== "loading" && !session?.user?.id && <SignedOutInfo />
         }
 
       </div>
