@@ -118,8 +118,10 @@
 
     if (event.data.action === 'close_modal') {
       predictIframe.style.display = 'none'
-    } else if (event.data.action === 'prediction_success') {
+    } else if (event.data.action === 'prediction_create_success') {
       toast('success', 'Prediction copied to clipboard')
+    } else if (event.data.action === 'prediction_elicit_success') {
+      toast('success', 'Prediction made!')
     }
   })
 

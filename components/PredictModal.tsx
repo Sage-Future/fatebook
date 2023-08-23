@@ -17,7 +17,7 @@ function focusParent() {
 }
 
 function predictionSuccess() {
-  window.parent.postMessage({ isFatebook: true, action: "prediction_success" }, '*')
+  window.parent.postMessage({ isFatebook: true, action: "prediction_create_success" }, '*')
 }
 
 export default function PredictModal() {

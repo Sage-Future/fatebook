@@ -9,6 +9,10 @@ function closeLinkPopup() {
   window.parent.postMessage({ isFatebook: true, action: "close_link_popup" }, '*')
 }
 
+function elecitSuccess() {
+  window.parent.postMessage({ isFatebook: true, action: "prediction_elicit_success" }, '*')
+}
+
 export function UpdateableLatestForecast({
   question,
   autoFocus,
@@ -42,6 +46,8 @@ export function UpdateableLatestForecast({
     const newForecast = parseFloat(newForecastInput) / 100
     if (!isNaN(newForecast) && newForecast > 0 && newForecast <= 1
       && (!latestForecast?.forecast || newForecast !== (latestForecast.forecast as unknown as number))) {
+      elecitSuccess()
+
       addForecast.mutate({
         questionId: question.id,
         forecast: newForecast,
