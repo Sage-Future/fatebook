@@ -55,7 +55,6 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
 
-    console.log("submit")
     if (!userId) {
       localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
       void signInToFatebook()

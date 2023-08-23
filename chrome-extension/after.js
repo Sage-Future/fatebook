@@ -1,14 +1,5 @@
 ; (async function () {
-  // ==== Get extension info ====
-  const extensionInfo = await new Promise((resolve) => {
-    const channel = chrome.runtime.connect()
-    channel.onMessage.addListener((data) => {
-      if (typeof data === 'object' && data.isFatebook && data.action === 'init_script') {
-        resolve(data)
-      }
-    })
-  })
-
+  // ==== Determine location ====
   const EMBED_LOCATIONS = {
     GOOGLE_DOCS: 'GOOGLE_DOCS',
     UNKNOWN: 'UNKNOWN',
@@ -22,13 +13,17 @@
   }
 
 
+  // ==== Get extension info ====
+  const extensionInfo = await new Promise((resolve) => {
+    const channel = chrome.runtime.connect()
+    channel.onMessage.addListener((data) => {
+      if (typeof data === 'object' && data.isFatebook && data.action === 'init_script') {
+        resolve(data)
+      }
+    })
+  })
+
   const FATEBOOK_URL = extensionInfo.isDev ? 'https://localhost:3000/' : 'https://fatebook.io/'
-
-  // ==== Inject "direct_inject" so we have direct dom access ====
-  var scriptElement = document.createElement("script");
-  scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject.js'));
-  document.head.appendChild(scriptElement);
-
 
   // ==== Listen for messages from extension background script ====
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -128,6 +123,12 @@
   }
 
   function locationGoogleDocs() {
+    // ==== Inject "direct_inject" so we have direct dom access ====
+    var scriptElement = document.createElement("script");
+    scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject.js'));
+    document.head.appendChild(scriptElement);
+
+    
     window.addEventListener('message', (event) => {
       if (typeof event.data !== 'object' || !event.data.isFatebook) return
 
