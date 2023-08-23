@@ -22,10 +22,10 @@
   function getEmbedLocation() {
     if (window.location.host === "docs.google.com") {
       return EMBED_LOCATIONS.GOOGLE_DOCS
-    } else if (window.location.host === "docs.google.com") {
-      return EMBED_LOCATIONS.GOOGLE_DOCS
     } else if (window.location.host === "fatebook.io") {
       return EMBED_LOCATIONS.FATEBOOK
+    } else {
+      return EMBED_LOCATIONS.UNKNOWN
     }
   }
 
