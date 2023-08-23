@@ -1,18 +1,4 @@
 ; (async function () {
-  // ==== Determine location ====
-  const EMBED_LOCATIONS = {
-    GOOGLE_DOCS: 'GOOGLE_DOCS',
-    UNKNOWN: 'UNKNOWN',
-  }
-  const EMBED_LOCATION = getEmbedLocation()
-
-  function getEmbedLocation() {
-    if (window.location.host === 'docs.google.com') {
-      return EMBED_LOCATIONS.GOOGLE_DOCS
-    }
-  }
-
-
   // ==== Get extension info ====
   const extensionInfo = await new Promise((resolve) => {
     const channel = chrome.runtime.connect()
@@ -24,6 +10,28 @@
   })
 
   const FATEBOOK_URL = extensionInfo.isDev ? 'https://localhost:3000/' : 'https://fatebook.io/'
+
+  // ==== Determine location ====
+  const EMBED_LOCATIONS = {
+    GOOGLE_DOCS: 'GOOGLE_DOCS',
+    FATEBOOK: 'FATEBOOK',
+    UNKNOWN: 'UNKNOWN',
+  }
+  const EMBED_LOCATION = getEmbedLocation()
+
+  function getEmbedLocation() {
+    if (window.location.host === "docs.google.com") {
+      return EMBED_LOCATIONS.GOOGLE_DOCS
+    } else if (window.location.host === "docs.google.com") {
+      return EMBED_LOCATIONS.GOOGLE_DOCS
+    } else if (window.location.host === "fatebook.io") {
+      return EMBED_LOCATIONS.FATEBOOK
+    }
+  }
+
+  // Don't run on fatebook.io
+  if(EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return
+
 
   // ==== Listen for messages from extension background script ====
   chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
