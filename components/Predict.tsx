@@ -55,6 +55,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
 
+    console.log("submit")
     if (!userId) {
       localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
       void signInToFatebook()
@@ -297,7 +298,12 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
               <button
                 onClick={(e) => {
                   e.preventDefault()
-                  void handleSubmit(onSubmit)()
+                  void handleSubmit(onSubmit, () => {
+                    // on invalid:
+                    if (!userId) {
+                      void signInToFatebook()
+                    }
+                  })()
                 }}
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (Object.values(errors).some(err => !!err))}

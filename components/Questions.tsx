@@ -1,7 +1,7 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
 import { ExtraFilters } from "../lib/web/question_router"
@@ -83,8 +83,9 @@ export function Questions({
           questions
             .map((question, index, array) => (
               question ?
-                <>
+                <React.Fragment key={question.id}>
                   <DateSeparator
+                    key={question.id + "header"}
                     header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
                   />
                   <Question
@@ -93,7 +94,7 @@ export function Questions({
                     startExpanded={(index === 0 && question.userId === session.data?.user.id)}
                     zIndex={questions?.length ? (questions?.length - index) : undefined}
                   />
-                </>
+                </React.Fragment>
                 :
                 <></>
             )),
