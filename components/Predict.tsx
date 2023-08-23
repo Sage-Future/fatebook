@@ -293,11 +293,18 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
                 </div>
               </div>
             </div>
+            
             <div className="self-center">
               <button
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault()
-                  void handleSubmit(onSubmit)()
+
+                  // if there's no question in the field and no user then log us in ()
+                  if (Object.values(errors).some(err => !!err) && !userId) {
+                    void signInToFatebook()
+                  } else {
+                    handleSubmit(onSubmit)()
+                  }
                 }}
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (Object.values(errors).some(err => !!err))}

@@ -6,11 +6,11 @@
   "manifest_version": 3,
   "action": {},
   "commands": {
-    "run-foo": {
+    "open_modal": {
       "suggested_key": {
-        "default": "Ctrl+Shift+F"
+        "default": "Alt+Shift+F"
       },
-      "description": "Run \"foo\" on the current page."
+      "description": "Open prediction modal."
     }
   },
 

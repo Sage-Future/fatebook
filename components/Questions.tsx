@@ -81,21 +81,22 @@ export function Questions({
       <div className="grid gap-6">
         {ifEmpty(
           questions
-            .map((question, index, array) => (
+            .flatMap((question, index, array) => (
               question ?
-                <>
+                [
                   <DateSeparator
                     header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
-                  />
+                    key={'date' + question.id}
+                  />,
                   <Question
                     question={question}
-                    key={question.id}
+                    key={'question' + question.id}
                     startExpanded={(index === 0 && question.userId === session.data?.user.id)}
                     zIndex={questions?.length ? (questions?.length - index) : undefined}
                   />
-                </>
+                ]
                 :
-                <></>
+                []
             )),
           <div className="italic text-neutral-500 text-sm">
             {filtersApplied ?
