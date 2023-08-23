@@ -84,7 +84,8 @@
 
   let counter = 0
   async function loadQuestion({ questionId }) {
-    let localCounter = counter + 1
+    counter = counter + 1
+    let localCounter = 
     await questionLoaderLoaded // if someone clicks on link before the question iframe loads then we need to wait. if this happens multiple times, "counter" ensures no issues
     if(counter > localCounter) return
 
