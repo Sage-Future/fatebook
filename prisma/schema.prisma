@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_DIRECT_URL")
 }
 
 model Workspace {
@@ -76,6 +77,7 @@ model Tag {
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions Question[]
   userId    String
+
   @@unique([name, userId])
 }
 
