@@ -60,7 +60,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
     if (!userId) {
       localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
       if (embedded) {
-        window.open('https://fatebook.io', '_blank').focus()
+        window.open('https://fatebook.io', '_blank')?.focus()
       } else {
         void signInToFatebook()
       }
@@ -311,7 +311,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
                     // on invalid:
                     if (!userId) {
                       if (embedded) {
-                        window.open('https://fatebook.io', '_blank').focus()
+                        window.open('https://fatebook.io', '_blank')?.focus()
                       } else {
                         void signInToFatebook()
                       }
