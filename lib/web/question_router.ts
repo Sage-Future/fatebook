@@ -216,6 +216,8 @@ export const questionRouter = router({
         resolveBy: z.date(),
         prediction: z.number().max(1).min(0).optional(),
         tags: z.array(z.string()).optional(),
+        unlisted: z.boolean().optional(),
+        sharedPublicly: z.boolean().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -240,6 +242,8 @@ export const questionRouter = router({
           title: input.title,
           resolveBy: input.resolveBy,
           userId: ctx.userId,
+          unlisted: input.unlisted,
+          sharedPublicly: input.sharedPublicly,
           forecasts: input.prediction
             ? {
                 create: {

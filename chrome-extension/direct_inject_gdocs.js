@@ -8,7 +8,11 @@
       const eventObj = document.createEvent("Event");
       eventObj.initEvent("keydown", true, true);
       eventObj.keyCode = 27;
-      document.querySelector(".docs-linkbubble-bubble").dispatchEvent(eventObj);
+
+      const receiver = document.querySelector(".docs-linkbubble-bubble")
+      if (receiver) {
+        receiver.dispatchEvent(eventObj);
+      }
     }
   })
 })()
