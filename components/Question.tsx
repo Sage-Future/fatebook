@@ -68,7 +68,7 @@ export function Question({
                   {question.title}
                 </Link>
               </span>
-              <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} />
+              <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} embedded={embedded}/>
             </span>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <span className="text-sm my-auto" key={`${question.id}author`}>

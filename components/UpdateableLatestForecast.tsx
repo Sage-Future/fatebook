@@ -9,16 +9,18 @@ function closeLinkPopup() {
   window.parent.postMessage({ isFatebook: true, action: "close_link_popup" }, '*')
 }
 
-function elecitSuccess() {
+function elicitSuccess() {
   window.parent.postMessage({ isFatebook: true, action: "prediction_elicit_success" }, '*')
 }
 
 export function UpdateableLatestForecast({
   question,
   autoFocus,
+  embedded
 }: {
   question: QuestionWithStandardIncludes
   autoFocus?: boolean
+  embedded?: boolean
 }) {
   const userId = useUserId()
 
@@ -46,7 +48,10 @@ export function UpdateableLatestForecast({
     const newForecast = parseFloat(newForecastInput) / 100
     if (!isNaN(newForecast) && newForecast > 0 && newForecast <= 1
       && (!latestForecast?.forecast || newForecast !== (latestForecast.forecast as unknown as number))) {
-      elecitSuccess()
+
+      if (embedded) {
+        elicitSuccess()
+      }
 
       addForecast.mutate({
         questionId: question.id,
