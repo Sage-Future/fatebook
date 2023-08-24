@@ -48,6 +48,7 @@ export const api = createTRPCNext<AppRouter>({
       queryClientConfig: {
         defaultOptions: {
           queries: {
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
             onError: (error) => {
               if (typeof window === "undefined") return false
               if (!(error instanceof TRPCClientError)) return false
@@ -68,6 +69,7 @@ export const api = createTRPCNext<AppRouter>({
             },
           },
           mutations: {
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
             onError: (error) => {
               if (typeof window === "undefined") return false
               if (!(error instanceof TRPCClientError)) return false
