@@ -1,16 +1,16 @@
 {
   "name": "Fatebook Chrome Extension",
-  "description": "",
+  "description": "Fatebook Chrome Extension",
   "homepage_url": "https://fatebook.io/",
   "version": "1.0.0",
   "manifest_version": 3,
   "action": {},
   "commands": {
-    "run-foo": {
+    "open_modal": {
       "suggested_key": {
-        "default": "Ctrl+Shift+F"
+        "default": "Alt+Shift+F"
       },
-      "description": "Run \"foo\" on the current page."
+      "description": "Open prediction modal."
     }
   },
 

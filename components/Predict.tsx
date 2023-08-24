@@ -24,9 +24,11 @@ interface PredictProps {
 
   /** Can optionally include a callback for when questions are created */
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
+
+  embedded?:boolean
 }
 
-export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
+export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProps) {
   const predictFormSchema = z.object({
     question: z.string().min(1),
     resolveBy: z.string(),
@@ -55,10 +57,13 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
   const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
     e?.preventDefault() // don't reload the page
 
-    console.log("submit")
     if (!userId) {
       localStorage.setItem("cached_question_content", SuperJSON.stringify(data))
-      void signInToFatebook()
+      if (embedded) {
+        window.open('https://fatebook.io', '_blank')?.focus()
+      } else {
+        void signInToFatebook()
+      }
       return
     }
 
@@ -74,6 +79,9 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
         :
         undefined,
       tags: tagsPreview,
+
+      unlisted: embedded ? true : undefined,
+      sharedPublicly: embedded ? true : undefined
     }, {
       onError(error, variables, context) {
         console.error("error creating question: ", { error, variables, context })
@@ -294,6 +302,7 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
                 </div>
               </div>
             </div>
+
             <div className="self-center">
               <button
                 onClick={(e) => {
@@ -301,7 +310,11 @@ export function Predict({ textAreaRef, onQuestionCreate }: PredictProps) {
                   void handleSubmit(onSubmit, () => {
                     // on invalid:
                     if (!userId) {
-                      void signInToFatebook()
+                      if (embedded) {
+                        window.open('https://fatebook.io', '_blank')?.focus()
+                      } else {
+                        void signInToFatebook()
+                      }
                     }
                   })()
                 }}
