@@ -17,7 +17,7 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
   }
 
   // check signed in
-  if (!session?.user.id) {
+  if (!session?.user.id && (embedded || !question?.sharedPublicly)) {
     return (
       embedded ?
         <div className="flex h-full items-center justify-center">
