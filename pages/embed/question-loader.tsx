@@ -1,12 +1,9 @@
 import React, { useEffect } from "react"
 import { useRouter } from "next/router"
 import "../../components/QuestionOrSignIn"
+import { sendToHost } from "../../lib/web/embed"
 
 // shows nothing, but starts listening for requests to load a question
-
-function sendLoaderListening() {
-  window.parent.postMessage({ isFatebook: true, action: "question_loader_listening" }, '*')
-}
 
 export default function QuestionLoaderEmbed() {
   const router = useRouter()
@@ -20,8 +17,9 @@ export default function QuestionLoaderEmbed() {
       }
     })
 
-    sendLoaderListening()
+    sendToHost('question_loader_listening')
   }, [router])
+
 
   return null
 }

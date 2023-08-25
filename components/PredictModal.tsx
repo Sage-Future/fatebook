@@ -6,18 +6,16 @@ import { Predict } from "./Predict"
 import { makeRichGoogleDocsLink } from "../lib/web/gdoc_rich_text"
 import { XCircleIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
+import { sendToHost } from "../lib/web/embed"
 
 
 function closeModal() {
-  window.parent.postMessage({ isFatebook: true, action: "close_modal" }, '*')
+  sendToHost("close_modal")
 }
 
-function focusParent() {
-  window.parent.postMessage({ isFatebook: true, action: "focus_parent" }, '*')
-}
 
 function predictionSuccess() {
-  window.parent.postMessage({ isFatebook: true, action: "prediction_create_success" }, '*')
+  sendToHost("prediction_create_success")
 }
 
 export default function PredictModal() {
@@ -46,9 +44,12 @@ export default function PredictModal() {
 
   // Callback for when user creates the prediction
   const onQuestionCreate = useCallback(({ url, title, prediction }: { url: string, title: string, prediction?:number }) => {
-    copyToClipboard({ 'text/plain': url, ...makeRichGoogleDocsLink({ url, text: title, prediction, name:session!.user.name }) })
+    // add query string
+    const urlObj = new URL(url)
+    urlObj.searchParams.append('ext', '1')
+
+    copyToClipboard({ 'text/plain': urlObj.toString(), ...makeRichGoogleDocsLink({ url: urlObj.toString(), text: title, prediction, name:session!.user.name }) })
     closeModal()
-    focusParent()
     predictionSuccess()
   }, [session])
 

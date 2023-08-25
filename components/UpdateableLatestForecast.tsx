@@ -1,16 +1,17 @@
 import clsx from "clsx"
 import { useRef, useState } from 'react'
 import { useDebouncedCallback } from "use-debounce"
+import { sendToHost } from "../lib/web/embed"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 
 function closeLinkPopup() {
-  window.parent.postMessage({ isFatebook: true, action: "close_link_popup" }, '*')
+  sendToHost("close_link_popup")
 }
 
 function elicitSuccess() {
-  window.parent.postMessage({ isFatebook: true, action: "prediction_elicit_success" }, '*')
+  sendToHost("prediction_elicit_success")
 }
 
 export function UpdateableLatestForecast({

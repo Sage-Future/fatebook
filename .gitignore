@@ -11,5 +11,7 @@ out
 
 *.code-workspace
 
+extension.zip
+
 localhost-key.pem
 localhost.pem

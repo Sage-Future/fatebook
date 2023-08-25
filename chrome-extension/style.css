@@ -6,6 +6,7 @@
   left:0;
   z-index: 9999999;
   border: none;
+  color-scheme: normal;
 }
 
 .fatebook-toast-embed {
@@ -17,10 +18,24 @@
   width: 0;
   height: 0;
   overflow: visible;
+  color-scheme: normal;
 }
 
 .fatebook-toast-embed-visible {
   z-index: 9999;
   width: 400px;
   height: 100px;
+}
+
+.fatebook-question-embed {
+  display: none;
+  position: absolute;
+  border: none;
+  width: 500px;
+  height: 188px;
+  min-height: 180px;
+  z-index: 999999999;
+  transition: height 0.2s;
+  overflow: auto;
+  color-scheme: normal;
 }

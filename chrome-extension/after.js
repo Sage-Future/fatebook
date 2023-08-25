@@ -22,30 +22,36 @@
   function getEmbedLocation() {
     if (window.location.host === "docs.google.com") {
       return EMBED_LOCATIONS.GOOGLE_DOCS
-    } else if (window.location.host === "fatebook.io") {
+    } else if (window.location.host === "fatebook.io" || window.location.host === "localhost:3000") {
       return EMBED_LOCATIONS.FATEBOOK
     } else {
       return EMBED_LOCATIONS.UNKNOWN
     }
   }
 
-  // Don't run on fatebook.io
-  if(EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return
+  // ==== Listen for messages from iframes ====
+  const iframeMap = {}
+  function createIframe(src) {
+    const iframe = document.createElement('iframe')
+    const iframeId = (Object.keys(iframeMap).length + 1).toString()
+    
+    const url = new URL(src)
+    url.searchParams.set("fatebook-embed-id", iframeId)
+    iframe.src = url.toString()
 
+    iframeMap[iframeId] = iframe
+    return iframe
+  }
 
-  // ==== Listen for messages from extension background script ====
-  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.action === "open_modal") {
-      openModal();
-    } else {
-      throw new Error(`unknown action "${request.action}"`)
-    }
-  });
+  window.addEventListener('message', (event) => {
+    if (typeof event.data !== 'object' || !event.data.isFatebook || !event.data.embedId) return
+    iframeMap[event.data.embedId].dispatchEvent(new CustomEvent(event.data.action, {detail:event.data}))
+  })
+
 
   // ==== Toast iframe ====
-  const toastIframe = document.createElement('iframe')
+  const toastIframe = createIframe(`${FATEBOOK_URL}embed/toast`)
   toastIframe.className = 'fatebook-toast-embed'
-  toastIframe.src = `${FATEBOOK_URL}embed/toast`
   document.body.appendChild(toastIframe) // append to load content
 
   function toast(type, text) {
@@ -56,39 +62,69 @@
     }, 2200)
   }
 
+
+  // ==== Listen for messages from extension background script ====
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.action === "open_modal") {
+      if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) {
+        toast('error', "Our extension won't run on fatebook, try another site")
+      } else {
+        openModal()
+      }
+    } else {
+      throw new Error(`unknown action "${request.action}"`)
+    }
+  });
+
+
+  // Don't run on fatebook.io
+  if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return
+
+
   // ==== Prediction iframe ====
-  const predictIframe = document.createElement('iframe')
+  const predictIframe = createIframe(`${FATEBOOK_URL}embed/predict-modal`)
   predictIframe.className = 'fatebook-predict-embed'
-  predictIframe.src = `${FATEBOOK_URL}embed/predict-modal`
   predictIframe.style.display = 'none'
   document.body.appendChild(predictIframe) // append to load content
 
+  let oldActiveElement = document.activeElement
   function openModal() {
     predictIframe.style.display = 'block'
+    oldActiveElement = document.activeElement
     predictIframe.focus()
     predictIframe.contentWindow?.postMessage({ isFatebook: true, action: 'focus_modal' }, '*')
+    document.body.style.overflow = 'hidden'
   }
 
-  // ==== Question iframe ====
-  const questionLoaderLoaded = new Promise(resolve => {
-    window.addEventListener('message', (event) => {
-      if (typeof event.data !== 'object' || !event.data.isFatebook) return
-      if (event.data.action === 'question_loader_listening') resolve(null)
-    })
+  predictIframe.addEventListener('close_modal', () => {
+    predictIframe.style.display = 'none'
+    document.body.style.removeProperty('overflow')
   })
-  const questionIframe = document.createElement('iframe')
-  questionIframe.id = 'fatebook-question-embed'
-  questionIframe.src = `${FATEBOOK_URL}embed/question-loader`
-  questionIframe.style.display = 'none'
-  questionIframe.style.position = 'absolute'
-  questionIframe.style.border = 'none'
-  questionIframe.style.width = '500px'
-  questionIframe.style.height = '180px'
-  questionIframe.style.zIndex = '999999999'
+  predictIframe.addEventListener('prediction_create_success', () => {
+    toast('success', 'Prediction copied to clipboard')
+  })
 
+  // ==== Question iframe ====
+  const questionIframe = createIframe(`${FATEBOOK_URL}embed/question-loader`)
+  const questionLoaderLoaded = new Promise(resolve => questionIframe.addEventListener('question_loader_listening', resolve))
+
+  questionIframe.className = 'fatebook-question-embed'
+  
   const questionBlockingElement = document.createElement('div')
   questionBlockingElement.style.width = '500px'
-  questionBlockingElement.style.height = '180px'
+  questionBlockingElement.style.height = '188px'
+  questionBlockingElement.style.minHeight = '188px'
+  questionBlockingElement.style.transition = 'height 0.2s'
+
+  questionIframe.addEventListener('prediction_elicit_success', () => {
+    toast('success', 'Prediction made!')
+  })
+
+  questionIframe.addEventListener('resize_iframe', (data) => {
+    // ts-ignore
+    questionIframe.style.height = data.detail.box.height + 'px'
+    questionBlockingElement.style.height = data.detail.box.height + 'px'
+  })
 
   let counter = 0
   async function loadQuestion({ questionId }) {
@@ -112,21 +148,10 @@
     questionIframe.style.display = 'none'
   }
 
-  // ==== Listen for messages from iframes ====
-  window.addEventListener('message', (event) => {
-    if (typeof event.data !== 'object' || !event.data.isFatebook) return
-
-    if (event.data.action === 'close_modal') {
-      predictIframe.style.display = 'none'
-    } else if (event.data.action === 'prediction_create_success') {
-      toast('success', 'Prediction copied to clipboard')
-    } else if (event.data.action === 'prediction_elicit_success') {
-      toast('success', 'Prediction made!')
-    }
-  })
+  // ==== Question iframe ====
 
 
-  // === START LOCATION SPESIFIC CODE ===
+  // === START LOCATION SPECIFIC CODE ===
   if (EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS) {
     locationGoogleDocs()
   } else {
@@ -139,16 +164,11 @@
     scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject_gdocs.js'));
     document.head.appendChild(scriptElement);
 
-    
-    window.addEventListener('message', (event) => {
-      if (typeof event.data !== 'object' || !event.data.isFatebook) return
-
-      if (event.data.action === 'focus_parent') {
-        const gdoc = document.querySelector('.kix-canvas-tile-content')
-        if(gdoc) {
-          // @ts-ignore
-          gdoc.click()
-        }
+    predictIframe.addEventListener('close_modal', () => {
+      const gdoc = document.querySelector('.kix-canvas-tile-content')
+      if(gdoc) {
+        // @ts-ignore
+        gdoc.click()
       }
     })
 
@@ -158,18 +178,6 @@
       scrollElement.appendChild(questionIframe)
     } else {
       console.error('Could not find google docs scroll element')
-    }
-
-    // listen for '`'
-    const eventTarget = document.querySelector('.docs-texteventtarget-iframe')
-    // @ts-ignore
-    if (eventTarget && eventTarget.contentDocument && eventTarget.contentDocument.activeElement) {
-      // @ts-ignore
-      eventTarget.contentDocument.activeElement.addEventListener('keydown', (e) => {
-        if (e.altKey && e.key === '`') {
-          openModal()
-        }
-      })
     }
 
     // set up mutation observer for .kix-appview-editor
@@ -195,7 +203,7 @@
       const observer = new MutationObserver(reactToChange)
       observer.observe(kixEditor, { attributes: false, childList: true, subtree: false })
 
-      reactToChange()
+      reactToChange(null, observer)
     }
 
     // Watch the link popup for changes so we can insert our markup
@@ -203,6 +211,7 @@
       const reactToChange = () => {
         if (linkPopup.style.display === "none") {
           unloadQuestionIframe()
+          linkPopup.style.removeProperty('paddingBottom')
           return
         }
 
@@ -218,6 +227,7 @@
         if (!isFatebookLink) {
           if (isUIInjected) {
             unloadQuestionIframe()
+            linkPopup.style.removeProperty('paddingBottom')
           }
           return
         }
@@ -226,6 +236,7 @@
         if (!isUIInjected || link.href !== fatebookQuestionUI.src) {
           const linkQuestionId = getQuestionIdFromUrl(link.href)
           loadQuestion({ questionId: linkQuestionId })
+          linkPopup.style.paddingBottom = 0
         }
       }
 
@@ -238,10 +249,9 @@
   function locationUnknown() {
     document.body.appendChild(questionIframe)
 
-    // listen for '`'
-    document.body.addEventListener('keydown', (e) => {
-      if (e.altKey && e.key === '`') {
-        openModal()
+    predictIframe.addEventListener('close_modal', () => {
+      if (oldActiveElement) {
+        oldActiveElement.focus()
       }
     })
   }
