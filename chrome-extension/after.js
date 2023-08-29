@@ -117,22 +117,25 @@
   const questionLoaderLoaded = new Promise(resolve => questionIframe.addEventListener('question_loader_listening', resolve))
 
   questionIframe.className = 'fatebook-question-embed'
-  
-  const questionBlockingElement = document.createElement('div')
-  questionBlockingElement.style.width = '500px'
-  questionBlockingElement.style.height = '188px'
-  questionBlockingElement.style.minHeight = '188px'
-  questionBlockingElement.style.transition = 'height 0.2s'
 
   questionIframe.addEventListener('prediction_elicit_success', () => {
     toast('success', 'Prediction made!')
   })
 
   questionIframe.addEventListener('resize_iframe', (data) => {
-    // ts-ignore
+    // @ts-ignore
     questionIframe.style.height = data.detail.box.height + 'px'
-    questionBlockingElement.style.height = data.detail.box.height + 'px'
   })
+
+  // create a div that we can use to block out space within the gdoc popup
+  // (we can't just move the iframe there, as that reloads it
+  // and we can't make it start there as the element doesn't exist until a 
+  // link is clicked)
+  const gdocLinkPopupBlockingElement = document.createElement('div')
+  gdocLinkPopupBlockingElement.style.width = '500px'
+  gdocLinkPopupBlockingElement.style.height = '188px'
+  gdocLinkPopupBlockingElement.style.minHeight = '188px'
+  gdocLinkPopupBlockingElement.style.transition = 'height 0.2s'
 
   let counter = 0
   let loadedQuestionId
@@ -144,70 +147,64 @@
     await questionLoaderLoaded // if someone clicks on link before the question iframe loads then we need to wait. if this happens multiple times, "counter" ensures no issues
     if (counter > localCounter) return
 
-    questionBlockingElement.style.display = 'block'
     questionIframe.style.display = 'block'
 
     loadedQuestionId = questionId
     questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
   }
 
-  document.body.addEventListener('scroll', (e) => {
-    if (questionIframe.style.display === 'block') {
-      overlapElements(questionIframe, questionBlockingElement)
-    }
-  }, true)
-
   function unloadQuestionIframe() {
     loadedQuestionId = null
-    questionBlockingElement.style.display = 'none'
     questionIframe.style.display = 'none'
   }
 
+  questionIframe.addEventListener('blur', () => {
+    unloadQuestionIframe()
+  })
+
   // ==== Replace links ====
   const linkReplaceFilterFunctions = []
-  function replaceFatebookLinks() {
-    const links = document.getElementsByTagName('a')
-    for (const link of links) {
-      if (isFatebookLink(link.href)) {
-        replaceFatebookLink(link)
-      }
-    }
-  }
-  
   async function replaceFatebookLink(link) {
     if (linkReplaceFilterFunctions.some(fn => !fn(link))) return
 
+    const href = EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS ? link.getAttribute('data-rawhref') : link.href
+
     // replace the text with it's title and prediction
-    const questionId = 'cllperaa9000ptq7mpxfzx32i'
-    const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`)).json()
-    console.log(questionDetails)
+    const questionId = getQuestionIdFromUrl(href)
+    // const questionId = 'cllperaa9000ptq7mpxfzx32i'
+    const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`, {credentials:'include'})).json()
 
-    let pasteString = ` ⚖ ${questionDetails.title}`
-    if (questionDetails.prediction) pasteString += ` (${questionDetails.user.name}: ${questionDetails.prediction !== undefined ? `${questionDetails.prediction * 100}% yes` : ''})`
-
-    link.innerText = pasteString
+    if (link.innerText === href) {
+      let pasteString = `⚖ ${questionDetails.title}`
+      if (questionDetails.prediction) pasteString += ` (${questionDetails.user.name}: ${questionDetails.prediction !== undefined ? `${questionDetails.prediction * 100}% yes` : ''})`
+      
+      link.innerText = pasteString
+    }
 
     // style it
-    link.style.background = '#d1d3d5'
-    link.style.borderRadius = '10px'
-    link.style.textDecoration = 'none'
-    link.style.color = 'black'
-    link.style.padding = '1px 7px'
-    link.style.border = '1px solid #0000004d'
+    // link.style.background = '#d1d3d5'
+    // // link.style.borderRadius = '10px'
+    // link.style.textDecoration = 'none'
+    // link.style.color = 'black'
+    // link.style.padding = '1px 7px'
+    // link.style.border = '1px solid #0000004d'
+    // if (link.parentElement.clientWidth < 400) {
+    //   link.style.display = 'block' // temp workaround
+    // }
 
     // move the question loader to the link on click
     link.addEventListener('click', async (e) => {
+      questionIframe.style.removeProperty('border')
+      questionIframe.style.removeProperty('boxShadow')
+      gdocLinkPopupBlockingElement.style.display = 'none'
+
       e.preventDefault()
+      e.stopPropagation()
       // move it to the link
       await loadQuestion({questionId})
       tooltipPosition(questionIframe, link)
+      questionIframe.focus()
     })
-  }
-
-  function processLink(link) {
-    if (isFatebookLink(link.href)) {
-      replaceFatebookLink(link)
-    }
   }
 
   const links = document.body.getElementsByTagName('a')
@@ -219,7 +216,9 @@
         if (link.__fatebook_processed) continue
         link.__fatebook_processed = true
 
-        processLink(link)
+        if (isFatebookLink(link.href)) {
+          replaceFatebookLink(link)
+        }
       }
     }
 
@@ -264,6 +263,17 @@
       console.error('Could not find google docs scroll element')
     }
 
+    questionIframe.addEventListener('resize_iframe', (data) => {
+    // @ts-ignore
+      gdocLinkPopupBlockingElement.style.height = data.detail.box.height + 'px'
+    })
+
+    document.body.addEventListener('scroll', (e) => {
+      if (gdocLinkPopupBlockingElement.style.display === 'block') {
+        overlapElements(questionIframe, gdocLinkPopupBlockingElement)
+      }
+    }, true)
+
     // set up mutation observer for .kix-appview-editor
     // listen for the link bubble, and then de-register it
     waitForLinkPopupToExist()
@@ -278,7 +288,7 @@
         const linkPopup = document.querySelector(".docs-linkbubble-bubble")
         if (linkPopup) {
           observer.disconnect()
-          linkPopup.appendChild(questionBlockingElement)
+          linkPopup.appendChild(gdocLinkPopupBlockingElement)
 
           watchLinkPopup(linkPopup)
         }
@@ -293,13 +303,15 @@
     function resetInlineGocChanges(linkPopup) {
       linkPopup.style.removeProperty('paddingBottom')
       questionIframe.style.removeProperty('border')
+      questionIframe.style.removeProperty('boxShadow')
+      gdocLinkPopupBlockingElement.style.display = 'none'
     }
 
     // Watch the link popup for changes so we can insert our markup
     function watchLinkPopup(linkPopup) {
       const reactToChange = async () => {
-        // If the link popup was blurred then reset it
-        if (linkPopup.style.display === "none" && loadedQuestionId !== null) {
+        // If the link popup had become hidden then unload our content
+        if (linkPopup.style.display === "none") {
           unloadQuestionIframe()
           resetInlineGocChanges(linkPopup)
           return
@@ -308,8 +320,10 @@
         // Get the link and determine whether it's a fatebook link
         const link = linkPopup.querySelector("a")
         if (!link) return
+        
         const isFatebookLink = link.href.includes(FATEBOOK_URL)
-        const isUIInjected = linkPopup.contains(questionBlockingElement) && questionBlockingElement.style.display === "block"
+        const isUIInjected = linkPopup.contains(gdocLinkPopupBlockingElement) && 
+        gdocLinkPopupBlockingElement.style.display === "block"
 
         // If the user went from a fatebook link to a non-fatebook link, remove our content
         if (!isFatebookLink && isUIInjected) {
@@ -327,9 +341,14 @@
           questionIframe.style.boxShadow = 'none'
 
           await loadQuestion({ questionId: linkQuestionId})
-          overlapElements(questionIframe, questionBlockingElement)
+          gdocLinkPopupBlockingElement.style.display = 'block'
+          overlapElements(questionIframe, gdocLinkPopupBlockingElement)
         }
       }
+
+      // linkPopup.addEventListener('blur', () => {
+      //   resetInlineGocChanges()
+      // })
 
       reactToChange()
 
@@ -403,7 +422,7 @@ function getQuestionIdFromUrl(url) {
   const lastSegment = url.substring(url.lastIndexOf('/') + 1)
 
   // allow an optional ignored slug text before `--` character
-  const parts = lastSegment.match(/(.*)--(.*?)(?:\?|$)/)
+  const parts = lastSegment.match(/(.*)--(.*?)(?:\?|$|&)/)
   return parts ? parts[2] : (lastSegment) || ""
 }
 
