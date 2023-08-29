@@ -137,9 +137,18 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
       }
     })
 
-    if (upsertedQuestion.resolution) {
+    if (upsertedQuestion.resolution && upsertedQuestion.resolvedAt) {
       console.log("Scoring question ", upsertedQuestion.id)
       await scoreQuestion(upsertedQuestion.resolution, upsertedQuestion)
+      // update all the question scores to have the same created at as the question
+      await prisma.questionScore.updateMany({
+        where: {
+          questionId: upsertedQuestion.id,
+        },
+        data: {
+          createdAt: upsertedQuestion.resolvedAt,
+        }
+      })
       console.log("Scored question ", upsertedQuestion.id)
     }
   }
