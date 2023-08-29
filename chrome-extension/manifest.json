@@ -12,6 +12,7 @@
       "32": "scale.png"
     }
   },
+  
   "commands": {
     "open_modal": {
       "suggested_key": {

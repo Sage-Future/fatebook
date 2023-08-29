@@ -9,6 +9,8 @@
     })
   })
 
+  // extensionInfo.isDev=false
+  const FATEBOOK_HOST = extensionInfo.isDev ? 'localhost:3000' : 'fatebook.io'
   const FATEBOOK_URL = extensionInfo.isDev ? 'https://localhost:3000/' : 'https://fatebook.io/'
 
   // ==== Determine location ====
@@ -35,6 +37,12 @@
     const iframe = document.createElement('iframe')
     const iframeId = (Object.keys(iframeMap).length + 1).toString()
     
+    console.time(src)
+    
+    iframe.addEventListener('load', () => {
+      console.timeEnd(src)
+    })
+
     const url = new URL(src)
     url.searchParams.set("fatebook-embed-id", iframeId)
     iframe.src = url.toString()
@@ -127,29 +135,101 @@
   })
 
   let counter = 0
+  let loadedQuestionId
   async function loadQuestion({ questionId }) {
+    questionIframe.style.display = 'none' // don't show until loaded (important if going from link to link)
+
     counter = counter + 1
     let localCounter = counter
     await questionLoaderLoaded // if someone clicks on link before the question iframe loads then we need to wait. if this happens multiple times, "counter" ensures no issues
-    if(counter > localCounter) return
+    if (counter > localCounter) return
 
-    // set blocking code to display
-    questionIframe.style.display = 'block'
     questionBlockingElement.style.display = 'block'
+    questionIframe.style.display = 'block'
 
+    loadedQuestionId = questionId
     questionIframe.contentWindow?.postMessage({ isFatebook: true, action: 'load_question', questionId }, '*')
-    
-    // position element
-    overlapElements(questionIframe, questionBlockingElement)
   }
 
+  document.body.addEventListener('scroll', (e) => {
+    if (questionIframe.style.display === 'block') {
+      overlapElements(questionIframe, questionBlockingElement)
+    }
+  }, true)
+
   function unloadQuestionIframe() {
+    loadedQuestionId = null
     questionBlockingElement.style.display = 'none'
     questionIframe.style.display = 'none'
   }
 
-  // ==== Question iframe ====
+  // ==== Replace links ====
+  const linkReplaceFilterFunctions = []
+  function replaceFatebookLinks() {
+    const links = document.getElementsByTagName('a')
+    for (const link of links) {
+      if (isFatebookLink(link.href)) {
+        replaceFatebookLink(link)
+      }
+    }
+  }
+  
+  async function replaceFatebookLink(link) {
+    if (linkReplaceFilterFunctions.some(fn => !fn(link))) return
 
+    // replace the text with it's title and prediction
+    const questionId = 'cllperaa9000ptq7mpxfzx32i'
+    const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`)).json()
+    console.log(questionDetails)
+
+    let pasteString = ` ⚖ ${questionDetails.title}`
+    if (questionDetails.prediction) pasteString += ` (${questionDetails.user.name}: ${questionDetails.prediction !== undefined ? `${questionDetails.prediction * 100}% yes` : ''})`
+
+    link.innerText = pasteString
+
+    // style it
+    link.style.background = '#d1d3d5'
+    link.style.borderRadius = '10px'
+    link.style.textDecoration = 'none'
+    link.style.color = 'black'
+    link.style.padding = '1px 7px'
+    link.style.border = '1px solid #0000004d'
+
+    // move the question loader to the link on click
+    link.addEventListener('click', async (e) => {
+      e.preventDefault()
+      // move it to the link
+      await loadQuestion({questionId})
+      tooltipPosition(questionIframe, link)
+    })
+  }
+
+  function processLink(link) {
+    if (isFatebookLink(link.href)) {
+      replaceFatebookLink(link)
+    }
+  }
+
+  const links = document.body.getElementsByTagName('a')
+
+  function watchForFatebookLinks() {
+    function processFatebookLinks() {
+      for (let i = 0; i < links.length; i++) {
+        const link = links[i]
+        if (link.__fatebook_processed) continue
+        link.__fatebook_processed = true
+
+        processLink(link)
+      }
+    }
+
+    new MutationObserver(processFatebookLinks).observe(document.body, {subtree: true, childList: true})
+    processFatebookLinks()
+  }
+
+  function isFatebookLink(href) {
+    return href.includes(FATEBOOK_HOST)
+  }
 
   // === START LOCATION SPECIFIC CODE ===
   if (EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS) {
@@ -159,6 +239,9 @@
   }
 
   function locationGoogleDocs() {
+    // If we're on google docs and the link is within the popup, don't replace it
+    linkReplaceFilterFunctions.push((link) => !link.matches('.docs-linkbubble-bubble *'))
+
     // ==== Inject "direct_inject_gdocs.js" so we have direct dom access ====
     var scriptElement = document.createElement("script");
     scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject_gdocs.js'));
@@ -175,7 +258,8 @@
     // append position absolute question embed
     const scrollElement = document.querySelector('.kix-appview-editor')
     if (scrollElement) {
-      scrollElement.appendChild(questionIframe)
+      document.body.appendChild(questionIframe)
+      // scrollElement.appendChild(questionIframe)
     } else {
       console.error('Could not find google docs scroll element')
     }
@@ -206,43 +290,50 @@
       reactToChange(null, observer)
     }
 
+    function resetInlineGocChanges(linkPopup) {
+      linkPopup.style.removeProperty('paddingBottom')
+      questionIframe.style.removeProperty('border')
+    }
+
     // Watch the link popup for changes so we can insert our markup
     function watchLinkPopup(linkPopup) {
-      const reactToChange = () => {
-        if (linkPopup.style.display === "none") {
+      const reactToChange = async () => {
+        // If the link popup was blurred then reset it
+        if (linkPopup.style.display === "none" && loadedQuestionId !== null) {
           unloadQuestionIframe()
-          linkPopup.style.removeProperty('paddingBottom')
+          resetInlineGocChanges(linkPopup)
           return
         }
 
+        // Get the link and determine whether it's a fatebook link
         const link = linkPopup.querySelector("a")
         if (!link) return
-
         const isFatebookLink = link.href.includes(FATEBOOK_URL)
+        const isUIInjected = linkPopup.contains(questionBlockingElement) && questionBlockingElement.style.display === "block"
 
-        const fatebookQuestionUI = linkPopup.contains(questionBlockingElement) && questionBlockingElement.style.display === "block"
-        const isUIInjected = !!fatebookQuestionUI
-
-        // If it's not a fatebook link, then unload our ui if it's in there
-        if (!isFatebookLink) {
-          if (isUIInjected) {
-            unloadQuestionIframe()
-            linkPopup.style.removeProperty('paddingBottom')
-          }
+        // If the user went from a fatebook link to a non-fatebook link, remove our content
+        if (!isFatebookLink && isUIInjected) {
+          unloadQuestionIframe()
+          resetInlineGocChanges(linkPopup)
           return
         }
 
         // If it is a fatebook link, then load our ui if needed
-        if (!isUIInjected || link.href !== fatebookQuestionUI.src) {
-          const linkQuestionId = getQuestionIdFromUrl(link.href)
-          loadQuestion({ questionId: linkQuestionId })
+        const linkQuestionId = getQuestionIdFromUrl(link.href)
+
+        if (!isUIInjected || loadedQuestionId !== linkQuestionId) {
           linkPopup.style.paddingBottom = 0
+          questionIframe.style.border = 'none'
+          questionIframe.style.boxShadow = 'none'
+
+          await loadQuestion({ questionId: linkQuestionId})
+          overlapElements(questionIframe, questionBlockingElement)
         }
       }
 
       reactToChange()
 
-      new MutationObserver(reactToChange).observe(linkPopup, { attributes: true, childList: true, subtree: true })
+      new MutationObserver(reactToChange).observe(linkPopup, { attributes: true, childList: true})
     }
   }
 
@@ -255,6 +346,9 @@
       }
     })
   }
+
+  // Run link replace
+  watchForFatebookLinks()
 
   // let commentTray
   // const commentTrayInterval = setInterval(() => {
@@ -309,7 +403,7 @@ function getQuestionIdFromUrl(url) {
   const lastSegment = url.substring(url.lastIndexOf('/') + 1)
 
   // allow an optional ignored slug text before `--` character
-  const parts = lastSegment.match(/(.*)--(.*)/)
+  const parts = lastSegment.match(/(.*)--(.*?)(?:\?|$)/)
   return parts ? parts[2] : (lastSegment) || ""
 }
 
@@ -327,4 +421,44 @@ function overlapElements(absoluteElement, targetElement) {
   const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0);
   absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`;
   absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`;
+}
+
+function tooltipPosition(absoluteElement, targetElement) {
+  const verticalPadding = 5
+
+  // Get the bounding rectangles of the elements relative to their parent elements
+  const absoluteRect = absoluteElement.getBoundingClientRect();
+  const currentAbsoluteTop = parseFloat(absoluteElement.style.top || 0);
+  const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0);
+  
+  const targetRect = targetElement.getBoundingClientRect();
+
+  const viewportWidth  = window.innerWidth || document.documentElement.clientWidth || 
+  document.body.clientWidth;
+  const viewportHeight = window.innerHeight|| document.documentElement.clientHeight|| 
+  document.body.clientHeight;
+
+  // Figure out where to position element considering the screen bounds
+  const leftAlign = targetRect.left + absoluteRect.width < viewportWidth
+  const placeUnderneath = targetRect.bottom + absoluteRect.height + verticalPadding < viewportHeight
+
+  // Calculate the differences in positions relative to the parent elements
+  
+  let leftDiff
+  if (leftAlign) {
+    leftDiff = targetRect.left - absoluteRect.left
+  } else {
+    leftDiff = (targetRect.right - absoluteRect.width) - absoluteRect.left
+  }
+  
+  let topDiff
+  if (placeUnderneath) {
+    topDiff = targetRect.top - absoluteRect.top + targetRect.height + verticalPadding;
+  } else {
+    topDiff = targetRect.top - absoluteRect.top - absoluteRect.height - verticalPadding;
+  }
+
+  // Update the CSS properties of the absolute element
+  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`;
+  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`;
 }

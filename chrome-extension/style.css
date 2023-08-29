@@ -29,8 +29,9 @@
 
 .fatebook-question-embed {
   display: none;
+  border:1px solid black;
+
   position: absolute;
-  border: none;
   width: 500px;
   height: 188px;
   min-height: 180px;
@@ -38,4 +39,11 @@
   transition: height 0.2s;
   overflow: auto;
   color-scheme: normal;
+  top:0;
+  left:0;
+
+  border-color: #dadce0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 1px rgba(60,64,67,.15);
 }
+
