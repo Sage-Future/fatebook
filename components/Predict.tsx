@@ -190,7 +190,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
                 "w-full text-xl border-2 border-neutral-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
                 "focus:outline-indigo-700",
               )}
-              placeholder="Will humans walk on Mars by 2050?"
+              placeholder="Will I finish my project by Friday?"
               maxRows={15}
               onChange={(e) => {
                 smartUpdateResolveBy(e.currentTarget.value)

@@ -3,7 +3,7 @@
  */
 const nextConfig = {
   eslint: {
-    dirs: ['api', 'lib', 'pages', 'public', 'styles'],
+    dirs: ['api', 'lib', 'pages', 'public', 'styles', 'components'],
   },
   images: {
     remotePatterns: [

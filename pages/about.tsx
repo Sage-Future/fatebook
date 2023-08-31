@@ -1,7 +1,7 @@
-import { ChartBarIcon, ChatBubbleOvalLeftIcon, RocketLaunchIcon } from '@heroicons/react/24/solid'
 import { NextSeo } from 'next-seo'
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import remarkGfm from 'remark-gfm'
+import { WhyForecastInfo } from '../components/WhyForecastInfo'
 import { webFeedbackUrl } from '../lib/web/utils'
 
 const about = String.raw`
@@ -28,12 +28,7 @@ export default function AboutPage() {
           {about}
         </ReactMarkdown>
         <div className="my-4">
-          <h2>{"Why build a habit of forecasting?"}</h2>
-          <ul className="list-none space-y-4 pl-0">
-            <li className="flex items-center space-x-3"><RocketLaunchIcon className="flex-shrink-0 mr-2 w-6 h-6 text-indigo-500 inline-block" /><span>{"Make better decisions"}</span></li>
-            <li className="flex items-center space-x-3"><ChatBubbleOvalLeftIcon className="flex-shrink-0 mr-2 w-6 h-6 text-indigo-500 inline-block" /><span>{"Communicate more clearly"}</span></li>
-            <li className="flex items-center space-x-3"><ChartBarIcon className="flex-shrink-0 mr-2 w-6 h-6 text-indigo-500 inline-block" /><span>{"Build your track record"}</span></li>
-          </ul>
+          <WhyForecastInfo />
         </div>
       </div>
     </div>

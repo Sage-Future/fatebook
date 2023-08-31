@@ -93,7 +93,6 @@
   });
 
 
-
   // ==== Prediction iframe ====
   const predictIframe = createIframe(`${FATEBOOK_URL}embed/predict-modal`)
   predictIframe.className = 'fatebook-predict-embed'

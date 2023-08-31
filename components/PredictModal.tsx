@@ -13,7 +13,6 @@ function cancelPrediction() {
   sendToHost("prediction_cancel")
 }
 
-
 function predictionSuccess(predictionLink: string) {
   sendToHost("prediction_create_success", {predictionLink})
 }

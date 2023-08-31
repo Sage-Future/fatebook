@@ -17,7 +17,7 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
   }
 
   // check signed in
-  if (!session?.user.id) {
+  if (!session?.user.id && (embedded || !question?.sharedPublicly)) {
     return (
       embedded ?
         <div className="flex h-full items-center justify-center">
@@ -31,7 +31,12 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
 
   // check we got the question okay
   if ((qQuery.status === "error" || (qQuery.status === "success" && !question))) {
-    return <h3 className="text-neutral-600">{`This question doesn't exist or your account (${session.user.email}) doesn't have access`}</h3>
+    return <h3 className="text-neutral-600">{
+      `This question doesn't exist or ` +
+      session?.user.email ?
+        `your account (${session?.user.email}) doesn't have access`
+        : `you need to sign in`
+    }</h3>
   } else if (!question) {
     return null
   }

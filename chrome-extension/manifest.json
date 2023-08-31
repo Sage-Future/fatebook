@@ -16,7 +16,7 @@
   "commands": {
     "open_modal": {
       "suggested_key": {
-        "default": "Ctrl+Shift+F"
+        "default": "Alt+Shift+F"
       },
       "description": "Open prediction modal."
     }
