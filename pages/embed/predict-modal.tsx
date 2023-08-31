@@ -2,9 +2,10 @@
 
 import React from "react"
 import PredictModal from "../../components/PredictModal"
-
+import { useListenForSessionReload } from "../../lib/web/embed"
 
 export default function PredictModalEmbed() {
+  useListenForSessionReload()
   return <PredictModal />
 }
 

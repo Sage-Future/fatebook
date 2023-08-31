@@ -4,6 +4,7 @@ import { useDebouncedCallback } from "use-debounce"
 import { sendToHost } from "../lib/web/embed"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { getMostRecentForecastForUser } from "../lib/_utils_common"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 
 function closeLinkPopup() {
@@ -25,10 +26,7 @@ export function UpdateableLatestForecast({
 }) {
   const userId = useUserId()
 
-  const forecasts = question.forecasts.filter(f => f.userId === userId).sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  )
-  const latestForecast = (forecasts && forecasts.length > 0) ? forecasts?.[0] : null
+  const latestForecast = userId ? getMostRecentForecastForUser(question, userId) : null
 
   const defaultVal = latestForecast?.forecast ? (latestForecast.forecast.times(100).toString()).toString() : ""
   const [localForecast, setLocalForecast] = useState<string>(defaultVal)

@@ -1,10 +1,11 @@
+import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 
 let embedId: string|null = null
 
 export function useIsEmbedded() {
   const pathname = usePathname()
-  console.log(pathname)
   return pathname && pathname.includes('/embed/')
 }
 
@@ -19,4 +20,19 @@ export function getEmbedId() {
 
 export function sendToHost(action: string, data: {[i:string]:any} = {}) {
     window.parent.postMessage({ isFatebook: true, action, embedId: getEmbedId(), ...data}, '*')
+}
+
+export function useListenForSessionReload() {
+  const { status } = useSession()
+
+  useEffect(() => {
+    const fn = () => {
+      if (status === 'unauthenticated' && document.visibilityState === 'visible') {
+        sendToHost('reload-me', {src: location.href})
+      }
+    }
+
+    document.addEventListener('visibilitychange', fn)
+    return () => document.removeEventListener('visibilitychange', fn)
+  }, [status])
 }

@@ -1,3 +1,17 @@
+function makeLinkText ({
+  text,
+  name,
+  prediction
+}: {
+  text: string
+  name: string
+  prediction: number | undefined
+}) {
+  let string = `⚖ ${text}`
+  if (prediction) string += ` (${name}: ${prediction !== undefined ? `${prediction * 100}% yes` : ''})`
+  return string
+}
+
 export function makeRichGoogleDocsLink({
   text,
   url,
@@ -9,8 +23,7 @@ export function makeRichGoogleDocsLink({
   name: string
   prediction: number | undefined
 }) {
-  let pasteString = ` ⚖ ${text}`
-  if (prediction) pasteString += ` (${name}: ${prediction !== undefined ? `${prediction * 100}% yes` : ''})`
+  const pasteString = makeLinkText({text, name, prediction})
 
   const data = JSON.stringify({
     data: JSON.stringify({
@@ -755,4 +768,32 @@ export function makeRichGoogleDocsLink({
   })
 
   return { "application/x-vnd.google-docs-document-slice-clip+wrapped": data }
+}
+
+
+export function makeClipboardHtmlLink({
+    text,
+    url,
+    name,
+    prediction
+  }: {
+    text: string
+    url: string
+    name: string
+    prediction: number | undefined
+  }) {
+  const pasteString = makeLinkText({text, name, prediction})
+
+  const html = `
+    <html>
+    <body>
+      <!--StartFragment-->
+      <meta charset="utf-8">
+      <b style="font-weight:normal;"><a href="${url}" style="text-decoration:none;"><span
+            style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:#d1d3d5;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">${pasteString}</span></a></b>
+      <!--EndFragment-->
+    </body>
+    </html>`
+
+  return { "text/html": html }
 }

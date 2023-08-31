@@ -13,6 +13,8 @@
   const FATEBOOK_HOST = extensionInfo.isDev ? 'localhost:3000' : 'fatebook.io'
   const FATEBOOK_URL = extensionInfo.isDev ? 'https://localhost:3000/' : 'https://fatebook.io/'
 
+
+
   // ==== Determine location ====
   const EMBED_LOCATIONS = {
     GOOGLE_DOCS: 'GOOGLE_DOCS',
@@ -30,6 +32,8 @@
       return EMBED_LOCATIONS.UNKNOWN
     }
   }
+  
+  if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return // Don't run on fatebook.io
 
   // ==== Listen for messages from iframes ====
   const iframeMap = {}
@@ -51,11 +55,90 @@
     return iframe
   }
 
+  function sendToAllIframes (action) {
+    Object.values(iframeMap).forEach((iframe) => {
+      iframe.contentWindow?.postMessage({ isFatebook: true, action }, '*')
+    })
+  }
+
   window.addEventListener('message', (event) => {
     if (typeof event.data !== 'object' || !event.data.isFatebook || !event.data.embedId) return
-    iframeMap[event.data.embedId].dispatchEvent(new CustomEvent(event.data.action, {detail:event.data}))
+
+    const iframe = iframeMap[event.data.embedId]
+    if (!iframe) {
+      console.error(`Could not find iframe for message id:"${event.data.embedId}"`, iframeMap)
+    } else {
+      iframe.dispatchEvent(new CustomEvent(event.data.action, {detail:event.data}))
+    }
   })
 
+  
+
+  // ==== Listen for messages from extension background script ====
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.action === "open_modal") {
+      if (EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS) {
+        const commentMenuItem = document.getElementById(":77")
+        if (commentMenuItem && commentMenuItem.getAttribute('aria-disabled') === 'false') {
+          predictionComment()
+        } else {
+          openModal()
+        }
+      } else {
+        openModal()
+      }
+    } else {
+      throw new Error(`unknown action "${request.action}"`)
+    }
+  });
+
+
+
+  // ==== Prediction iframe ====
+  const predictIframe = createIframe(`${FATEBOOK_URL}embed/predict-modal`)
+  predictIframe.className = 'fatebook-predict-embed'
+  predictIframe.style.display = 'none'
+  document.body.appendChild(predictIframe) // append to load content
+
+  predictIframe.addEventListener('reload-me', (event) => {
+    const wasOpen = predictIframe.style.display === 'block'
+    const parent = predictIframe.parentElement
+    predictIframe.remove()
+    predictIframe.src = event.detail.src
+    parent?.appendChild(predictIframe)
+    if (wasOpen) {
+      openModal()
+    }
+  })
+
+
+  let oldActiveElement = document.activeElement
+  function openModal() {
+    predictIframe.style.display = 'block'
+    oldActiveElement = document.activeElement
+    predictIframe.focus()
+    predictIframe.contentWindow?.postMessage({ isFatebook: true, action: 'focus_modal' }, '*')
+
+    document.body._originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    
+
+    document.documentElement._originalOverflow = document.documentElement.style.overflow
+    document.documentElement.style.overflow = 'hidden'
+  }
+
+  function closeModal() {
+    predictIframe.style.display = 'none'
+
+    document.body.style.setProperty('overflow', document.body._originalOverflow)
+    document.documentElement.style.setProperty('overflow', document.documentElement._originalOverflow)
+  }
+
+  predictIframe.addEventListener('prediction_cancel', closeModal)
+  predictIframe.addEventListener('prediction_create_success', () => {
+    closeModal()
+    toast('success', 'Prediction copied to clipboard')
+  })
 
   // ==== Toast iframe ====
   const toastIframe = createIframe(`${FATEBOOK_URL}embed/toast`)
@@ -71,50 +154,22 @@
   }
 
 
-  // ==== Listen for messages from extension background script ====
-  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.action === "open_modal") {
-      if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) {
-        toast('error', "Our extension won't run on fatebook, try another site")
-      } else {
-        openModal()
-      }
-    } else {
-      throw new Error(`unknown action "${request.action}"`)
-    }
-  });
-
-
-  // Don't run on fatebook.io
-  if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return
-
-
-  // ==== Prediction iframe ====
-  const predictIframe = createIframe(`${FATEBOOK_URL}embed/predict-modal`)
-  predictIframe.className = 'fatebook-predict-embed'
-  predictIframe.style.display = 'none'
-  document.body.appendChild(predictIframe) // append to load content
-
-  let oldActiveElement = document.activeElement
-  function openModal() {
-    predictIframe.style.display = 'block'
-    oldActiveElement = document.activeElement
-    predictIframe.focus()
-    predictIframe.contentWindow?.postMessage({ isFatebook: true, action: 'focus_modal' }, '*')
-    document.body.style.overflow = 'hidden'
-  }
-
-  predictIframe.addEventListener('close_modal', () => {
-    predictIframe.style.display = 'none'
-    document.body.style.removeProperty('overflow')
-  })
-  predictIframe.addEventListener('prediction_create_success', () => {
-    toast('success', 'Prediction copied to clipboard')
-  })
 
   // ==== Question iframe ====
   const questionIframe = createIframe(`${FATEBOOK_URL}embed/question-loader`)
   const questionLoaderLoaded = new Promise(resolve => questionIframe.addEventListener('question_loader_listening', resolve))
+  document.body.appendChild(questionIframe)
+
+  questionIframe.addEventListener('reload-me', (event) => {
+    const wasOpen = loadedQuestionId
+    const parent = questionIframe.parentElement
+    questionIframe.remove()
+    questionIframe.src = event.detail.src
+    parent?.appendChild(questionIframe)
+    if (wasOpen) {
+      loadQuestion({questionId: wasOpen})
+    }
+  })
 
   questionIframe.className = 'fatebook-question-embed'
 
@@ -167,11 +222,10 @@
   async function replaceFatebookLink(link) {
     if (linkReplaceFilterFunctions.some(fn => !fn(link))) return
 
-    const href = EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS ? link.getAttribute('data-rawhref') : link.href
+    const href = EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS && link.getAttribute('data-rawhref') ? link.getAttribute('data-rawhref') : link.href
 
     // replace the text with it's title and prediction
     const questionId = getQuestionIdFromUrl(href)
-    // const questionId = 'cllperaa9000ptq7mpxfzx32i'
     const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`, {credentials:'include'})).json()
 
     if (link.innerText === href) {
@@ -245,23 +299,16 @@
     var scriptElement = document.createElement("script");
     scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject_gdocs.js'));
     document.head.appendChild(scriptElement);
-
-    predictIframe.addEventListener('close_modal', () => {
+    
+    const refocusPage = () => {
       const gdoc = document.querySelector('.kix-canvas-tile-content')
       if(gdoc) {
         // @ts-ignore
         gdoc.click()
       }
-    })
-
-    // append position absolute question embed
-    const scrollElement = document.querySelector('.kix-appview-editor')
-    if (scrollElement) {
-      document.body.appendChild(questionIframe)
-      // scrollElement.appendChild(questionIframe)
-    } else {
-      console.error('Could not find google docs scroll element')
     }
+    predictIframe.addEventListener('prediction_cancel', refocusPage)
+    predictIframe.addEventListener('prediction_create_success', refocusPage)
 
     questionIframe.addEventListener('resize_iframe', (data) => {
     // @ts-ignore
@@ -357,64 +404,83 @@
   }
 
   function locationUnknown() {
-    document.body.appendChild(questionIframe)
-
-    predictIframe.addEventListener('close_modal', () => {
-      if (oldActiveElement) {
+    const refocusPage = () => {
+      if (oldActiveElement && oldActiveElement.focus) {
         oldActiveElement.focus()
       }
-    })
+    }
+    
+    predictIframe.addEventListener('prediction_create_success', refocusPage)
+    predictIframe.addEventListener('prediction_cancel', refocusPage)
   }
 
   // Run link replace
   watchForFatebookLinks()
 
-  // let commentTray
-  // const commentTrayInterval = setInterval(() => {
-  //   commentTray = document.querySelector(".docs-instant-docos-content")
-  //   if (!commentTray) return
-  //   else {
-  //     clearInterval(commentTrayInterval)
+  async function predictionComment () {
+    openModal()
 
-  //     const div = document.createElement("div")
-  //     div.innerText = "ADD PREDICTION"
+    const done = (event) => {
+      predictIframe.removeEventListener('prediction_create_success', done)
+      predictIframe.removeEventListener('prediction_cancel', done)
 
+      if (event.type === 'prediction_create_success') {
+        window.dispatchEvent(new MessageEvent('message', {data: {isFatebook: true, action: 'create_comment'}}))
 
+        const waitForCommentInterval = setInterval(() => {
+          const active = document.activeElement
+          if (!active?.matches('.docos-input-textarea')) return
 
-  //     commentTray.appendChild(div)
+          clearInterval(waitForCommentInterval)
 
-  //     // // Options for the observer (which mutations to observe)
-  //     // const config = { attributes: true, childList: true, subtree: true }
+          active.innerText = event.detail.predictionLink
 
-  //     // // Callback function to execute when mutations are observed
-  //     // const callback = (mutationList, observer) => {
-  //     //    const href = popupParent.querySelector("a").href
-  //     //    const ourLink = href.includes(FATEBOOK_URL)
+          active.click()
 
-  //     //    const ui = popupParent.querySelector("#fatebook-ui")
-  //     //    const uiIsInjected = !!ui
+          const submitButton = active.parentElement?.querySelector('.docos-input-buttons-post')
+          if (submitButton) {
+            function triggerMouseEvent (node, eventType) {
+              var clickEvent = document.createEvent('MouseEvents');
+              clickEvent.initEvent (eventType, true, true);
+              node.dispatchEvent (clickEvent);
+            }
 
-  //     //    if (uiIsInjected && !ourLink) {
-  //     //       console.log("remove")
-  //     //       ui.remove()
-  //     //    } else if (!uiIsInjected && ourLink) {
-  //     //       console.log("append")
-  //     //       const div = document.createElement("iframe")
-  //     //       div.id = "fatebook-ui"
-  //     //       div.src = "https://fatebook.io/"
-  //     //       div.style.zoom = ".1"
-  //     //       div.style.width = "100%"
-  //     //       div.style.height = "2000px"
+            triggerMouseEvent (submitButton, "mouseover");
+            triggerMouseEvent (submitButton, "mousedown");
+            triggerMouseEvent (submitButton, "mouseup");
+            triggerMouseEvent (submitButton, "click");
+          }
+        }, 50)
 
-  //     //       popupParent.appendChild(div)
-  //     //    }
-  //     // }
+        setTimeout(() => {
+          clearInterval(waitForCommentInterval)
+        }, 3000)
+      }
+    }
 
-  //     // // Create an observer instance linked to the callback function
-  //     // const observer = new MutationObserver(callback)
-  //     // observer.observe(popupParent, config)
-  //   }
-  // }, 1000)
+    predictIframe.addEventListener('prediction_cancel', done)
+    predictIframe.addEventListener('prediction_create_success', done)
+  }
+
+  const commentButtonInterval = setInterval(() => {
+    const commentButtons = document.querySelector(".docs-instant-docos-content")
+    if (!commentButtons) return
+
+    clearInterval(commentButtonInterval)
+
+    const scalePng = chrome.runtime.getURL('scale.png')
+
+    const div = document.createElement("div")
+    div.innerHTML = `<div class="superfab-button-container">
+      <div class="goog-control instant-button last-visible-button" style="user-select: none;">
+        <img style="width:22px;padding-left:1px" src="${scalePng}"></img>
+      </div>
+    </div>`
+
+    commentButtons.appendChild(div)
+
+    div.addEventListener('click', predictionComment)
+  }, 500)
 })()
 
 

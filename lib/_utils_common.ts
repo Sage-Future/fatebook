@@ -1,4 +1,5 @@
 import { Forecast, Question, QuestionScore, Resolution } from '@prisma/client'
+import { Decimal } from '@prisma/client/runtime'
 import { QuestionWithForecasts } from '../prisma/additional'
 import { maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing, numberOfDaysInRecentPeriod, scorePrepad } from './_constants'
 
@@ -21,6 +22,20 @@ export function getMostRecentForecastPerUser(forecasts: Forecast[], date: Date):
     }
   }
   return Array.from(forecastsPerUser, ([id, value]) => [id, value])
+}
+
+interface HasForecasts {
+  forecasts: {
+    forecast: Decimal
+    createdAt: Date
+    userId: string
+  }[]
+}
+export function getMostRecentForecastForUser<T extends HasForecasts>(question: T , userId:String) {
+    const forecasts = question.forecasts.filter(f => f.userId === userId).sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  )
+  return forecasts && forecasts.length ? forecasts[0] : null
 }
 
 export function getGeometricCommunityForecast(question: QuestionWithForecasts, date: Date): number {

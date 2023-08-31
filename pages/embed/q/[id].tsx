@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { QuestionOrSignIn } from "../../../components/QuestionOrSignIn"
-import { sendToHost } from "../../../lib/web/embed"
+import { sendToHost, useListenForSessionReload } from "../../../lib/web/embed"
 
 
 export default function QuestionEmbed() {
@@ -17,6 +17,8 @@ export default function QuestionEmbed() {
 
     return () => resizeObserver.disconnect()
   }, [])
+
+  useListenForSessionReload()
 
   return <div ref={ref}>
     <QuestionOrSignIn embedded={true} alwaysExpand={false}></QuestionOrSignIn>

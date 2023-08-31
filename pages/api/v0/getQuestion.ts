@@ -5,6 +5,8 @@ import { authOptions } from "../auth/[...nextauth]"
 import { assertHasAccess } from "../../../lib/web/question_router"
 import NextCors from 'nextjs-cors'
 
+import { getMostRecentForecastForUser } from '../../../lib/_utils_common'
+
 interface Request extends NextApiRequest {
   query: {questionId: string}
 }
@@ -58,7 +60,7 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
   assertHasAccess({userId: session?.user.id}, question)
 
   const userName = question!.user.name
-  const prediction = question!.forecasts[0].forecast
+  const prediction = getMostRecentForecastForUser(question!, question!.userId)?.forecast
 
   res.status(200).json({
     title: question?.title,

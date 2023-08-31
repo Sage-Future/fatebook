@@ -14,6 +14,19 @@
         receiver.dispatchEvent(eventObj);
       }
     }
+    
+    else if (event.data.action === 'create_comment') {
+      const eventObj = document.createEvent("Event");
+      eventObj.initEvent("keyup", true, true);
+      eventObj.keyCode = 77;
+      eventObj.altKey = true
+      eventObj.ctrlKey = true
+    
+      const receiver = document.querySelector(".docs-texteventtarget-iframe")
+      if (receiver && receiver.contentDocument) {
+        receiver.dispatchEvent(eventObj);
+      }
+    }
   })
 })()
 
