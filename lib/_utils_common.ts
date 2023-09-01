@@ -1,5 +1,5 @@
 import { Forecast, Question, QuestionScore, Resolution } from '@prisma/client'
-import { Decimal } from '@prisma/client/runtime'
+import { Decimal } from '@prisma/client/runtime/library'
 import { QuestionWithForecasts } from '../prisma/additional'
 import { maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing, numberOfDaysInRecentPeriod, scorePrepad } from './_constants'
 
