@@ -3,7 +3,7 @@ import prisma from "../../../lib/_utils_server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]"
 import { assertHasAccess } from "../../../lib/web/question_router"
-import NextCors from 'nextjs-cors'
+// import NextCors from 'nextjs-cors'
 
 import { getMostRecentForecastForUser } from '../../../lib/_utils_common'
 
@@ -14,12 +14,12 @@ interface Request extends NextApiRequest {
 const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
   // Run the cors middleware
   // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
-  await NextCors(req, res, {
-    // Options
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    origin: req.headers.origin,
-    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  })
+  // await NextCors(req, res, {
+  //   // Options
+  //   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  //   origin: req.headers.origin,
+  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  // })
 
   if (req.method === "OPTIONS") {
     return res.status(200).json({})
