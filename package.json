@@ -43,7 +43,7 @@
     "discord-interactions": "^3.4.0",
     "dotenv-cli": "^7.2.1",
     "is-ua-webview": "^1.1.2",
-    "next": "^13.3.1",
+    "next": "^13.4.20-canary.15",
     "next-auth": "^4.22.1",
     "next-seo": "^6.0.0",
     "nextjs-google-analytics": "^2.3.3",
