@@ -39,8 +39,6 @@ const sentryWebpackPluginOptions = {
   project: "fatebook",
   silent: true, // Suppresses all logs
 
-  configFile:"sentry.client.config.cjs"
-
   // For all available options, see:
   // https://github.com/getsentry/sentry-webpack-plugin#options.
 };
