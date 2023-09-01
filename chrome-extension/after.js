@@ -86,7 +86,7 @@
         console.log(`received backend request ${request.action}`)
         if (request.action === "open_modal") {
           if (EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS) {
-            const commentMenuItem = document.getElementById(":77")
+            const commentMenuItem = document.getElementById(":79")
             if (commentMenuItem && commentMenuItem.getAttribute('aria-disabled') === 'false') {
               predictionComment()
             } else {
