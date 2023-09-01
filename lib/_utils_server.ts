@@ -15,6 +15,7 @@ process.on('warning', (warning) => {
   console.warn(warning.name)
   console.warn(warning.message)
   console.warn(warning.stack)
+  console.warn(warning.emitter, warning.type, warning.count)
 })
 
 // Intialise prisma, use this method to avoid multiple intialisations in `next dev`
