@@ -24,11 +24,13 @@ interface PredictProps {
 
   /** Can optionally include a callback for when questions are created */
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
-
   embedded?:boolean
 }
 
 export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProps) {
+  const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
+  textAreaRef = textAreaRef || nonPassedRef
+
   const predictFormSchema = z.object({
     question: z.string().min(1),
     resolveBy: z.string(),
@@ -125,6 +127,18 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
     }
   }
 
+  const onDateKeydown = (e: KeyboardEvent) => {
+    onEnterSubmit(e)
+    if (e.key === "Tab") {
+      e.preventDefault()
+      if (e.shiftKey) {
+        textAreaRef!.current?.focus()
+      } else {
+        predictionInputRefMine.current?.focus()
+      }
+    }
+  }
+
   useEffect(() => {
     setFocus("question")
   }, [setFocus])
@@ -152,7 +166,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
     }
   }
   const { onChange: onChangeQuestion, ref: formRef, ...registerQuestion } = register("question", { required: true })
-  const ref = textAreaRef ? mergeRefs([textAreaRef, formRef]) : formRef
+  const mergedTextAreaRef = mergeRefs([textAreaRef, formRef])
 
   function getTags(question: string) {
     const tags = question.match(/#\w+/g)
@@ -190,10 +204,12 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
                   smartUpdateResolveBy(e.currentTarget.value + e.key)
                 }
               }}
-              ref={ref}
+              ref={mergedTextAreaRef}
               {...registerQuestion}
             />
+
             <button
+              tabIndex={-1}
               className={clsx(
                 'btn btn-circle aspect-square absolute right-3 top-2 hover:opacity-100',
                 showSuggestions ? 'btn-active' : 'btn-ghost',
@@ -244,7 +260,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
                   defaultValue={
                     getDateYYYYMMDD(new Date(tomorrowDate()))
                   }
-                  onKeyDown={onEnterSubmit}
+                  onKeyDown={onDateKeydown}
                   {...register("resolveBy", { required: true })}
                 />
                 <span className='italic text-neutral-400 text-sm p-1'>

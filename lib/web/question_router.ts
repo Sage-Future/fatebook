@@ -896,22 +896,23 @@ export async function getQuestionAssertAuthor(
   return question
 }
 
-function assertHasAccess(
+export function assertHasAccess(
   ctx: { userId: string | undefined },
   question: QuestionWithForecastsAndSharedWithAndLists | null
 ) {
   if (question === null) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
+
   if (
-    question?.sharedPublicly ||
-    question?.sharedWith.some((u) => u.id === ctx.userId) ||
-    question?.sharedWithLists.some(
+    question.sharedPublicly ||
+    question.sharedWith.some((u) => u.id === ctx.userId) ||
+    question.sharedWithLists.some(
       (l) =>
         l.users.some((u) => u.id === ctx.userId) || l.authorId === ctx.userId
     ) ||
-    question?.userId === ctx.userId ||
-    question?.forecasts.some((f) => f.userId === ctx.userId) // for slack questions
+    question.userId === ctx.userId ||
+    question.forecasts.some((f) => f.userId === ctx.userId) // for slack questions
   ) {
     return question as QuestionWithForecasts
   } else {

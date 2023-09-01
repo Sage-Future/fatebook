@@ -1,27 +1,36 @@
 import React, { useEffect } from "react"
 import { useRouter } from "next/router"
-import "../../components/QuestionOrSignIn"
+import { sendToHost, useListenForSessionReload, useRespondToPing } from "../../lib/web/embed"
+import "../../components/QuestionOrSignIn" // ensure code we need is pre-loaded
 
 // shows nothing, but starts listening for requests to load a question
 
-function sendLoaderListening() {
-  window.parent.postMessage({ isFatebook: true, action: "question_loader_listening" }, '*')
-}
-
+let runOnce = false
 export default function QuestionLoaderEmbed() {
   const router = useRouter()
 
+  useRespondToPing()
+
   useEffect(() => {
     if (!router) return
+    if (runOnce) return
 
-    window.addEventListener('message', (event:MessageEvent<any>) => {
-      if (typeof event.data === 'object' && event.data.isFatebook && event.data.action === 'load_question') {
-        router.push(`/embed/q/${event.data.questionId}`).catch(e => console.error(e))
+    runOnce = true
+    window.addEventListener('message', (event: MessageEvent<any>) => {
+      if (typeof event.data !== 'object' || !event.data.isFatebook) return
+
+      if (event.data.action === 'load_question') {
+        router.push(`/embed/q/${event.data.questionId}${window.location.search}`).catch(e => console.error(e))
       }
     })
 
-    sendLoaderListening()
-  }, [router])
+    sendToHost('question_loader_listening')
+
+    // warning: don't deregister, else we can't navigate more than once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useListenForSessionReload()
 
   return null
 }

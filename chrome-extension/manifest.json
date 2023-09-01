@@ -4,11 +4,19 @@
   "homepage_url": "https://fatebook.io/",
   "version": "1.0.0",
   "manifest_version": 3,
-  "action": {},
+  "action": {
+    "default_title": "Click to make a prediction",
+    "default_icon": {
+      "16": "scale.png",
+      "24": "scale.png",
+      "32": "scale.png"
+    }
+  },
+  
   "commands": {
     "open_modal": {
       "suggested_key": {
-        "default": "Alt+Shift+F"
+        "default": "Ctrl+Shift+F"
       },
       "description": "Open prediction modal."
     }
@@ -28,7 +36,7 @@
   "content_scripts": [
     {
       "run_at": "document_idle",
-      "js": ["after.js"],
+      "js": ["sentry-content-script.js", "after.js"],
       "css": ["style.css"],
       "matches": ["https://*/*", "http://*/*"]
     }
