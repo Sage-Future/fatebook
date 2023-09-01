@@ -22,6 +22,19 @@ export function sendToHost(action: string, data: {[i:string]:any} = {}) {
     window.parent.postMessage({ isFatebook: true, action, embedId: getEmbedId(), ...data}, '*')
 }
 
+export function useRespondToPing() {
+
+  useEffect(() => {
+    window.addEventListener('message', (event) => {
+      if (typeof event.data !== 'object' || !event.data.isFatebook) return
+
+      if (event.data.action.includes('ping-')) {
+        sendToHost(event.data.action)
+      }
+    })
+  }, [])
+}
+
 export function useListenForSessionReload() {
   const { status } = useSession()
 

@@ -6,7 +6,7 @@ import { Predict } from "./Predict"
 import { makeClipboardHtmlLink, makeRichGoogleDocsLink } from "../lib/web/gdoc_rich_text"
 import { XCircleIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
-import { sendToHost } from "../lib/web/embed"
+import { sendToHost, useRespondToPing } from "../lib/web/embed"
 
 
 function cancelPrediction() {
@@ -40,6 +40,8 @@ export default function PredictModal() {
       }
     })
   }, [])
+
+  useRespondToPing()
 
   // Callback for when user creates the prediction
   const onQuestionCreate = useCallback(({ url, title, prediction }: { url: string, title: string, prediction?:number }) => {

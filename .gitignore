@@ -15,3 +15,6 @@ extension.zip
 
 localhost-key.pem
 localhost.pem
+
+# Sentry Auth Token
+.sentryclirc

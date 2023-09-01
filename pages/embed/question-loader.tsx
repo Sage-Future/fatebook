@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { useRouter } from "next/router"
-import { sendToHost, useListenForSessionReload } from "../../lib/web/embed"
+import { sendToHost, useListenForSessionReload, useRespondToPing } from "../../lib/web/embed"
 import "../../components/QuestionOrSignIn" // ensure code we need is pre-loaded
 
 // shows nothing, but starts listening for requests to load a question
@@ -8,6 +8,8 @@ import "../../components/QuestionOrSignIn" // ensure code we need is pre-loaded
 let runOnce = false
 export default function QuestionLoaderEmbed() {
   const router = useRouter()
+
+  useRespondToPing()
 
   useEffect(() => {
     if (!router) return
