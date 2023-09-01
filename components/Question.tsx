@@ -34,9 +34,7 @@ export function Question({
       <div className={clsx("transition-transform group", !embedded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
         <div
           className={clsx(
-            "rounded-md shadow-sm group-hover:shadow-md transition-all z-10",
-
-            !embedded && "outline-1 outline cursor-pointer",
+            !embedded && "outline-1 outline cursor-pointer rounded-md shadow-sm group-hover:shadow-md transition-all z-10",
 
             (manuallyExpanded || alwaysExpand) && "rounded-b-none",
 

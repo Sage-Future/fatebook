@@ -44,8 +44,9 @@ export function useListenForSessionReload() {
         sendToHost('load-url', {src: location.href})
       }
     }
-
-    document.addEventListener('visibilitychange', fn)
-    return () => document.removeEventListener('visibilitychange', fn)
+    document.addEventListener('visibilitychange', fn, false)
+    return () => {
+      document.removeEventListener('visibilitychange', fn)
+    }
   }, [status])
 }

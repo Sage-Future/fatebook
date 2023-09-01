@@ -40,7 +40,7 @@
         return EMBED_LOCATIONS.UNKNOWN
       }
     }
-    
+
     console.log(`initialising fatebook extension, location: "${EMBED_LOCATION}"`, extensionInfo)
 
     if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return // Don't run on fatebook.io
@@ -78,7 +78,6 @@
         }
       })
     })
-
 
     // ==== Listen for messages from extension background script ====
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -271,17 +270,6 @@
         
         link.innerText = pasteString
       }
-
-      // style it
-      // link.style.background = '#d1d3d5'
-      // // link.style.borderRadius = '10px'
-      // link.style.textDecoration = 'none'
-      // link.style.color = 'black'
-      // link.style.padding = '1px 7px'
-      // link.style.border = '1px solid #0000004d'
-      // if (link.parentElement.clientWidth < 400) {
-      //   link.style.display = 'block' // temp workaround
-      // }
 
       // move the question loader to the link on click
       link.addEventListener('click', async (e) => {
