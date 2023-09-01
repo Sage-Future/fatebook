@@ -10,6 +10,13 @@ import { TEST_WORKSPACES } from './_constants'
 import { conciseDateTime, unixTimestamp } from './_utils_common'
 import { Blocks } from './blocks-designs/_block_utils'
 
+
+process.on('warning', (warning) => {
+  console.warn(warning.name)
+  console.warn(warning.message)
+  console.warn(warning.stack)
+})
+
 // Intialise prisma, use this method to avoid multiple intialisations in `next dev`
 // Source: https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices#solution
 const globalForPrisma = global as unknown as {
