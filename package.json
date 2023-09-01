@@ -12,7 +12,8 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "lint": "next lint --dir lib --dir pages --dir components",
     "studio": "prisma studio",
-    "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios"
+    "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios",
+    "zip": "zip -r extension chrome-extension"
   },
   "git": {
     "pre-commit": "lint"
@@ -43,9 +44,10 @@
     "discord-interactions": "^3.4.0",
     "dotenv-cli": "^7.2.1",
     "is-ua-webview": "^1.1.2",
-    "next": "^13.4.20-canary.15",
+    "next": "^13.4.11",
     "next-auth": "^4.22.1",
     "next-seo": "^6.0.0",
+    "nextjs-cors": "^2.1.2",
     "nextjs-google-analytics": "^2.3.3",
     "node-fetch": "^3.3.1",
     "postmark": "^3.0.18",
