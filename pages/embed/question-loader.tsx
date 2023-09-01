@@ -27,6 +27,7 @@ export default function QuestionLoaderEmbed() {
     sendToHost('question_loader_listening')
 
     // warning: don't deregister, else we can't navigate more than once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useListenForSessionReload()
