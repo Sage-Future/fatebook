@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "manifest_version": 3,
   "action": {
-    "default_title": "Click make a prediction",
+    "default_title": "Click to make a prediction",
     "default_icon": {
       "16": "scale.png",
       "24": "scale.png",

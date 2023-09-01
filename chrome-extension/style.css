@@ -14,40 +14,40 @@
 }
 
 .fatebook-toast-embed {
-  position: absolute;
-  border: none;
-  top: 0;
-  right: 0;
-  z-index: 0;
-  width: 0;
-  height: 0;
-  overflow: visible;
-  color-scheme: normal;
+  position: absolute!important;
+  border: none!important;
+  top: 0!important;
+  right: 0!important;
+  z-index: 0!important;
+  width: 0!important;
+  height: 0!important;
+  overflow: visible!important;
+  color-scheme: normal!important;
 }
 
 .fatebook-toast-embed-visible {
-  z-index: 9999;
-  width: 400px;
-  height: 100px;
+  z-index: 9999!important;
+  width: 400px!important;
+  height: 100px!important;
 }
 
 .fatebook-question-embed {
-  display: none;
-  border:1px solid black;
+  display: none!important;
+  border:1px solid black!important;
 
-  position: absolute;
-  width: 500px;
-  height: 188px;
-  min-height: 180px;
-  z-index: 999999999;
-  transition: height 0.2s;
-  overflow: auto;
-  color-scheme: normal;
-  top:0;
-  left:0;
+  position: absolute!important;
+  width: 500px!important;
+  height: 188px!important;
+  min-height: 180px!important;
+  z-index: 999999999!important;
+  transition: height 0.2s!important;
+  overflow: auto!important;
+  color-scheme: normal!important;
+  top:0!important;
+  left:0!important;
 
-  border-color: #dadce0;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 1px rgba(60, 64, 67, .15);
+  border-color: #dadce0!important;
+  border-radius: 8px!important;
+  box-shadow: 0 1px 3px 1px rgba(60, 64, 67, .15)!important;
 }
 

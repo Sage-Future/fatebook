@@ -23,7 +23,6 @@ export function sendToHost(action: string, data: {[i:string]:any} = {}) {
 }
 
 export function useRespondToPing() {
-
   useEffect(() => {
     window.addEventListener('message', (event) => {
       if (typeof event.data !== 'object' || !event.data.isFatebook) return
@@ -41,7 +40,8 @@ export function useListenForSessionReload() {
   useEffect(() => {
     const fn = () => {
       if (status === 'unauthenticated' && document.visibilityState === 'visible') {
-        sendToHost('reload-me', {src: location.href})
+        // can't just location.reload, as some pages have a content security policy against it
+        sendToHost('load-url', {src: location.href})
       }
     }
 

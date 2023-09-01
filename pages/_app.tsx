@@ -1,3 +1,8 @@
+import { patchLocalStorage } from "../lib/patchLocalStorage"
+if (typeof window !== 'undefined') {
+  patchLocalStorage() // must run before next-auth
+}
+
 import { SessionProvider } from "next-auth/react"
 import { AppProps } from "next/app"
 import Head from "next/head"
@@ -22,16 +27,15 @@ type AppPropsWithLayout = AppProps & {
 function App({ Component, pageProps: {session, ...pageProps} }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => <Layout>{page}</Layout>)
 
+  const refetchOnWindowFocus = typeof window !== 'undefined' && !location.href.includes('/embed/')
+
   return <>
     <Meta />
     <Head>
       <link rel="shortcut icon" href="/favicon.ico" />
-
-      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
-      <script type="text/javascript" src="/patchEmbedLocalStorage.js"></script>
     </Head>
     <GoogleAnalytics trackPageViews />
-    <SessionProvider session={session}>
+    <SessionProvider session={session} refetchOnWindowFocus={refetchOnWindowFocus}>
       {getLayout(<Component {...pageProps} />)}
       <Toaster />
     </SessionProvider>

@@ -12,17 +12,18 @@ interface Request extends NextApiRequest {
 }
 
 const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
-  // Run the cors middleware
-  // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
   await NextCors(req, res, {
-    // Options
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
     origin: req.headers.origin,
-    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+    optionsSuccessStatus: 200,
   })
 
-  if (req.method == "OPTIONS") {
-    return res.status(200).json({})
+  if (req.method === "OPTIONS") {
+    return res.status(200).end()
+  }
+
+  if (req.method != "GET") {
+    return res.status(404).end()
   }
 
   const { questionId } = req.query

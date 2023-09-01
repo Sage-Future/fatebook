@@ -73,6 +73,7 @@
         if (!iframe) {
           console.error(`Could not find iframe for message id:"${event.data.embedId}"`, iframeMap)
         } else {
+          console.log(`received message "${event.data.action}" from "${iframe.src}"`)
           iframe.dispatchEvent(new CustomEvent(event.data.action, {detail:event.data}))
         }
       })
@@ -125,6 +126,7 @@
     }
 
     function sendMessage(iframe, action, data) {
+      console.log(`sending message "${action}" to "${iframe.src}"`)
       pingIframe(iframe)
       iframe.contentWindow?.postMessage({ isFatebook: true, action, ...data }, '*')
     }
@@ -133,9 +135,9 @@
     const predictIframe = createIframe(`${FATEBOOK_URL}embed/predict-modal`)
     predictIframe.className = 'fatebook-predict-embed'
     predictIframe.style.display = 'none'
-    document.body.appendChild(predictIframe) // append to load content
+    document.body.appendChild(predictIframe)
 
-    predictIframe.addEventListener('reload-me', (event) => {
+    predictIframe.addEventListener('load-url', (event) => {
       const wasOpen = predictIframe.style.display === 'block'
       const parent = predictIframe.parentElement
       predictIframe.remove()
@@ -147,7 +149,7 @@
     })
 
 
-    let oldActiveElement = document.activeElement
+    let oldActiveElement
     function openModal() {
       predictIframe.style.display = 'block'
       oldActiveElement = document.activeElement
@@ -157,7 +159,6 @@
 
       document.body._originalOverflow = document.body.style.overflow
       document.body.style.overflow = 'hidden'
-      
 
       document.documentElement._originalOverflow = document.documentElement.style.overflow
       document.documentElement.style.overflow = 'hidden'
@@ -179,7 +180,7 @@
     // ==== Toast iframe ====
     const toastIframe = createIframe(`${FATEBOOK_URL}embed/toast`)
     toastIframe.className = 'fatebook-toast-embed'
-    document.body.appendChild(toastIframe) // append to load content
+    document.body.appendChild(toastIframe)
 
     function toast(type, text) {
       toastIframe.className += ' fatebook-toast-embed-visible'
@@ -192,10 +193,12 @@
 
     // ==== Question iframe ====
     const questionIframe = createIframe(`${FATEBOOK_URL}embed/question-loader`)
+    questionIframe.className = 'fatebook-question-embed'
+
     const questionLoaderLoaded = new Promise(resolve => questionIframe.addEventListener('question_loader_listening', resolve))
     document.body.appendChild(questionIframe)
 
-    questionIframe.addEventListener('reload-me', (event) => {
+    questionIframe.addEventListener('load-url', (event) => {
       const wasOpen = loadedQuestionId
       const parent = questionIframe.parentElement
       questionIframe.remove()
@@ -206,7 +209,6 @@
       }
     })
 
-    questionIframe.className = 'fatebook-question-embed'
 
     questionIframe.addEventListener('prediction_elicit_success', () => {
       toast('success', 'Prediction made!')
@@ -363,8 +365,11 @@
       // The div that contains the popup doesn't exist initially, so we must watch for it
       function waitForLinkPopupToExist() {
         const kixEditor = document.querySelector(".kix-appview-editor")
-        if (!kixEditor) return
-        // todo: handle if not found
+        if (!kixEditor) {
+          Sentry.captureException(new Error("could not find kixEditor element in gdoc page"))
+          return
+        }
+        
 
         const reactToChange = async (mutationList, observer) => {
           const linkPopup = document.querySelector(".docs-linkbubble-bubble")
@@ -460,6 +465,7 @@
         predictIframe.removeEventListener('prediction_cancel', done)
 
         if (event.type === 'prediction_create_success') {
+          // send message to direct_inject
           window.dispatchEvent(new MessageEvent('message', {data: {isFatebook: true, action: 'create_comment'}}))
 
           const waitForCommentInterval = setInterval(() => {
