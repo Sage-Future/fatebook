@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server'
 import { signingSecret } from './lib/_constants'
 import { validateSlackRequest } from './lib/_validate'
 import { verifyDiscordRequest } from './lib/discord/utils'
-import { parse } from 'url'
 
 
 const redirectUrl            : string = "/api/success_response"
@@ -45,8 +44,8 @@ export default async function middleware(req: NextRequest, context: NextFetchEve
 
   if (req.url.includes('for-slack')) {
     if(!req.url.includes('fatebook.io') && req.url.includes('installedTo')){
-      const parsedUrl = parse(req.url)
-      return NextResponse.redirect(new URL(`https://fatebook.io${parsedUrl.pathname}${parsedUrl.search}`))
+      // const parsedUrl = parse(req.url)
+      // return NextResponse.redirect(new URL(`https://fatebook.io${parsedUrl.pathname}${parsedUrl.search}`))
     }else{
       return NextResponse.next()
     }
