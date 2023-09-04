@@ -63,6 +63,7 @@ export type ExtraFilters = {
   resolvingSoon: boolean
   filterTagIds?: string[]
   showAllPublic?: boolean
+  theirUserId?: string
 }
 
 export const questionRouter = router({
@@ -142,6 +143,7 @@ export const questionRouter = router({
             resolvingSoon: z.boolean(),
             filterTagIds: z.array(z.string()).optional(),
             showAllPublic: z.boolean().optional(),
+            theirUserId: z.string().optional(),
           })
           .optional(),
       })
@@ -768,7 +770,17 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
           ? {
               AND: [{ sharedPublicly: true }, { unlisted: false }],
             }
-          : {
+          : (
+            input.extraFilters?.theirUserId ? {
+              // show public, not unlisted questions by the user, and questions they've shared with me
+              userId: input.extraFilters.theirUserId,
+              OR: [
+                { sharedPublicly: true, unlisted: false },
+                { sharedWith: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } },
+                { sharedWithLists: { some: { users: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } } } },
+              ]
+
+            } : {
               // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
               OR: [
                 { userId: ctx.userId },
@@ -798,7 +810,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                   },
                 },
               ],
-            },
+            }),
         input.extraFilters?.resolved
           ? {
               resolution: {

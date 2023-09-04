@@ -1,7 +1,7 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
 import { ExtraFilters } from "../lib/web/question_router"
@@ -15,12 +15,14 @@ export function Questions({
   noQuestionsText = "Make your first forecast to see it here.",
   filterTagIds = undefined,
   showAllPublic = false,
+  theirUserId = undefined,
 }: {
-  title?: string,
+  title?: string | ReactNode,
   filterClientSide?: (question: any) => boolean
   noQuestionsText?: string,
   filterTagIds?: string[],
   showAllPublic?: boolean,
+  theirUserId?: string,
 }) {
   const session = useSession()
 
@@ -38,6 +40,7 @@ export function Questions({
         ...extraFilters,
         filterTagIds,
         showAllPublic,
+        theirUserId,
       },
     },
     {

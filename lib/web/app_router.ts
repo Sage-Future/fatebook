@@ -4,9 +4,9 @@ import { sendEmailReadyToResolveNotification } from '../../pages/api/check_for_m
 import prisma, { backendAnalyticsEvent, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
 import { importRouter } from './import_router'
 import { questionRouter } from './question_router'
+import { tagsRouter } from './tags_router'
 import { publicProcedure, router } from './trpc_base'
 import { userListRouter } from './userList_router'
-import { tagsRouter } from './tags_router'
 
 
 export const appRouter = router({
@@ -141,6 +141,30 @@ export const appRouter = router({
       })
 
       return newApiKey
+    }),
+
+  getUserInfo: publicProcedure
+    .input(
+      z.object({
+        userId: z.string().optional(),
+      }),
+    )
+    .query(async ({ input }) => {
+      if (!input.userId) {
+        return null
+      }
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+      })
+
+      return user ? {
+        name: user.name || undefined,
+        image: user.image || undefined,
+        id: user.id,
+      } :  undefined
     }),
 })
 
