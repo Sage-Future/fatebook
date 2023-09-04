@@ -1,6 +1,6 @@
 {
   "name": "Fatebook Chrome Extension",
-  "description": "Fatebook Chrome Extension",
+  "description": "The fastest way to make and track predictions",
   "homepage_url": "https://fatebook.io/",
   "version": "1.0.0",
   "manifest_version": 3,
@@ -25,7 +25,7 @@
   "web_accessible_resources": [
     {
       "matches": ["https://*/*", "http://*/*"],
-      "resources": ["/*"]
+      "resources": ["/direct_inject*", "*.png"]
     }
   ],
 

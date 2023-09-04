@@ -1,6 +1,6 @@
 // Exposes the Prediction component solo so it can be embedded as desired
 
-import React, { useCallback, useEffect, useRef } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { copyToClipboard } from "../lib/web/clipboard"
 import { Predict } from "./Predict"
 import { makeClipboardHtmlLink, makeRichGoogleDocsLink } from "../lib/web/gdoc_rich_text"
@@ -9,16 +9,12 @@ import { useSession } from "next-auth/react"
 import { sendToHost } from "../lib/web/embed"
 
 
-function cancelPrediction() {
-  sendToHost("prediction_cancel")
-}
 
-function predictionSuccess(predictionLink: string) {
-  sendToHost("prediction_create_success", {predictionLink})
-}
+
 
 export default function PredictModal() {
   const { data: session } = useSession()
+  const [resetTrigger, setResetTrigger] = useState(false)
 
   // Listen for requests to focus the prediction modal
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -31,6 +27,16 @@ export default function PredictModal() {
       }
     })
   }, [])
+
+  function cancelPrediction() {
+    sendToHost("prediction_cancel")
+    setResetTrigger(true)
+  }
+
+  function predictionSuccess(predictionLink: string) {
+    sendToHost("prediction_create_success", {predictionLink})
+    setResetTrigger(true)
+  }
 
   // Listen for escape key within this iframe, close modal
   useEffect(() => {
@@ -60,7 +66,7 @@ export default function PredictModal() {
 
   return <div className="flex items-center justify-center w-full h-full bg-black/80 p-12" onClick={() => cancelPrediction()}>
     <div className="relative max-w-10xl p-10 pb-8 bg-neutral-50 rounded-sm" onClick={e => e.stopPropagation()}>
-      <Predict textAreaRef={textAreaRef} onQuestionCreate={onQuestionCreate} embedded={true}/>
+      <Predict resetTrigger={resetTrigger} setResetTrigger={setResetTrigger} textAreaRef={textAreaRef} onQuestionCreate={onQuestionCreate} embedded={true}/>
 
       <div className="absolute w-[20px] h-[20px] top-[8px] right-[6px] text-neutral-400 cursor-pointer" onClick={() => cancelPrediction()}>
         <XCircleIcon></XCircleIcon>

@@ -24,10 +24,15 @@ interface PredictProps {
 
   /** Can optionally include a callback for when questions are created */
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
+
   embedded?:boolean
+
+  resetTrigger?:boolean
+
+  setResetTrigger?:(arg:boolean) => void
 }
 
-export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProps) {
+export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger, setResetTrigger }: PredictProps) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
 
@@ -99,6 +104,15 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded }: PredictProp
 
     reset()
   }
+
+  useEffect(() => {
+    if (resetTrigger) {
+      reset()
+      if (setResetTrigger) {
+        setResetTrigger(false)
+      }
+    }
+  }, [resetTrigger])
 
   useEffect(() => {
     const cachedQuestionContent = localStorage.getItem("cached_question_content")
