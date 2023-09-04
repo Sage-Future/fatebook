@@ -10,7 +10,7 @@ export default function UserPage() {
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-        <NextSeo title={`${theirUserInfoQ.data?.name}'s predictions`} />
+        <NextSeo title={`${theirUserInfoQ.data?.name || "User"}'s predictions`} />
         <div className="prose mx-auto lg:w-[650px]">
           <Questions
             theirUserId={theirUserId}
