@@ -1,3 +1,4 @@
+import { User } from "@prisma/client"
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
@@ -6,11 +7,7 @@ export function Username({
   user,
   className,
 } : {
-  user: {
-    id: string,
-    name?: string,
-    image?: string,
-  },
+  user: User,
   className?: string,
 }) {
   return (
