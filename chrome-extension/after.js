@@ -32,7 +32,7 @@
     const EMBED_LOCATION = getEmbedLocation()
 
     function getEmbedLocation() {
-      if (window.location.host === "docs.google.com") {
+      if (window.location.href.includes("docs.google.com/document")) {
         return EMBED_LOCATIONS.GOOGLE_DOCS
       } else if (window.location.host === "fatebook.io" || window.location.host === "localhost:3000") {
         return EMBED_LOCATIONS.FATEBOOK
@@ -44,6 +44,10 @@
     console.log(`initialising fatebook extension, location: "${EMBED_LOCATION}"`, extensionInfo)
 
     if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return // Don't run on fatebook.io
+
+    function getIsFatebookLink(href) {
+      return href.includes(`${FATEBOOK_HOST}/q/`)
+    }
 
     // ==== Listen for messages from iframes ====
     const iframeMap = {}
@@ -295,7 +299,7 @@
           if (link.__fatebook_processed) continue
           link.__fatebook_processed = true
 
-          if (isFatebookLink(link.href)) {
+          if (getIsFatebookLink(link.href)) {
             replaceFatebookLink(link)
           }
         }
@@ -303,10 +307,6 @@
 
       new MutationObserver(processFatebookLinks).observe(document.body, {subtree: true, childList: true})
       processFatebookLinks()
-    }
-
-    function isFatebookLink(href) {
-      return href.includes(FATEBOOK_HOST)
     }
 
     // === START LOCATION SPECIFIC CODE ===
@@ -396,7 +396,7 @@
           const link = linkPopup.querySelector("a")
           if (!link) return
           
-          const isFatebookLink = link.href.includes(FATEBOOK_URL)
+          const isFatebookLink = getIsFatebookLink(link.href)
           const isUIInjected = linkPopup.contains(gdocLinkPopupBlockingElement) && 
           gdocLinkPopupBlockingElement.style.display === "block"
 
