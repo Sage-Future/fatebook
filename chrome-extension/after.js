@@ -279,7 +279,9 @@
       link.addEventListener('click', async (e) => {
         questionIframe.style.removeProperty('border')
         questionIframe.style.removeProperty('boxShadow')
+
         gdocLinkPopupBlockingElement.style.display = 'none'
+        questionIframe.style.display = 'none'
 
         e.preventDefault()
         e.stopPropagation()
@@ -401,9 +403,11 @@
           gdocLinkPopupBlockingElement.style.display === "block"
 
           // If the user went from a fatebook link to a non-fatebook link, remove our content
-          if (!isFatebookLink && isUIInjected) {
-            unloadQuestionIframe()
-            resetInlineGocChanges(linkPopup)
+          if (!isFatebookLink) {
+            if (isUIInjected) {
+              unloadQuestionIframe()
+              resetInlineGocChanges(linkPopup)
+            }
             return
           }
 
@@ -420,10 +424,6 @@
             overlapElements(questionIframe, gdocLinkPopupBlockingElement)
           }
         }
-
-        // linkPopup.addEventListener('blur', () => {
-        //   resetInlineGocChanges()
-        // })
 
         reactToChange()
 

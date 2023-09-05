@@ -17,10 +17,10 @@
     console.log('sending extension info to tab')
     try {
       channel.postMessage({
-        // isFatebook: true, action: 'init_script', isDev: false
         isFatebook: true,
         action: 'init_script',
-        isDev: extensionInfo.installType === 'development',
+        // isDev: extensionInfo.installType === 'development',
+        isDev:false,
         extensionInstanceId
       })
     } catch (e) {
