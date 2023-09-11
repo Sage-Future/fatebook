@@ -83,6 +83,12 @@ export default function ApiPage() {
             </Link>
             {" - by @JasperGo. You can add it to your homescreen or use Siri to create a question!"}
           </li>
+          <li>
+            <Link href="https://github.com/sonofhypnos/fatebook.el">
+              An Emacs plugin to create Fatebook questions
+            </Link>
+            {" - by @sonofhypnos"}
+          </li>
         </ul>
       </div>
     </div>
