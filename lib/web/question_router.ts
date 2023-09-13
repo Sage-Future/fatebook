@@ -163,10 +163,11 @@ export const questionRouter = router({
     .input(
       z.object({
         tags: z.array(z.string()).optional(),
+        userId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
-      if (!ctx.userId) {
+      if (!input.userId) {
         return null
       }
 
@@ -174,9 +175,9 @@ export const questionRouter = router({
         where: {
           AND: [
             {
-              userId: ctx.userId,
+              userId: input.userId,
             },
-            input.tags && input.tags.length > 0
+            input.tags && input.userId === ctx.userId && input.tags.length > 0
               ? {
                   question: {
                     tags: {
@@ -184,7 +185,7 @@ export const questionRouter = router({
                         name: {
                           in: input.tags,
                         },
-                        userId: ctx.userId,
+                        userId: input.userId,
                       },
                     },
                   },
@@ -666,10 +667,11 @@ export const questionRouter = router({
     .input(
       z.object({
         tags: z.array(z.string()).optional(),
+        userId: z.string(),
       })
     )
-    .query(async ({ input, ctx }) => {
-      if (!ctx.userId) {
+    .query(async ({ ctx, input }) => {
+      if (!input.userId) {
         return null
       }
 
@@ -677,9 +679,9 @@ export const questionRouter = router({
         where: {
           AND: [
             {
-              userId: ctx.userId,
+              userId: input.userId,
             },
-            input.tags && input.tags.length > 0
+            input.tags && input.userId === ctx.userId && input.tags.length > 0
               ? {
                   question: {
                     tags: {
@@ -687,7 +689,7 @@ export const questionRouter = router({
                         name: {
                           in: input.tags,
                         },
-                        userId: ctx.userId,
+                        userId: input.userId,
                       },
                     },
                   },
@@ -704,13 +706,14 @@ export const questionRouter = router({
     .input(
       z.object({
         tags: z.array(z.string()).optional(),
+        userId: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
-      if (!ctx.userId) {
+    .query(async ({ input }) => {
+      if (!input.userId) {
         return null
       }
-      return await getBucketedForecasts(ctx.userId, input.tags)
+      return await getBucketedForecasts(input.userId, input.tags)
     }),
 
   deleteQuestion: publicProcedure

@@ -4,16 +4,21 @@ import clsx from "clsx"
 import { useState } from "react"
 import { Line } from "react-chartjs-2"
 import { api } from "../lib/web/trpc"
-import { getChartJsParams } from "../lib/web/utils"
+import { getChartJsParams, useUserId } from "../lib/web/utils"
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement)
 
 export function CalibrationChart({
   tags,
+  userId,
 } : {
   tags: string[]
+  userId: string
 }) {
+  const thisUserId = useUserId()
+
   const bucketedForecastsQ = api.question.getBucketedForecasts.useQuery({
+    userId: userId,
     tags: tags,
   })
   const [hovered, setHovered] = useState(false)
@@ -21,7 +26,7 @@ export function CalibrationChart({
   if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>
 
   const { buckets, bucketedForecasts } = bucketedForecastsQ.data
-  const params = getChartJsParams(buckets, bucketedForecasts, true, !hovered)
+  const params = getChartJsParams(buckets, bucketedForecasts, true, !hovered, thisUserId === userId)
 
   return (
     <div className="mr-4 relative" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
