@@ -471,6 +471,7 @@ export const questionRouter = router({
           forecast: input.forecast,
         },
         include: {
+          user: true,
           question: {
             include: {
               forecasts: {
@@ -492,6 +493,17 @@ export const questionRouter = router({
                   profiles: true,
                 },
               },
+              comments: {
+                include: {
+                  user: true,
+                },
+              },
+              sharedWith: true,
+              sharedWithLists: {
+                include: {
+                  users: true,
+                },
+              },
             },
           },
         },
@@ -501,6 +513,27 @@ export const questionRouter = router({
         submittedForecast.question,
         "New forecast"
       )
+
+      const q = submittedForecast.question
+      for (const email of Array.from(new Set([
+        q.user.email,
+        ...q.forecasts.map((f) => f.user.email),
+        ...q.comments.map((c) => c.user.email),
+        ...q.sharedWith.map((u) => u.email),
+        ...q.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
+      ])).filter((e) => e && e !== submittedForecast.user.email)) {
+        await sendEmail({
+          to: email,
+          subject: `${submittedForecast.user.name || "Someone"} predicted ${
+            submittedForecast.forecast.toNumber() * 100}% on "${q.title}"`,
+          textBody: `New prediction`,
+          htmlBody: `
+            <p>${submittedForecast.user.name || "Someone"} predicted ${submittedForecast.forecast.toNumber() * 100
+              }% on ${getHtmlLinkQuestionTitle(q)}.</p>
+            ${fatebookEmailFooter(email)}
+          `,
+        })
+      }
 
       await backendAnalyticsEvent("forecast_submitted", {
         platform: "web",
@@ -523,8 +556,16 @@ export const questionRouter = router({
           id: input.questionId,
         },
         include: {
-          comments: true,
-          forecasts: true,
+          comments: {
+            include: {
+              user: true,
+            }
+          },
+          forecasts: {
+            include: {
+              user: true,
+            }
+          },
           sharedWith: true,
           sharedWithLists: {
             include: {
@@ -532,6 +573,7 @@ export const questionRouter = router({
               author: true,
             },
           },
+          user: true,
         },
       })
 
@@ -543,7 +585,7 @@ export const questionRouter = router({
         })
       }
 
-      await prisma.comment.create({
+      const newComment = await prisma.comment.create({
         data: {
           question: {
             connect: {
@@ -561,6 +603,26 @@ export const questionRouter = router({
           user: true,
         },
       })
+
+      for (const email of Array.from(new Set([
+        question.user.email,
+        ...question.forecasts.map((f) => f.user.email),
+        ...question.comments.map((c) => c.user.email),
+        ...question.sharedWith.map((u) => u.email),
+        ...question.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
+      ])).filter((e) => e && e !== newComment.user.email)) {
+        await sendEmail({
+          to: email,
+          subject: `${newComment.user.name || "Someone"} commented on "${question.title}"`,
+          textBody: `"${newComment.comment}"`,
+          htmlBody: `
+            <p>${newComment.user.name || "Someone"} commented on ${getHtmlLinkQuestionTitle(
+            question)}:</p>
+            <p>${newComment.comment}</p>
+            ${fatebookEmailFooter(email)}
+          `,
+        })
+      }
 
       await backendAnalyticsEvent("comment_added", {
         platform: "web",

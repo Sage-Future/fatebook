@@ -62,6 +62,11 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     },
   })
 
+  if (!question) {
+    console.log(`question not found: ${questionId}, returning 404`)
+    return res.status(404).json({})
+  }
+
   assertHasAccess({userId: session?.user.id}, question)
 
   const userName = question!.user.name
