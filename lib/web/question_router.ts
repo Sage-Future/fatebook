@@ -62,8 +62,8 @@ export type ExtraFilters = {
   readyToResolve: boolean
   resolvingSoon: boolean
   filterTagIds?: string[]
-  showAllPublic?: boolean
-  theirUserId?: string
+  showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
+  theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
 }
 
 export const questionRouter = router({
@@ -149,7 +149,7 @@ export const questionRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      if (!ctx.userId && !input.extraFilters?.showAllPublic) {
+      if (!ctx.userId && !input.extraFilters?.showAllPublic && !input.extraFilters?.theirUserId) {
         return null
       }
 
