@@ -2,6 +2,7 @@ import { User } from "@prisma/client"
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
+import { getUserPageUrl } from "../pages/user/[id]"
 
 export function Username({
   user,
@@ -11,7 +12,7 @@ export function Username({
   className?: string,
 }) {
   return (
-    <Link href={`/user/${user.id}`} onClick={(e) => e.stopPropagation()} className="no-underline hover:underline">
+    <Link href={getUserPageUrl(user)} onClick={(e) => e.stopPropagation()} className="no-underline hover:underline">
       <span
         className={clsx(
           className,

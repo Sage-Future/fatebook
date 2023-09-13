@@ -3,6 +3,7 @@ import { Questions } from '../../components/Questions'
 import { api } from '../../lib/web/trpc'
 import { TrackRecord } from '../../components/TrackRecord'
 import { NextSeo } from 'next-seo'
+import { User } from '@prisma/client'
 
 export default function UserPage() {
   const theirUserId = useUserPageId()
@@ -35,4 +36,8 @@ function useUserPageId() {
   const parts =
     router.query.id && (router.query.id as string).match(/(.*)--(.*)/)
   return parts ? parts[2] : (router.query.id as string) || ""
+}
+
+export function getUserPageUrl(user: User) {
+  return `/user/${encodeURIComponent(user.name?.replace(" ", "-") || "")}--${user.id}`
 }
