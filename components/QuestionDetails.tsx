@@ -3,12 +3,13 @@ import { useRouter } from 'next/router'
 import { Fragment, ReactNode, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { toast } from 'react-hot-toast'
-import { displayForecast, forecastsAreHidden, getDateYYYYMMDD } from "../lib/_utils_common"
+import { displayForecast, forecastsAreHidden, formatDecimalNicely, getCommunityForecast, getDateYYYYMMDD } from '../lib/_utils_common'
 import { api } from '../lib/web/trpc'
-import {invalidateQuestion, useUserId, signInToFatebook} from '../lib/web/utils'
+import { invalidateQuestion, signInToFatebook, useUserId } from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CommentBox, DeleteCommentOverflow } from './CommentBox'
 import { FormattedDate } from "./FormattedDate"
+import { InfoButton } from './InfoButton'
 import { TagsSelect } from './TagsSelect'
 import { Username } from "./Username"
 
@@ -124,6 +125,10 @@ function EventsLog({
       }] : []),
     ],
   ].flat()
+
+  const numForecasters = new Set(question.forecasts.map(f => f.userId)).size
+  const communityAverage = !forecastsAreHidden(question) && numForecasters > 1 && getCommunityForecast(question, new Date())
+
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center">
@@ -134,6 +139,13 @@ function EventsLog({
           :
           <span className="text-sm text-neutral-400 italic">No forecasts yet</span>}
       </div>
+      {communityAverage && <div className='mx-auto flex gap-2 items-center mt-2'>
+        <span className='font-semibold'>Community:</span>
+        <span className="font-bold text-xl text-indigo-800">{
+        formatDecimalNicely(communityAverage * 100, 1)
+          }%</span>
+        <InfoButton tooltip="The geometric mean of odds of all forecasters' latest predictions" />
+      </div>}
     </ErrorBoundary>
   )
 }
