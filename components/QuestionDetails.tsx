@@ -139,7 +139,7 @@ function EventsLog({
           :
           <span className="text-sm text-neutral-400 italic">No forecasts yet</span>}
       </div>
-      {communityAverage && <div className='mx-auto flex gap-2 items-center mt-2'>
+      {!!communityAverage && <div className='mx-auto flex gap-2 items-center'>
         <span className='font-semibold'>Community:</span>
         <span className="font-bold text-xl text-indigo-800">{
         formatDecimalNicely(communityAverage * 100, 1)

@@ -6,6 +6,7 @@ import clsx from "clsx"
 import React, { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
+import { mergeRefs } from 'react-merge-refs'
 import TextareaAutosize from 'react-textarea-autosize'
 import SuperJSON from 'trpc-transformer'
 import { z } from "zod"
@@ -14,7 +15,6 @@ import { api } from "../lib/web/trpc"
 import { signInToFatebook, useUserId, utcDateStrToLocalDate } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
 import { InfoButton } from './InfoButton'
-import { mergeRefs } from 'react-merge-refs'
 
 type CreateQuestionMutationOutput = NonNullable<ReturnType<typeof api.question.create.useMutation>['data']>
 
