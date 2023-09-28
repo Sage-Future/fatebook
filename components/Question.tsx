@@ -1,6 +1,7 @@
 import { Transition } from '@headlessui/react'
 import { ChevronDownIcon } from "@heroicons/react/20/solid"
 import clsx from "clsx"
+import { motion } from "framer-motion"
 import Link from "next/link"
 import { useState } from 'react'
 import { ErrorBoundary } from "react-error-boundary"
@@ -31,7 +32,12 @@ export function Question({
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className={clsx("transition-transform group", !embedded && "hover:scale-[1.01]")} style={zIndex ? { zIndex } : undefined}>
+      <motion.div
+        initial={{opacity: 0, scale: 0.98}}
+        animate={{opacity: 1, scale: 1}}
+        className={clsx("transition-transform group", !embedded && "hover:scale-[1.01]")}
+        style={zIndex ? { zIndex } : undefined}
+      >
         <div
           className={clsx(
             !embedded && "outline-1 outline cursor-pointer rounded-md shadow-sm group-hover:shadow-md transition-all z-10",
@@ -120,7 +126,7 @@ export function Question({
         >
           <QuestionDetails question={question} hideOthersForecastsIfSharedWithUser={alwaysExpand} />
         </Transition>
-      </div>
+      </motion.div>
     </ErrorBoundary>
   )
 }

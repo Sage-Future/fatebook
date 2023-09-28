@@ -43,6 +43,7 @@
     "date-fns-tz": "^2.0.0",
     "discord-interactions": "^3.4.0",
     "dotenv-cli": "^7.2.1",
+    "framer-motion": "^10.16.4",
     "is-ua-webview": "^1.1.2",
     "next": "^13.4.11",
     "next-auth": "^4.22.1",

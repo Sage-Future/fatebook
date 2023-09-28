@@ -8,6 +8,7 @@ import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
 import { Question } from "./Question"
+import { AnimatePresence, motion } from "framer-motion"
 
 export function Questions({
   title,
@@ -82,34 +83,36 @@ export function Questions({
           setExtraFilters={setExtraFilters}
         />}
       </div>
-      <div className="grid gap-6">
-        {ifEmpty(
-          questions
-            .map((question, index, array) => (
-              question ?
-                <React.Fragment key={question.id}>
-                  <DateSeparator
-                    key={question.id + "header"}
-                    header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
-                  />
-                  <Question
-                    question={question}
-                    key={question.id}
-                    startExpanded={(index === 0 && question.userId === session.data?.user.id)}
-                    zIndex={questions?.length ? (questions?.length - index) : undefined}
-                  />
-                </React.Fragment>
+      <motion.div className="grid gap-6">
+        <AnimatePresence initial={false} mode="popLayout">
+          {ifEmpty(
+            questions
+              .map((question, index, array) => (
+                question ?
+                  <React.Fragment key={question.id}>
+                    <DateSeparator
+                      key={question.id + "header"}
+                      header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
+                    />
+                    <Question
+                      question={question}
+                      key={question.id}
+                      startExpanded={(index === 0 && question.userId === session.data?.user.id)}
+                      zIndex={questions?.length ? (questions?.length - index) : undefined}
+                    />
+                  </React.Fragment>
+                  :
+                  <></>
+              )),
+            <div className="italic text-neutral-500 text-sm">
+              {filtersApplied ?
+                "No questions match your filters."
                 :
-                <></>
-            )),
-          <div className="italic text-neutral-500 text-sm">
-            {filtersApplied ?
-              "No questions match your filters."
-              :
-              noQuestionsText
-            }
-          </div>
-        )}
+                noQuestionsText
+              }
+            </div>
+          )}
+        </AnimatePresence>
         <InView>
           {({ inView, ref }) => {
             if (inView && questionsQ.hasNextPage) {
@@ -121,7 +124,7 @@ export function Questions({
           }}
         </InView>
         {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && <LoaderIcon className="mx-auto" />}
-      </div>
+      </motion.div>
     </div>
   )
 }
