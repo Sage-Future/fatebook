@@ -89,6 +89,12 @@ export default function ApiPage() {
             </Link>
             {" - by @sonofhypnos"}
           </li>
+          <li>
+            <Link href="/Fatebook.alfredworkflow">
+              An Alfred workflow to create Fatebook questions
+            </Link>
+            {" - by Caleb Parikh"}
+          </li>
         </ul>
       </div>
     </div>
