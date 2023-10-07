@@ -90,7 +90,7 @@ export default function ApiPage() {
             {" - by @sonofhypnos"}
           </li>
           <li>
-            <Link href="/Fatebook.alfredworkflow">
+            <Link href="https://github.com/Calebp98/alfred-fatebook-workflow">
               An Alfred workflow to create Fatebook questions
             </Link>
             {" - by Caleb Parikh"}
