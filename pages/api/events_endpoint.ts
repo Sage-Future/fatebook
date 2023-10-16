@@ -42,7 +42,7 @@ export default async function eventsApiHandler(req: VercelRequest, res: VercelRe
 
     case 'message':
       console.log("app messaged ", event.text)
-      if(!event.bot_profile && (event.subtype !== 'message_changed') && !event.thread_ts) {
+      if(!event.bot_profile && (event.subtype !== 'message_changed') && !event.thread_ts && event.user !== "USLACKBOT") {
         await postTextMessage(
           reqbody.team_id, event.channel,
           `Hi <@${event.user}>!\nThis channel is just for making private forecasts that only you can see.\n\n`
