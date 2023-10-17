@@ -71,7 +71,8 @@
     "trpc-transformer": "^2.3.2",
     "use-debounce": "^9.0.4",
     "vercel": "^24.2.4",
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "zod-error": "^1.5.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^4.8.0",
