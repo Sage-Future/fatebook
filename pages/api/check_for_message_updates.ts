@@ -18,6 +18,10 @@ import {
 } from "../../prisma/additional"
 import { getQuestionUrl } from "../../lib/web/question_url"
 
+export const config = {
+  maxDuration: 300,
+}
+
 async function getTargetsToBeNotified() {
   const lastWeek = new Date()
   lastWeek.setDate(lastWeek.getDate() - 7)
