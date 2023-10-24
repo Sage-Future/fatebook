@@ -10,7 +10,9 @@ export default function Footer({
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
         {SocialIcons(showReportProblem)}
         <div className="mt-8  text-center md:mt-0 md:order-1 md:ml-8 md:text-left">
-          <p className="text-base text-neutral-400">Sage Future Inc</p>
+          <Link href="https://sage-future.org" className="no-underline text-base text-neutral-400 hover:underline" target="_blank">
+            Sage Future Inc
+          </Link>
           <p className="text-neutral-300 my-1"><Link className="mr-4" href="/privacy">Privacy Policy</Link> <Link href="/terms">Terms of Use</Link></p>
         </div>
       </div>
