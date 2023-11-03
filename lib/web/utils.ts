@@ -22,7 +22,13 @@ export async function signInToFatebook() {
   await signIn("google", { redirect: true })
 }
 
-export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket: number; mean: number; count: number }[], interactive = false, hideTitles=false) {
+export function getChartJsParams(buckets: number[],
+  bucketedForecasts: { bucket: number; mean: number; count: number }[],
+  interactive = false,
+  hideTitles=false,
+  isThisUser = true,
+) {
+  const pronoun = isThisUser ? "Your" : "Their"
   return {
     type: "line",
     data: {
@@ -32,7 +38,7 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
           backgroundColor: "#4e46e59c",
           borderColor: "#4e46e59c",
           data: bucketedForecasts.map(f => f.mean * 100),
-          label: "Your calibration",
+          label: `${pronoun} calibration`,
           borderWidth: 1,
           fill: false,
           showLine: false,
@@ -59,9 +65,18 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
       plugins: interactive ? {
         legend: {
           maxWidth: 100,
+          labels: {
+            usePointStyle: true,
+          },
           onClick: () => {} // overwrite default behaviour of hiding points
         }
-      } : {},
+      } : {
+        legend: {
+          labels: {
+            usePointStyle: true,
+          }
+        }
+      },
       scales: interactive ? {
         y: {
           title: {
@@ -77,7 +92,7 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
         x: {
           title: {
             display: true,
-            text: 'Your forecast (bucketed by nearest 10%)',
+            text: `${pronoun} forecast (bucketed by nearest 10%)`,
             color: hideTitles ? "transparent" : "gray",
           },
         }
@@ -86,7 +101,7 @@ export function getChartJsParams(buckets: number[], bucketedForecasts: { bucket:
           display: true,
           scaleLabel: {
             display: true,
-            labelString: 'Your forecast (bucketed by nearest 10%)'
+            labelString: `${pronoun} forecast (bucketed by nearest 10%)`
           },
           gridLines: {
             color: "#1e1e1e",

@@ -1,6 +1,7 @@
 import { Transition } from '@headlessui/react'
 import { AdjustmentsHorizontalIcon, TrophyIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
+import Link from 'next/link'
 import { useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import GitHubCalendar from 'react-github-contribution-calendar'
@@ -10,26 +11,41 @@ import { transitionProps, useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
 import { InfoButton } from './InfoButton'
 import { TagsSelect } from './TagsSelect'
-import Link from 'next/link'
 
-export function TrackRecord() {
-  const userId = useUserId()
+export function TrackRecord({
+  trackRecordUserId,
+}: {
+  trackRecordUserId: string,
+}) {
+  const thisUserId = useUserId()
+
+  const isThisUser = trackRecordUserId === thisUserId
+
+  const userName = api.getUserInfo.useQuery({
+    userId: trackRecordUserId,
+  }, {
+    enabled: !isThisUser,
+  })
+
   const [tags, setTags] = useState<string[]>([])
   const allScoresQuery = api.question.getQuestionScores.useQuery({
+    userId: trackRecordUserId,
     tags: tags,
   })
   const scoreDetails = allScoresQuery?.data && populateDetails(allScoresQuery?.data)
 
   const [showFilters, setShowFilters] = useState<boolean>(false)
 
-  if (!userId) return <></>
+  if (!trackRecordUserId) return <></>
 
   return (
     <div className="max-w-xs prose flex flex-col mx-auto">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <h2 className="select-none relative">
-            Your track record
-          <button
+            {isThisUser ? "Your track record"
+              :
+              userName.data?.name ? `${userName.data?.name}'s track record` : " "}
+          {isThisUser && <button
             className={clsx(
               'btn btn-circle aspect-square absolute right-3 -bottom-2 hover:opacity-100',
               (showFilters || tags.length > 0) ? 'btn-active' : 'btn-ghost',
@@ -40,7 +56,7 @@ export function TrackRecord() {
             }}
           >
             <AdjustmentsHorizontalIcon height={16} width={16} />
-          </button>
+          </button>}
         </h2>
         <Transition {...transitionProps()} show={showFilters || tags.length > 0}>
           <div className="text-sm pb-4">
@@ -51,16 +67,16 @@ export function TrackRecord() {
             />
           </div>
         </Transition>
-        <CalibrationChart tags={tags} />
+        <CalibrationChart tags={tags} userId={trackRecordUserId} />
 
-        <div className='text-sm flex gap-2 text-gray-500 text-center mx-auto'>
+        {isThisUser && <div className='text-sm flex gap-2 text-gray-500 text-center mx-auto'>
           <Link className='' href="https://quantifiedintuitions.org/calibration">
             <button className='btn'>
               <TrophyIcon width={16} height={16} className='text-indigo-600' />
               Train your calibration skills
             </button>
           </Link>
-        </div>
+        </div>}
 
         <div className="flex flex-col gap-4 pt-6">
           {[
@@ -101,7 +117,7 @@ export function TrackRecord() {
             </div>
           ))}
         </div>
-        <ForecastsCalendarHeatmap tags={tags} />
+        <ForecastsCalendarHeatmap tags={tags} userId={trackRecordUserId} />
       </ErrorBoundary>
 
     </div>
@@ -110,12 +126,16 @@ export function TrackRecord() {
 
 export function ForecastsCalendarHeatmap({
   tags,
+  userId,
 } : {
   tags: string[]
+  userId: string
 }) {
   const forecasts = api.question.getForecastCountByDate.useQuery({
     tags: tags,
+    userId,
   })
+  const thisUserId = useUserId()
 
   return (
     <div className="pt-12">
@@ -134,7 +154,8 @@ export function ForecastsCalendarHeatmap({
           weekLabelAttributes={{}}
         />
         <div className='ml-3'>
-          {"You've made "}
+          {userId === thisUserId ? "You" : "They"}
+          {"'ve made "}
           <span className='font-semibold'>{forecasts.data?.total}</span>
           {" forecasts"}
           {tags.length > 0 && ` tagged ${joinWithOr(tags.map(tag => `"${tag}"`))}`}

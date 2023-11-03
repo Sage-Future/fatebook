@@ -62,7 +62,8 @@ export type ExtraFilters = {
   readyToResolve: boolean
   resolvingSoon: boolean
   filterTagIds?: string[]
-  showAllPublic?: boolean
+  showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
+  theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
 }
 
 export const questionRouter = router({
@@ -142,12 +143,13 @@ export const questionRouter = router({
             resolvingSoon: z.boolean(),
             filterTagIds: z.array(z.string()).optional(),
             showAllPublic: z.boolean().optional(),
+            theirUserId: z.string().optional(),
           })
           .optional(),
       })
     )
     .query(async ({ input, ctx }) => {
-      if (!ctx.userId && !input.extraFilters?.showAllPublic) {
+      if (!ctx.userId && !input.extraFilters?.showAllPublic && !input.extraFilters?.theirUserId) {
         return null
       }
 
@@ -161,10 +163,11 @@ export const questionRouter = router({
     .input(
       z.object({
         tags: z.array(z.string()).optional(),
+        userId: z.string(),
       })
     )
     .query(async ({ ctx, input }) => {
-      if (!ctx.userId) {
+      if (!input.userId) {
         return null
       }
 
@@ -172,9 +175,9 @@ export const questionRouter = router({
         where: {
           AND: [
             {
-              userId: ctx.userId,
+              userId: input.userId,
             },
-            input.tags && input.tags.length > 0
+            input.tags && input.userId === ctx.userId && input.tags.length > 0
               ? {
                   question: {
                     tags: {
@@ -182,7 +185,7 @@ export const questionRouter = router({
                         name: {
                           in: input.tags,
                         },
-                        userId: ctx.userId,
+                        userId: input.userId,
                       },
                     },
                   },
@@ -469,6 +472,7 @@ export const questionRouter = router({
           forecast: input.forecast,
         },
         include: {
+          user: true,
           question: {
             include: {
               forecasts: {
@@ -490,6 +494,17 @@ export const questionRouter = router({
                   profiles: true,
                 },
               },
+              comments: {
+                include: {
+                  user: true,
+                },
+              },
+              sharedWith: true,
+              sharedWithLists: {
+                include: {
+                  users: true,
+                },
+              },
             },
           },
         },
@@ -499,6 +514,27 @@ export const questionRouter = router({
         submittedForecast.question,
         "New forecast"
       )
+
+      const q = submittedForecast.question
+      for (const email of Array.from(new Set([
+        q.user.email,
+        ...q.forecasts.map((f) => f.user.email),
+        ...q.comments.map((c) => c.user.email),
+        ...q.sharedWith.map((u) => u.email),
+        ...q.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
+      ])).filter((e) => e && e !== submittedForecast.user.email)) {
+        await sendEmail({
+          to: email,
+          subject: `${submittedForecast.user.name || "Someone"} predicted ${
+            submittedForecast.forecast.toNumber() * 100}% on "${q.title}"`,
+          textBody: `New prediction`,
+          htmlBody: `
+            <p>${submittedForecast.user.name || "Someone"} predicted ${submittedForecast.forecast.toNumber() * 100
+              }% on ${getHtmlLinkQuestionTitle(q)}.</p>
+            ${fatebookEmailFooter(email)}
+          `,
+        })
+      }
 
       await backendAnalyticsEvent("forecast_submitted", {
         platform: "web",
@@ -521,8 +557,16 @@ export const questionRouter = router({
           id: input.questionId,
         },
         include: {
-          comments: true,
-          forecasts: true,
+          comments: {
+            include: {
+              user: true,
+            }
+          },
+          forecasts: {
+            include: {
+              user: true,
+            }
+          },
           sharedWith: true,
           sharedWithLists: {
             include: {
@@ -530,6 +574,7 @@ export const questionRouter = router({
               author: true,
             },
           },
+          user: true,
         },
       })
 
@@ -541,7 +586,7 @@ export const questionRouter = router({
         })
       }
 
-      await prisma.comment.create({
+      const newComment = await prisma.comment.create({
         data: {
           question: {
             connect: {
@@ -559,6 +604,26 @@ export const questionRouter = router({
           user: true,
         },
       })
+
+      for (const email of Array.from(new Set([
+        question.user.email,
+        ...question.forecasts.map((f) => f.user.email),
+        ...question.comments.map((c) => c.user.email),
+        ...question.sharedWith.map((u) => u.email),
+        ...question.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
+      ])).filter((e) => e && e !== newComment.user.email)) {
+        await sendEmail({
+          to: email,
+          subject: `${newComment.user.name || "Someone"} commented on "${question.title}"`,
+          textBody: `"${newComment.comment}"`,
+          htmlBody: `
+            <p>${newComment.user.name || "Someone"} commented on ${getHtmlLinkQuestionTitle(
+            question)}:</p>
+            <p>${newComment.comment}</p>
+            ${fatebookEmailFooter(email)}
+          `,
+        })
+      }
 
       await backendAnalyticsEvent("comment_added", {
         platform: "web",
@@ -602,10 +667,11 @@ export const questionRouter = router({
     .input(
       z.object({
         tags: z.array(z.string()).optional(),
+        userId: z.string(),
       })
     )
-    .query(async ({ input, ctx }) => {
-      if (!ctx.userId) {
+    .query(async ({ ctx, input }) => {
+      if (!input.userId) {
         return null
       }
 
@@ -613,9 +679,9 @@ export const questionRouter = router({
         where: {
           AND: [
             {
-              userId: ctx.userId,
+              userId: input.userId,
             },
-            input.tags && input.tags.length > 0
+            input.tags && input.userId === ctx.userId && input.tags.length > 0
               ? {
                   question: {
                     tags: {
@@ -623,7 +689,7 @@ export const questionRouter = router({
                         name: {
                           in: input.tags,
                         },
-                        userId: ctx.userId,
+                        userId: input.userId,
                       },
                     },
                   },
@@ -640,13 +706,14 @@ export const questionRouter = router({
     .input(
       z.object({
         tags: z.array(z.string()).optional(),
+        userId: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
-      if (!ctx.userId) {
+    .query(async ({ input }) => {
+      if (!input.userId) {
         return null
       }
-      return await getBucketedForecasts(ctx.userId, input.tags)
+      return await getBucketedForecasts(input.userId, input.tags)
     }),
 
   deleteQuestion: publicProcedure
@@ -768,7 +835,17 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
           ? {
               AND: [{ sharedPublicly: true }, { unlisted: false }],
             }
-          : {
+          : (
+            input.extraFilters?.theirUserId ? {
+              // show public, not unlisted questions by the user, and questions they've shared with me
+              userId: input.extraFilters.theirUserId,
+              OR: [
+                { sharedPublicly: true, unlisted: false },
+                { sharedWith: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } },
+                { sharedWithLists: { some: { users: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } } } },
+              ]
+
+            } : {
               // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
               OR: [
                 { userId: ctx.userId },
@@ -798,7 +875,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                   },
                 },
               ],
-            },
+            }),
         input.extraFilters?.resolved
           ? {
               resolution: {

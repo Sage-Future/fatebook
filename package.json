@@ -43,6 +43,7 @@
     "date-fns-tz": "^2.0.0",
     "discord-interactions": "^3.4.0",
     "dotenv-cli": "^7.2.1",
+    "framer-motion": "^10.16.4",
     "is-ua-webview": "^1.1.2",
     "next": "^13.3.1",
     "next-auth": "^4.22.1",
@@ -69,7 +70,8 @@
     "trpc-transformer": "^2.3.2",
     "use-debounce": "^9.0.4",
     "vercel": "^24.2.4",
-    "zod": "^3.21.4"
+    "zod": "^3.21.4",
+    "zod-error": "^1.5.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^4.8.0",

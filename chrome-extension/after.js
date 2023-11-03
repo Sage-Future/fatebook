@@ -16,7 +16,7 @@
     tracesSampleRate: 0,
   })
 
-  Sentry.setTag("extension_instance", extensionInfo.extensionInstanceId);
+  Sentry.setTag("extension_instance", extensionInfo.extensionInstanceId)
 
   Sentry.wrap(() => {
     // extensionInfo.isDev=false
@@ -32,7 +32,7 @@
     const EMBED_LOCATION = getEmbedLocation()
 
     function getEmbedLocation() {
-      if (window.location.host === "docs.google.com") {
+      if (window.location.href.includes("docs.google.com/document")) {
         return EMBED_LOCATIONS.GOOGLE_DOCS
       } else if (window.location.host === "fatebook.io" || window.location.host === "localhost:3000") {
         return EMBED_LOCATIONS.FATEBOOK
@@ -45,14 +45,18 @@
 
     if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return // Don't run on fatebook.io
 
+    function getIsFatebookLink(href) {
+      return href.includes(`${FATEBOOK_HOST}/q/`)
+    }
+
     // ==== Listen for messages from iframes ====
     const iframeMap = {}
     function createIframe(src) {
       const iframe = document.createElement('iframe')
       const iframeId = (Object.keys(iframeMap).length + 1).toString()
-      
+
       console.time(src)
-      
+
       iframe.addEventListener('load', () => {
         console.timeEnd(src)
       })
@@ -80,7 +84,7 @@
     })
 
     // ==== Listen for messages from extension background script ====
-    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    chrome.runtime.onMessage.addListener(function (request) {
       Sentry.wrap(() => {
         console.log(`received backend request ${request.action}`)
         if (request.action === "open_modal") {
@@ -97,8 +101,8 @@
         } else {
           throw new Error(`unknown action "${request.action}"`)
         }
-      });
-    });
+      })
+    })
 
     async function pingIframe(iframe) {
       try {
@@ -107,9 +111,9 @@
         }
 
         const pingEvent = `ping-${uuidv4()}`
-        
+
         const didTimeout = Promise.race([
-          new Promise(resolve => setTimeout(() => resolve(true), 2000)),
+          new Promise(resolve => setTimeout(() => resolve(true), 5000)),
           new Promise(resolve => iframe.addEventListener(pingEvent, () => resolve(false), {once: true}))
         ])
 
@@ -173,7 +177,8 @@
     predictIframe.addEventListener('prediction_cancel', closeModal)
     predictIframe.addEventListener('prediction_create_success', () => {
       closeModal()
-      toast('success', 'Prediction copied to clipboard')
+      const isMac = navigator?.platform?.toUpperCase()?.indexOf('MAC') >= 0
+      toast('success', `Prediction copied to clipboard. \n${isMac ? 'Cmd-V' : 'Ctrl-V'} to insert.`)
     })
 
     // ==== Toast iframe ====
@@ -220,13 +225,14 @@
 
     // create a div that we can use to block out space within the gdoc popup
     // (we can't just move the iframe there, as that reloads it
-    // and we can't make it start there as the element doesn't exist until a 
+    // and we can't make it start there as the element doesn't exist until a
     // link is clicked)
     const gdocLinkPopupBlockingElement = document.createElement('div')
     gdocLinkPopupBlockingElement.style.width = '500px'
     gdocLinkPopupBlockingElement.style.height = '188px'
     gdocLinkPopupBlockingElement.style.minHeight = '188px'
     gdocLinkPopupBlockingElement.style.transition = 'height 0.2s'
+    gdocLinkPopupBlockingElement.style.display = 'none'
 
     let counter = 0
     let loadedQuestionId
@@ -267,7 +273,7 @@
       if (link.innerText === href) {
         let pasteString = `⚖ ${questionDetails.title}`
         if (questionDetails.prediction) pasteString += ` (${questionDetails.user.name}: ${questionDetails.prediction !== undefined ? `${questionDetails.prediction * 100}% yes` : ''})`
-        
+
         link.innerText = pasteString
       }
 
@@ -295,7 +301,7 @@
           if (link.__fatebook_processed) continue
           link.__fatebook_processed = true
 
-          if (isFatebookLink(link.href)) {
+          if (getIsFatebookLink(link.href)) {
             replaceFatebookLink(link)
           }
         }
@@ -303,10 +309,6 @@
 
       new MutationObserver(processFatebookLinks).observe(document.body, {subtree: true, childList: true})
       processFatebookLinks()
-    }
-
-    function isFatebookLink(href) {
-      return href.includes(FATEBOOK_HOST)
     }
 
     // === START LOCATION SPECIFIC CODE ===
@@ -321,10 +323,10 @@
       linkReplaceFilterFunctions.push((link) => !link.matches('.docs-linkbubble-bubble *'))
 
       // ==== Inject "direct_inject_gdocs.js" so we have direct dom access ====
-      var scriptElement = document.createElement("script");
-      scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject_gdocs.js'));
-      document.head.appendChild(scriptElement);
-      
+      var scriptElement = document.createElement("script")
+      scriptElement.setAttribute('src', chrome.runtime.getURL('direct_inject_gdocs.js'))
+      document.head.appendChild(scriptElement)
+
       const refocusPage = () => {
         const gdoc = document.querySelector('.kix-canvas-tile-content')
         if(gdoc) {
@@ -340,7 +342,7 @@
         gdocLinkPopupBlockingElement.style.height = data.detail.box.height + 'px'
       })
 
-      document.body.addEventListener('scroll', (e) => {
+      document.body.addEventListener('scroll', () => {
         if (gdocLinkPopupBlockingElement.style.display === 'block') {
           overlapElements(questionIframe, gdocLinkPopupBlockingElement)
         }
@@ -357,9 +359,9 @@
           Sentry.captureException(new Error("could not find kixEditor element in gdoc page"))
           return
         }
-        
 
-        const reactToChange = async (mutationList, observer) => {
+
+        const reactToChange = (mutationList, observer) => {
           const linkPopup = document.querySelector(".docs-linkbubble-bubble")
           if (linkPopup) {
             observer.disconnect()
@@ -395,15 +397,18 @@
           // Get the link and determine whether it's a fatebook link
           const link = linkPopup.querySelector("a")
           if (!link) return
-          
-          const isFatebookLink = link.href.includes(FATEBOOK_URL)
-          const isUIInjected = linkPopup.contains(gdocLinkPopupBlockingElement) && 
+
+          const isFatebookLink = getIsFatebookLink(link.href)
+          const isUIInjected = linkPopup.contains(gdocLinkPopupBlockingElement) &&
           gdocLinkPopupBlockingElement.style.display === "block"
 
           // If the user went from a fatebook link to a non-fatebook link, remove our content
           if (!isFatebookLink && isUIInjected) {
             unloadQuestionIframe()
             resetInlineGocChanges(linkPopup)
+          }
+
+          if (!isFatebookLink) {
             return
           }
 
@@ -437,7 +442,7 @@
           oldActiveElement.focus()
         }
       }
-      
+
       predictIframe.addEventListener('prediction_create_success', refocusPage)
       predictIframe.addEventListener('prediction_cancel', refocusPage)
     }
@@ -445,7 +450,7 @@
     // Run link replace
     watchForFatebookLinks()
 
-    async function predictionComment () {
+    function predictionComment () {
       openModal()
 
       const done = (event) => {
@@ -468,16 +473,17 @@
 
             const submitButton = active.parentElement?.querySelector('.docos-input-buttons-post')
             if (submitButton) {
+              // eslint-disable-next-line no-inner-declarations
               function triggerMouseEvent (node, eventType) {
-                var clickEvent = document.createEvent('MouseEvents');
-                clickEvent.initEvent (eventType, true, true);
-                node.dispatchEvent (clickEvent);
+                var clickEvent = document.createEvent('MouseEvents')
+                clickEvent.initEvent (eventType, true, true)
+                node.dispatchEvent (clickEvent)
               }
 
-              triggerMouseEvent (submitButton, "mouseover");
-              triggerMouseEvent (submitButton, "mousedown");
-              triggerMouseEvent (submitButton, "mouseup");
-              triggerMouseEvent (submitButton, "click");
+              triggerMouseEvent (submitButton, "mouseover")
+              triggerMouseEvent (submitButton, "mousedown")
+              triggerMouseEvent (submitButton, "mouseup")
+              triggerMouseEvent (submitButton, "click")
             }
           }, 50)
 
@@ -524,62 +530,62 @@ function getQuestionIdFromUrl(url) {
 
 function overlapElements(absoluteElement, targetElement) {
   // Get the bounding rectangles of the elements relative to their parent elements
-  const absoluteRect = absoluteElement.getBoundingClientRect();
-  const targetRect = targetElement.getBoundingClientRect();
+  const absoluteRect = absoluteElement.getBoundingClientRect()
+  const targetRect = targetElement.getBoundingClientRect()
 
   // Calculate the differences in positions relative to the parent elements
-  const topDiff = targetRect.top - absoluteRect.top;
-  const leftDiff = targetRect.left - absoluteRect.left;
+  const topDiff = targetRect.top - absoluteRect.top
+  const leftDiff = targetRect.left - absoluteRect.left
 
   // Update the CSS properties of the absolute element
-  const currentAbsoluteTop = parseFloat(absoluteElement.style.top || 0);
-  const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0);
-  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`;
-  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`;
+  const currentAbsoluteTop = parseFloat(absoluteElement.style.top || 0)
+  const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0)
+  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`
+  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`
 }
 
 function tooltipPosition(absoluteElement, targetElement) {
   const verticalPadding = 5
 
   // Get the bounding rectangles of the elements relative to their parent elements
-  const absoluteRect = absoluteElement.getBoundingClientRect();
-  const currentAbsoluteTop = parseFloat(absoluteElement.style.top || 0);
-  const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0);
-  
-  const targetRect = targetElement.getBoundingClientRect();
+  const absoluteRect = absoluteElement.getBoundingClientRect()
+  const currentAbsoluteTop = parseFloat(absoluteElement.style.top || 0)
+  const currentAbsoluteLeft = parseFloat(absoluteElement.style.left || 0)
 
-  const viewportWidth  = window.innerWidth || document.documentElement.clientWidth || 
-  document.body.clientWidth;
-  const viewportHeight = window.innerHeight|| document.documentElement.clientHeight|| 
-  document.body.clientHeight;
+  const targetRect = targetElement.getBoundingClientRect()
+
+  const viewportWidth  = window.innerWidth || document.documentElement.clientWidth ||
+  document.body.clientWidth
+  const viewportHeight = window.innerHeight|| document.documentElement.clientHeight||
+  document.body.clientHeight
 
   // Figure out where to position element considering the screen bounds
   const leftAlign = targetRect.left + absoluteRect.width < viewportWidth
   const placeUnderneath = targetRect.bottom + absoluteRect.height + verticalPadding < viewportHeight
 
   // Calculate the differences in positions relative to the parent elements
-  
+
   let leftDiff
   if (leftAlign) {
     leftDiff = targetRect.left - absoluteRect.left
   } else {
     leftDiff = (targetRect.right - absoluteRect.width) - absoluteRect.left
   }
-  
+
   let topDiff
   if (placeUnderneath) {
-    topDiff = targetRect.top - absoluteRect.top + targetRect.height + verticalPadding;
+    topDiff = targetRect.top - absoluteRect.top + targetRect.height + verticalPadding
   } else {
-    topDiff = targetRect.top - absoluteRect.top - absoluteRect.height - verticalPadding;
+    topDiff = targetRect.top - absoluteRect.top - absoluteRect.height - verticalPadding
   }
 
   // Update the CSS properties of the absolute element
-  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`;
-  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`;
+  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`
+  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`
 }
 
 function uuidv4() {
   return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-  );
+  )
 }

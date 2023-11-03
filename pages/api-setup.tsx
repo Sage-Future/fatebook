@@ -55,15 +55,35 @@ export default function ApiPage() {
           </div>
         }
         <p>
-          You can use your API key to create Fatebook questions just by going to:
+          You can use your API key to create Fatebook questions just by going this URL (separated onto multiple lines for readability):
         </p>
 
         <p className="bg-neutral-200 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/createQuestion"}
-          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}
-          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span>
-          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span>
-          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span>
+          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br/>
+          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span><br/>
+          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span><br/>
+          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span><br/>
+        </p>
+
+        <p>
+          {"You can also add some optional parameters, here's an example:"}
+        </p>
+
+        <p className="bg-neutral-200 p-2 rounded-md break-words">
+          {"https://fatebook.io/api/v0/createQuestion"}
+          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br/>
+          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span><br/>
+          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span><br/>
+          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span><br/>
+          {"&tags="}<span className='bg-neutral-300 font-semibold'>{"TAG_1"}</span><br/>
+          {"&tags="}<span className='bg-neutral-300 font-semibold'>{"TAG_2"}</span><br/>
+          {"&sharePublicly="}<span className='bg-neutral-300 font-semibold'>{"yes"}</span><br/>
+          {"&shareWithLists="}<span className='bg-neutral-300 font-semibold'>{"LIST_NAME_1"}</span><br/>
+          {"&shareWithLists="}<span className='bg-neutral-300 font-semibold'>{"LIST_NAME_2"}</span><br/>
+          {"&shareWithEmail="}<span className='bg-neutral-300 font-semibold'>{"EMAIL_1"}</span><br/>
+          {"&shareWithEmail="}<span className='bg-neutral-300 font-semibold'>{"EMAIL_2"}</span><br/>
+          {"&hideForecastsUntil="}<span className='bg-neutral-300 font-semibold'>{"HIDE_FORECASTS_UNTIL_DATE_YYYY-MM-DD"}</span><br/>
         </p>
 
         <p>
@@ -82,6 +102,18 @@ export default function ApiPage() {
               An iOS shortcut to create a Fatebook question
             </Link>
             {" - by @JasperGo. You can add it to your homescreen or use Siri to create a question!"}
+          </li>
+          <li>
+            <Link href="https://github.com/sonofhypnos/fatebook.el">
+              An Emacs plugin to create Fatebook questions
+            </Link>
+            {" - by @sonofhypnos"}
+          </li>
+          <li>
+            <Link href="https://github.com/Calebp98/alfred-fatebook-workflow">
+              An Alfred workflow to create Fatebook questions
+            </Link>
+            {" - by Caleb Parikh"}
           </li>
         </ul>
       </div>

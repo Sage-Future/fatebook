@@ -1,13 +1,14 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
-import React, { useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
 import { Question } from "./Question"
+import { AnimatePresence, motion } from "framer-motion"
 
 export function Questions({
   title,
@@ -15,12 +16,14 @@ export function Questions({
   noQuestionsText = "Make your first forecast to see it here.",
   filterTagIds = undefined,
   showAllPublic = false,
+  theirUserId = undefined,
 }: {
-  title?: string,
+  title?: string | ReactNode,
   filterClientSide?: (question: any) => boolean
   noQuestionsText?: string,
   filterTagIds?: string[],
   showAllPublic?: boolean,
+  theirUserId?: string,
 }) {
   const session = useSession()
 
@@ -38,6 +41,7 @@ export function Questions({
         ...extraFilters,
         filterTagIds,
         showAllPublic,
+        theirUserId,
       },
     },
     {
@@ -52,6 +56,7 @@ export function Questions({
     (!session.data?.user.id || !questionsQ.data || questionsQ.data.pages.length === 0)
     && !filtersApplied // don't hide everything if user applied a filter
     && !showAllPublic // don't hide for logged out users if showing all public
+    && !theirUserId // don't hide for logged out users if showing a user page
   ) {
     return <></>
   }
@@ -78,34 +83,36 @@ export function Questions({
           setExtraFilters={setExtraFilters}
         />}
       </div>
-      <div className="grid gap-6">
-        {ifEmpty(
-          questions
-            .map((question, index, array) => (
-              question ?
-                <React.Fragment key={question.id}>
-                  <DateSeparator
-                    key={question.id + "header"}
-                    header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
-                  />
-                  <Question
-                    question={question}
-                    key={question.id}
-                    startExpanded={(index === 0 && question.userId === session.data?.user.id)}
-                    zIndex={questions?.length ? (questions?.length - index) : undefined}
-                  />
-                </React.Fragment>
+      <motion.div className="grid gap-6">
+        <AnimatePresence initial={false} mode="popLayout">
+          {ifEmpty(
+            questions
+              .map((question, index, array) => (
+                question ?
+                  <React.Fragment key={question.id}>
+                    <DateSeparator
+                      key={question.id + "header"}
+                      header={groupDatesByBuckets(question[orderedBy], array[index - 1]?.[orderedBy])}
+                    />
+                    <Question
+                      question={question}
+                      key={question.id}
+                      startExpanded={(index === 0 && question.userId === session.data?.user.id)}
+                      zIndex={questions?.length ? (questions?.length - index) : undefined}
+                    />
+                  </React.Fragment>
+                  :
+                  <></>
+              )),
+            <div className="italic text-neutral-500 text-sm">
+              {filtersApplied ?
+                "No questions match your filters."
                 :
-                <></>
-            )),
-          <div className="italic text-neutral-500 text-sm">
-            {filtersApplied ?
-              "No questions match your filters."
-              :
-              noQuestionsText
-            }
-          </div>
-        )}
+                noQuestionsText
+              }
+            </div>
+          )}
+        </AnimatePresence>
         <InView>
           {({ inView, ref }) => {
             if (inView && questionsQ.hasNextPage) {
@@ -117,7 +124,7 @@ export function Questions({
           }}
         </InView>
         {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && <LoaderIcon className="mx-auto" />}
-      </div>
+      </motion.div>
     </div>
   )
 }

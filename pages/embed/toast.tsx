@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"
-import "../../components/QuestionOrSignIn"
+// import "../../components/QuestionOrSignIn"
 import { Toaster, toast } from 'react-hot-toast'
 import { useRespondToPing } from "../../lib/web/embed"
 
@@ -12,7 +12,7 @@ export default function ToastEmbed() {
     window.addEventListener('message', (event:MessageEvent<any>) => {
       if (typeof event.data === 'object' && event.data.isFatebook && event.data.action === 'toast') {
         // @ts-ignore
-        toast[event.data.type](event.data.text)
+        toast[event.data.type](event.data.text, { duration: 5000 })
       }
     })
   }, [])
