@@ -177,7 +177,8 @@
     predictIframe.addEventListener('prediction_cancel', closeModal)
     predictIframe.addEventListener('prediction_create_success', () => {
       closeModal()
-      toast('success', 'Prediction copied to clipboard')
+      const isMac = navigator?.platform?.toUpperCase()?.indexOf('MAC') >= 0
+      toast('success', `Prediction copied to clipboard. \n${isMac ? 'Cmd-V' : 'Ctrl-V'} to insert.`)
     })
 
     // ==== Toast iframe ====
