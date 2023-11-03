@@ -6,6 +6,12 @@
     "project": true,
     "tsconfigRootDir": "./"
   },
+  "overrides": [
+    {
+      "extends": ["plugin:@typescript-eslint/disable-type-checked"],
+      "files": ["./**/*.js"]
+    }
+  ],
   "rules": {
     "react/jsx-first-prop-new-line": [2, "multiline"],
     "react/jsx-max-props-per-line": [

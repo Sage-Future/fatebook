@@ -113,7 +113,7 @@
         const pingEvent = `ping-${uuidv4()}`
         
         const didTimeout = Promise.race([
-          new Promise(resolve => setTimeout(() => resolve(true), 2000)),
+          new Promise(resolve => setTimeout(() => resolve(true), 5000)),
           new Promise(resolve => iframe.addEventListener(pingEvent, () => resolve(false), {once: true}))
         ])
 
@@ -231,6 +231,7 @@
     gdocLinkPopupBlockingElement.style.height = '188px'
     gdocLinkPopupBlockingElement.style.minHeight = '188px'
     gdocLinkPopupBlockingElement.style.transition = 'height 0.2s'
+    gdocLinkPopupBlockingElement.style.display = 'none'
 
     let counter = 0
     let loadedQuestionId
@@ -404,6 +405,9 @@
           if (!isFatebookLink && isUIInjected) {
             unloadQuestionIframe()
             resetInlineGocChanges(linkPopup)
+          }
+
+          if (!isFatebookLink) {
             return
           }
 

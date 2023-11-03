@@ -27,16 +27,20 @@ export function patchLocalStorage () {
     // prevent receiving
     window.addEventListener("storage", (event) => {
       if (event.newValue) {
-        const message = JSON.parse(event.newValue)
-        if (message?.event !== "session" || !message?.data) return
+        try {
+          const message = JSON.parse(event.newValue)
+          if (message?.event !== "session" || !message?.data) return
 
-        if (message.data.trigger === "signout") return // allow signout through
+          if (message.data.trigger === "signout") return // allow signout through
 
-        if (message.data.bypass) return // allow signout through
+          if (message.data.bypass) return // allow signout through
 
-        // If we're an embedded iframe, and this is a storage event (which would cause an /auth refetch) block it
-        event.stopImmediatePropagation()
-        // console.log('blocked receiving nextjs-auth storage message', event.newValue)
+          // If we're an embedded iframe, and this is a storage event (which would cause an /auth refetch) block it
+          event.stopImmediatePropagation()
+          // console.log('blocked receiving nextjs-auth storage message', event.newValue)
+        } catch (error) {
+          // Do nothing if JSON parsing fails
+        }
       }
     })
 
