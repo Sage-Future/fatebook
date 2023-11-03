@@ -13,6 +13,7 @@ import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
 
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 import { getQuestionUrl } from '../lib/web/question_url'
 
 export function Question({
@@ -66,10 +67,11 @@ export function Question({
                   href={getQuestionUrl(question)}
                   key={question.id}
                   target={embedded ? "_blank" : ""}
-                  className={"no-underline hover:underline"}
+                  className={"no-underline hover:underline flex items-center"}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}>
                   {question.title}
+                  {embedded && <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3 text-neutral-600" />}
                 </Link>
               </span>
               <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} embedded={embedded}/>
