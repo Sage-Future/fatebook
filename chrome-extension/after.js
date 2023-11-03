@@ -78,7 +78,7 @@
           console.error(`Could not find iframe for message id:"${event.data.embedId}"`, iframeMap)
         } else {
           console.log(`received message "${event.data.action}" from "${iframe.src}"`)
-          iframe.dispatchEvent(new CustomEvent(event.data.action, {detail:event.data}))
+          iframe.dispatchEvent(new CustomEvent(event.data.action, { detail: event.data }))
         }
       })
     })
@@ -114,7 +114,7 @@
 
         const didTimeout = Promise.race([
           new Promise(resolve => setTimeout(() => resolve(true), 5000)),
-          new Promise(resolve => iframe.addEventListener(pingEvent, () => resolve(false), {once: true}))
+          new Promise(resolve => iframe.addEventListener(pingEvent, () => resolve(false), { once: true }))
         ])
 
         iframe.contentWindow.postMessage({ isFatebook: true, action: pingEvent }, '*')
@@ -188,7 +188,7 @@
 
     function toast(type, text) {
       toastIframe.className += ' fatebook-toast-embed-visible'
-      sendMessage(toastIframe, 'toast', {type, text})
+      sendMessage(toastIframe, 'toast', { type, text })
       setTimeout(() => {
         toastIframe.className = toastIframe.className.replace(' fatebook-toast-embed-visible', '')
       }, 2200)
@@ -209,7 +209,7 @@
       questionIframe.src = event.detail.src
       parent?.appendChild(questionIframe)
       if (wasOpen) {
-        loadQuestion({questionId: wasOpen})
+        loadQuestion({ questionId: wasOpen })
       }
     })
 
@@ -247,7 +247,7 @@
       questionIframe.style.display = 'block'
 
       loadedQuestionId = questionId
-      sendMessage(questionIframe, 'load_question', {questionId})
+      sendMessage(questionIframe, 'load_question', { questionId })
     }
 
     function unloadQuestionIframe() {
@@ -268,7 +268,7 @@
 
       // replace the text with it's title and prediction
       const questionId = getQuestionIdFromUrl(href)
-      const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`, {credentials:'include'})).json()
+      const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`, { credentials: 'include' })).json()
 
       if (link.innerText === href) {
         let pasteString = `⚖ ${questionDetails.title}`
@@ -280,13 +280,13 @@
       // move the question loader to the link on click
       link.addEventListener('click', async (e) => {
         questionIframe.style.removeProperty('border')
-        questionIframe.style.removeProperty('boxShadow')
+        questionIframe.style.removeProperty('box-shadow')
         gdocLinkPopupBlockingElement.style.display = 'none'
 
         e.preventDefault()
         e.stopPropagation()
         // move it to the link
-        await loadQuestion({questionId})
+        await loadQuestion({ questionId })
         tooltipPosition(questionIframe, link)
         questionIframe.focus()
       })
@@ -307,7 +307,7 @@
         }
       }
 
-      new MutationObserver(processFatebookLinks).observe(document.body, {subtree: true, childList: true})
+      new MutationObserver(processFatebookLinks).observe(document.body, { subtree: true, childList: true })
       processFatebookLinks()
     }
 
@@ -329,7 +329,7 @@
 
       const refocusPage = () => {
         const gdoc = document.querySelector('.kix-canvas-tile-content')
-        if(gdoc) {
+        if (gdoc) {
           // @ts-ignore
           gdoc.click()
         }
@@ -338,7 +338,7 @@
       predictIframe.addEventListener('prediction_create_success', refocusPage)
 
       questionIframe.addEventListener('resize_iframe', (data) => {
-      // @ts-ignore
+        // @ts-ignore
         gdocLinkPopupBlockingElement.style.height = data.detail.box.height + 'px'
       })
 
@@ -378,9 +378,9 @@
       }
 
       function resetInlineGocChanges(linkPopup) {
-        linkPopup.style.removeProperty('paddingBottom')
+        linkPopup.style.removeProperty('padding-bottom')
         questionIframe.style.removeProperty('border')
-        questionIframe.style.removeProperty('boxShadow')
+        questionIframe.style.removeProperty('box-shadow')
         gdocLinkPopupBlockingElement.style.display = 'none'
       }
 
@@ -400,7 +400,7 @@
 
           const isFatebookLink = getIsFatebookLink(link.href)
           const isUIInjected = linkPopup.contains(gdocLinkPopupBlockingElement) &&
-          gdocLinkPopupBlockingElement.style.display === "block"
+            gdocLinkPopupBlockingElement.style.display === "block"
 
           // If the user went from a fatebook link to a non-fatebook link, remove our content
           if (!isFatebookLink && isUIInjected) {
@@ -420,7 +420,7 @@
             questionIframe.style.border = 'none'
             questionIframe.style.boxShadow = 'none'
 
-            await loadQuestion({ questionId: linkQuestionId})
+            await loadQuestion({ questionId: linkQuestionId })
             gdocLinkPopupBlockingElement.style.display = 'block'
             overlapElements(questionIframe, gdocLinkPopupBlockingElement)
           }
@@ -432,7 +432,7 @@
 
         reactToChange()
 
-        new MutationObserver(reactToChange).observe(linkPopup, { attributes: true, childList: true})
+        new MutationObserver(reactToChange).observe(linkPopup, { attributes: true, childList: true })
       }
     }
 
@@ -450,7 +450,7 @@
     // Run link replace
     watchForFatebookLinks()
 
-    function predictionComment () {
+    function predictionComment() {
       openModal()
 
       const done = (event) => {
@@ -459,7 +459,7 @@
 
         if (event.type === 'prediction_create_success') {
           // send message to direct_inject
-          window.dispatchEvent(new MessageEvent('message', {data: {isFatebook: true, action: 'create_comment'}}))
+          window.dispatchEvent(new MessageEvent('message', { data: { isFatebook: true, action: 'create_comment' } }))
 
           const waitForCommentInterval = setInterval(() => {
             const active = document.activeElement
@@ -474,16 +474,16 @@
             const submitButton = active.parentElement?.querySelector('.docos-input-buttons-post')
             if (submitButton) {
               // eslint-disable-next-line no-inner-declarations
-              function triggerMouseEvent (node, eventType) {
+              function triggerMouseEvent(node, eventType) {
                 var clickEvent = document.createEvent('MouseEvents')
-                clickEvent.initEvent (eventType, true, true)
-                node.dispatchEvent (clickEvent)
+                clickEvent.initEvent(eventType, true, true)
+                node.dispatchEvent(clickEvent)
               }
 
-              triggerMouseEvent (submitButton, "mouseover")
-              triggerMouseEvent (submitButton, "mousedown")
-              triggerMouseEvent (submitButton, "mouseup")
-              triggerMouseEvent (submitButton, "click")
+              triggerMouseEvent(submitButton, "mouseover")
+              triggerMouseEvent(submitButton, "mousedown")
+              triggerMouseEvent(submitButton, "mouseup")
+              triggerMouseEvent(submitButton, "click")
             }
           }, 50)
 
@@ -554,10 +554,10 @@ function tooltipPosition(absoluteElement, targetElement) {
 
   const targetRect = targetElement.getBoundingClientRect()
 
-  const viewportWidth  = window.innerWidth || document.documentElement.clientWidth ||
-  document.body.clientWidth
-  const viewportHeight = window.innerHeight|| document.documentElement.clientHeight||
-  document.body.clientHeight
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth ||
+    document.body.clientWidth
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight ||
+    document.body.clientHeight
 
   // Figure out where to position element considering the screen bounds
   const leftAlign = targetRect.left + absoluteRect.width < viewportWidth
@@ -585,7 +585,7 @@ function tooltipPosition(absoluteElement, targetElement) {
 }
 
 function uuidv4() {
-  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
     (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
   )
 }
