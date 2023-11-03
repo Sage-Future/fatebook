@@ -3,23 +3,23 @@ import prisma from "../../../lib/_utils_server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]"
 import { assertHasAccess } from "../../../lib/web/question_router"
-// import NextCors from 'nextjs-cors'
+import NextCors from "nextjs-cors"
 
-import { getMostRecentForecastForUser } from '../../../lib/_utils_common'
+import { getMostRecentForecastForUser } from "../../../lib/_utils_common"
 
 interface Request extends NextApiRequest {
-  query: {questionId: string}
+  query: { questionId: string }
 }
 
 const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
   // Run the cors middleware
   // nextjs-cors uses the cors package, so we invite you to check the documentation https://github.com/expressjs/cors
-  // await NextCors(req, res, {
-  //   // Options
-  //   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-  //   origin: req.headers.origin,
-  //   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  // })
+  await NextCors(req, res, {
+    // Options
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+    origin: req.headers.origin,
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  })
 
   if (req.method === "OPTIONS") {
     return res.status(200).json({})
@@ -29,9 +29,8 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     return res.status(404).json({})
   }
 
-
   const { questionId } = req.query
-  if ( typeof questionId !== "string" ) {
+  if (typeof questionId !== "string") {
     return res.status(400).json({
       error:
         `Invalid request. questionId must be a string. ` +
@@ -46,7 +45,7 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
       id: questionId,
     },
     include: {
-      user:true,
+      user: true,
       forecasts: {
         include: {
           user: true,
@@ -67,14 +66,17 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     return res.status(404).json({})
   }
 
-  assertHasAccess({userId: session?.user.id}, question)
+  assertHasAccess({ userId: session?.user.id }, question)
 
   const userName = question!.user.name
-  const prediction = getMostRecentForecastForUser(question!, question!.userId)?.forecast
+  const prediction = getMostRecentForecastForUser(
+    question!,
+    question!.userId
+  )?.forecast
 
   res.status(200).json({
     title: question?.title,
-    user: {name: userName},
+    user: { name: userName },
     prediction,
   })
 }
