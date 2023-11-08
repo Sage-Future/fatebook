@@ -1,16 +1,12 @@
 // Exposes the Prediction component solo so it can be embedded as desired
 
-import React, { useCallback, useEffect, useRef, useState } from "react"
-import { copyToClipboard } from "../lib/web/clipboard"
-import { Predict } from "./Predict"
-import { makeClipboardHtmlLink, makeRichGoogleDocsLink } from "../lib/web/gdoc_rich_text"
 import { XCircleIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { copyToClipboard } from "../lib/web/clipboard"
 import { sendToHost } from "../lib/web/embed"
-
-
-
-
+import { makeClipboardHtmlLink, makeRichGoogleDocsLink } from "../lib/web/gdoc_rich_text"
+import { Predict } from "./Predict"
 
 export default function PredictModal() {
   const { data: session } = useSession()

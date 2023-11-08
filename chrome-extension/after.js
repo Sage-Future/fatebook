@@ -58,7 +58,11 @@
       console.time(src)
 
       iframe.addEventListener('load', () => {
-        console.timeEnd(src)
+        try {
+          console.timeEnd(src)
+        } catch (e) {
+          // do nothing
+        }
       })
 
       const url = new URL(src)
@@ -289,6 +293,16 @@
         await loadQuestion({ questionId })
         tooltipPosition(questionIframe, link)
         questionIframe.focus()
+      })
+
+      // on hover, make the link element's background grey with rounded corners
+      link.addEventListener('mouseover', () => {
+        link.style.backgroundColor = 'grey'
+        link.style.borderRadius = '5px'
+      })
+      link.addEventListener('mouseout', () => {
+        link.style.backgroundColor = ''
+        link.style.borderRadius = ''
       })
     }
 

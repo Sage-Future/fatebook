@@ -8,7 +8,7 @@ function makeLinkText ({
   prediction: number | undefined
 }) {
   let string = `⚖ ${text}`
-  if (prediction) string += ` (${name}: ${prediction !== undefined ? `${prediction * 100}% yes` : ''})`
+  if (prediction) string += ` (${name}: ${prediction !== undefined ? `${prediction * 100}%` : ''})`
   return string
 }
 
@@ -580,7 +580,7 @@ export function makeRichGoogleDocsLink({
                             "ts_va": "nor",
                             "ts_bgc2": {
                                 "clr_type": 0,
-                                "hclr_color": "#d1d3d5"
+                                "hclr_color": "#e6e6e6"
                             },
                             "ts_fgc2": {
                                 "clr_type": 0,

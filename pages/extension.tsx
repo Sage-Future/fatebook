@@ -1,9 +1,19 @@
 import { NextSeo } from "next-seo"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
 
 export default function ExtensionPage() {
-  const isOnMac = typeof window !== 'undefined' && window.navigator.platform.toUpperCase().indexOf('MAC') >= 0
+  const router = useRouter()
+  const justInstalled = router.query.installed
+  const [isArc, setIsArc] = useState(false)
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsArc(!!getComputedStyle(document.documentElement).getPropertyValue('--arc-palette-background'))
+    }, 1000)
+  }, [])
 
   return (
     <div className="bg-neutral-50 grow">
@@ -14,18 +24,39 @@ export default function ExtensionPage() {
               Fatebook Chrome extension
           </h2>
           <h3 className="text-neutral-600">Make and embed Fatebook predictions anywhere on the web</h3>
+          {justInstalled && (
+            <div className="prose">
+              <p>
+                {"Thanks for installing Fatebook for Chrome!"}
+              </p>
 
-          <div className="my-14 mx-auto">
-            <div className="text-center text-xl">
-              <kbd className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
-                {
-                 isOnMac ? "cmd" : "ctrl"
-                }
-              </kbd>
-              +
-              <kbd className="kbd kbd-lg mx-1">shift</kbd>
-              +
-              <kbd className="kbd kbd-lg mx-1">F</kbd>
+              <p>
+                Try <Link href="https://doc.new">creating a Google Doc</Link> and press <span className="font-semibold whitespace-nowrap">
+                  Ctrl-Shift-F
+                </span> to make a prediction.
+              </p>
+              <p>
+                Or customise the keyboard shortcut at <span className="font-semibold">
+                  chrome://extensions/shortcuts
+                </span>
+              </p>
+              {isArc && <p className="mx-2 bg-indigo-50 p-4">
+                👋 Hey Arc user! We recommend changing the keyboard shortcut to <span className="font-semibold whitespace-nowrap">
+                  Cmd-Shift-F
+                </span> - the default <span className="font-semibold whitespace-nowrap">
+                  Ctrl-Shift-F
+                </span> {"doesn't"} work in Google Docs on Arc.
+              </p>}
+            </div>
+          )}
+
+          <div className="my-14 mx-auto" suppressHydrationWarning={true}>
+            <div className="text-center text-xl" suppressHydrationWarning={true}>
+              <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>ctrl</span>
+              <span>{"+"}</span>
+              <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>shift</span>
+              <span>{"+"}</span>
+              <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>F</span>
             </div>
 
             <video autoPlay muted loop controls={false} className="shadow-xl">
