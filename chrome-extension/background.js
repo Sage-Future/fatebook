@@ -33,7 +33,7 @@
     console.log('opening modal')
     chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
       const activeTab = tabs[0]
-      if (!activeTab.id) return
+      if (!activeTab.id ||  activeTab.url?.contains("fatebook.io")) return
 
       try {
         console.log('sending open modal request')

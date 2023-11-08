@@ -1,8 +1,9 @@
+import { ArrowRightIcon } from "@heroicons/react/24/solid"
 import { NextSeo } from "next-seo"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 
 export default function ExtensionPage() {
   const router = useRouter()
@@ -17,11 +18,11 @@ export default function ExtensionPage() {
 
   return (
     <div className="bg-neutral-50 grow">
-      <NextSeo title="Fatebook Chrome extension" titleTemplate="Fatebook Chrome extension" />
+      <NextSeo title="Fatebook for Chrome" titleTemplate="Fatebook for Chrome" />
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
         <div className="prose mx-auto">
           <h2 className="text-3xl mb-2 font-extrabold text-neutral-900">
-              Fatebook Chrome extension
+              Fatebook for Chrome
           </h2>
           <h3 className="text-neutral-600">Make and embed Fatebook predictions anywhere on the web</h3>
           {justInstalled && (
@@ -59,9 +60,12 @@ export default function ExtensionPage() {
               <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>F</span>
             </div>
 
-            <video autoPlay muted loop controls={false} className="shadow-xl">
-              <source src="/extension_demo.webm" />
-            </video>
+            <DemoCarousel
+              videos={[
+              {src: "/extension_demo.webm", caption: "In Google Docs"},
+              {src: "/asana.webm", caption: "In your todo list"},
+              {src: "/notion.webm", caption: "In Notion"}
+            ]} />
           </div>
 
           <div className="flex mb-20">
@@ -79,5 +83,28 @@ export default function ExtensionPage() {
         </div>
       </div>
     </div >
+  )
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const DemoCarousel: React.FC<{videos: {src: string, caption: string}[]}> = ({videos}) => {
+  const [currentVideo, setCurrentVideo] = useState(0)
+
+  const handleNext = () => {
+    setCurrentVideo((currentVideo + 1) % videos.length)
+  }
+
+  return (
+    <div className="flex items-center">
+      <div className="flex-grow">
+        <video autoPlay muted loop controls={false} className="shadow-xl" key={videos[currentVideo].src}>
+          <source src={videos[currentVideo].src} />
+        </video>
+        <p className="text-center font-semibold">{videos[currentVideo].caption}</p>
+      </div>
+      <button onClick={handleNext} className="btn btn-circle">
+        <ArrowRightIcon className="w-8 h-8 p-2" />
+      </button>
+    </div>
   )
 }
