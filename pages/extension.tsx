@@ -76,9 +76,10 @@ export default function ExtensionPage() {
           </div>
         </div>
 
-        <DemoVideo src="/extension_demo.webm" caption="Instantly create and embed predictions in Google Docs"/>
+        <DemoVideo src="/gdocs.webm" caption="Instantly create and embed predictions in Google Docs"/>
         <DemoVideo src="/asana.webm" caption="...in your todo list"/>
         <DemoVideo src="/notion.webm" caption="...in Notion"/>
+        <DemoVideo src="/twitter.webm" caption="...and anywhere else on the web"/>
       </div>
     </div >
   )
