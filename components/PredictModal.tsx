@@ -53,7 +53,14 @@ export default function PredictModal() {
 
     copyToClipboard({
       'text/plain': urlObj.toString(),
-      ...makeClipboardHtmlLink(richTextData),
+      ...(
+        // skip HTML version for twitter (it uses that instead of the plain text version)
+        window.location.ancestorOrigins.contains("https://twitter.com")
+        || window.location.ancestorOrigins.contains("https://x.com") ?
+        {}
+        :
+        makeClipboardHtmlLink(richTextData)
+      ),
       ...makeRichGoogleDocsLink(richTextData)
     })
 
