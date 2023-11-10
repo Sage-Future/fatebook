@@ -19,9 +19,9 @@ import {
 } from "../interactive_handlers/resolve"
 import { fatebookEmailFooter, sendEmail } from "./email"
 import { questionsToCsv } from "./export"
+import { getQuestionUrl } from "./question_url"
 import { Context, publicProcedure, router } from "./trpc_base"
 import { getHtmlLinkQuestionTitle } from "./utils"
-import { getQuestionUrl } from "./question_url"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -64,6 +64,7 @@ export type ExtraFilters = {
   filterTagIds?: string[]
   showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
   theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
+  filterTournamentId?: string // for fatebook.io/tournament/:id, show all questions from this tournament
 }
 
 export const questionRouter = router({
@@ -144,6 +145,7 @@ export const questionRouter = router({
             filterTagIds: z.array(z.string()).optional(),
             showAllPublic: z.boolean().optional(),
             theirUserId: z.string().optional(),
+            filterTournamentId: z.string().optional(),
           })
           .optional(),
       })
@@ -836,17 +838,23 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
               AND: [{ sharedPublicly: true }, { unlisted: false }],
             }
           : (
-            input.extraFilters?.theirUserId ? {
+            (input.extraFilters?.theirUserId || input.extraFilters?.filterTournamentId) ? {
               // show public, not unlisted questions by the user, and questions they've shared with me
               userId: input.extraFilters.theirUserId,
+              tournaments: input.extraFilters.filterTournamentId ? {
+                some: {
+                  id: input.extraFilters.filterTournamentId,
+                }
+              } : undefined,
               OR: [
                 { sharedPublicly: true, unlisted: false },
                 { sharedWith: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } },
                 { sharedWithLists: { some: { users: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } } } },
+                input.extraFilters.filterTournamentId ? { userId: ctx.userId } : {},
               ]
 
             } : {
-              // not showAllPublic - only show questions I've created, forecasted on, or are shared with me
+              // only show questions I've created, forecasted on, or are shared with me
               OR: [
                 { userId: ctx.userId },
                 {

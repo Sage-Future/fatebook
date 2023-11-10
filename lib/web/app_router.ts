@@ -7,16 +7,15 @@ import { questionRouter } from './question_router'
 import { tagsRouter } from './tags_router'
 import { publicProcedure, router } from './trpc_base'
 import { userListRouter } from './userList_router'
+import { tournamentRouter } from './tournament_router'
 
 
 export const appRouter = router({
   question: questionRouter,
-
   userList: userListRouter,
-
   tags: tagsRouter,
-
   import: importRouter,
+  tournament: tournamentRouter,
 
   sendEmail: publicProcedure
     .input(

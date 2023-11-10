@@ -68,6 +68,7 @@ model Question {
   resolutionMessages  ResolutionSlackMessage[]
   comments            Comment[]
   tags                Tag[]
+  tournaments         Tournament[]
 }
 
 model Tag {
@@ -138,6 +139,7 @@ model User {
   apiKey                   String?
   discordUserId            String?         @unique
   tags                     Tag[]
+  tournaments              Tournament[]
 
   // Used by next-auth:
   emailVerified DateTime?
@@ -234,11 +236,27 @@ model Comment {
 }
 
 model UserList {
-  id        String     @id @default(cuid())
-  createdAt DateTime   @default(now())
-  name      String
-  authorId  String
-  author    User       @relation(name: "author", fields: [authorId], references: [id], onDelete: Cascade)
-  users     User[]     @relation(name: "members")
-  questions Question[]
+  id          String       @id @default(cuid())
+  createdAt   DateTime     @default(now())
+  name        String
+  authorId    String
+  author      User         @relation(name: "author", fields: [authorId], references: [id], onDelete: Cascade)
+  users       User[]       @relation(name: "members")
+  questions   Question[]
+  tournaments Tournament[]
+}
+
+model Tournament {
+  id              String     @id @default(cuid())
+  createdAt       DateTime   @default(now())
+  name            String
+  description     String?
+  questions       Question[]
+  authorId        String
+  author          User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  sharedPublicly  Boolean    @default(false)
+  unlisted        Boolean    @default(false)
+  userList        UserList?  @relation(fields: [userListId], references: [id], onDelete: Cascade)
+  userListId      String?
+  showLeaderboard Boolean    @default(true)
 }

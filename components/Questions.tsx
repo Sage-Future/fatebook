@@ -1,29 +1,35 @@
 import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
+import { AnimatePresence, motion } from "framer-motion"
 import { useSession } from "next-auth/react"
 import React, { ReactNode, useState } from 'react'
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
+import { ReactMarkdown } from "react-markdown/lib/react-markdown"
+import remarkGfm from "remark-gfm"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
 import { Question } from "./Question"
-import { AnimatePresence, motion } from "framer-motion"
 
 export function Questions({
   title,
   filterClientSide,
   noQuestionsText = "Make your first forecast to see it here.",
   filterTagIds = undefined,
+  filterTournamentId = undefined,
   showAllPublic = false,
   theirUserId = undefined,
+  description = undefined,
 }: {
   title?: string | ReactNode,
   filterClientSide?: (question: any) => boolean
   noQuestionsText?: string,
   filterTagIds?: string[],
+  filterTournamentId?: string,
   showAllPublic?: boolean,
   theirUserId?: string,
+  description?: string,
 }) {
   const session = useSession()
 
@@ -40,6 +46,7 @@ export function Questions({
       extraFilters: {
         ...extraFilters,
         filterTagIds,
+        filterTournamentId,
         showAllPublic,
         theirUserId,
       },
@@ -83,6 +90,11 @@ export function Questions({
           setExtraFilters={setExtraFilters}
         />}
       </div>
+      {description && <div className="text-sm text-neutral-500 mb-4">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {description}
+        </ReactMarkdown>
+      </div>}
       <motion.div className="grid gap-6">
         <AnimatePresence initial={false} mode="popLayout">
           {ifEmpty(
