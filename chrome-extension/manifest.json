@@ -7,11 +7,23 @@
   "action": {
     "default_title": "Click to make a prediction",
     "default_icon": {
-      "16": "scale.png",
-      "24": "scale.png",
-      "32": "scale.png"
+      "16": "scale16.png",
+      "32": "scale32.png",
+      "48": "scale48.png",
+      "128": "scale128.png"
     }
   },
+
+  "icons": {
+    "16": "scale16.png",
+    "32": "scale32.png",
+    "48": "scale48.png",
+    "128": "scale128.png"
+  },
+  "default_locale": "en",
+  "author": "hello@sage-future.org",
+  "homepage": "https://fatebook.io/extension",
+  "short_name": "Fatebook",
   
   "commands": {
     "open_modal": {
