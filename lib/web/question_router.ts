@@ -518,24 +518,29 @@ export const questionRouter = router({
       )
 
       const q = submittedForecast.question
-      for (const email of Array.from(new Set([
-        q.user.email,
-        ...q.forecasts.map((f) => f.user.email),
-        ...q.comments.map((c) => c.user.email),
-        ...q.sharedWith.map((u) => u.email),
-        ...q.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
-      ])).filter((e) => e && e !== submittedForecast.user.email)) {
-        await sendEmail({
-          to: email,
-          subject: `${submittedForecast.user.name || "Someone"} predicted ${
-            submittedForecast.forecast.toNumber() * 100}% on "${q.title}"`,
-          textBody: `New prediction`,
-          htmlBody: `
-            <p>${submittedForecast.user.name || "Someone"} predicted ${submittedForecast.forecast.toNumber() * 100
-              }% on ${getHtmlLinkQuestionTitle(q)}.</p>
-            ${fatebookEmailFooter(email)}
-          `,
-        })
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+      const mostRecentForecast = q.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+
+      if (!mostRecentForecast || mostRecentForecast.createdAt.getTime() < twoHoursAgo.getTime()) {
+        for (const email of Array.from(new Set([
+          q.user.email,
+          ...q.forecasts.map((f) => f.user.email),
+          ...q.comments.map((c) => c.user.email),
+          ...q.sharedWith.map((u) => u.email),
+          ...q.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
+        ])).filter((e) => e && e !== submittedForecast.user.email)) {
+          await sendEmail({
+            to: email,
+            subject: `${submittedForecast.user.name || "Someone"} predicted ${
+              submittedForecast.forecast.toNumber() * 100}% on "${q.title}"`,
+            textBody: `New prediction`,
+            htmlBody: `
+              <p>${submittedForecast.user.name || "Someone"} predicted ${submittedForecast.forecast.toNumber() * 100
+                }% on ${getHtmlLinkQuestionTitle(q)}.</p>
+              ${fatebookEmailFooter(email)}
+            `,
+          })
+        }
       }
 
       await backendAnalyticsEvent("forecast_submitted", {
@@ -607,24 +612,29 @@ export const questionRouter = router({
         },
       })
 
-      for (const email of Array.from(new Set([
-        question.user.email,
-        ...question.forecasts.map((f) => f.user.email),
-        ...question.comments.map((c) => c.user.email),
-        ...question.sharedWith.map((u) => u.email),
-        ...question.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
-      ])).filter((e) => e && e !== newComment.user.email)) {
-        await sendEmail({
-          to: email,
-          subject: `${newComment.user.name || "Someone"} commented on "${question.title}"`,
-          textBody: `"${newComment.comment}"`,
-          htmlBody: `
-            <p>${newComment.user.name || "Someone"} commented on ${getHtmlLinkQuestionTitle(
-            question)}:</p>
-            <p>${newComment.comment}</p>
-            ${fatebookEmailFooter(email)}
-          `,
-        })
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+      const mostRecentComment = question.comments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+
+      if (!mostRecentComment || mostRecentComment.createdAt.getTime() < twoHoursAgo.getTime()) {
+        for (const email of Array.from(new Set([
+          question.user.email,
+          ...question.forecasts.map((f) => f.user.email),
+          ...question.comments.map((c) => c.user.email),
+          ...question.sharedWith.map((u) => u.email),
+          ...question.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
+        ])).filter((e) => e && e !== newComment.user.email)) {
+          await sendEmail({
+            to: email,
+            subject: `${newComment.user.name || "Someone"} commented on "${question.title}"`,
+            textBody: `"${newComment.comment}"`,
+            htmlBody: `
+              <p>${newComment.user.name || "Someone"} commented on ${getHtmlLinkQuestionTitle(
+              question)}:</p>
+              <p>${newComment.comment}</p>
+              ${fatebookEmailFooter(email)}
+            `,
+          })
+        }
       }
 
       await backendAnalyticsEvent("comment_added", {
