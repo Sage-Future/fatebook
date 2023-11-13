@@ -820,8 +820,6 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
 ) {
   const limit = input.limit || 100
 
-  console.log({ input, extraFilters: input.extraFilters })
-
   const skip = input.cursor
   const questions = await prisma.question.findMany({
     skip: skip,
