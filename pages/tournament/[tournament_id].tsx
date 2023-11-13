@@ -1,16 +1,16 @@
 import { ChevronDownIcon, ChevronLeftIcon } from '@heroicons/react/24/solid'
 import { Tournament } from '@prisma/client'
 import { NextSeo } from 'next-seo'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { InfoButton } from '../../components/InfoButton'
 import { Questions } from '../../components/Questions'
 import { QuestionsMultiselect } from '../../components/QuestionsMultiselect'
-import { round } from '../../lib/_utils_common'
-import { api } from '../../lib/web/trpc'
-import { ifEmpty, signInToFatebook, useUserId } from '../../lib/web/utils'
-import Link from 'next/link'
+import { TournamentLeaderboard } from '../../components/TournamentLeaderboard'
 import { getQuestionUrl } from '../../lib/web/question_url'
+import { api } from '../../lib/web/trpc'
+import { signInToFatebook, useUserId } from '../../lib/web/utils'
 
 export default function TournamentPage() {
   const userId = useUserId()
@@ -211,6 +211,18 @@ function TournamentAdminPanel({
           </label>
         </div>
         <div className="form-control flex-row items-center gap-2">
+          <input
+            id="showLeaderboard"
+            type="checkbox"
+            className="checkbox"
+            checked={tournamentQ.data?.showLeaderboard}
+            onChange={(e) => handleUpdate({tournament: {showLeaderboard: e.target.checked}})}
+          />
+          <label className="label" htmlFor="showLeaderboard">
+            <span className="label-text">Show leaderboard</span>
+          </label>
+        </div>
+        <div className="form-control flex-row items-center gap-2">
           <button
             className="btn"
             onClick={() => {
@@ -227,122 +239,3 @@ function TournamentAdminPanel({
   )
 }
 
-function TournamentLeaderboard({
-  tournamentId,
-}: {
-  tournamentId: string,
-}) {
-  const tournamentQ = api.tournament.get.useQuery({
-    id: tournamentId,
-  })
-
-  const [sortConfig, setSortConfig] = useState({ key: 'player', direction: 'ascending' })
-
-  const scoresByPlayer = useMemo(() => {
-    if (!tournamentQ.data) return []
-
-    return tournamentQ.data.questions.flatMap(question =>
-      question.questionScores.map(score => ({
-        userId: score.userId,
-        userName: score.user.name,
-        absoluteScore: score.absoluteScore,
-        relativeScore: score.relativeScore,
-        numForecasts: question.forecasts.length,
-        numQuestions: question.forecasts.length > 0 ? 1 : 0,
-      }))
-    )
-    .reduce((acc: any[], curr: any) => {
-      const existing = acc.find(a => a.userId === curr.userId)
-      if (existing) {
-        existing.absoluteScore += curr.absoluteScore
-        existing.relativeScore += curr.relativeScore
-        existing.numForecasts += curr.numForecasts
-        existing.numQuestions += curr.numQuestions
-      } else {
-        acc.push({...curr})
-      }
-      return acc
-    }, [])
-    .map((player: any) => ({
-      ...player,
-      absoluteScore: player.absoluteScore / player.numQuestions,
-      relativeScore: player.relativeScore / player.numQuestions,
-    }))
-  }, [tournamentQ.data])
-
-  const sortedScores = useMemo(() => {
-    if (!tournamentQ.data) return []
-
-    const sortableScores = [...scoresByPlayer]
-    if (sortConfig.key === 'user') {
-      sortableScores.sort((a, b) => {
-        if (a.user.name < b.user.name) {
-          return sortConfig.direction === 'ascending' ? -1 : 1
-        }
-        if (a.user.name > b.user.name) {
-          return sortConfig.direction === 'ascending' ? 1 : -1
-        }
-        return 0
-      })
-    } else {
-      sortableScores.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1
-        }
-        return 0
-      })
-    }
-    return sortableScores
-  }, [tournamentQ.data, scoresByPlayer, sortConfig.key, sortConfig.direction])
-
-  const requestSort = (key: string) => {
-    let direction = 'ascending'
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending'
-    }
-    setSortConfig({ key, direction })
-  }
-
-  if (!tournamentQ.data) {
-    return <></>
-  }
-
-  console.log({scoresByPlayer, sortedScores})
-
-  return (
-    <div>
-      <h2 className='select-none'>Leaderboard</h2>
-      <div className='bg-white'>
-        <table className="table w-full overflow-x-scroll py-2">
-          <thead>
-            <tr>
-              <th className="cursor-pointer" onClick={() => requestSort('user')}>Player</th>
-              <th className="cursor-pointer" onClick={() => requestSort('absoluteScore')}>
-                Brier<br/>score <InfoButton className='font-normal ml-1' tooltip='Lower is better!' />
-              </th>
-              <th className="cursor-pointer" onClick={() => requestSort('relativeScore')}>
-                Relative<br/>Brier <InfoButton className='font-normal ml-1' tooltip='Lower is better! Relative to the median on each question' />
-              </th>
-              <th className="cursor-pointer" onClick={() => requestSort('numQuestions')}>Questions<br/>forecasted</th>
-              <th className="cursor-pointer" onClick={() => requestSort('numForecasts')}>Total<br/>forecasts</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ifEmpty(sortedScores.map((score) => (
-              <tr key={score.userId}>
-                <td>{score.userName}</td>
-                <td>{round(score.absoluteScore, 2)}</td>
-                <td>{round(score.relativeScore, 2)}</td>
-                <td>{tournamentQ.data.questions.length}</td>
-                <td>{tournamentQ.data.questions.flatMap(q => q.forecasts).length}</td>
-              </tr>
-            )), <tr><td colSpan={5} className='italic text-neutral-500 text-center'>No resolved questions yet</td></tr>)}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}

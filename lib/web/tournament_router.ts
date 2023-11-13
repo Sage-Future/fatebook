@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import prisma from "../_utils_server"
+import { scrubApiKeyPropertyRecursive } from './question_router'
 import { publicProcedure, router } from "./trpc_base"
 
 export const tournamentRouter = router({
@@ -86,9 +87,9 @@ export const tournamentRouter = router({
             where: {
               OR: [
                 {sharedPublicly: true},
-                {userId: ctx.userId},
-                {sharedWith: {some: {id: ctx.userId}}},
-                {sharedWithLists: {some: {users: {some: {id: ctx.userId}}}}},
+                {userId: ctx.userId || "NO MATCH"},
+                {sharedWith: {some: {id: ctx.userId || "NO MATCH"}}},
+                {sharedWithLists: {some: {users: {some: {id: ctx.userId || "NO MATCH"}}}}},
               ]
             },
             include: {
@@ -97,7 +98,11 @@ export const tournamentRouter = router({
                   user: true,
                 },
               },
-              forecasts: true,
+              forecasts: {
+                include: {
+                  user: true,
+                }
+              },
             },
           },
           userList: {
@@ -118,7 +123,7 @@ export const tournamentRouter = router({
       )) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this tournament" })
       }
-      return tournament
+      return scrubApiKeyPropertyRecursive(tournament)
     }),
 
   getAll: publicProcedure

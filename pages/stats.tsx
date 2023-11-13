@@ -1,6 +1,7 @@
 import { NextSeo } from 'next-seo'
 import { TrackRecord } from '../components/TrackRecord'
 import { useUserId } from '../lib/web/utils'
+import { Tournaments } from '../components/Tournaments'
 
 export default function ImportPage() {
   const userId = useUserId()
@@ -10,6 +11,9 @@ export default function ImportPage() {
       <NextSeo title="Stats" />
       <div className="mx-auto">
         {userId && <TrackRecord trackRecordUserId={userId} />}
+        {userId && <div className='prose mx-auto mt-14'>
+          <Tournaments />
+        </div>}
       </div>
     </div>
   )

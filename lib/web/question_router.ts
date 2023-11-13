@@ -151,7 +151,7 @@ export const questionRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      if (!ctx.userId && !input.extraFilters?.showAllPublic && !input.extraFilters?.theirUserId) {
+      if (!ctx.userId && !input.extraFilters?.showAllPublic && !input.extraFilters?.theirUserId && !input.extraFilters?.filterTournamentId) {
         return null
       }
 
@@ -847,7 +847,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                 }
               } : undefined,
               OR: [
-                { sharedPublicly: true, unlisted: false },
+                { sharedPublicly: true, unlisted: input.extraFilters?.filterTournamentId ? undefined : false },
                 { sharedWith: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } },
                 { sharedWithLists: { some: { users: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } } } },
                 input.extraFilters.filterTournamentId ? { userId: ctx.userId } : {},
@@ -1037,7 +1037,7 @@ function scrubHiddenForecastsFromQuestion<
   }
 }
 
-function scrubApiKeyPropertyRecursive<T>(obj: T) {
+export function scrubApiKeyPropertyRecursive<T>(obj: T) {
   // warning - this mutates the object
   for (const key in obj) {
     if (key === "apiKey") {
