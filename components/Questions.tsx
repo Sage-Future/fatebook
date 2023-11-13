@@ -64,6 +64,7 @@ export function Questions({
     && !filtersApplied // don't hide everything if user applied a filter
     && !showAllPublic // don't hide for logged out users if showing all public
     && !theirUserId // don't hide for logged out users if showing a user page
+    && !filterTournamentId
   ) {
     return <></>
   }
