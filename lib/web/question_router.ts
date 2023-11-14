@@ -521,7 +521,7 @@ export const questionRouter = router({
       const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
       const mostRecentForecast = q.forecasts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
 
-      if (!mostRecentForecast || mostRecentForecast.createdAt.getTime() < twoHoursAgo.getTime()) {
+      if ((!mostRecentForecast ||  q.forecasts.length < 4) || mostRecentForecast.createdAt.getTime() < twoHoursAgo.getTime()) {
         for (const email of Array.from(new Set([
           q.user.email,
           ...q.forecasts.map((f) => f.user.email),
@@ -615,7 +615,7 @@ export const questionRouter = router({
       const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
       const mostRecentComment = question.comments.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
 
-      if (!mostRecentComment || mostRecentComment.createdAt.getTime() < twoHoursAgo.getTime()) {
+      if ((!mostRecentComment || question.comments.length < 4) || mostRecentComment.createdAt.getTime() < twoHoursAgo.getTime()) {
         for (const email of Array.from(new Set([
           question.user.email,
           ...question.forecasts.map((f) => f.user.email),

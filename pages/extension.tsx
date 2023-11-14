@@ -27,7 +27,7 @@ export default function ExtensionPage() {
           </h2>
           <h3 className="text-neutral-600">Make and embed Fatebook predictions anywhere on the web</h3>
           {justInstalled && (
-            <div className="prose">
+            <div className="prose mb-12">
               <p>
                 {"Thanks for installing Fatebook for Chrome!"}
               </p>
@@ -54,7 +54,7 @@ export default function ExtensionPage() {
 
           <div className="flex mb-20">
             <div className="m-auto">
-            <Link href="https://fatebook.io">
+            <Link href="https://chrome.google.com/webstore/detail/fatebook-for-chrome/bbmkpfopjckjieficoddmcjmlkggillm">
               <button className="inline-flex items-center border border-transparent rounded-md my-4 text-2xl py-4 px-6 shadow-2xl shadow-indigo-500 hover:scale-105 transition-transform bg-white text-black font-semibold hover:bg-white">
                 <>
                   <Image src="/chrome.svg" width={40} height={40} className="m-4" alt="" />
