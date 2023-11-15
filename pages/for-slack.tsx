@@ -14,7 +14,7 @@ export default function ForSlackPage() {
 
   return (
     <div className="bg-neutral-50 grow">
-      <NextSeo title="Fatebook for Slack" titleTemplate="Fatebook for Slack" />
+      <NextSeo title="Fatebook for Slack" titleTemplate="Fatebook for Slack" description="Track your predictions, right where your team works" />
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
         <div className="prose mx-auto">
           <h2 className="text-3xl mb-2 font-extrabold text-neutral-900">

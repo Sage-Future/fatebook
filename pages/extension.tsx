@@ -19,7 +19,7 @@ export default function ExtensionPage() {
 
   return (
     <div className="bg-neutral-50 grow">
-      <NextSeo title="Fatebook for Chrome" titleTemplate="Fatebook for Chrome" />
+      <NextSeo title="Fatebook for Chrome" titleTemplate="Fatebook for Chrome" description="Make and embed Fatebook predictions, anywhere on the web." />
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
         <div className="prose mx-auto">
           <h2 className="text-3xl mb-2 font-extrabold text-neutral-900">

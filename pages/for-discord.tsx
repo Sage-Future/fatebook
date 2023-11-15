@@ -14,7 +14,7 @@ export default function ForDiscordPage() {
 
   return (
     <div className="bg-neutral-50 grow">
-      <NextSeo title="Fatebook for Discord" titleTemplate="Fatebook for Discord" />
+      <NextSeo title="Fatebook for Discord" titleTemplate="Fatebook for Discord" description="Rapidly share your predictions with your community" />
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
         <div className="prose mx-auto">
           <h2 className="text-3xl mb-2 font-extrabold text-neutral-900">

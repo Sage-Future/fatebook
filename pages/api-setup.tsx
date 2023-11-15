@@ -16,7 +16,7 @@ export default function ApiPage() {
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo title="API" />
+      <NextSeo title="API" description='Use the API to create Fatebook questions from a URL' />
       <div className="mx-auto prose">
         <h2>
           Use the API to create Fatebook questions from a URL

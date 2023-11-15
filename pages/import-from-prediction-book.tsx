@@ -68,7 +68,7 @@ function PredictionBookImport() {
 
   return (
     <>
-      <NextSeo title="Import from PredictionBook" />
+      <NextSeo title="Import from PredictionBook" description='Import all of your historical predictions from PredictionBook into Fatebook' />
       <form onSubmit={void handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2">
           <label htmlFor="predictionBookApiToken">

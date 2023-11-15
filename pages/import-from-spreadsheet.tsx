@@ -18,7 +18,7 @@ export default function ImportFromSpreadsheetPage() {
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-4xl">
-      <NextSeo title="Import from spreadsheet" />
+      <NextSeo title="Import from spreadsheet" description="Import your predictions from a spreadsheet into Fatebook" />
       <div className="mx-auto">
         <div className="prose mx-auto">
           <h3>
