@@ -71,7 +71,7 @@ export function Question({
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}>
                   {question.title}
-                  {embedded && <ArrowTopRightOnSquareIcon className="ml-2 h-3 w-3 text-neutral-600" />}
+                  {embedded && <ArrowTopRightOnSquareIcon className="shrink-0 ml-2 h-3 w-3 text-neutral-600" />}
                 </Link>
               </span>
               <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} embedded={embedded}/>

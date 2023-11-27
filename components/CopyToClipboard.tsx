@@ -17,7 +17,7 @@ export function CopyToClipboard({
           await navigator.clipboard.writeText(textToCopy)
         }}
       >
-        <ClipboardIcon className="inline" height={15} />
+        <ClipboardIcon className="inline shrink-0" height={15} />
         {copied ?
           <span>Copied!</span>
           :

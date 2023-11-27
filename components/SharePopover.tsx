@@ -1,5 +1,5 @@
 import { Popover, Transition } from "@headlessui/react"
-import { ChevronDownIcon, UserGroupIcon, UserIcon, UsersIcon } from '@heroicons/react/20/solid'
+import { ChevronDownIcon, LinkIcon, LockClosedIcon, UserGroupIcon, UsersIcon } from '@heroicons/react/20/solid'
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
@@ -7,12 +7,12 @@ import React, { Fragment, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ReactMultiEmail } from "react-multi-email"
 import 'react-multi-email/dist/style.css'
+import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"
-import { getQuestionUrl } from "../lib/web/question_url"
 
 
 export function SharePopover({
@@ -27,12 +27,15 @@ export function SharePopover({
         <div className='w-full text-right md:text-center'>
           <Popover.Button className="button text-sm">
             {question.sharedPublicly ? (
-              <><UserGroupIcon height={15} /> <span>Public</span></>
+              question.unlisted ?
+                <><LinkIcon height={15} /> <span>Shared link</span></>
+                :
+                <><UserGroupIcon height={15} /> <span>Public</span></>
             ) :
               question.sharedWith?.length > 0 || question.sharedWithLists?.length > 0 || sharedToSlack ? (
                 <><UsersIcon height={15} /> <span>Shared</span></>
               ) : (
-                <><UserIcon height={15} /> <span>Only me</span></>
+                <><LockClosedIcon height={15} /> <span>Only me</span></>
               )}
             <ChevronDownIcon
               className="-mr-2 h-5 w-5 text-neutral-400"
@@ -123,7 +126,7 @@ function SharePublicly({
                 })
               }}
             />
-            <label htmlFor="sharePublicly" className="text-sm my-auto">Share publicly</label>
+            <label htmlFor="sharePublicly" className="text-sm my-auto">Share with anyone with the link</label>
           </div>
           {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} />}
         </div>
