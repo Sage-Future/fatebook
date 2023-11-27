@@ -272,7 +272,7 @@
 
       // replace the text with it's title and prediction
       const questionId = getQuestionIdFromUrl(href)
-      const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}`, { credentials: 'include' })).json()
+      const questionDetails = await (await fetch(`${FATEBOOK_URL}api/v0/getQuestion?questionId=${questionId}&conciseQuestionDetails=1`, { credentials: 'include' })).json()
 
       if (link.innerText === href) {
         let pasteString = `⚖ ${questionDetails.title}`

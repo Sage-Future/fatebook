@@ -1018,7 +1018,7 @@ export function assertHasAccess(
   }
 }
 
-function scrubHiddenForecastsFromQuestion<
+export function scrubHiddenForecastsFromQuestion<
   QuestionX extends QuestionWithForecasts
 >(question: QuestionX, userId: string | undefined) {
   question = scrubApiKeyPropertyRecursive(question)
@@ -1047,11 +1047,11 @@ function scrubHiddenForecastsFromQuestion<
   }
 }
 
-export function scrubApiKeyPropertyRecursive<T>(obj: T) {
+export function scrubApiKeyPropertyRecursive<T>(obj: T, otherKeysToScrub?: string[]) {
   // warning - this mutates the object
   for (const key in obj) {
-    if (key === "apiKey") {
-      ;(obj as any).apiKey = "scrubbed"
+    if (key === "apiKey" || otherKeysToScrub?.includes(key)) {
+      ;(obj as any)[key] = "scrubbed"
     } else if (typeof obj[key] === "object") {
       obj[key] = scrubApiKeyPropertyRecursive(obj[key])
     }

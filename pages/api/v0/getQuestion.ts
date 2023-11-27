@@ -1,14 +1,18 @@
 import { NextApiRequest, NextApiResponse } from "next"
-import prisma from "../../../lib/_utils_server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../auth/[...nextauth]"
-import { assertHasAccess } from "../../../lib/web/question_router"
 import NextCors from "nextjs-cors"
+import prisma from "../../../lib/_utils_server"
+import { assertHasAccess, scrubApiKeyPropertyRecursive, scrubHiddenForecastsFromQuestion } from '../../../lib/web/question_router'
+import { authOptions } from "../auth/[...nextauth]"
 
 import { getMostRecentForecastForUser } from "../../../lib/_utils_common"
 
 interface Request extends NextApiRequest {
-  query: { questionId: string }
+  query: {
+    questionId: string
+    apiKey?: string
+    conciseQuestionDetails?: string
+  }
 }
 
 const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
@@ -38,7 +42,23 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     })
   }
 
-  const session = await getServerSession(req, res, authOptions)
+  let authedUserId = null
+  if (req.query.apiKey) {
+    const user = await prisma.user.findFirst({
+      where: {
+        apiKey: req.query.apiKey,
+      },
+    })
+    if (!user) {
+      return res.status(401).json({
+        error: `Invalid API key. Check your API key at https://fatebook.io/api-setup`,
+      })
+    }
+    authedUserId = user.id
+  } else {
+    const session = await getServerSession(req, res, authOptions)
+    authedUserId = session?.user.id
+  }
 
   const question = await prisma.question.findUnique({
     where: {
@@ -58,6 +78,19 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
           users: true,
         },
       },
+      questionScores: {
+        select: {
+          absoluteScore: true,
+          relativeScore: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            }
+          },
+        }
+      }
     },
   })
 
@@ -66,7 +99,13 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     return res.status(404).json({})
   }
 
-  assertHasAccess({ userId: session?.user.id }, question)
+  try {
+    assertHasAccess({ userId: authedUserId }, question)
+  } catch(e) {
+    return res.status(401).json({
+      message: "You don't have access to that question. Check your API key at https://fatebook.io/api-setup",
+    })
+  }
 
   const userName = question!.user.name
   const prediction = getMostRecentForecastForUser(
@@ -74,10 +113,33 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     question!.userId
   )?.forecast
 
-  res.status(200).json({
-    title: question?.title,
-    user: { name: userName },
-    prediction,
-  })
+  if (req.query.conciseQuestionDetails) {
+    res.status(200).json({
+      title: question?.title,
+      user: { name: userName },
+      prediction,
+    })
+  } else {
+    res.status(200).json(scrubApiKeyPropertyRecursive({
+      title: question?.title,
+      yourLatestPrediction: prediction,
+      resolved: question?.resolved,
+      resolution: question?.resolution,
+      resolveBy: question?.resolveBy,
+      resolvedAt: question?.resolvedAt,
+      forecasts: scrubHiddenForecastsFromQuestion(question, authedUserId)?.forecasts.map(f => ({
+        forecast: f.forecast.toNumber(),
+        createdAt: f.createdAt,
+        user: {
+          id: f.user.id,
+          name: f.user.name,
+          image: f.user.image,
+        },
+      })),
+      createdAt: question?.createdAt,
+      notes: question?.notes,
+      questionScores: question?.questionScores,
+    }, ["email", "discordUserId", "unsubscribedFromEmailsAt"]))
+  }
 }
 export default getQuestionPublicApi

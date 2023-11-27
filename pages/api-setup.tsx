@@ -19,8 +19,11 @@ export default function ApiPage() {
       <NextSeo title="API" description='Use the API to create Fatebook questions from a URL' />
       <div className="mx-auto prose">
         <h2>
-          Use the API to create Fatebook questions from a URL
+          Fatebook API
         </h2>
+        <h3>
+          Use the API to create Fatebook questions from a URL
+        </h3>
         {!userId &&
           <div className="flex w-full p-4">
             <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
@@ -116,6 +119,28 @@ export default function ApiPage() {
             {" - by Caleb Parikh"}
           </li>
         </ul>
+        <h3>
+          Use the API to get Fatebook questions by ID
+        </h3>
+        <p>
+          {"You can also use the API to get Fatebook questions by ID, here's an example:"}
+        </p>
+
+        <p className="bg-neutral-200 p-2 rounded-md break-words">
+          {"https://fatebook.io/api/v0/getQuestion"}
+          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br/>
+          {"&questionId="}<span className='bg-neutral-300 font-semibold'>{"QUESTION_ID"}</span><br/>
+        </p>
+
+        <p>
+          {"To get the question ID, go to the question page and copy the ID from the URL. The ID is the part after the --, e.g. for this question:"} <span className='bg-neutral-200 p-0.5 rounded-md'>
+            https://fatebook.io/q/will-adam-win-the-next-aoe-game---clkqtczp00001l008qcrma6s7
+          </span> the ID is <span className='bg-neutral-200 p-0.5 rounded-md'>{"clkqtczp00001l008qcrma6s7"}</span>.
+        </p>
+
+        <p>
+          Click <a href={`https://fatebook.io/api/v0/getQuestion?apiKey=${apiKey.data || "YOUR_API_KEY"}&questionId=clkqtczp00001l008qcrma6s7`} target='_blank'>here</a> to see an example of the getQuestion endpoint in action.
+        </p>
       </div>
     </div>
   )
