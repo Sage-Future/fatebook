@@ -10,7 +10,7 @@ export function CopyToClipboard({
   return (
     <div>
       <button
-        className="button"
+        className="button text-xs"
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         onClick={async () => {
           setCopied(true)
