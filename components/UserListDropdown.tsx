@@ -42,7 +42,7 @@ export function UserListDropdown({
           aria-hidden="true"
         />
       </label>
-      <ul tabIndex={0} className="dropdown-content menu shadow-2xl bg-base-100 rounded-box w-full md:w-96">
+      <ul tabIndex={0} className="dropdown-content menu shadow-2xl bg-base-100 rounded-box w-full md:w-[27rem]">
         {(userListsQ.data) ?
           userListsQ.data.map(userList => {
             const currentLists = question.sharedWithLists.map(l => l.id)
@@ -60,11 +60,11 @@ export function UserListDropdown({
                     currentLists.filter(id => id !== userList.id) :
                     [...currentLists, userList.id]
                 })}
-              ><a className="active:bg-neutral-400">
+              ><a className="active:bg-neutral-200">
                   {isInCurrentLists ?
-                    <CheckCircleIcon className='fill-indigo-700' height={16} />
+                    <CheckCircleIcon className='shrink-0 fill-indigo-700' height={16} />
                     :
-                    <CheckOutlineIcon className="stroke-neutral-400" height={16} />}
+                    <CheckOutlineIcon className="shrink-0 stroke-neutral-400" height={16} />}
                   <UserListDisplay userList={userList} />
                 </a></li>
             )
@@ -106,15 +106,18 @@ function UserListDisplay({
   return (
     <div
       className={clsx('flex flex-col gap-4',
-                      isEditing && "gap-2"
-      )}>
+                      isEditing && "gap-2",
+                      isEditing && "ml-4",
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
       <span className="flex gap-2 justify-between">
         <input
           type='text'
           disabled={!isEditing || updateList.isLoading}
           onClick={(e) => e.stopPropagation()}
           className={clsx(
-            "w-28 md:w-52 p-1",
+            "w-28 md:w-60 p-1",
             isEditing ? "border border-neutral-400 rounded-md" : "border-none",
             updateList.isLoading ? "opacity-50" : "opacity-100"
           )}
@@ -147,7 +150,10 @@ function UserListDisplay({
           </button>
           <button
             className="btn btn-ghost btn-circle btn-xs"
-            onClick={() => confirm(`Are you sure you want to delete '${userList.name}'?`) && deleteList.mutate({listId: userList.id})}
+            onClick={(e) => {
+              e.stopPropagation()
+              confirm(`Are you sure you want to delete '${userList.name}'?`) && deleteList.mutate({ listId: userList.id })
+            }}
             disabled={userList.authorId !== userId || isEditing}
           >
             <TrashIcon height={15} />
@@ -174,11 +180,11 @@ function EmailInput({
 
   return (
     <span onClick={(e) => e.stopPropagation()}>
-      <label className="block text-sm font-medium text-neutral-700">
+      <label className="block text-sm font-medium text-neutral-700 mb-0.5">
         List members
       </label>
       <ReactMultiEmail
-        className={clsx("text-sm w-44 md:w-80", updateList.isLoading && "opacity-50")}
+        className={clsx("text-sm w-44 md:w-[22rem]", updateList.isLoading && "opacity-50")}
         placeholder="alice@gmail.com..."
         delimiter=" "
         emails={emails}

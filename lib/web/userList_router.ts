@@ -118,6 +118,31 @@ export const userListRouter = router({
         throw new TRPCError({ code: "UNAUTHORIZED", message: "" })
       }
 
+      // remove from questions that are shared with this list
+      const connectedQuestions = await prisma.question.findMany({
+        where: {
+          sharedWithLists: {
+            some: {
+              id: input.listId,
+            },
+          },
+        },
+      })
+      for (const question of connectedQuestions) {
+        await prisma.question.update({
+          where: {
+            id: question.id,
+          },
+          data: {
+            sharedWithLists: {
+              disconnect: {
+                id: input.listId,
+              },
+            },
+          },
+        })
+      }
+
       await prisma.userList.delete({
         where: {
           id: input.listId,

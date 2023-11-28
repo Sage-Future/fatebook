@@ -30,6 +30,9 @@
   .btn-primary {
     @apply text-white
   }
+  .menu li > a {
+    @apply active:bg-neutral-300 active:text-black !important
+  }
   input:disabled {
     /* Override iOS / Android font color change */
     -webkit-text-fill-color:black;

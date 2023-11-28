@@ -113,6 +113,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
         setResetTrigger(false)
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetTrigger])
 
   useEffect(() => {

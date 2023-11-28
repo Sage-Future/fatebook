@@ -76,7 +76,7 @@ const SharePanel = React.forwardRef<
   } : undefined)
 
   return <Popover.Panel className="absolute z-50 w-full cursor-auto" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
-    <div className="absolute z-50 mt-2 w-72 right-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+    <div className="absolute z-50 mt-2 w-72 md:w-96 lg:w-[29rem] right-0 md:left-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
       <div className="p-4 flex flex-col gap-2">
         <EmailInput question={question} />
         <UserListDropdown question={question} />
