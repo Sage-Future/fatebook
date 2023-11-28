@@ -19,7 +19,7 @@
   Sentry.setTag("extension_instance", extensionInfo.extensionInstanceId)
 
   Sentry.wrap(() => {
-    // extensionInfo.isDev=false
+    extensionInfo.isDev=false
     const FATEBOOK_HOST = extensionInfo.isDev ? 'localhost:3000' : 'fatebook.io'
     const FATEBOOK_URL = extensionInfo.isDev ? 'https://localhost:3000/' : 'https://fatebook.io/'
 
@@ -584,8 +584,8 @@ function tooltipPosition(absoluteElement, targetElement) {
   }
 
   // Update the CSS properties of the absolute element
-  absoluteElement.style.left = `${currentAbsoluteLeft + leftDiff}px`
-  absoluteElement.style.top = `${currentAbsoluteTop + topDiff}px`
+  absoluteElement.style.left = `${Math.max(0, currentAbsoluteLeft + leftDiff)}px`
+  absoluteElement.style.top = `${Math.max(0, currentAbsoluteTop + topDiff)}px`
 }
 
 function uuidv4() {
