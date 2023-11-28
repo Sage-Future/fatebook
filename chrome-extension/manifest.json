@@ -21,7 +21,6 @@
     "128": "scale128.png"
   },
   "author": "hello@sage-future.org",
-  "homepage": "https://fatebook.io/extension",
   "short_name": "Fatebook",
   
   "commands": {

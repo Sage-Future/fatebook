@@ -10,7 +10,7 @@ export function Tournaments() {
 
   return (
     <div className="prose">
-      <h2 className="flex flex-row gap-2 justify-between mr-3 my-0">
+      <h2 className="flex flex-row gap-2 justify-between mr-3 my-0 select-none">
         <span>
           Tournaments
           <span className="text-sm uppercase text-indigo-500 ml-2">New</span>

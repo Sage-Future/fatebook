@@ -40,6 +40,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
     question: z.string().min(1),
     resolveBy: z.string(),
     predictionPercentage: z.number().min(0).max(100).or(z.nan()),
+    sharePublicly: z.boolean().optional(),
   })
 
   const { register, handleSubmit, setFocus, reset, formState: { dirtyFields, errors }, watch, setValue } = useForm<z.infer<typeof predictFormSchema>>({
@@ -87,8 +88,8 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
         undefined,
       tags: tagsPreview,
 
-      unlisted: embedded ? true : undefined,
-      sharedPublicly: embedded ? true : undefined
+      unlisted: data.sharePublicly || undefined,
+      sharedPublicly: data.sharePublicly || undefined,
     }, {
       onError(error, variables, context) {
         console.error("error creating question: ", { error, variables, context })
@@ -331,6 +332,19 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
                     )}>%</span>
                 </div>
               </div>
+
+              {embedded && <div className="flex items-center">
+                <label htmlFor="sharePublicly" className='text-sm max-w-[8rem] ml-1'>
+                  Share with anyone with the link?
+                </label>
+                <input
+                  type="checkbox"
+                  id="sharePublicly"
+                  defaultChecked
+                  className="ml-2 checkbox check"
+                  {...register("sharePublicly")}
+                />
+              </div>}
             </div>
 
             <div className="self-center">

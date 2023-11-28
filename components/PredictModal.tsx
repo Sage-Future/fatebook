@@ -67,8 +67,8 @@ export default function PredictModal() {
     predictionSuccess(urlObj.toString())
   }, [session])
 
-  return <div className="flex items-center justify-center w-full h-full bg-black/80 p-12" onClick={() => cancelPrediction()}>
-    <div className="relative max-w-10xl p-10 pb-8 bg-neutral-50 rounded-sm" onClick={e => e.stopPropagation()}>
+  return <div className="flex items-center justify-center w-full h-full bg-black/40 p-12" onClick={() => cancelPrediction()}>
+    <div className="relative max-w-10xl p-10 pb-8 bg-neutral-50 rounded-sm" onClick={e => e.stopPropagation()} onScroll={e => e.stopPropagation()}>
       <Predict resetTrigger={resetTrigger} setResetTrigger={setResetTrigger} textAreaRef={textAreaRef} onQuestionCreate={onQuestionCreate} embedded={true}/>
 
       <div className="absolute w-[20px] h-[20px] top-[8px] right-[6px] text-neutral-400 cursor-pointer" onClick={() => cancelPrediction()}>
