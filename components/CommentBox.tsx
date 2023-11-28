@@ -6,6 +6,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { api } from '../lib/web/trpc'
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { CommentWithUser, QuestionWithStandardIncludes } from "../prisma/additional"
+import { useIsEmbedded } from '../lib/web/embed'
 
 export function CommentBox({
   question
@@ -21,6 +22,7 @@ export function CommentBox({
     }
   })
   const [localComment, setLocalComment] = useState<string>("")
+  const embedded = useIsEmbedded()
 
   const submitComment = function(value: string) {
     if (addComment.isLoading) {
@@ -43,8 +45,8 @@ export function CommentBox({
     >
       <TextareaAutosize
         className={clsx(
-          "shadow-sm py-2 px-4 focus:border-indigo-500 outline-none block w-full border-2 border-neutral-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-neutral-100",
-          "pr-11 max-sm:text-lg"
+          "shadow-sm py-2 px-4 focus:border-indigo-500 outline-none block w-full border-2 border-neutral-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-neutral-100 pr-11",
+          !embedded && "max-sm:text-lg",
         )}
         placeholder={`Add a comment...`}
         disabled={addComment.isLoading || !userId}
@@ -63,7 +65,8 @@ export function CommentBox({
         }} />
       {localComment && <button
         className={clsx(
-          'btn btn-xs absolute right-3 bottom-2 max-sm:bottom-3 hover:opacity-100 min-h-[25px]'
+          'btn btn-xs absolute right-3 bottom-2 hover:opacity-100 min-h-[25px]',
+          !embedded && "max-sm:bottom-3",
         )}
         disabled={addComment.isLoading || !userId || localComment.trim() === ""}
         onClick={(e) => {

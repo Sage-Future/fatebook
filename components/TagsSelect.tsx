@@ -42,7 +42,7 @@ export function TagsSelect({
         formatCreateLabel={(inputValue) => `Add new tag "${inputValue}"`}
         className='cursor-text'
         classNames={{
-          control: () => '!bg-neutral-200 !border-none shadow-inner !cursor-text',
+          control: () => '!bg-neutral-200 !border-none shadow-inner !cursor-text md:px-2',
           multiValue: () => '!bg-white shadow-sm px-0.5 !rounded-md !cursor-pointer not-prose',
           multiValueLabel: () => 'hover:underline hover:bg-neutral-100',
           multiValueRemove: () => 'text-neutral-400 !px-0.5',

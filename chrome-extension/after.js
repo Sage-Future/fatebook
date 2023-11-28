@@ -43,8 +43,6 @@
 
     console.log(`initialising fatebook extension, location: "${EMBED_LOCATION}"`, extensionInfo)
 
-    if (EMBED_LOCATION === EMBED_LOCATIONS.FATEBOOK) return // Don't run on fatebook.io
-
     function getIsFatebookLink(href) {
       return href.includes(`${FATEBOOK_HOST}/q/`)
     }
@@ -54,16 +52,6 @@
     function createIframe(src) {
       const iframe = document.createElement('iframe')
       const iframeId = (Object.keys(iframeMap).length + 1).toString()
-
-      console.time(src)
-
-      iframe.addEventListener('load', () => {
-        try {
-          console.timeEnd(src)
-        } catch (e) {
-          // do nothing
-        }
-      })
 
       const url = new URL(src)
       url.searchParams.set("fatebook-embed-id", iframeId)
@@ -195,7 +183,7 @@
       sendMessage(toastIframe, 'toast', { type, text })
       setTimeout(() => {
         toastIframe.className = toastIframe.className.replace(' fatebook-toast-embed-visible', '')
-      }, 2200)
+      }, 5000)
     }
 
 
@@ -461,8 +449,10 @@
       predictIframe.addEventListener('prediction_cancel', refocusPage)
     }
 
-    // Run link replace
-    watchForFatebookLinks()
+    // Run link replace (unless we're on Fatebook)
+    if (EMBED_LOCATION !== EMBED_LOCATIONS.FATEBOOK) {
+      watchForFatebookLinks()
+    }
 
     function predictionComment() {
       openModal()

@@ -137,7 +137,7 @@ function EventsLog({
             (a, b) => a.timestamp.getTime() - b.timestamp.getTime() // chronological
           ).map((event) => event?.el)
           :
-          <span className="text-sm text-neutral-400 italic select-none">No forecasts yet</span>}
+          <span className="text-sm text-neutral-400 italic select-none md:ml-4">No forecasts yet</span>}
       </div>
       {!!communityAverage && <div className='mx-auto flex gap-2 items-center'>
         <span className='font-semibold'>Community:</span>

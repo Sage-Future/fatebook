@@ -334,14 +334,20 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
               </div>
 
               {embedded && <div className="flex items-center">
-                <label htmlFor="sharePublicly" className='text-sm max-w-[8rem] ml-1'>
+                <label htmlFor="sharePublicly" className='text-sm max-w-[8rem] ml-2'>
                   Share with anyone with the link?
                 </label>
                 <input
                   type="checkbox"
                   id="sharePublicly"
-                  defaultChecked
+                  defaultChecked={
+                    typeof window !== 'undefined' && window.localStorage.getItem("lastSharedPubliclyState") === "true"
+                  }
                   className="ml-2 checkbox check"
+                  onClick={(e) => {
+                    // NB: only works per-site, but better than nothing
+                    localStorage.setItem("lastSharedPubliclyState", e.currentTarget.checked ? "true" : "false")
+                  }}
                   {...register("sharePublicly")}
                 />
               </div>}

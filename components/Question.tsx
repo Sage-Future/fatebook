@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react'
-import { ChevronDownIcon } from "@heroicons/react/20/solid"
+import { ChevronDownIcon, PencilIcon } from "@heroicons/react/20/solid"
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -14,7 +14,11 @@ import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 import { Username } from "./Username"
 
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+import toast from 'react-hot-toast'
+import { getDateYYYYMMDD } from '../lib/_utils_common'
 import { getQuestionUrl } from '../lib/web/question_url'
+import { api } from '../lib/web/trpc'
+import { invalidateQuestion, useUserId } from '../lib/web/utils'
 
 export function Question({
   question,
@@ -30,6 +34,15 @@ export function Question({
   embedded?: boolean
 }) {
   const [manuallyExpanded, setManuallyExpanded] = useState<boolean>(!!startExpanded)
+
+  const utils = api.useContext()
+  const editQuestion = api.question.editQuestion.useMutation({
+    async onSuccess() {
+      await invalidateQuestion(utils, question)
+    }
+  })
+  const userId = useUserId()
+  const editable = question.userId === userId
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -87,11 +100,29 @@ export function Question({
                     <FormattedDate prefix={"Resolved "} date={question.resolvedAt} />
                   </span>
                 ) : (
-                  <span
+                  <button
                     className={clsx(
-                      "text-sm my-auto",
+                      "rounded-md font-normal text-sm my-auto relative",
+                      editable && "hover:bg-neutral-100 transition-colors group/resolveBy",
                       question.resolveBy < new Date() ? "text-indigo-300" : "text-neutral-400"
                     )}
+                    disabled={!editable}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const newDateStr = prompt("Edit the resolution date of your question (YYYY-MM-DD):", getDateYYYYMMDD(question.resolveBy))
+                      if (!newDateStr) return
+                      const newDate = newDateStr ? new Date(newDateStr) : undefined
+                      if (newDate && !isNaN(newDate.getTime())) {
+                        editQuestion.mutate({
+                          questionId: question.id,
+                          resolveBy: newDate,
+                        })
+                      } else {
+                        toast.error("The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2023-09-30", {
+                          duration: 8000
+                        })
+                      }
+                    }}
                     key={`${question.id}resolve`}>
                     {question.resolveBy < new Date() ?
                       <FormattedDate
@@ -99,11 +130,13 @@ export function Question({
                         date={question.resolveBy}
                         postfix=")"
                         currentDateShowToday={true}
+                        includeTime={false}
                       />
                       :
-                      <FormattedDate prefix={"Resolves "} date={question.resolveBy} />
+                      <FormattedDate prefix={"Resolves "} date={question.resolveBy} includeTime={false} />
                     }
-                  </span>
+                    <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 -right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
+                  </button>
                 )
               }
               <ResolveButton question={question} />

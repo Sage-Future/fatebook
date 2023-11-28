@@ -34,7 +34,7 @@ export default function ExtensionPage() {
 
               <p>
                 Try <Link href="https://doc.new">creating a Google Doc</Link> and press <span className="font-semibold whitespace-nowrap">
-                  Ctrl-Shift-F
+                  Ctrl+Shift+F
                 </span> to make a prediction.
               </p>
               <p>
@@ -46,7 +46,7 @@ export default function ExtensionPage() {
                 👋 Hey Arc user! We recommend changing the keyboard shortcut to <span className="font-semibold whitespace-nowrap">
                   Cmd-Shift-F
                 </span> - the default <span className="font-semibold whitespace-nowrap">
-                  Ctrl-Shift-F
+                  Ctrl+Shift+F
                 </span> {"doesn't"} work in Google Docs on Arc.
               </p>}
             </div>

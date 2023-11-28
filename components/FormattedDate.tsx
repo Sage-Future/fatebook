@@ -12,6 +12,7 @@ export function FormattedDate({
   capitalise = false,
   currentDateShowToday = false,
   hoverTooltip = true,
+  includeTime = true,
 } : {
   date: Date | undefined
   prefix?: ReactNode | string
@@ -21,6 +22,7 @@ export function FormattedDate({
   capitalise?: boolean
   currentDateShowToday?: boolean
   hoverTooltip?: boolean
+  includeTime?: boolean
 }) {
   const oneWeekMs = 1000 * 60 * 60 * 24 * 7
 
@@ -51,7 +53,7 @@ export function FormattedDate({
     <span
       className={clsx(hoverTooltip && `md:tooltip`, className)}
       suppressHydrationWarning={true}
-      data-tip={`${getDateYYYYMMDD(date)} at ${date.toLocaleTimeString()}`}
+      data-tip={`${getDateYYYYMMDD(date)}${includeTime ? ` at ${date.toLocaleTimeString()}`: ""}`}
     >
       {prefix}
       {capitalise ?
