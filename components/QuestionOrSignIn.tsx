@@ -12,8 +12,10 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
   const qQuery = api.question.getQuestion.useQuery({ questionId }, { retry: false })
   const question = qQuery.data
 
-  if (authStatus === "loading") {
-    return null
+  if (authStatus === "loading" || qQuery.isLoading) {
+    return <span className="text-neutral-200 italic text-sm ml-4 mt-8">
+      Loading...
+    </span>
   }
 
   // check signed in
@@ -24,8 +26,11 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
           <h3 className="text-neutral-600">
             <a className="font-bold" href="/" target="_blank">Sign in </a>to view this question
           </h3>
-        </div> :
-        <h3 className="text-neutral-600"><a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in </a> to view this question</h3>
+        </div>
+        :
+        <h3 className="text-neutral-600">
+          <a className="font-bold" href="#" onClick={() => void signInToFatebook()}>Sign in </a> to view this question
+        </h3>
     )
   }
 
