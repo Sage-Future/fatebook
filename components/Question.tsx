@@ -102,7 +102,7 @@ export function Question({
                 ) : (
                   <button
                     className={clsx(
-                      "rounded-md font-normal text-sm my-auto relative",
+                      "rounded-md font-normal text-sm my-auto relative text-left px-0.5",
                       editable && "hover:bg-neutral-100 transition-colors group/resolveBy",
                       question.resolveBy < new Date() ? "text-indigo-300" : "text-neutral-400"
                     )}
@@ -135,7 +135,7 @@ export function Question({
                       :
                       <FormattedDate prefix={"Resolves "} date={question.resolveBy} includeTime={false} />
                     }
-                    <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 -right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
+                    <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
                   </button>
                 )
               }
