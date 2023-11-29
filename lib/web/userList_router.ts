@@ -84,6 +84,27 @@ export const userListRouter = router({
         throw new TRPCError({ code: "UNAUTHORIZED", message: "" })
       }
 
+      // create users if they don't exist
+      if (input.userEmails) {
+        const existingUsers = await prisma.user.findMany({
+          where: {
+            email: {
+              in: input.userEmails,
+            },
+          },
+        })
+
+        const nonExistingUsers = input.userEmails.filter(
+          (email) => !existingUsers.some((u) => u.email === email)
+        )
+
+        if (nonExistingUsers.length > 0) {
+          await prisma.user.createMany({
+            data: nonExistingUsers.map((email) => ({ email })),
+          })
+        }
+      }
+
       await prisma.userList.update({
         where: {
           id: input.listId,
