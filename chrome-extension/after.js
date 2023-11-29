@@ -44,7 +44,7 @@
     console.log(`initialising fatebook extension, location: "${EMBED_LOCATION}"`, extensionInfo)
 
     function getIsFatebookLink(href) {
-      return href.includes(`${FATEBOOK_HOST}/q/`)
+      return href?.includes(`${FATEBOOK_HOST}/q/`)
     }
 
     // ==== Listen for messages from iframes ====

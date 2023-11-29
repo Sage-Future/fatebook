@@ -96,7 +96,7 @@ function EventsLog({
           <FormattedDate date={c.createdAt} className='my-auto' />
           <DeleteCommentOverflow question={question} comment={c} />
         </span>
-        <span className="md:pl-7 col-span-3 -mt-1">
+        <span className="md:pl-7 col-span-3 -mt-1 break-words overflow-x-auto">
           {c.comment}
         </span>
       </Fragment>
@@ -139,7 +139,7 @@ function EventsLog({
           :
           <span className="text-sm text-neutral-400 italic select-none md:ml-4">No forecasts yet</span>}
       </div>
-      {!!communityAverage && <div className='mx-auto flex gap-2 items-center'>
+      {(communityAverage !== false) && <div className='mx-auto flex gap-2 items-center'>
         <span className='font-semibold'>Community:</span>
         <span className="font-bold text-xl text-indigo-800">{
         formatDecimalNicely(communityAverage * 100, 1)
