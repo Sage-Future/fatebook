@@ -2,7 +2,7 @@
 
 The fastest way to make and track predictions.
 
-This repo includes both [fatebook.io](https://fatebook.io) and [Fatebook for Slack](fatebook.io/for-slack).
+This repo includes [fatebook.io](https://fatebook.io), [Fatebook for Slack](fatebook.io/for-slack) and [Fatebook for Chrome](https://fatebook.io/extension).
 
 You can report bugs in the [Issues](https://github.com/Sage-Future/fatebook/issues) tab. You can make feature requests there or in our [Discord](https://discord.gg/mt9YVB8VDE).
 
