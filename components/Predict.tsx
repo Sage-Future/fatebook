@@ -3,6 +3,7 @@ import { LightBulbIcon } from '@heroicons/react/24/solid'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
+import { useSession } from 'next-auth/react'
 import React, { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
@@ -12,7 +13,7 @@ import SuperJSON from 'trpc-transformer'
 import { z } from "zod"
 import { getDateYYYYMMDD, tomorrowDate } from '../lib/_utils_common'
 import { api } from "../lib/web/trpc"
-import { signInToFatebook, useUserId, utcDateStrToLocalDate } from '../lib/web/utils'
+import { signInToFatebook, utcDateStrToLocalDate } from '../lib/web/utils'
 import { FormattedDate } from './FormattedDate'
 import { InfoButton } from './InfoButton'
 
@@ -51,7 +52,8 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
   const resolveByUTCStr = watch("resolveBy", getDateYYYYMMDD(tomorrowDate()))
   const predictionPercentage = watch("predictionPercentage")
 
-  const userId = useUserId()
+  const session = useSession()
+  const userId = session.data?.user.id
   const utils = api.useContext()
   const createQuestion = api.question.create.useMutation({
     async onSuccess() {
@@ -372,7 +374,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
                 className="btn btn-primary btn-lg hover:scale-105"
                 disabled={!!userId && (Object.values(errors).some(err => !!err))}
               >
-                {userId ? "Predict" : "Sign up to predict"}
+                {(userId || session.status === "loading") ? "Predict" : "Sign up to predict"}
               </button>
             </div>
           </div>
