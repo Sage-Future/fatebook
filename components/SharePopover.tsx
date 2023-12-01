@@ -145,9 +145,11 @@ function SharePublicly({
             })
           }}
         />
-        <label htmlFor="unlisted" className="text-sm my-auto">Show on the <Link href="/public">
-          public questions page
-        </Link></label>
+        <label htmlFor="unlisted" className="text-sm my-auto">{"Show on the "}
+          <Link href="/public" onClick={(e) => e.stopPropagation()}>
+            public questions page
+          </Link>
+        </label>
       </div>}
     </ErrorBoundary>
   )

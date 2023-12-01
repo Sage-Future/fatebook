@@ -99,8 +99,11 @@ export function TournamentLeaderboard({
     return sortableScores
   }, [tournamentQ.data, scoresByPlayer, sortConfig.key, sortConfig.direction])
 
+  const defaultDirectionForKey = (key: string) => {
+    return key.includes("Score") ? 'ascending' : 'descending'
+  }
   const requestSort = (key: string) => {
-    let direction = key.includes("Score") ? 'ascending' : 'descending'
+    let direction = defaultDirectionForKey(key)
     if (sortConfig.key === key && sortConfig.direction === direction) {
       direction = key.includes("Score") ? 'descending' : 'ascending'
     }
@@ -124,10 +127,11 @@ export function TournamentLeaderboard({
   return (
     <div>
       <h2 className='select-none'>Leaderboard</h2>
-      <div className='bg-white'>
-        <table className="table w-full overflow-x-scroll py-2">
-          <thead>
+      <div className='bg-white overflow-auto max-h-[60vh]'>
+        <table className="table w-full py-2">
+          <thead className="sticky top-0 bg-white">
             <tr>
+              <th></th>
               <th className="cursor-pointer" onClick={() => requestSort('user')}>Player{sortIndicator("user")}</th>
               <th className="cursor-pointer" onClick={() => requestSort('absoluteScore')}>
                 Brier<br />score {sortIndicator("absoluteScore")}<InfoButton className='font-normal ml-1' tooltip='Lower is better!' />
@@ -140,15 +144,16 @@ export function TournamentLeaderboard({
             </tr>
           </thead>
           <tbody>
-            {ifEmpty(sortedScores.map((score) => (
+            {ifEmpty(sortedScores.map((score, index) => (
               <tr key={score.userId}>
+                <td className='text-xs text-neutral-400 font-semibold pr-0'>{sortConfig.direction !== defaultDirectionForKey(sortConfig.key) ? sortedScores.length - index : index + 1}</td>
                 <td>{score.userName}</td>
                 <td>{roundOrUndef(score.absoluteScore)}</td>
                 <td>{roundOrUndef(score.relativeScore)}</td>
                 <td>{score.numQuestions}</td>
                 <td>{score.numForecasts}</td>
               </tr>
-            )), <tr><td colSpan={5} className='italic text-neutral-500 text-center'>No resolved questions yet</td></tr>)}
+            )), <tr><td colSpan={6} className='italic text-neutral-500 text-center'>No resolved questions yet</td></tr>)}
           </tbody>
         </table>
       </div>

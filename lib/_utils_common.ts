@@ -40,10 +40,10 @@ export function getMostRecentForecastForUser<T extends HasForecasts>(question: T
 
 export function getGeometricCommunityForecast(question: QuestionWithForecasts, date: Date): number {
   // get all forecasts for this question
-  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
+  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
   // sum each forecast
   const productOfForecasts: number = uptoDateForecasts.reduce(
-    (acc, forecast) => acc * (forecast/(1-forecast)),
+    (acc, forecast) => acc * (forecast / (1 - forecast)),
     1
   )
   const geoMeanOfOdds = Math.pow(productOfForecasts, 1 / (uptoDateForecasts.length))
@@ -56,7 +56,7 @@ export function getCommunityForecast(question: QuestionWithForecasts, date: Date
 
 export function getArithmeticCommunityForecast(question: QuestionWithForecasts, date: Date): number {
   // get all forecasts for this question
-  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => forecast.forecast.toNumber())
+  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
   // sum each forecast
   const summedForecasts: number = uptoDateForecasts.reduce(
     (acc, forecast) => acc + forecast,
@@ -71,6 +71,12 @@ export function conciseDateTime(date: Date, includeTime = true) {
   if (includeTime)
     timeStr = `${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())} on `
   return `${timeStr}${getDateYYYYMMDD(date)}`
+}
+
+export function nudgeAwayFromZeroOrOne(num: number) {
+  if (num === 0) return 0.0001
+  if (num === 1) return 0.9999
+  return num
 }
 
 export function displayForecast(forecast: Forecast, decimalPlaces: number): string {

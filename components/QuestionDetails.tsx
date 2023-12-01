@@ -131,7 +131,7 @@ function EventsLog({
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center">
+      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto">
         {events.length ?
           events.sort(
             (a, b) => a.timestamp.getTime() - b.timestamp.getTime() // chronological
