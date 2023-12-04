@@ -80,11 +80,11 @@ export function Question({
                   href={getQuestionUrl(question)}
                   key={question.id}
                   target={embedded ? "_blank" : ""}
-                  className={"no-underline hover:underline flex items-center"}
+                  className={"no-underline hover:underline inline items-center"}
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={(e) => e.stopPropagation()}>
                   {question.title}
-                  {embedded && <ArrowTopRightOnSquareIcon className="shrink-0 ml-2 h-3 w-3 text-neutral-600" />}
+                  {embedded && <ArrowTopRightOnSquareIcon className="inline ml-2 h-3 w-3 text-neutral-600" />}
                 </Link>
               </span>
               <UpdateableLatestForecast question={question} autoFocus={alwaysExpand} embedded={embedded}/>
