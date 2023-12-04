@@ -41,6 +41,11 @@ export default async function eventsApiHandler(req: VercelRequest, res: VercelRe
       break
 
     case 'message':
+        if (event.subtype === 'message_deleted' || event.subtype === 'message_changed') {
+          console.log("Not a DM to Fatebook, ignoring")
+          break
+        }
+
       console.log("app messaged ", event.text)
       if(!event.bot_profile && (event.subtype !== 'message_changed') && !event.thread_ts && event.user !== "USLACKBOT") {
         await postTextMessage(
