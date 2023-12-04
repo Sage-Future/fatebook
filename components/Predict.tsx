@@ -19,21 +19,23 @@ import { InfoButton } from './InfoButton'
 
 type CreateQuestionMutationOutput = NonNullable<ReturnType<typeof api.question.create.useMutation>['data']>
 
-interface PredictProps {
-  /** Can optionally include a ref for the text area if parent wants to be able to control focus */
+export function Predict({
+  questionDefaults,
+  textAreaRef,
+  onQuestionCreate,
+  embedded,
+  resetTrigger,
+  setResetTrigger
+} : {
+  questionDefaults?: {
+    tournamentId?: string
+  }
   textAreaRef?: React.RefObject<HTMLTextAreaElement>
-
-  /** Can optionally include a callback for when questions are created */
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
-
   embedded?:boolean
-
   resetTrigger?:boolean
-
   setResetTrigger?:(arg:boolean) => void
-}
-
-export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger, setResetTrigger }: PredictProps) {
+}) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
 
@@ -61,6 +63,9 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
         refetchPage: (lastPage, index) => index === 0, // assumes the new question is on the first page (must be ordered by recent)
       })
       await utils.question.getForecastCountByDate.invalidate()
+      if (questionDefaults?.tournamentId) {
+        await utils.tournament.get.invalidate({ id: questionDefaults.tournamentId })
+      }
     }
   })
 
@@ -92,6 +97,7 @@ export function Predict({ textAreaRef, onQuestionCreate, embedded, resetTrigger,
 
       unlisted: data.sharePublicly || undefined,
       sharedPublicly: data.sharePublicly || undefined,
+      tournamentId: questionDefaults?.tournamentId,
     }, {
       onError(error, variables, context) {
         console.error("error creating question: ", { error, variables, context })

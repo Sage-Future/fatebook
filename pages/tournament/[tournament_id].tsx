@@ -4,7 +4,9 @@ import { NextSeo } from 'next-seo'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { CopyToClipboard } from '../../components/CopyToClipboard'
 import { InfoButton } from '../../components/InfoButton'
+import { Predict } from '../../components/Predict'
 import { Questions } from '../../components/Questions'
 import { QuestionsMultiselect } from '../../components/QuestionsMultiselect'
 import { TournamentLeaderboard } from '../../components/TournamentLeaderboard'
@@ -153,7 +155,7 @@ function TournamentAdminPanel({
         </div>
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Add questions to the tournament</span>
+            <span className="label-text">Add existing questions to the tournament</span>
           </label>
           <QuestionsMultiselect
             questions={tournamentQ.data?.questions.map(q => q.id) || []}
@@ -186,6 +188,8 @@ function TournamentAdminPanel({
             </div>
           )}
         </div>
+        <h4 className="label">Create new questions and add them to this tournament</h4>
+        <Predict questionDefaults={{ tournamentId }} />
         <div className="form-control flex-row items-center gap-2">
           <input
             id="sharedPublicly"
@@ -197,8 +201,9 @@ function TournamentAdminPanel({
           <label className="label" htmlFor="sharedPublicly">
             <span className="label-text">Anyone with the link can view this tournament page</span>
           </label>
+          {tournamentQ.data?.sharedPublicly && <CopyToClipboard textToCopy={`${window.location.origin}/tournament/${tournamentQ.data?.id}`} />}
         </div>
-        <div className="form-control flex-row items-center gap-2">
+        {tournamentQ.data?.sharedPublicly && <div className="form-control flex-row items-center gap-2">
           <input
             id="unlisted"
             type="checkbox"
@@ -209,7 +214,7 @@ function TournamentAdminPanel({
           <label className="label" htmlFor="unlisted">
             <span className="label-text">{"Show in the public list of tournaments (coming soon!)"}</span>
           </label>
-        </div>
+        </div>}
         <div className="form-control flex-row items-center gap-2">
           <input
             id="showLeaderboard"

@@ -55,7 +55,7 @@ export function QuestionDetails({
                 })
               }} />
           </div>
-          <EditQuestionOverflow question={question} />
+          {(userId && userId === question.userId) && <EditQuestionOverflow question={question} />}
         </div>}
         {forecastsAreHidden(question) && question.hideForecastsUntil && <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
           {`Other users' forecasts are hidden until ${getDateYYYYMMDD(question.hideForecastsUntil)} to prevent anchoring.`}

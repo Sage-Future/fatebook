@@ -12,7 +12,8 @@ export function CopyToClipboard({
       <button
         className="button text-xs"
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        onClick={async () => {
+        onClick={async (e) => {
+          e.preventDefault()
           setCopied(true)
           await navigator.clipboard.writeText(textToCopy)
         }}

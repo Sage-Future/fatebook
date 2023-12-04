@@ -223,6 +223,7 @@ export const questionRouter = router({
         tags: z.array(z.string()).optional(),
         unlisted: z.boolean().optional(),
         sharedPublicly: z.boolean().optional(),
+        tournamentId: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -273,6 +274,11 @@ export const questionRouter = router({
                   })),
                 }
               : undefined,
+          tournaments: input.tournamentId ? {
+            connect: {
+              id: input.tournamentId,
+            }
+          } : undefined,
         },
       })
 
