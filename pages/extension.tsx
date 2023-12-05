@@ -141,7 +141,7 @@ function DemoVideo({src, caption}: {src: string, caption: string}) {
         width={992}
         height={576}
         className={clsx(
-          "transition-all",
+          "transition-all rounded-lg",
           inView ? "shadow-2xl" : "shadow-xl opacity-50 scale-90",
         )}
         onWaiting={() => setLoading(true)}
