@@ -38,9 +38,9 @@ export function QuestionOrSignIn({ embedded, alwaysExpand }: { embedded: boolean
   if ((qQuery.status === "error" || (qQuery.status === "success" && !question))) {
     return <h3 className="text-neutral-600">{
       `This question doesn't exist or ` +
-      session?.user.email ?
+      (session?.user.email ?
         `your account (${session?.user.email}) doesn't have access`
-        : `you need to sign in`
+        : `you need to sign in`)
     }</h3>
   } else if (!question) {
     return null

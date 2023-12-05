@@ -74,7 +74,7 @@ function getQuestion(days : number) : Question {
 export default function testScoring(req: VercelRequest, res: VercelResponse) {
   const scoreMulti = relativeBrierScoring(testMultiForecasts, question)
 
-  if (!floatEquality(scoreMulti[1].relativeBrierScore!, -0.43) || !floatEquality(scoreMulti[2].relativeBrierScore!, 0.7943) || !floatEquality(scoreMulti[3].absoluteBrierScore, -0.00137)) {
+  if (!floatEquality(scoreMulti[1].relativeBrierScore!, -0.43) || !floatEquality(scoreMulti[2].relativeBrierScore!, 0.7943) || !floatEquality(scoreMulti[3].relativeBrierScore!, -0.00137)) {
     console.log(`scoreMulti 1 1 is right : ${floatEquality(scoreMulti[1].relativeBrierScore!, -0.43)}`)
     console.log(`scoreMulti 2 1 is right : ${floatEquality(scoreMulti[2].relativeBrierScore!, 0.7943)}`)
     console.log(`scoreMulti 3 1 is right : ${floatEquality(scoreMulti[3].relativeBrierScore!, -0.00137)}`)

@@ -99,7 +99,7 @@ function Drawer({menuItems, moreMenuItems}: {menuItems: ReactNode, moreMenuItems
   return <div className="drawer-side z-[9999] mt-16 lg:hidden">
     <label htmlFor="my-drawer" className="drawer-overlay"></label>
     <ul className="menu flex flex-col flex-nowrap p-4 w-80 overflow-auto bg-neutral-100 h-full text-md text-neutral-600 font-semibold">
-      <div className="overflow-y-scroll flex-shrink pb-8">
+      <div className="overflow-y-auto flex-shrink pb-8">
         {menuItems}
         <div className="divider" />
         {moreMenuItems}
