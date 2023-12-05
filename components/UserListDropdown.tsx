@@ -2,6 +2,7 @@ import { CheckCircleIcon, ChevronDownIcon, PlusIcon } from '@heroicons/react/20/
 import { CheckCircleIcon as CheckOutlineIcon } from '@heroicons/react/24/outline'
 import { UserList } from "@prisma/client"
 import clsx from 'clsx'
+import Link from 'next/link'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
@@ -28,7 +29,9 @@ export function UserListDropdown({
 
   if (userId !== question.userId) {
     return <label className="text-sm">
-      <span className="font-semibold">Shared with user lists: </span> {question.sharedWithLists?.map(list => list.name).join(", ") || "None"}
+      <span className="font-semibold">Shared with user lists: </span> {question.sharedWithLists?.map(list =>
+        <Link key={list.id} href={`list/${list.id}`} onClick={(e) => e.stopPropagation()} className="ml-1">{list.name}</Link>
+      ) || "None"}
     </label>
   }
 

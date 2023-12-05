@@ -4,9 +4,10 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { useState } from 'react'
 import { ReactMultiEmail } from 'react-multi-email'
-import { api } from "../lib/web/trpc"
+import { api, getClientBaseUrl } from "../lib/web/trpc"
 import { useUserId } from '../lib/web/utils'
 import { UserListWithAuthorAndUsers } from "../prisma/additional"
+import { CopyToClipboard } from './CopyToClipboard'
 
 export function UserListDisplay({
   userList,
@@ -129,8 +130,11 @@ function EmailInput({
 
   return (
     <span onClick={(e) => e.stopPropagation()}>
-      <label className="block text-sm font-medium text-neutral-700 mb-0.5">
-        List members
+      <label className="flex justify-between align-bottom text-sm font-medium text-neutral-700 mb-0.5">
+        <span className='my-auto'>
+          List members
+        </span>
+        <CopyToClipboard textToCopy={`${getClientBaseUrl(false)}/list/join/${userList.inviteId}`} buttonLabel='Copy invite link' />
       </label>
       <ReactMultiEmail
         className={clsx("text-sm w-44 md:w-[22rem]", updateList.isLoading && "opacity-50")}

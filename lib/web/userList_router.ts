@@ -265,4 +265,48 @@ export const userListRouter = router({
         platform: "web",
       })
     }),
+
+  joinViaLink: publicProcedure
+    .input(
+      z.object({
+        listInviteId: z.string(),
+      })
+    )
+    .mutation(async ({input, ctx}) => {
+      const userList = await prisma.userList.findUnique({
+        where: {
+          inviteId: input.listInviteId,
+        },
+        include: {
+          users: true,
+        }
+      })
+      if (!ctx.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to join a list" })
+      }
+      if (!userList) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User list not found" })
+      }
+
+      await prisma.userList.update({
+        where: {
+          inviteId: input.listInviteId,
+        },
+        data: {
+          users: {
+            connect: {
+              id: ctx.userId,
+            }
+          }
+        }
+      })
+
+      await backendAnalyticsEvent("join_user_list_from_link", {
+        user: ctx.userId,
+        platform: "web",
+      })
+
+      return userList.id
+    }
+  ),
 })

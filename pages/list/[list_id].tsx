@@ -17,6 +17,8 @@ export default function ListPage() {
 
   const listQ = api.userList.get.useQuery({
     id: listId,
+  }, {
+    retry: false,
   })
 
   // const isAdmin = listQ.data?.authorId === userId

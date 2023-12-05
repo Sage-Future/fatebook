@@ -2,9 +2,11 @@ import { ClipboardIcon } from "@heroicons/react/20/solid"
 import { useState } from "react"
 
 export function CopyToClipboard({
-  textToCopy
+  textToCopy,
+  buttonLabel = "Copy link",
 } : {
   textToCopy: string,
+  buttonLabel?: string
 }) {
   const [copied, setCopied] = useState(false)
   return (
@@ -22,7 +24,7 @@ export function CopyToClipboard({
         {copied ?
           <span>Copied!</span>
           :
-          <span>Copy link</span>
+          <span>{buttonLabel}</span>
         }
       </button>
     </div>
