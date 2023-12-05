@@ -720,6 +720,39 @@ export const questionRouter = router({
       return questionScores
     }),
 
+  getBrierScorePercentile: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      if (!input.userId) return null
+
+      const allUsersScores = await prisma.questionScore.groupBy({
+        by: ['userId'],
+        _avg: {
+          absoluteScore: true,
+          relativeScore: true,
+        },
+      })
+
+      const getPercentile = (metric: "relativeScore" | "absoluteScore") => {
+        const sortedScores = allUsersScores
+          .filter(score => score._avg[metric] !== null)
+          .sort((a, b) => Number(a._avg[metric]) - Number(b._avg[metric])) // ascending
+        const userScore = sortedScores.find(score => score.userId === input.userId)
+        if (!userScore) return null
+
+        return sortedScores.indexOf(userScore) / sortedScores.length
+      }
+
+      return {
+        relativeScorePercentile: getPercentile("relativeScore"),
+        absoluteScorePercentile: getPercentile("absoluteScore"),
+      }
+    }),
+
   getBucketedForecasts: publicProcedure
     .input(
       z.object({

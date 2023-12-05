@@ -36,6 +36,10 @@ export function TrackRecord({
 
   const [showFilters, setShowFilters] = useState<boolean>(false)
 
+  const percentileQ = api.question.getBrierScorePercentile.useQuery({
+    userId: trackRecordUserId,
+  })
+
   if (!trackRecordUserId) return <></>
 
   return (
@@ -96,7 +100,14 @@ export function TrackRecord({
                   )}>{
                     details?.brierScore ? showSignificantFigures(details.brierScore, 2) : "..."
                   }</div>
-                <div className="stat-desc">{title}</div>
+                <div className="stat-desc">
+                  {title}
+                  {title === "All time" && percentileQ.data && percentileQ.data.absoluteScorePercentile && (
+                    <div className="ml-1 badge badge-sm badge-ghost bg-green-100 border-none">
+                      {`Top ${Math.round((percentileQ.data.absoluteScorePercentile) * 100)}%`}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {<div className="stat">
@@ -111,7 +122,14 @@ export function TrackRecord({
                   )}>{
                     details?.rBrierScore ? showSignificantFigures(details.rBrierScore, 2) : "..."
                   }</div>
-                <div className="stat-desc">{title}</div>
+                <div className="stat-desc">
+                  {title}
+                  {title === "All time" && percentileQ.data && percentileQ.data.relativeScorePercentile && (
+                    <div className="ml-1 badge badge-sm badge-ghost bg-green-100 border-none">
+                      {`Top ${Math.round((percentileQ.data.relativeScorePercentile) * 100)}%`}
+                    </div>
+                  )}
+                </div>
               </div>}
 
             </div>
