@@ -1,12 +1,11 @@
-import { CheckCircleIcon, CheckIcon, ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/20/solid'
+import { CheckCircleIcon, ChevronDownIcon, PlusIcon } from '@heroicons/react/20/solid'
 import { CheckCircleIcon as CheckOutlineIcon } from '@heroicons/react/24/outline'
 import { UserList } from "@prisma/client"
 import clsx from 'clsx'
-import { useState } from 'react'
-import { ReactMultiEmail } from 'react-multi-email'
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
-import { QuestionWithStandardIncludes, UserListWithAuthorAndUsers } from "../prisma/additional"
+import { QuestionWithStandardIncludes } from "../prisma/additional"
+import { UserListDisplay } from './UserListDisplay'
 
 export function UserListDropdown({
   question
@@ -81,141 +80,5 @@ export function UserListDropdown({
         </li>
       </ul>
     </div>
-  )
-}
-
-function UserListDisplay({
-  userList
-}: {
-  userList: UserListWithAuthorAndUsers
-}) {
-  const userId = useUserId()
-  const utils = api.useContext()
-  const updateList = api.userList.updateList.useMutation({
-    async onSettled() {
-      await utils.userList.getUserLists.invalidate()
-    }
-  })
-  const [isEditing, setIsEditing] = useState(false)
-  const deleteList = api.userList.deleteList.useMutation({
-    async onSettled() {
-      await utils.userList.getUserLists.invalidate()
-    }
-  })
-
-  return (
-    <div
-      className={clsx('flex flex-col gap-4',
-                      isEditing && "gap-2",
-                      isEditing && "ml-4",
-      )}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <span className="flex gap-2 justify-between">
-        <input
-          type='text'
-          disabled={!isEditing || updateList.isLoading}
-          onClick={(e) => e.stopPropagation()}
-          className={clsx(
-            "w-28 md:w-60 p-1",
-            isEditing ? "border border-neutral-400 rounded-md" : "border-none",
-            updateList.isLoading ? "opacity-50" : "opacity-100"
-          )}
-          autoFocus={true}
-          defaultValue={userList.name}
-          onBlur={(e) => {
-            updateList.mutate({
-              listId: userList.id,
-              name: e.target.value
-            })
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              updateList.mutate({
-                listId: userList.id,
-                name: e.currentTarget.value
-              })
-            }
-          }}
-        />
-        <div className="flex gap-2">
-          <button
-            className={clsx("btn btn-circle btn-xs",
-                            isEditing ? "btn-primary" : "btn-ghost"
-            )}
-            onClick={(e) => {setIsEditing(!isEditing); e.stopPropagation()}}
-            disabled={userList.authorId !== userId}
-          >
-            {isEditing ?  <CheckIcon height={15} /> : <PencilIcon height={15} />}
-          </button>
-          <button
-            className="btn btn-ghost btn-circle btn-xs"
-            onClick={(e) => {
-              e.stopPropagation()
-              confirm(`Are you sure you want to delete '${userList.name}'?`) && deleteList.mutate({ listId: userList.id })
-            }}
-            disabled={userList.authorId !== userId || isEditing}
-          >
-            <TrashIcon height={15} />
-          </button>
-        </div>
-      </span>
-      {isEditing && <EmailInput userList={userList} />}
-    </div>
-  )
-}
-
-function EmailInput({
-  userList
-}: {
-  userList: UserListWithAuthorAndUsers
-}) {
-  const [emails, setEmails] = useState<string[]>(userList.users.map((user) => user.email))
-  const utils = api.useContext()
-  const updateList = api.userList.updateList.useMutation({
-    async onSuccess() {
-      await utils.userList.getUserLists.invalidate()
-    }
-  })
-
-  return (
-    <span onClick={(e) => e.stopPropagation()}>
-      <label className="block text-sm font-medium text-neutral-700 mb-0.5">
-        List members
-      </label>
-      <ReactMultiEmail
-        className={clsx("text-sm w-44 md:w-[22rem]", updateList.isLoading && "opacity-50")}
-        placeholder="alice@gmail.com..."
-        delimiter=" "
-        emails={emails}
-        onChange={(emails: string[]) => {
-          setEmails(emails)
-        }}
-        onBlur={() => {
-          updateList.mutate({
-            listId: userList.id,
-            userEmails: emails,
-          })
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            updateList.mutate({
-              listId: userList.id,
-              userEmails: emails,
-            })
-          }
-        }}
-        getLabel={(email, index, removeEmail) => {
-          return (
-            <div data-tag key={index}>
-              <div data-tag-item>{email}</div>
-              <span data-tag-handle onClick={() => removeEmail(index)}>
-                ×
-              </span>
-            </div>
-          )
-        }}
-      />
-    </span>
   )
 }

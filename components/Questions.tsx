@@ -18,6 +18,7 @@ export function Questions({
   noQuestionsText = "Make your first forecast to see it here.",
   filterTagIds = undefined,
   filterTournamentId = undefined,
+  filterUserListId = undefined,
   showAllPublic = false,
   theirUserId = undefined,
   description = undefined,
@@ -27,9 +28,10 @@ export function Questions({
   noQuestionsText?: string,
   filterTagIds?: string[],
   filterTournamentId?: string,
+  filterUserListId?: string,
   showAllPublic?: boolean,
   theirUserId?: string,
-  description?: string,
+  description?: ReactNode | string,
 }) {
   const session = useSession()
 
@@ -47,6 +49,7 @@ export function Questions({
         ...extraFilters,
         filterTagIds,
         filterTournamentId,
+        filterUserListId,
         showAllPublic,
         theirUserId,
       },
@@ -92,9 +95,13 @@ export function Questions({
         />}
       </div>
       {description && <div className="text-sm text-neutral-500 mb-4">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {description}
-        </ReactMarkdown>
+        {typeof description === 'string' ?
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {description}
+          </ReactMarkdown>
+          :
+          description
+        }
       </div>}
       <motion.div className="grid gap-6">
         <AnimatePresence initial={false} mode="popLayout">

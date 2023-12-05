@@ -65,6 +65,7 @@ export type ExtraFilters = {
   showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
   theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
   filterTournamentId?: string // for fatebook.io/tournament/:id, show all questions from this tournament
+  filterUserListId?: string // for fatebook.io/list/:id, show all questions from this user list
 }
 
 export const questionRouter = router({
@@ -146,6 +147,7 @@ export const questionRouter = router({
             showAllPublic: z.boolean().optional(),
             theirUserId: z.string().optional(),
             filterTournamentId: z.string().optional(),
+            filterUserListId: z.string().optional(),
           })
           .optional(),
       })
@@ -870,6 +872,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
   const limit = input.limit || 100
 
   const skip = input.cursor
+  const userIdIfAuthed = ctx.userId || "no user id, don't match" // because of prisma undefined rules
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
@@ -897,11 +900,20 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
               } : undefined,
               OR: [
                 { sharedPublicly: true, unlisted: input.extraFilters?.filterTournamentId ? undefined : false },
-                { sharedWith: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } },
-                { sharedWithLists: { some: { users: { some: { id: ctx.userId || "UNAUTHED, DON'T MATCH!" } } } } },
-                input.extraFilters.filterTournamentId ? { userId: ctx.userId || "UNAUTHED, DON'T MATCH!" } : {},
-              ]
-
+                { sharedWith: { some: { id: userIdIfAuthed } } },
+                { sharedWithLists: { some: { users: { some: { id: userIdIfAuthed } } } } },
+                input.extraFilters.filterTournamentId ? { userId: userIdIfAuthed } : {},
+              ],
+            } : (input.extraFilters?.filterUserListId ? {
+              sharedWithLists: {
+                some: {
+                  id: input.extraFilters.filterUserListId,
+                  OR: [
+                    { authorId: userIdIfAuthed },
+                    { users: { some: { id: userIdIfAuthed } } },
+                  ],
+                },
+              },
             } : {
               // only show questions I've created, forecasted on, or are shared with me
               OR: [
@@ -932,7 +944,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                   },
                 },
               ],
-            }),
+            })),
         input.extraFilters?.resolved
           ? {
               resolution: {

@@ -29,6 +29,33 @@ export const userListRouter = router({
       })
     }),
 
+  get: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const userList = await prisma.userList.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          users: true,
+          author: true,
+        }
+      })
+      if (!userList) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User list not found" })
+      }
+      if (!ctx.userId || (userList.authorId !== ctx.userId && !userList.users.find(u => u.id === ctx.userId))) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this user list" })
+      }
+
+      return userList
+    }
+  ),
+
   createList: publicProcedure
     .input(
       z.object({
