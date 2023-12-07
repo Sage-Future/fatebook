@@ -22,6 +22,7 @@ enum ValidationRedirect {
 export const config = {
   matcher: [
     '/incoming/slash_forecast',
+    '/incoming/slash_forecast_multiple',
     '/incoming/interactive_endpoint',
     '/incoming/events_endpoint',
 
