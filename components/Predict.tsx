@@ -405,7 +405,7 @@ function QuestionSuggestions({
     "Will our user satisfaction rating exceed 8.0/10?",
     "Will I win my next game of Agricola?",
     "Will Our World in Data report that >5% of global deaths are due to air pollution by 2030?",
-    "Will I still be discussing my fear of flying with my therapist in 2024?",
+    "Will I still be discussing my fear of flying with my therapist in 2025?",
     "If we choose this HR provider, will I think it was a good idea in two month’s time?",
     "Will AMF be funding-constrained this year?",
     "Will I have a child by Jan 2025?",

@@ -118,7 +118,7 @@ export function Question({
                           resolveBy: newDate,
                         })
                       } else {
-                        toast.error("The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2023-09-30", {
+                        toast.error("The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2024-09-30", {
                           duration: 8000
                         })
                       }

@@ -72,7 +72,7 @@ async function createForecast(
   if (!dateResult || dateResult.length === 0) {
     return sendDiscordEphemeral(
       res,
-      "Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and 2023/12/5" +
+      "Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and 2024/12/5" +
         youSaid
     )
   }
