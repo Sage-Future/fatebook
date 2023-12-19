@@ -1,10 +1,12 @@
 import { CheckIcon, PlusIcon, XCircleIcon } from '@heroicons/react/20/solid'
 import { ScaleIcon } from '@heroicons/react/24/outline'
-import { BriefcaseIcon, GlobeAsiaAustraliaIcon, HeartIcon, UserGroupIcon } from '@heroicons/react/24/solid'
+import { BriefcaseIcon, GlobeAsiaAustraliaIcon, HeartIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
+import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
 import { NextSeo } from 'next-seo'
 import { useEffect, useState } from 'react'
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import { Predict } from '../components/Predict'
 import { Questions } from '../components/Questions'
 import { generateRandomId } from '../lib/_utils_common'
@@ -170,31 +172,40 @@ function QuestionSuggestionsByCategory({
         ))}
       </div>
       {selectedCategory !== null && (
-        <div className="w-full bg-white shadow-inner rounded-b-md px-6 pt-2 pb-4 mb-6 flex flex-col items-start gap-2 z-10">
-          <h4 className="select-none pl-4">{"Here's a few ideas..."}</h4>
+        <motion.div
+          className="w-full bg-white shadow-inner rounded-b-md px-6 pt-2 pb-4 mb-6 flex flex-col items-start gap-2 z-10"
+        >
+          <h4 className="select-none pl-4">{"Here are a few ideas..."}</h4>
           {suggestions.find(s => s.category === selectedCategory)?.questions.map((question, index) => (
-            <button
-              key={index}
-              className={clsx(
-                "btn btn-ghost text-left font-normal leading-normal",
-                clickedSuggestions.includes(question.q) ? "text-neutral-400" : "text-neutral-500"
-              )}
-              onClick={() => {
-                onSuggestionSelect((question.q))
-                setClickedSuggestions(prev => [...prev, (question.q)])
-              }}
+            <motion.div
+              key={question.q || question.label}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.05 * (index + 1), duration: 0.2 }}
             >
-              <span className="ml-4">
-                {clickedSuggestions.includes(question.q) ? (
-                  <CheckIcon className="text-neutral-400 w-4 h-4 inline mr-1 -ml-5" />
-                ) : (
-                  <span className="text-neutral-500 font-semibold mr-2 -ml-4">+</span>
+              {question.label && <ReactMarkdown className='text-sm ml-4 italic text-neutral-500'>{question.label}</ReactMarkdown>}
+              {question.q && <button
+                className={clsx(
+                  "btn btn-ghost text-left font-normal leading-normal",
+                  clickedSuggestions.includes(question.q) ? "text-neutral-400" : "text-neutral-500"
                 )}
-                <span>{question.q}</span>
-              </span>
-            </button>
+                onClick={() => {
+                  onSuggestionSelect((question.q))
+                  setClickedSuggestions(prev => [...prev, (question.q)])
+                }}
+              >
+                <span className="ml-4">
+                  {clickedSuggestions.includes(question.q) ? (
+                    <CheckIcon className="text-neutral-400 w-4 h-4 inline mr-1 -ml-5" />
+                  ) : (
+                    <span className="text-neutral-500 font-semibold mr-2 -ml-4">+</span>
+                  )}
+                  <span>{question.q}</span>
+                </span>
+              </button>}
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   )
@@ -224,12 +235,36 @@ const personalSuggestions = (year: number) => [
         q: `Will >99% of the food I eat be vegan for at least four months during ${year}?`,
       },
       {
+        q: `Will I be able to do >=30 push-ups at some point in ${year}?`
+      },
+      {
         q: `Will I get a cold in ${year}?`,
       },
       {
         q: `Will I go on a meditation retreat during ${year}?`,
       },
     ]
+  },
+  {
+    category: "Goals",
+    icon: <TrophyIcon className="w-6 h-6" />,
+    questions: [
+      {
+        label: "We recommend:\n1) Think soberly about the probability that you achieve your goal\n2) Is the probability lower than 90%? Why so, what strategies will you implement to increase it?\n3) Repeat until you are confident that you'll achieve your goal! (Or you think the costs of actually achieving it outweigh the benefits)",
+      },
+      {
+        q: `Will I achieve my goal <x> in ${year}?`
+      },
+      {
+        q: `Will I implement strategy <y> to help achieve my goal <x> in ${year}?`
+      },
+      {
+        q: `Will I still think goal <x> is a top priority for me to pursue at the end of ${year}?`
+      },
+      {
+        q: `Will I still be maintaining my existing habit <z> at the end of ${year}?`
+      },
+    ],
   },
   {
     category: "Work",

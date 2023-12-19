@@ -454,7 +454,7 @@ function QuestionSuggestions({
 
   return (
     <div className='w-full bg-white shadow-inner rounded-b-md px-6 pt-4 pb-6 mb-6 flex flex-col items-start gap-2 z-10'>
-      <h4 className='select-none pl-4'>{"Here's a few ideas..."}</h4>
+      <h4 className='select-none pl-4'>{"Here are a few ideas..."}</h4>
       {suggestions.slice(0, showAll ? undefined : 8).map((suggestion) => (
         <button
           key={suggestion}
