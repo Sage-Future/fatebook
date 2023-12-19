@@ -23,25 +23,15 @@ export default function PredictYourYearPage() {
 
   const tournamentQ = api.tournament.get.useQuery({
     id: tournamentId,
+    createIfNotExists: userId ? {
+      name: `Your predictions for ${year}`,
+    } : undefined,
   })
-  const [hasCreated, setHasCreated] = useState(false)
-  const createTournament = api.tournament.create.useMutation()
   const utils = api.useContext()
 
   const [questionDrafts, setQuestionDrafts] = useState<{key: string, defaultTitle?: string}[]>([{
     key: 'default',
   }])
-
-  useEffect(() => {
-    if (!tournamentQ.data?.id && !tournamentQ.isLoading && !teamMode && !hasCreated) {
-      createTournament.mutate({
-        id: tournamentId,
-        name: `Your predictions for ${year}`,
-      })
-      void utils.tournament.get.invalidate({ id: tournamentId })
-      setHasCreated(true)
-    }
-  }, [createTournament, hasCreated, teamMode, tournamentId, tournamentQ.data?.id, tournamentQ.isError, tournamentQ.isLoading, user?.name, utils.tournament.get])
 
   useEffect(() => {
     // NB: doesn't work for <Link>s, just tab close/reload etc

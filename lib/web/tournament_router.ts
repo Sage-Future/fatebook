@@ -81,44 +81,61 @@ export const tournamentRouter = router({
     .input(
       z.object({
         id: z.string(),
+        createIfNotExists: z.object({
+          name: z.string().optional(),
+        }).optional(),
       })
     )
     .query(async ({ input, ctx }) => {
-      const tournament = await prisma.tournament.findUnique({
+      const includes = {
+        author: true,
+        questions: {
+          where: {
+            OR: [
+              {sharedPublicly: true},
+              {userId: ctx.userId || "NO MATCH"},
+              {sharedWith: {some: {id: ctx.userId || "NO MATCH"}}},
+              {sharedWithLists: {some: {users: {some: {id: ctx.userId || "NO MATCH"}}}}},
+            ]
+          },
+          include: {
+            questionScores: {
+              include: {
+                user: true,
+              },
+            },
+            forecasts: {
+              include: {
+                user: true,
+              }
+            },
+          },
+        },
+        userList: {
+          include: {
+            users: true,
+          }
+        }
+      }
+      let tournament = await prisma.tournament.findUnique({
         where: {
           id: input.id,
         },
-        include: {
-          author: true,
-          questions: {
-            where: {
-              OR: [
-                {sharedPublicly: true},
-                {userId: ctx.userId || "NO MATCH"},
-                {sharedWith: {some: {id: ctx.userId || "NO MATCH"}}},
-                {sharedWithLists: {some: {users: {some: {id: ctx.userId || "NO MATCH"}}}}},
-              ]
-            },
-            include: {
-              questionScores: {
-                include: {
-                  user: true,
-                },
-              },
-              forecasts: {
-                include: {
-                  user: true,
-                }
-              },
-            },
-          },
-          userList: {
-            include: {
-              users: true,
-            }
-          }
-        },
+        include: includes,
       })
+      if (!tournament && input.createIfNotExists) {
+        if (!ctx.userId) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a tournament" })
+        }
+        tournament = await prisma.tournament.create({
+          data: {
+            id: input?.id || undefined,
+            name: input?.createIfNotExists.name || "New tournament",
+            authorId: ctx.userId,
+          },
+          include: includes,
+        })
+      }
       if (!tournament) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Tournament not found" })
       }
