@@ -6,13 +6,20 @@ import { publicProcedure, router } from "./trpc_base"
 
 export const tournamentRouter = router({
   create: publicProcedure
-    .mutation(async ({ ctx }) => {
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      }).optional()
+    )
+    .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a tournament" })
       }
       const newTournament = await prisma.tournament.create({
         data: {
-          name: "New tournament",
+          id: input?.id || undefined,
+          name: input?.name || "New tournament",
           authorId: ctx.userId,
         },
       })

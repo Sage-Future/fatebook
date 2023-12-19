@@ -1,32 +1,48 @@
-import { InformationCircleIcon } from "@heroicons/react/20/solid"
-import clsx from "clsx"
-import { HTMLAttributes, useState } from 'react'
+import clsx from 'clsx'
+import { HTMLAttributes, ReactNode, useState } from 'react'
+import Hoverable from './Hoverable'
+import { Popover, PopoverContent, PopoverTrigger } from "./Popover"
 
 export function InfoButton({
   tooltip,
-  size = 16,
   className,
+  showInfoButton = true,
+  children,
+  placement = "top",
 } : {
   tooltip: string,
   size?: number,
   className?: HTMLAttributes<HTMLSpanElement>["className"]
+  showInfoButton?: boolean,
+  children?: ReactNode
+  placement?: "top" | "bottom" | "left" | "right"
 }) {
-  const [isOpen, setIsOpen] = useState(false)
+
+  const [popoverHovered, setPopoverHovered] = useState(false)
 
   return (
-    <span
-      className={clsx(
-        'tooltip my-auto whitespace-normal text-neutral-400 hover:text-neutral-500 transition-colors',
-        isOpen && 'tooltip-open',
-        className
-      )}
-      data-tip={tooltip}
-      onClick={() => setIsOpen(!isOpen)}
-      onMouseLeave={() => setIsOpen(false)}
-    >
-      <InformationCircleIcon
-        height={size}
-        width={size} />
-    </span>
+    <Popover open={popoverHovered || undefined} placement={placement}>
+      <PopoverTrigger asChild={true}>
+        <span
+          className={clsx(
+            'inline',
+            className,
+          )}
+        >
+          {children}
+          {showInfoButton && <Hoverable/>}
+        </span>
+      </PopoverTrigger>
+      <PopoverContent
+        className={clsx(
+          'Popover z-[10000] bg-indigo-100 p-2 max-w-[15rem] rounded-md text-sm transition-opacity duration-200 shadow-sm outline-none',
+        )}
+        onMouseEnter={() => setPopoverHovered(true)}
+        onMouseLeave={() => setPopoverHovered(false)}
+        onMouseMove={() => setPopoverHovered(true)}
+      >
+        {tooltip}
+      </PopoverContent>
+    </Popover>
   )
 }

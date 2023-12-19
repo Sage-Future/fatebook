@@ -231,3 +231,7 @@ export function joinWithOr(list: string[]) {
   if (list.length === 2) return `${list[0]} or ${list[1]}`
   return `${list.slice(0, -1).join(", ")}, or ${list.slice(-1)}`
 }
+
+export function generateRandomId() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+}

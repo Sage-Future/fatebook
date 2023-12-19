@@ -1,5 +1,5 @@
 import { Transition } from '@headlessui/react'
-import { ChevronDownIcon, PencilIcon } from "@heroicons/react/20/solid"
+import { ChatBubbleOvalLeftIcon, ChevronDownIcon, PencilIcon, ReceiptPercentIcon, UserIcon } from "@heroicons/react/20/solid"
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -19,6 +19,7 @@ import { getDateYYYYMMDD } from '../lib/_utils_common'
 import { getQuestionUrl } from '../lib/web/question_url'
 import { api } from '../lib/web/trpc'
 import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { InfoButton } from './InfoButton'
 
 export function Question({
   question,
@@ -177,14 +178,24 @@ export function ActivityNumbers({
   manuallyExpanded: boolean
   setManuallyExpanded: (expanded: boolean) => void
 }) {
+  const forecasters = new Set(question.forecasts.map(f => f.userId)).size
+  const forecasts = question.forecasts?.length ?? 0
+  const numComments = (question.comments?.length ?? 0) + (question.notes ? 1 : 0)
+
   return (
     <div
       className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center"
       onClick={() => setManuallyExpanded(!manuallyExpanded)}
     >
-      <span>{question.forecasts?.length ?? 0} forecasts</span>
-      <span>{new Set(question.forecasts.map(f => f.userId)).size} forecasters</span>
-      <span>{(question.comments?.length ?? 0) + (question.notes ? 1 : 0)} comments</span>
+      <InfoButton
+        tooltip={`${forecasts} forecast${forecasts !== 1 ? 's' : ''}, ${forecasters} forecaster${forecasters !== 1 ? 's' : ''}, ${numComments} comment${numComments !== 1 ? 's' : ''}`}
+        showInfoButton={false}
+        className='flex gap-2'
+      >
+        <span>{forecasts} <ReceiptPercentIcon className='w-4 h-4 shrink-0 inline'/></span>
+        <span>{forecasters} <UserIcon className='w-4 h-4 shrink-0 inline'/></span>
+        <span>{numComments} <ChatBubbleOvalLeftIcon className='w-4 h-4 shrink-0 inline'/></span>
+      </InfoButton>
       {!alwaysExpand && <button
         className="button p-0"
       >

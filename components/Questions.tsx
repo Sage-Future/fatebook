@@ -22,6 +22,7 @@ export function Questions({
   showAllPublic = false,
   theirUserId = undefined,
   description = undefined,
+  showFilterButtons = true,
 }: {
   title?: string | ReactNode,
   filterClientSide?: (question: any) => boolean
@@ -32,6 +33,7 @@ export function Questions({
   showAllPublic?: boolean,
   theirUserId?: string,
   description?: ReactNode | string,
+  showFilterButtons?: boolean,
 }) {
   const session = useSession()
 
@@ -89,7 +91,7 @@ export function Questions({
           {title || "Your forecasts"}
           {(questionsQ.isLoading) && <div className="mt-2.5"><LoaderIcon /></div>}
         </h3>
-        {(questions?.length > 0 || filtersApplied) && <FilterControls
+        {showFilterButtons && (questions?.length > 0 || filtersApplied) && <FilterControls
           extraFilters={extraFilters}
           setExtraFilters={setExtraFilters}
         />}
@@ -103,7 +105,7 @@ export function Questions({
           description
         }
       </div>}
-      <motion.div className="grid gap-6">
+      <motion.div className="grid gap-6 relative">
         <AnimatePresence initial={false} mode="popLayout">
           {ifEmpty(
             questions
@@ -143,7 +145,11 @@ export function Questions({
             )
           }}
         </InView>
-        {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && <LoaderIcon className="mx-auto" />}
+        {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) &&
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+            <LoaderIcon className="mx-auto" />
+          </div>
+        }
       </motion.div>
     </div>
   )

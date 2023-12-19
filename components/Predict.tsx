@@ -25,16 +25,24 @@ export function Predict({
   onQuestionCreate,
   embedded,
   resetTrigger,
-  setResetTrigger
+  setResetTrigger,
+  resolveByButtons,
+  showQuestionSuggestionsButton = true,
+  placeholder,
 } : {
   questionDefaults?: {
-    tournamentId?: string
+    title?: string,
+    tournamentId?: string,
+    resolveBy?: Date,
   }
   textAreaRef?: React.RefObject<HTMLTextAreaElement>
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
   embedded?:boolean
   resetTrigger?:boolean
   setResetTrigger?:(arg:boolean) => void
+  resolveByButtons?: {date: Date, label: string}[]
+  showQuestionSuggestionsButton?: boolean
+  placeholder?: string
 }) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
@@ -51,7 +59,7 @@ export function Predict({
     resolver: zodResolver(predictFormSchema),
   })
   const question = watch("question")
-  const resolveByUTCStr = watch("resolveBy", getDateYYYYMMDD(tomorrowDate()))
+  const resolveByUTCStr = watch("resolveBy", getDateYYYYMMDD(questionDefaults?.resolveBy || tomorrowDate()))
   const predictionPercentage = watch("predictionPercentage")
 
   const session = useSession()
@@ -212,9 +220,9 @@ export function Predict({
             <TextareaAutosize
               className={clsx(
                 "w-full text-xl border-2 border-neutral-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
-                "focus:outline-indigo-700",
+                "focus:outline-indigo-700 placeholder:text-neutral-400",
               )}
-              placeholder="Will I finish my project by Friday?"
+              placeholder={placeholder || "Will I finish my project by Friday?"}
               maxRows={15}
               onChange={(e) => {
                 smartUpdateResolveBy(e.currentTarget.value)
@@ -229,10 +237,11 @@ export function Predict({
                 }
               }}
               ref={mergedTextAreaRef}
+              defaultValue={questionDefaults?.title}
               {...registerQuestion}
             />
 
-            <button
+            {showQuestionSuggestionsButton && <button
               tabIndex={-1}
               className={clsx(
                 'btn btn-circle aspect-square absolute right-3 top-2 hover:opacity-100',
@@ -245,7 +254,7 @@ export function Predict({
               }}
             >
               <LightBulbIcon height={16} width={16} />
-            </button>
+            </button>}
 
             <Transition
               show={showSuggestions}
@@ -274,27 +283,50 @@ export function Predict({
                 <label className="flex" htmlFor="resolveBy">Resolve by
                   <InfoButton className='ml-1 tooltip-right' tooltip='When should I remind you to resolve this question?' />
                 </label>
-                <input
-                  className={clsx(
-                    "text-md border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
-                    errors.resolveBy && "border-red-500",
-                    highlightResolveBy && "shadow-[0_0_50px_-1px_rgba(0,0,0,1)] shadow-indigo-700 duration-100"
-                  )}
-                  type="date"
-                  defaultValue={
-                    getDateYYYYMMDD(new Date(tomorrowDate()))
+                <div className='flex flex-wrap gap-1'>
+                  <div className='flex flex-col'>
+                    <input
+                      className={clsx(
+                        "text-md border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
+                        errors.resolveBy && "border-red-500",
+                        highlightResolveBy && "shadow-[0_0_50px_-1px_rgba(0,0,0,1)] shadow-indigo-700 duration-100"
+                      )}
+                      type="date"
+                      defaultValue={
+                        getDateYYYYMMDD(new Date(questionDefaults?.resolveBy || tomorrowDate()))
+                      }
+                      onKeyDown={onDateKeydown}
+                      {...register("resolveBy", { required: true })}
+                    />
+                    <span className='italic text-neutral-400 text-sm p-1'>
+                    {!resolveByButtons && <FormattedDate
+                      date={utcDateStrToLocalDate(resolveByUTCStr)}
+                      alwaysUseDistance={true}
+                      capitalise={true}
+                      currentDateShowToday={true}
+                      hoverTooltip={false} />}
+                    {
+                    resolveByButtons && <div className='mt-2 flex flex-wrap gap-0.5 shrink justify-between'>
+                      {resolveByButtons.map(({ date, label }) => (
+                        <button
+                          key={label}
+                          className={clsx(
+                            'btn btn-xs grow-0',
+                            getDateYYYYMMDD(date) === getDateYYYYMMDD(utcDateStrToLocalDate(resolveByUTCStr)) || 'btn-ghost'
+                          )}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            setValue("resolveBy", getDateYYYYMMDD(date))
+                          }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
                   }
-                  onKeyDown={onDateKeydown}
-                  {...register("resolveBy", { required: true })}
-                />
-                <span className='italic text-neutral-400 text-sm p-1'>
-                  <FormattedDate
-                    date={utcDateStrToLocalDate(resolveByUTCStr)}
-                    alwaysUseDistance={true}
-                    capitalise={true}
-                    currentDateShowToday={true}
-                    hoverTooltip={false} />
-                </span>
+                  </span>
+                  </div>
+                </div>
               </div>
 
               <div className='min-w-fit'>
@@ -317,7 +349,7 @@ export function Predict({
                   />
                   <input
                     className={clsx(
-                      "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 text-xl font-bold placeholder:font-normal"
+                      "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 text-xl font-bold placeholder:font-normal placeholder:text-neutral-400"
                     )}
                     autoComplete="off"
                     type='number'
