@@ -34,6 +34,14 @@ export function FormattedDate({
   || (date.getTime() <= Date.now() && ((Date.now() - date.getTime()) <= oneWeekMs * 8))
   || (date.getTime() > Date.now() && date.getTime() - Date.now() < oneWeekMs)
 
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+  const day = date.getDate()
+  const monthIndex = date.getMonth()
+  const suffix = [1, 21, 31].includes(day) ? "st" : [2, 22].includes(day) ? "nd" : [3, 23].includes(day) ? "rd" : "th"
+  const fullDate = `${monthNames[monthIndex]} `
+  + `${day}${suffix}`
+  + `${date.getFullYear() !== new Date().getFullYear() ? ` ${date.getFullYear()}` : ""}`
+
   let formattedDate
   try {
     formattedDate = showDistance ?
@@ -43,7 +51,7 @@ export function FormattedDate({
           :
           intlFormatDistance(date, new Date()))
       :
-      getDateYYYYMMDD(date)
+      fullDate
   } catch (e) {
     console.error(e)
     return <></>
