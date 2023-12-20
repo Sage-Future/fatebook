@@ -40,7 +40,7 @@ export function ShareTournament({
     return <></>
   }
 
-  return <>
+  return <div className='flex flex-col gap-4'>
     <div className="form-control flex-row items-center gap-2">
       <input
         id="sharedPublicly"
@@ -79,7 +79,7 @@ export function ShareTournament({
         <span className="label-text">Show leaderboard</span>
       </label>
     </div>
-  </>
+  </div>
 }
 
 function UserListSelect({

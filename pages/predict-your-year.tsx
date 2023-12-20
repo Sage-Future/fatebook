@@ -1,6 +1,6 @@
-import { CheckIcon, PlusIcon, XCircleIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, PlusIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { ScaleIcon } from '@heroicons/react/24/outline'
-import { BriefcaseIcon, GlobeAsiaAustraliaIcon, HeartIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/solid'
+import { BriefcaseIcon, ChartBarIcon, CurrencyDollarIcon, GlobeAsiaAustraliaIcon, HeartIcon, LifebuoyIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useSession } from 'next-auth/react'
@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import { Predict } from '../components/Predict'
 import { Questions } from '../components/Questions'
+import { ShareTournament } from '../components/ShareTournament'
 import { generateRandomId } from '../lib/_utils_common'
 import { api } from '../lib/web/trpc'
 import { signInToFatebook } from '../lib/web/utils'
@@ -38,7 +39,7 @@ export default function PredictYourYearPage() {
   useEffect(() => {
     // NB: doesn't work for <Link>s, just tab close/reload etc
     const handleUnload = (e: BeforeUnloadEvent) => {
-      if (questionDrafts.length > 2) {
+      if (questionDrafts.length > 1) {
         e.preventDefault()
         e.returnValue = "You have unsaved predictions. Are you sure you want to leave?"
       }
@@ -57,7 +58,24 @@ export default function PredictYourYearPage() {
         canonical='https://fatebook.io/predict-your-year'
       />
       <div className="mx-auto">
-        <div className="prose mx-auto lg:w-[650px] flex flex-col gap-10">
+        <div className="prose mx-auto lg:w-[650px] flex flex-col gap-10 relative">
+          <button
+            className="btn ml-auto max-sm:-mt-8 -mb-10 sm:absolute right-0 top-4"
+            onClick={()=>(document?.getElementById('tournament_share_modal') as any)?.showModal()}
+          >
+            Share with your {teamMode ? "team" : "friends"}
+          </button>
+          <dialog id="tournament_share_modal" className="modal max-sm:modal-top">
+            <div className="modal-box overflow-visible">
+              <form method="dialog" className="modal-backdrop">
+                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                  <XMarkIcon className="w-6 h-6 text-neutral-500" />
+                </button>
+              </form>
+              <h3 className="font-bold text-lg mt-0">Share</h3>
+              <ShareTournament tournamentId={tournamentId} />
+            </div>
+          </dialog>
           {
             !userId && <div className='text-center'>
               <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
@@ -129,8 +147,31 @@ export default function PredictYourYearPage() {
             </div>
           </div>
           <div className='max-w-full'>
+            <div className='text-center'>
+              <div className="join">
+                <button
+                  className={clsx(
+                    "btn join-item rounded-b-none",
+                    !teamMode ? "btn-active" : "text-neutral-500"
+                  )}
+                  onClick={() => setTeamMode(false)}
+                >
+                  Personal predictions
+                </button>
+                <button
+                  className={clsx(
+                    "btn join-item rounded-b-none",
+                    teamMode ? "btn-active" : "text-neutral-500"
+                  )}
+                  onClick={() => setTeamMode(true)}
+                >
+                  Team predictions
+                </button>
+              </div>
+            </div>
             <QuestionSuggestionsByCategory
-              suggestions={personalSuggestions(year)}
+              key={teamMode ? "team" : "personal"}
+              suggestions={teamMode ? teamSuggestions(year) : personalSuggestions(year)}
               onSuggestionSelect={(title) => {
                 setQuestionDrafts(drafts => [...drafts, {key: generateRandomId(), defaultTitle: title}])
               }}
@@ -153,8 +194,9 @@ function QuestionSuggestionsByCategory({
   const [clickedSuggestions, setClickedSuggestions] = useState<string[]>([])
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2 flex-wrap">
+    <div className="flex flex-col gap-2 bg-white rounded-xl shadow-sm py-4">
+      <h4 className="select-none pl-4 mt-0">{"Here are a few ideas..."}</h4>
+      <div className="flex gap-2 flex-wrap px-4">
         {suggestions.map((category) => (
           <div className="relative" key={category.category}>
             <button
@@ -173,20 +215,22 @@ function QuestionSuggestionsByCategory({
       </div>
       {selectedCategory !== null && (
         <motion.div
-          className="w-full bg-white shadow-inner rounded-b-md px-6 pt-2 pb-4 mb-6 flex flex-col items-start gap-2 z-10"
+          className="w-full rounded-b-md px-6 pt-2 pb-4 mb-6 flex flex-col items-start gap-2 z-10"
         >
-          <h4 className="select-none pl-4">{"Here are a few ideas..."}</h4>
           {suggestions.find(s => s.category === selectedCategory)?.questions.map((question, index) => (
             <motion.div
               key={question.q || question.label}
               initial={{ opacity: 0, scale: 0.97 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.05 * (index + 1), duration: 0.2 }}
+              className='w-full'
             >
-              {question.label && <ReactMarkdown className='text-sm ml-4 italic text-neutral-500'>{question.label}</ReactMarkdown>}
+              {question.label && <div className='bg-neutral-50 px-2 py-1 rounded-lg w-full'>
+                <ReactMarkdown className='text-sm ml-4 italic text-neutral-500 w-full'>{question.label}</ReactMarkdown>
+              </div>}
               {question.q && <button
                 className={clsx(
-                  "btn btn-ghost text-left font-normal leading-normal",
+                  "btn btn-ghost text-left font-normal leading-normal w-full",
                   clickedSuggestions.includes(question.q) ? "text-neutral-400" : "text-neutral-500"
                 )}
                 onClick={() => {
@@ -194,7 +238,7 @@ function QuestionSuggestionsByCategory({
                   setClickedSuggestions(prev => [...prev, (question.q)])
                 }}
               >
-                <span className="ml-4">
+                <span className="mr-auto">
                   {clickedSuggestions.includes(question.q) ? (
                     <CheckIcon className="text-neutral-400 w-4 h-4 inline mr-1 -ml-5" />
                   ) : (
@@ -213,44 +257,11 @@ function QuestionSuggestionsByCategory({
 
 const personalSuggestions = (year: number) => [
   {
-    category: "Health",
-    icon: <HeartIcon className="w-6 h-6" />,
-    questions: [
-      {
-        q: `Will I track 100 runs on Strava in ${year}?`
-      },
-      {
-        q: `Will I get COVID in ${year}?`,
-      },
-      {
-        q: `Will my total steps in ${year} be higher than in the previous year?`,
-      },
-      {
-        q: `Will I play pickleball in ${year}?`
-      },
-      {
-        q: `Will I have a depressive episode in ${year}?`,
-      },
-      {
-        q: `Will >99% of the food I eat be vegan for at least four months during ${year}?`,
-      },
-      {
-        q: `Will I be able to do >=30 push-ups at some point in ${year}?`
-      },
-      {
-        q: `Will I get a cold in ${year}?`,
-      },
-      {
-        q: `Will I go on a meditation retreat during ${year}?`,
-      },
-    ]
-  },
-  {
     category: "Goals",
     icon: <TrophyIcon className="w-6 h-6" />,
     questions: [
       {
-        label: "We recommend:\n1) Think soberly about the probability that you achieve your goal\n2) Is the probability lower than 90%? Why so, what strategies will you implement to increase it?\n3) Repeat until you are confident that you'll achieve your goal! (Or you think the costs of actually achieving it outweigh the benefits)",
+        label: "We recommend:\n1) Think soberly about the probability that you achieve your goal\n2) What strategies will you implement to raise the probability?\n3) Repeat until you are satisfied!",
       },
       {
         q: `Will I achieve my goal <x> in ${year}?`
@@ -267,32 +278,41 @@ const personalSuggestions = (year: number) => [
     ],
   },
   {
-    category: "Work",
-    icon: <BriefcaseIcon className="w-6 h-6" />,
+    category: "Health",
+    icon: <HeartIcon className="w-6 h-6" />,
     questions: [
       {
-        q: `Will I get a raise in ${year}?`,
+        q: `Will I exercise on 100 days (around twice a week) in ${year}?`
       },
       {
-        q: `Will I spend 5 hours journalling about my career reflections and plans in ${year}?`,
+        q: `Will illness cause me to lose 3 or more weeks of productivity in ${year}?`,
       },
       {
-        q: `Will I get a new job in ${year}?`,
+        q: `If I get a flu jab, will illness cause me to lose 3 or more weeks of productivity in ${year}?`,
       },
       {
-        q: `Will I donate at least 10% of my salary to charity in ${year}?`,
+        q: `Will I track 50 runs on Strava in ${year}?`
       },
       {
-        q: `Will I attend a conference in ${year}?`,
+        q: `Will I get COVID in ${year}?`,
       },
       {
-        q: `Will my manager's assessment of my work performance in ${year} be higher than this year?`,
+        q: `Will my total steps in ${year} be higher than in the previous year?`,
       },
       {
-        q: `Will I publish 3 papers in ${year}?`,
+        q: `Will I play pickleball in ${year}?`
       },
       {
-        q: `Will I use AI tools for >1 hour a day in my last work week of ${year}?`,
+        q: `Will I be able to do >=30 push-ups at some point in ${year}?`
+      },
+      {
+        q: `Will I get a cold in ${year}?`,
+      },
+      {
+        q: `Will >99% of the food I eat be vegan for at least four months during ${year}?`,
+      },
+      {
+        q: `Will I meditate 20 times during ${year}?`,
       },
     ]
   },
@@ -323,6 +343,36 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will I establish a weekly boardgame night meet-up in ${year}?`,
+      },
+    ]
+  },
+  {
+    category: "Work",
+    icon: <BriefcaseIcon className="w-6 h-6" />,
+    questions: [
+      {
+        q: `Will I get a raise in ${year}?`,
+      },
+      {
+        q: `Will I spend 5 hours journalling about my career reflections and plans in ${year}?`,
+      },
+      {
+        q: `Will I get a new job in ${year}?`,
+      },
+      {
+        q: `Will I donate at least 10% of my salary to charity in ${year}?`,
+      },
+      {
+        q: `Will I attend a conference in ${year}?`,
+      },
+      {
+        q: `Will my manager's assessment of my work performance in ${year} be higher than the previous year?`,
+      },
+      {
+        q: `Will I publish 3 papers in ${year}?`,
+      },
+      {
+        q: `Will I use AI tools for >1 hour a day in my last work week of ${year}?`,
       },
     ]
   },
@@ -377,6 +427,177 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will my predictions about my life in ${year} be more accurate than any of my friends?`,
+      },
+    ]
+  },
+]
+
+const teamSuggestions = (year: number) => [
+  {
+    category: "Performance",
+    icon: <ChartBarIcon className="w-6 h-6" />,
+    questions: [
+      {
+        q: `Will we achieve a customer satisfaction score above <target> by the end of ${year}?`
+      },
+      {
+        q: `Will our team's work be featured in a major media outlet in ${year}?`
+      },
+      {
+        q: `Will we pivot to a new product in ${year}?`
+      },
+      {
+        q: `Will we retire any of our current products in ${year}?`
+      },
+      {
+        q: `Will ${year} be our team's best year of all time (according to a poll of team members at the end of the year)?`
+      },
+      {
+        q: `Will we expand our market presence to a new region or demographic in ${year}?`
+      },
+    ]
+  },
+  {
+    category: "Finance",
+    icon: <CurrencyDollarIcon className="w-6 h-6" />,
+    questions: [
+      {
+        q: `Will we exceed our target revenue in ${year}?`
+      },
+      {
+        q: `Will we find a new major investor or donor in ${year}?`
+      },
+      {
+        q: `Will our spending be higher or lower than our mainline ${year} budget?`
+      },
+      {
+        q: `Will we reduce operational costs by at least <x>% in ${year}?`
+      },
+      {
+        q: `At the end of ${year}, will our runway be >12 months?`
+      },
+    ]
+  },
+  {
+    category: "Goals",
+    icon: <TrophyIcon className="w-6 h-6" />,
+    questions: [
+      {
+        label: "We recommend:\n1) Think soberly about the probability that you achieve your goal\n2) What strategies will you implement to raise the probability?\n3) Repeat until you are satisfied!",
+      },
+      {
+        q: `Will we achieve our goal <x> in ${year}?`
+      },
+      {
+        q: `Will we implement strategy <y> to help achieve our goal <x> in ${year}?`
+      },
+      {
+        q: `Will we still think goal <x> is a top priority for us to pursue at the end of ${year}?`
+      },
+      {
+        q: `Will we still be maintaining our existing process <z> at the end of ${year}?`
+      },
+    ],
+  },
+  {
+    category: "Team",
+    icon: <UserGroupIcon className="w-6 h-6" />,
+    questions: [
+      {
+        "q": `Will our team's average satisfaction score improve in the ${year} internal survey compared to the previous year?`
+      },
+      {
+        q: `Will we grow the total team size in ${year}?`,
+      },
+      {
+        q: `Will we hire a new <role> in ${year}?`,
+      },
+      {
+        q: `Will we fire any team members in ${year}?`,
+      },
+      {
+        q: `Will we have a team off-site in ${year}?`,
+      },
+      {
+        q: `Will our team off-site be in <location> in ${year}?`,
+      },
+      {
+        q: `Will our team still exist at the end of ${year}?`,
+      },
+      {
+        q: `Will any potential new hires reject offers because our salary offer is too low in ${year}?`
+      }
+    ]
+  },
+  {
+    category: "Black Swans",
+    icon: <LifebuoyIcon className="w-6 h-6" />,
+    questions: [
+      {
+        q: `Will an unforeseen leadership crisis occur within our team in ${year}?`
+      },
+      {
+        q: `Will a new technology emerge in ${year} that fundamentally disrupts our business model?`
+      },
+      {
+        q: `Will there be a cybersecurity breach that significantly impacts our data security in ${year}?`
+      },
+      {
+        q: `Will there be a sudden loss of a key team member that critically affects our projects in ${year}?`
+      },
+      {
+        q: `Will a sudden and significant economic downturn drastically affect our industry in ${year}?`
+      },
+      {
+        q: `Will new, unexpected trade restrictions or tariffs be imposed that significantly impact our supply chain in ${year}?`
+      },
+      {
+        q: `Will a significant natural disaster directly impact our main operating regions in ${year}?`
+      },
+      {
+        q: `Will there be a major geopolitical event that affects a team member's ability to work for us in ${year}?`
+      },
+      {
+        q: `Will a competitor launch a product in ${year} that changes the competitive landscape?`
+      },
+      {
+        q: `Will there be a sudden shift in consumer behavior or preferences relating to our products in ${year}?`
+      },
+      {
+        q: `If new technology creates an opportunity for us to pivot to a new product in ${year}, will we pursue it?`
+      },
+      {
+        q: `Will there be an unexpected change in industry regulation that significantly affects our operations in ${year}?`
+      },
+      {
+        q: `Will a major policy change regarding data privacy come into effect in ${year}?`
+      },
+    ]
+  },
+  {
+    category: "Meta",
+    icon: <ScaleIcon className="w-6 h-6" />,
+    questions: [
+      {
+        q: `Will we resolve all of our yearly ${year} predictions at the end of the year?`,
+      },
+      {
+        q: `Will we use Fatebook to predict the *next* year at the end of ${year}?`,
+      },
+      {
+        q: `Will >5 of our ${year} predictions be too ambiguous to resolve as YES or NO?`,
+      },
+      {
+        q: `Will we make a notable decision or change in plans based on these team predictions for ${year}?`,
+      },
+      {
+        q: `Will we consider having made yearly predictions a valuable use of our time at the end of ${year}?`,
+      },
+      {
+        q: `Will we write down 100 predictions during ${year}?`,
+      },
+      {
+        q: `Will <x>'s predictions about our team in ${year} be more accurate than any other team member?`,
       },
     ]
   },
