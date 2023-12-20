@@ -3,6 +3,7 @@ import { z } from 'zod'
 import prisma, { backendAnalyticsEvent } from '../_utils_server'
 import { emailNewlySharedWithUsers, getQuestionAssertAuthor } from './question_router'
 import { publicProcedure, router } from './trpc_base'
+import { matchesAnEmailDomain } from './utils'
 
 export const userListRouter = router({
   getUserLists: publicProcedure
@@ -11,6 +12,7 @@ export const userListRouter = router({
         return null
       }
 
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
       return await prisma.userList.findMany({
         where: {
           OR: [
@@ -19,7 +21,8 @@ export const userListRouter = router({
               some: {
                 id: ctx.userId,
               }
-            }}
+            }},
+            {...matchesAnEmailDomain(user)},
           ]
         },
         include: {
@@ -48,7 +51,12 @@ export const userListRouter = router({
       if (!userList) {
         throw new TRPCError({ code: "NOT_FOUND", message: "User list not found" })
       }
-      if (!ctx.userId || (userList.authorId !== ctx.userId && !userList.users.find(u => u.id === ctx.userId))) {
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
+      if (!ctx.userId || (
+        userList.authorId !== ctx.userId &&
+        !userList.users.find(u => u.id === ctx.userId) &&
+        !userList.emailDomains?.some(domain => user?.email.endsWith(domain))
+      )) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this user list" })
       }
 
@@ -99,6 +107,7 @@ export const userListRouter = router({
         listId: z.string(),
         name: z.string().optional(),
         userEmails: z.array(z.string()).optional(),
+        emailDomains: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({input, ctx}) => {
@@ -140,7 +149,8 @@ export const userListRouter = router({
           name: input?.name,
           users: {
             set: input.userEmails?.map(email => ({ email }))
-          }
+          },
+          emailDomains: input.emailDomains,
         }
       })
 

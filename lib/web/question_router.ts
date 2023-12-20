@@ -1,4 +1,4 @@
-import { Prisma, Resolution, Tag } from "@prisma/client"
+import { Prisma, Resolution, Tag, User } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -21,7 +21,7 @@ import { fatebookEmailFooter, sendEmail } from "./email"
 import { questionsToCsv } from "./export"
 import { getQuestionUrl } from "./question_url"
 import { Context, publicProcedure, router } from "./trpc_base"
-import { getHtmlLinkQuestionTitle } from "./utils"
+import { getHtmlLinkQuestionTitle, matchesAnEmailDomain } from "./utils"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -129,7 +129,8 @@ export const questionRouter = router({
               }),
         },
       })
-      assertHasAccess(ctx, question)
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      assertHasAccess(ctx, question, user)
       return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)
     }),
 
@@ -443,7 +444,9 @@ export const questionRouter = router({
         },
       })
 
-      assertHasAccess(ctx, question)
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+
+      assertHasAccess(ctx, question, user)
       if (question === null) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -597,7 +600,8 @@ export const questionRouter = router({
         },
       })
 
-      assertHasAccess(ctx, question)
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      assertHasAccess(ctx, question, user)
       if (question === null) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -877,6 +881,9 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
 
   const skip = input.cursor
   const userIdIfAuthed = ctx.userId || "no user id, don't match" // because of prisma undefined rules
+
+  const user = ctx.userId ? await prisma.user.findUnique({ where: { id: userIdIfAuthed } }) : null
+
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
@@ -905,7 +912,11 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
               OR: [
                 { sharedPublicly: true, unlisted: input.extraFilters?.filterTournamentId ? undefined : false },
                 { sharedWith: { some: { id: userIdIfAuthed } } },
-                { sharedWithLists: { some: { users: { some: { id: userIdIfAuthed } } } } },
+                { sharedWithLists: { some: { OR: [
+                  { authorId: userIdIfAuthed },
+                  { users: { some: { id: userIdIfAuthed } } },
+                  matchesAnEmailDomain(user),
+                ], } } },
                 input.extraFilters.filterTournamentId ? { userId: userIdIfAuthed } : {},
               ],
             } : (input.extraFilters?.filterUserListId ? {
@@ -915,6 +926,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                   OR: [
                     { authorId: userIdIfAuthed },
                     { users: { some: { id: userIdIfAuthed } } },
+                    matchesAnEmailDomain(user),
                   ],
                 },
               },
@@ -939,11 +951,11 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                 {
                   sharedWithLists: {
                     some: {
-                      users: {
-                        some: {
-                          id: ctx.userId,
-                        },
-                      },
+                      OR: [
+                        { authorId: userIdIfAuthed },
+                        { users: { some: { id: userIdIfAuthed } } },
+                        matchesAnEmailDomain(user),
+                      ],
                     },
                   },
                 },
@@ -1048,7 +1060,8 @@ export async function getQuestionAssertAuthor(
 
 export function assertHasAccess(
   ctx: { userId: string | undefined },
-  question: QuestionWithForecastsAndSharedWithAndLists | null
+  question: QuestionWithForecastsAndSharedWithAndLists | null,
+  user: User | null,
 ) {
   if (question === null) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
@@ -1059,7 +1072,9 @@ export function assertHasAccess(
     question.sharedWith.some((u) => u.id === ctx.userId) ||
     question.sharedWithLists.some(
       (l) =>
-        l.users.some((u) => u.id === ctx.userId) || l.authorId === ctx.userId
+        l.users.some((u) => u.id === ctx.userId) ||
+        l.authorId === ctx.userId ||
+        l.emailDomains.some( ed => user && user.email.endsWith(ed))
     ) ||
     question.userId === ctx.userId ||
     question.forecasts.some((f) => f.userId === ctx.userId) // for slack questions

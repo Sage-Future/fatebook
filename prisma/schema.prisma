@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   directUrl = env("DATABASE_DIRECT_URL")
 }
 
@@ -236,28 +236,31 @@ model Comment {
 }
 
 model UserList {
-  id          String       @id @default(cuid())
-  createdAt   DateTime     @default(now())
-  inviteId    String?      @default(cuid()) @unique
-  name        String
-  authorId    String
-  author      User         @relation(name: "author", fields: [authorId], references: [id], onDelete: Cascade)
-  users       User[]       @relation(name: "members")
-  questions   Question[]
-  tournaments Tournament[]
+  id           String       @id @default(cuid())
+  createdAt    DateTime     @default(now())
+  inviteId     String?      @unique @default(cuid())
+  name         String
+  emailDomains String[]
+  authorId     String
+  author       User         @relation(name: "author", fields: [authorId], references: [id], onDelete: Cascade)
+  users        User[]       @relation(name: "members")
+  questions    Question[]
+  tournaments  Tournament[]
 }
 
 model Tournament {
-  id              String     @id @default(cuid())
-  createdAt       DateTime   @default(now())
-  name            String
-  description     String?
-  questions       Question[]
-  authorId        String
-  author          User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  sharedPublicly  Boolean    @default(false)
-  unlisted        Boolean    @default(false)
-  userList        UserList?  @relation(fields: [userListId], references: [id], onDelete: Cascade)
-  userListId      String?
-  showLeaderboard Boolean    @default(true)
+  id                  String     @id @default(cuid())
+  createdAt           DateTime   @default(now())
+  name                String
+  description         String?
+  questions           Question[]
+  authorId            String
+  author              User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  sharedPublicly      Boolean    @default(false)
+  unlisted            Boolean    @default(false)
+  userList            UserList?  @relation(fields: [userListId], references: [id], onDelete: Cascade)
+  userListId          String?
+  anyoneInListCanEdit Boolean    @default(false)
+  showLeaderboard     Boolean    @default(true)
+  predictYourYear     Int?
 }

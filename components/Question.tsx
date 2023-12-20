@@ -134,7 +134,7 @@ export function Question({
                         includeTime={false}
                       />
                       :
-                      <FormattedDate prefix={"Resolves "} date={question.resolveBy} includeTime={false} />
+                      <FormattedDate className="[text-wrap:balanced]" prefix={"Resolves "} date={question.resolveBy} includeTime={false} />
                     }
                     <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
                   </button>

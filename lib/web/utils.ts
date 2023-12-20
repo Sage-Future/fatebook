@@ -1,4 +1,4 @@
-import { Question } from "@prisma/client"
+import { Question, User } from "@prisma/client"
 import { utcToZonedTime } from 'date-fns-tz'
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
@@ -207,4 +207,12 @@ export function utcDateStrToLocalDate(utcDateStr: string) {
   const localDate = utcToZonedTime(utcDateStr, localTimezone)
 
   return localDate
+}
+
+export function matchesAnEmailDomain(user: User | null) {
+  return {
+    emailDomains: {
+      hasSome: user?.email.split('@').slice(-1) || ["NO MATCH"]
+    }
+  }
 }

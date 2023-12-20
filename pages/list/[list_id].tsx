@@ -51,7 +51,10 @@ export default function ListPage() {
                   A user list created by <Username user={listQ.data.author} />
                 </p>
                 <p>
-                  List members: {listQ.data.users.map(u => <Username key={u.id} user={u} className='ml-2' />)}
+                  List members: {listQ.data.users.length > 0 ? listQ.data.users.map(u => <Username key={u.id} user={u} className='ml-2' />) : <span className='italic'>none</span>}
+                </p>
+                <p>
+                  Email domains: {listQ.data.emailDomains.length > 0 ? listQ.data.emailDomains.join(', ') : <span className='italic'>none</span>}
                 </p>
                 <Questions
                   title={"Your list's questions"}

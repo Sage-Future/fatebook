@@ -1,194 +1,58 @@
-import { CheckIcon, PlusIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/20/solid'
+import { CheckIcon } from '@heroicons/react/20/solid'
 import { ScaleIcon } from '@heroicons/react/24/outline'
 import { BriefcaseIcon, ChartBarIcon, CurrencyDollarIcon, GlobeAsiaAustraliaIcon, HeartIcon, LifebuoyIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
-import { useSession } from 'next-auth/react'
-import { NextSeo } from 'next-seo'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
-import { Predict } from '../components/Predict'
-import { Questions } from '../components/Questions'
-import { ShareTournament } from '../components/ShareTournament'
 import { generateRandomId } from '../lib/_utils_common'
-import { api } from '../lib/web/trpc'
-import { signInToFatebook } from '../lib/web/utils'
 
-export default function PredictYourYearPage() {
-  const user = useSession()?.data?.user
-  const userId = user?.id
-
-  // eslint-disable-next-line no-unused-vars
-  const [teamMode, setTeamMode] = useState(false)
-
-  const year = 2024
-  const tournamentId = `predict-your-year-${year}-${teamMode ? "team" : "personal"}-${userId}`
-
-  const tournamentQ = api.tournament.get.useQuery({
-    id: tournamentId,
-    createIfNotExists: userId ? {
-      name: `Your predictions for ${year}`,
-    } : undefined,
-  })
-  const utils = api.useContext()
-
-  const [questionDrafts, setQuestionDrafts] = useState<{key: string, defaultTitle?: string}[]>([{
-    key: 'default',
-  }])
-
-  useEffect(() => {
-    // NB: doesn't work for <Link>s, just tab close/reload etc
-    const handleUnload = (e: BeforeUnloadEvent) => {
-      if (questionDrafts.length > 1) {
-        e.preventDefault()
-        e.returnValue = "You have unsaved predictions. Are you sure you want to leave?"
-      }
-    }
-    window.addEventListener('beforeunload', handleUnload)
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload)
-    }
-  }, [questionDrafts])
-
+export function TabbedQuestionSuggestions({
+  teamMode, setTeamMode, year, setQuestionDrafts,
+}: {
+  teamMode: boolean;
+  setTeamMode: (mode: boolean) => void;
+  year: number;
+  setQuestionDrafts: (drafts: any) => void;
+}) {
   return (
-    <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo
-        title={tournamentQ.data?.name || `Predict your life in ${year}`}
-        description='What will the new year hold for you? Write down your predictions and review at the end of the year.'
-        canonical='https://fatebook.io/predict-your-year'
-      />
-      <div className="mx-auto">
-        <div className="prose mx-auto lg:w-[650px] flex flex-col gap-10 relative">
+    <div className='max-w-full'>
+      <div className='text-center'>
+        <div className="join">
           <button
-            className="btn ml-auto max-sm:-mt-8 -mb-10 sm:absolute right-0 top-4"
-            onClick={()=>(document?.getElementById('tournament_share_modal') as any)?.showModal()}
-          >
-            Share with your {teamMode ? "team" : "friends"}
-          </button>
-          <dialog id="tournament_share_modal" className="modal max-sm:modal-top">
-            <div className="modal-box overflow-visible">
-              <form method="dialog" className="modal-backdrop">
-                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-                  <XMarkIcon className="w-6 h-6 text-neutral-500" />
-                </button>
-              </form>
-              <h3 className="font-bold text-lg mt-0">Share</h3>
-              <ShareTournament tournamentId={tournamentId} />
-            </div>
-          </dialog>
-          {
-            !userId && <div className='text-center'>
-              <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
-                {"Sign up to start predicting your year"}
-              </button>
-            </div>
-          }
-          {
-            tournamentQ.data ?
-              <Questions
-                title={tournamentQ.data?.name ? `${tournamentQ.data.name}` : "Loading..."}
-                noQuestionsText=' '
-                filterTournamentId={tournamentId}
-                description={tournamentQ.data?.description || undefined}
-                showFilterButtons={false}
-              />
-              :
-              <h3 className="text-neutral-600">{tournamentQ.isLoading ? "Loading..." : ""}</h3>
-          }
-          <div className='flex flex-col gap-8'>
-            {questionDrafts.map((draft) =>
-              <div className="relative" key={draft.key}>
-                <Predict
-                  questionDefaults={{
-                    title: draft.defaultTitle,
-                    tournamentId,
-                    resolveBy: new Date(`${year + 1}-01-01`),
-                  }}
-                  onQuestionCreate={() => {
-                    void utils.tournament.get.invalidate({ id: tournamentId })
-                    setQuestionDrafts(drafts => drafts.filter(d => d.key !== draft.key))
-                  }}
-                  resolveByButtons={[
-                    {
-                      label: "3 months",
-                      date: new Date(`${year}-04-01`),
-                    },
-                    {
-                      label: "6 months",
-                      date: new Date(`${year}-07-01`),
-                    },
-                    {
-                      label: "9 months",
-                      date: new Date(`${year}-10-01`),
-                    },
-                    {
-                      label: "End of year",
-                      date: new Date(`${year + 1}-01-01`),
-                    },
-                  ]}
-                  placeholder="Will I move house in 2024?"
-                  showQuestionSuggestionsButton={false}
-                />
-                <button
-                  className="absolute top-0 right-0 mr-2 mt-2"
-                  onClick={() => setQuestionDrafts(drafts => drafts.filter(d => d.key !== draft.key))}
-                >
-                  <XCircleIcon className="w-6 h-6 text-neutral-300 hover:text-neutral-400" />
-                </button>
-              </div>
+            className={clsx(
+              "btn join-item rounded-b-none",
+              !teamMode ? "btn-active" : "text-neutral-500"
             )}
-            <div className="flex justify-center">
-              <button
-                className="btn btn-circle py-2.5"
-                onClick={() => setQuestionDrafts(drafts => [...drafts, {key: generateRandomId(), defaultTitle: ''}])}
-              >
-                <PlusIcon className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-          <div className='max-w-full'>
-            <div className='text-center'>
-              <div className="join">
-                <button
-                  className={clsx(
-                    "btn join-item rounded-b-none",
-                    !teamMode ? "btn-active" : "text-neutral-500"
-                  )}
-                  onClick={() => setTeamMode(false)}
-                >
-                  Personal predictions
-                </button>
-                <button
-                  className={clsx(
-                    "btn join-item rounded-b-none",
-                    teamMode ? "btn-active" : "text-neutral-500"
-                  )}
-                  onClick={() => setTeamMode(true)}
-                >
-                  Team predictions
-                </button>
-              </div>
-            </div>
-            <QuestionSuggestionsByCategory
-              key={teamMode ? "team" : "personal"}
-              suggestions={teamMode ? teamSuggestions(year) : personalSuggestions(year)}
-              onSuggestionSelect={(title) => {
-                setQuestionDrafts(drafts => [...drafts, {key: generateRandomId(), defaultTitle: title}])
-              }}
-            />
-          </div>
+            onClick={() => setTeamMode(false)}
+          >
+            Personal predictions
+          </button>
+          <button
+            className={clsx(
+              "btn join-item rounded-b-none",
+              teamMode ? "btn-active" : "text-neutral-500"
+            )}
+            onClick={() => setTeamMode(true)}
+          >
+            Team predictions
+          </button>
         </div>
       </div>
+      <QuestionSuggestionsByCategory
+        key={teamMode ? "team" : "personal"}
+        suggestions={teamMode ? teamSuggestions(year) : personalSuggestions(year)}
+        onSuggestionSelect={(title) => {
+          setQuestionDrafts((drafts: any) => [...drafts, { key: generateRandomId(), defaultTitle: title }])
+        }} />
     </div>
   )
 }
-
 function QuestionSuggestionsByCategory({
-  suggestions,
-  onSuggestionSelect,
+  suggestions, onSuggestionSelect,
 }: {
-  suggestions: ReturnType<typeof personalSuggestions>
-  onSuggestionSelect: (title: string) => void
+  suggestions: ReturnType<typeof personalSuggestions>;
+  onSuggestionSelect: (title: string) => void;
 }) {
   const [selectedCategory, setSelectedCategory] = useState(suggestions[0].category)
   const [clickedSuggestions, setClickedSuggestions] = useState<string[]>([])
@@ -203,7 +67,7 @@ function QuestionSuggestionsByCategory({
               key={category.category}
               className={clsx(
                 "btn flex flex-col items-center py-2 px-3 text-xs",
-                selectedCategory === category.category && "btn-primary",
+                selectedCategory === category.category && "btn-primary"
               )}
               onClick={() => setSelectedCategory(category.category)}
             >
@@ -254,7 +118,6 @@ function QuestionSuggestionsByCategory({
     </div>
   )
 }
-
 const personalSuggestions = (year: number) => [
   {
     category: "Goals",
@@ -274,6 +137,9 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will I still be maintaining my existing habit <z> at the end of ${year}?`
+      },
+      {
+        q: `Will I think my ${year} goals were appropriately ambitious at the end of the year?`
       },
     ],
   },
@@ -431,7 +297,6 @@ const personalSuggestions = (year: number) => [
     ]
   },
 ]
-
 const teamSuggestions = (year: number) => [
   {
     category: "Performance",
@@ -453,7 +318,7 @@ const teamSuggestions = (year: number) => [
         q: `Will ${year} be our team's best year of all time (according to a poll of team members at the end of the year)?`
       },
       {
-        q: `Will we expand our market presence to a new region or demographic in ${year}?`
+        q: `Will we expand to a new region or demographic in ${year}?`
       },
     ]
   },
@@ -497,6 +362,9 @@ const teamSuggestions = (year: number) => [
       {
         q: `Will we still be maintaining our existing process <z> at the end of ${year}?`
       },
+      {
+        q: `Will we think our ${year} goals were appropriately ambitious at the end of the year?`
+      },
     ],
   },
   {
@@ -534,25 +402,25 @@ const teamSuggestions = (year: number) => [
     icon: <LifebuoyIcon className="w-6 h-6" />,
     questions: [
       {
-        q: `Will an unforeseen leadership crisis occur within our team in ${year}?`
+        q: `Will our team have a leadership crisis in ${year}?`
       },
       {
-        q: `Will a new technology emerge in ${year} that fundamentally disrupts our business model?`
+        q: `Will new tech emerge in ${year} that disrupts our business model?`
       },
       {
         q: `Will there be a cybersecurity breach that significantly impacts our data security in ${year}?`
       },
       {
-        q: `Will there be a sudden loss of a key team member that critically affects our projects in ${year}?`
+        q: `Will we suddenly lose a key team member in ${year}?`
       },
       {
-        q: `Will a sudden and significant economic downturn drastically affect our industry in ${year}?`
+        q: `Will a significant economic downturn hit our industry in ${year}?`
       },
       {
-        q: `Will new, unexpected trade restrictions or tariffs be imposed that significantly impact our supply chain in ${year}?`
+        q: `Will new trade restrictions or tariffs be imposed that significantly impact our supply chain in ${year}?`
       },
       {
-        q: `Will a significant natural disaster directly impact our main operating regions in ${year}?`
+        q: `Will a significant natural disaster affect our main operating regions in ${year}?`
       },
       {
         q: `Will there be a major geopolitical event that affects a team member's ability to work for us in ${year}?`

@@ -41,6 +41,7 @@ export function ShareTournament({
   }
 
   return <div className='flex flex-col gap-4'>
+    <UserListSelect tournamentId={tournamentId} />
     <div className="form-control flex-row items-center gap-2">
       <input
         id="sharedPublicly"
@@ -66,7 +67,6 @@ export function ShareTournament({
         <span className="label-text">{"Show in the public list of tournaments (coming soon!)"}</span>
       </label>
     </div>}
-    <UserListSelect tournamentId={tournamentId} />
     <div className="form-control flex-row items-center gap-2">
       <input
         id="showLeaderboard"

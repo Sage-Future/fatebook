@@ -3,6 +3,7 @@ import { z } from "zod"
 import prisma from "../_utils_server"
 import { scrubApiKeyPropertyRecursive } from './question_router'
 import { publicProcedure, router } from "./trpc_base"
+import { matchesAnEmailDomain } from "./utils"
 
 export const tournamentRouter = router({
   create: publicProcedure
@@ -10,6 +11,7 @@ export const tournamentRouter = router({
       z.object({
         id: z.string(),
         name: z.string(),
+        predictYourYear: z.number().optional(),
       }).optional()
     )
     .mutation(async ({ input, ctx }) => {
@@ -21,6 +23,7 @@ export const tournamentRouter = router({
           id: input?.id || undefined,
           name: input?.name || "New tournament",
           authorId: ctx.userId,
+          predictYourYear: input?.predictYourYear || undefined,
         },
       })
       return newTournament
@@ -87,6 +90,8 @@ export const tournamentRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+
       const includes = {
         author: true,
         questions: {
@@ -95,7 +100,11 @@ export const tournamentRouter = router({
               {sharedPublicly: true},
               {userId: ctx.userId || "NO MATCH"},
               {sharedWith: {some: {id: ctx.userId || "NO MATCH"}}},
-              {sharedWithLists: {some: {users: {some: {id: ctx.userId || "NO MATCH"}}}}},
+              { sharedWithLists: { some: { OR: [
+                { authorId: ctx.userId || "NO MATCH" },
+                { users: { some: { id: ctx.userId || "NO MATCH" } } },
+                matchesAnEmailDomain(user),
+              ], } } },
             ]
           },
           include: {
