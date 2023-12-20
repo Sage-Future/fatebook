@@ -88,6 +88,7 @@ export function UserListDisplay({
         )}
         <div className="flex gap-2">
           {<button
+            type="button"
             className={clsx("btn btn-circle btn-xs",
               isEditing ? "btn-primary" : "btn-ghost"
             )}
@@ -97,6 +98,7 @@ export function UserListDisplay({
             {isEditing ? <CheckIcon height={15} /> : <PencilIcon height={15} />}
           </button>}
           <button
+            type="button"
             className="btn btn-ghost btn-circle btn-xs"
             onClick={(e) => {
               e.stopPropagation()

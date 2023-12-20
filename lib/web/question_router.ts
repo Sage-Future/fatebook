@@ -226,6 +226,7 @@ export const questionRouter = router({
         unlisted: z.boolean().optional(),
         sharedPublicly: z.boolean().optional(),
         tournamentId: z.string().optional(),
+        shareWithListIds: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -280,6 +281,9 @@ export const questionRouter = router({
             connect: {
               id: input.tournamentId,
             }
+          } : undefined,
+          sharedWithLists: input.shareWithListIds ? {
+            connect: input.shareWithListIds.map(id => ({ id }))
           } : undefined,
         },
       })

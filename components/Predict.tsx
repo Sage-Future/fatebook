@@ -34,6 +34,9 @@ export function Predict({
     title?: string,
     tournamentId?: string,
     resolveBy?: Date,
+    shareWithListIds?: string[],
+    sharePublicly?: boolean,
+    unlisted?: boolean,
   }
   textAreaRef?: React.RefObject<HTMLTextAreaElement>
   onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
@@ -103,8 +106,9 @@ export function Predict({
         undefined,
       tags: tagsPreview,
 
-      unlisted: data.sharePublicly || undefined,
-      sharedPublicly: data.sharePublicly || undefined,
+      unlisted: data.sharePublicly || questionDefaults?.unlisted || undefined,
+      sharedPublicly: data.sharePublicly || questionDefaults?.sharePublicly || undefined,
+      shareWithListIds: questionDefaults?.shareWithListIds,
       tournamentId: questionDefaults?.tournamentId,
     }, {
       onError(error, variables, context) {
