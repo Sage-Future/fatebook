@@ -1,9 +1,11 @@
+import { User } from '@prisma/client'
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { slackAppId } from '../../lib/_constants'
-import prisma, { channelVisible, postEphemeralTextMessage, postSlackMessage } from '../../lib/_utils_server'
+import prisma, { channelVisible, getOrCreateProfile, postEphemeralTextMessage, postSlackMessage } from '../../lib/_utils_server'
 import { buildQuestionBlocks } from '../../lib/blocks-designs/question'
 import { showCreateQuestionModal } from '../../lib/interactive_handlers/edit_question_modal'
 import { showWrongChannelModalView } from '../../lib/interactive_handlers/show_error_modal'
+import { assertHasAccess } from '../../lib/web/question_router'
 import { getQuestionIdFromUrl } from '../../lib/web/question_url'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
@@ -28,7 +30,7 @@ export default async function forecast(req : VercelRequest, res : VercelResponse
 
 async function postFromWeb(relativePath: string, teamId?: string, channelId?: string, slackUserId?: string) {
   if (!teamId || !channelId || !slackUserId) {
-    return
+    throw new Error(`Missing teamId, channelId, or slackUserId ${{ teamId, channelId, slackUserId }}`)
   }
 
   if (relativePath.startsWith("/q/")) {
@@ -38,61 +40,83 @@ async function postFromWeb(relativePath: string, teamId?: string, channelId?: st
       return await postEphemeralTextMessage(teamId, channelId, slackUserId, "It looks like there's a problem with the URL you pasted.")
     }
 
-    const question = await prisma.question.findUnique({
-      where: {
-        id
-      },
-      include: {
-        user: {
-          include: {
-            profiles: true
-          }
-        },
-        forecasts: {
-          include: {
-            user: {
-              include: {
-                profiles: true
-              }
-            }
-          }
-        }
-      }
-    })
-
-    if (!question) {
+    const profile = await getOrCreateProfile(teamId, slackUserId)
+    try {
+      await postQuestionToSlack({ questionId: id, teamId, channelId, user: profile.user, slackUserId })
+    } catch (e) {
       return await postEphemeralTextMessage(teamId, channelId, slackUserId, "We couldn't find a question at that URL.")
     }
+  }
+}
 
-    const data = await postSlackMessage(teamId, {
-      channel: channelId,
-      text: `Forecasting question shared: ${question}`,
-      blocks: await buildQuestionBlocks(teamId, question),
-      unfurl_links: false,
-      unfurl_media: false
-    }, slackUserId)
-
-    if (!data.ts) {
-      throw new Error("No ts returned from Slack")
-    }
-
-    await prisma.question.update({
-      where: {
-        id: question.id
+async function postQuestionToSlack({ questionId, teamId, channelId, user, slackUserId }: { questionId: string, teamId: string, channelId: string, user: User, slackUserId?: string}) {
+  const question = await prisma.question.findUnique({
+    where: {
+      id: questionId
+    },
+    include: {
+      user: {
+        include: {
+          profiles: true
+        }
       },
-      data: {
-        questionMessages: {
-          create: {
-            message: {
-              create: {
-                ts: data.ts,
-                channel: channelId,
-                teamId: teamId,
-              }
+      sharedWith: true,
+      sharedWithLists: {
+        include: {
+          author: true,
+          users: {
+            include: {
+              profiles: true
+            }
+          }
+        }
+      },
+      forecasts: {
+        include: {
+          user: {
+            include: {
+              profiles: true
             }
           }
         }
       }
-    })
+    }
+  })
+
+  assertHasAccess({userId: user.id}, question, user)
+
+  if (!question) {
+    throw new Error()
   }
+
+  const data = await postSlackMessage(teamId, {
+    channel: channelId,
+    text: `Forecasting question shared: ${question}`,
+    blocks: await buildQuestionBlocks(teamId, question),
+    unfurl_links: false,
+    unfurl_media: false
+  }, slackUserId)
+
+  if (!data.ts) {
+    throw new Error("No ts returned from Slack")
+  }
+
+  await prisma.question.update({
+    where: {
+      id: question.id
+    },
+    data: {
+      questionMessages: {
+        create: {
+          message: {
+            create: {
+              ts: data.ts,
+              channel: channelId,
+              teamId: teamId,
+            }
+          }
+        }
+      }
+    }
+  })
 }
