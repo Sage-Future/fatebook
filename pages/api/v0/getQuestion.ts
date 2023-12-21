@@ -94,13 +94,19 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     },
   })
 
+  const user = await prisma.user.findFirst({
+    where: {
+      id: authedUserId,
+    },
+  })
+
   if (!question) {
     console.log(`question not found: ${questionId}, returning 404`)
     return res.status(404).json({})
   }
 
   try {
-    assertHasAccess({ userId: authedUserId }, question)
+    assertHasAccess({ userId: authedUserId }, question, user)
   } catch(e) {
     return res.status(401).json({
       message: "You don't have access to that question. Check your API key at https://fatebook.io/api-setup",
