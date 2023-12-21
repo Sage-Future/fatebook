@@ -129,7 +129,7 @@ export const questionRouter = router({
               }),
         },
       })
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH"  } })
       assertHasAccess(ctx, question, user)
       return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)
     }),
@@ -444,7 +444,7 @@ export const questionRouter = router({
         },
       })
 
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH"  } })
 
       assertHasAccess(ctx, question, user)
       if (question === null) {
@@ -600,7 +600,7 @@ export const questionRouter = router({
         },
       })
 
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH"  } })
       assertHasAccess(ctx, question, user)
       if (question === null) {
         throw new TRPCError({
@@ -891,9 +891,13 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
       ? {
           resolveBy: "asc",
         }
-      : {
-          createdAt: "desc",
-        },
+      : (input.extraFilters?.filterTournamentId
+        ? {
+            createdAt: "asc",
+          }
+        : {
+            createdAt: "desc",
+          }),
     where: {
       AND: [
         input.extraFilters?.showAllPublic

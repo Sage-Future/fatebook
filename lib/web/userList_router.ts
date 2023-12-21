@@ -12,7 +12,7 @@ export const userListRouter = router({
         return null
       }
 
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
       return await prisma.userList.findMany({
         where: {
           OR: [

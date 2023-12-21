@@ -1,10 +1,11 @@
+import { Popover } from '@headlessui/react'
 import { CheckCircleIcon, ChevronDownIcon, PlusIcon } from '@heroicons/react/20/solid'
 import { CheckCircleIcon as CheckOutlineIcon } from '@heroicons/react/24/outline'
 import { Tournament, UserList } from '@prisma/client'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { api } from '../lib/web/trpc'
-import { useUserId } from '../lib/web/utils'
+import { getTournamentUrl, useUserId } from '../lib/web/utils'
 import { CopyToClipboard } from './CopyToClipboard'
 import { UserListDisplay } from './UserListDisplay'
 export function ShareTournament({
@@ -25,7 +26,7 @@ export function ShareTournament({
   const utils = api.useContext()
   const handleUpdate = ({tournament, questions}: {tournament: Partial<Tournament>, questions?: string[]}) => {
     console.log({tournament})
-    if (tournamentQ.data) {
+    if (tournamentQ.data && isAdmin) {
       updateTournament.mutate({
         tournament: {
           id: tournamentQ.data.id,
@@ -36,12 +37,38 @@ export function ShareTournament({
     }
   }
 
+  const userId = useUserId()
+
   if (!tournamentQ.data) {
     return <></>
   }
 
+  const isAdmin = userId && tournamentQ.data?.authorId === userId
+    || (tournamentQ.data.anyoneInListCanEdit && tournamentQ.data.userList?.users.find(u => u.id === userId))
+
   return <div className='flex flex-col gap-4'>
     <UserListSelect tournamentId={tournamentId} />
+    <div className="form-control flex-row items-center gap-2">
+      <input
+        id="anyoneInListCanEdit"
+        type="checkbox"
+        className="checkbox"
+        checked={tournamentQ.data?.anyoneInListCanEdit}
+        onChange={(e) => handleUpdate({tournament: {anyoneInListCanEdit: e.target.checked}})}
+        disabled={!tournamentQ.data?.userListId || !isAdmin}
+      />
+      <label className="label" htmlFor="anyoneInListCanEdit">
+        <span className="label-text">
+          {"Anyone in the "}{tournamentQ.data?.userList ?
+            <Link href={`/list/${tournamentQ.data.userListId}`}>
+              {tournamentQ.data?.userList?.name}
+            </Link>
+            :
+            "selected list"
+          }{" list can edit and add questions to this tournament"}
+        </span>
+      </label>
+    </div>
     <div className="form-control flex-row items-center gap-2">
       <input
         id="sharedPublicly"
@@ -49,11 +76,12 @@ export function ShareTournament({
         className="checkbox"
         checked={tournamentQ.data?.sharedPublicly}
         onChange={(e) => handleUpdate({tournament: {sharedPublicly: e.target.checked}})}
+        disabled={!isAdmin}
       />
       <label className="label" htmlFor="sharedPublicly">
         <span className="label-text">Anyone with the link can view this tournament page</span>
       </label>
-      {tournamentQ.data?.sharedPublicly && <CopyToClipboard textToCopy={`${window.location.origin}/tournament/${tournamentQ.data?.id}`} />}
+      {tournamentQ.data?.sharedPublicly && <CopyToClipboard textToCopy={getTournamentUrl(tournamentQ.data, false)} />}
     </div>
     {tournamentQ.data?.sharedPublicly && <div className="form-control flex-row items-center gap-2">
       <input
@@ -62,6 +90,7 @@ export function ShareTournament({
         className="checkbox"
         checked={!tournamentQ.data?.unlisted}
         onChange={(e) => handleUpdate({tournament: {unlisted: !e.target.checked}})}
+        disabled={!isAdmin}
       />
       <label className="label" htmlFor="unlisted">
         <span className="label-text">{"Show in the public list of tournaments (coming soon!)"}</span>
@@ -74,6 +103,7 @@ export function ShareTournament({
         className="checkbox"
         checked={tournamentQ.data?.showLeaderboard}
         onChange={(e) => handleUpdate({tournament: {showLeaderboard: e.target.checked}})}
+        disabled={!isAdmin}
       />
       <label className="label" htmlFor="showLeaderboard">
         <span className="label-text">Show leaderboard</span>
@@ -129,49 +159,59 @@ function UserListSelect({
   }
 
   return (
-    <div className="dropdown max-sm:dropdown-end not-prose">
-      <label tabIndex={0} className="btn flex gap-0">
+    <Popover as="div" className="relative w-full">
+      <Popover.Button className="btn text-sm flex gap-0">
         {selectedUserList ? `Shared with ${selectedUserList.name}` : "Share with a list of users"}
         <ChevronDownIcon
           className="ml-2 -mr-2 h-5 w-5 text-neutral-400"
           aria-hidden="true"
         />
-      </label>
-      <ul tabIndex={0} className="dropdown-content z-20 menu shadow-2xl bg-base-100 rounded-box w-full md:w-[27rem]">
-        {(userListsQ.data) ?
-          userListsQ.data.map(userList => {
-            const selected = selectedUserList?.id === userList.id
-            return (
-              <li
-                key={(userList as UserList).id}
-                className={clsx(
-                  selected ? "bg-neutral-100 rounded-md" : "text-black",
-                )}
-                onClick={() => handleUpdate({
-                  tournament: {
-                    userListId: selected ? null : userList.id
-                  }
-                })}
-              ><a className="active:bg-neutral-200">
-                  {selected ?
-                    <CheckCircleIcon className='shrink-0 fill-indigo-700' height={16} />
-                    :
-                    <CheckOutlineIcon className="shrink-0 stroke-neutral-400" height={16} />}
+      </Popover.Button>
+      <Popover.Panel className="absolute z-50 w-full cursor-auto">
+        <div className="absolute z-50 mt-2 w-72 md:w-96 lg:w-[29rem] right-0 md:left-0 origin-top-right p-2 flex flex-col gap-2 rounded-md bg-neutral-50 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none text-sm">
+          {(userListsQ.data) ?
+            userListsQ.data.map(userList => {
+              const selected = selectedUserList?.id === userList.id
+              return (
+                <div
+                  key={(userList as UserList).id}
+                  className={clsx(
+                    "flex flex-row gap-2 rounded-md shadow-sm p-2",
+                    selected ? "bg-indigo-50 rounded-md" : "bg-white",
+                  )}
+                >
+                  <button
+                    className="btn btn-circle btn-ghost mb-auto grow-0"
+                    onClick={() => handleUpdate({
+                      tournament: {
+                        userListId: selected ? null : userList.id
+                      }
+                    })}
+                  >
+                    {selected ?
+                      <CheckCircleIcon className='shrink-0 fill-indigo-700 w-6 h-6' />
+                      :
+                      <CheckOutlineIcon className="shrink-0 stroke-neutral-400 w-6 h-6" />}
+                  </button>
                   <UserListDisplay userList={userList} />
-                </a></li>
-            )
-          })
-          :
-          <li className='px-6 italic'>
-            {userListsQ.isSuccess ? "Loading..." : "Create a named list of people who you want to share multiple tournaments with"}
-          </li>
-        }
-        <li>
-          <a onClick={() => createList.mutate({ name: "New list" })}>
-            <PlusIcon height={15} /> Create a new list (e.g. for your team, friends, or class)
-          </a>
-        </li>
-      </ul>
-    </div>
+                </div>
+              )
+            })
+            :
+            <div className='px-6 italic'>
+              {userListsQ.isSuccess ? "Loading..." : "Create a named list of people who you want to share multiple tournaments with"}
+            </div>
+          }
+          <button
+            className="btn btn-ghost"
+            onClick={() => createList.mutate({ name: "New list" })}
+          >
+            <PlusIcon height={15} /> Create a new list <span className='text-xs text-neutral-400'>
+              (e.g. for your team, friends, or class)
+            </span>
+          </button>
+        </div>
+      </Popover.Panel>
+    </Popover>
   )
 }

@@ -41,6 +41,7 @@ export const tournamentRouter = router({
           userListId: z.string().optional().nullable(),
           showLeaderboard: z.boolean().optional(),
           questions: z.array(z.string()).optional(),
+          anyoneInListCanEdit: z.boolean().optional(),
         }),
       })
     )
@@ -52,11 +53,21 @@ export const tournamentRouter = router({
         where: {
           id: input.tournament.id,
         },
+        include: {
+          userList: {
+            include: {
+              users: true,
+            }
+          }
+        }
       })
       if (!tournament) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Tournament not found" })
       }
-      if (tournament.authorId !== ctx.userId) {
+      if (
+        tournament.authorId !== ctx.userId
+        && !(tournament.anyoneInListCanEdit && tournament.userList?.users.find(u => u.id === ctx.userId))
+      ) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not the author of this tournament" })
       }
 
@@ -71,6 +82,7 @@ export const tournamentRouter = router({
           unlisted: input.tournament.unlisted,
           userListId: input.tournament.userListId,
           showLeaderboard: input.tournament.showLeaderboard,
+          anyoneInListCanEdit: input.tournament.anyoneInListCanEdit,
           questions: input.tournament.questions ? {
             set: input.tournament.questions.map(q => ({ id: q }))
           } : undefined,
@@ -90,7 +102,7 @@ export const tournamentRouter = router({
       })
     )
     .query(async ({ input, ctx }) => {
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId } })
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
 
       const includes = {
         author: true,

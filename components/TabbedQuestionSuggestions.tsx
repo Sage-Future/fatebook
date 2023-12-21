@@ -8,12 +8,15 @@ import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
 import { generateRandomId } from '../lib/_utils_common'
 
 export function TabbedQuestionSuggestions({
-  teamMode, setTeamMode, year, setQuestionDrafts,
+  teamMode,
+  setTeamMode,
+  year,
+  setQuestionDrafts,
 }: {
-  teamMode: boolean;
-  setTeamMode: (mode: boolean) => void;
-  year: number;
-  setQuestionDrafts: (drafts: any) => void;
+  teamMode: boolean
+  setTeamMode: (mode: boolean) => void
+  year: number
+  setQuestionDrafts: (drafts: any) => void
 }) {
   return (
     <div className='max-w-full'>
@@ -118,6 +121,8 @@ function QuestionSuggestionsByCategory({
     </div>
   )
 }
+
+
 const personalSuggestions = (year: number) => [
   {
     category: "Goals",
@@ -127,13 +132,13 @@ const personalSuggestions = (year: number) => [
         label: "We recommend:\n1) Think soberly about the probability that you achieve your goal\n2) What strategies will you implement to raise the probability?\n3) Repeat until you are satisfied!",
       },
       {
-        q: `Will I achieve my goal <x> in ${year}?`
+        q: `Will I achieve <my goal x> in ${year}?`
       },
       {
-        q: `Will I implement strategy <y> to help achieve my goal <x> in ${year}?`
+        q: `Will I implement <strategy y> to help achieve <my goal x> in ${year}?`
       },
       {
-        q: `Will I still think goal <x> is a top priority for me to pursue at the end of ${year}?`
+        q: `Will I still think <goal x> is a top priority for me to pursue at the end of ${year}?`
       },
       {
         q: `Will I still be maintaining my existing habit <z> at the end of ${year}?`
@@ -154,10 +159,7 @@ const personalSuggestions = (year: number) => [
         q: `Will illness cause me to lose 3 or more weeks of productivity in ${year}?`,
       },
       {
-        q: `If I get a flu jab, will illness cause me to lose 3 or more weeks of productivity in ${year}?`,
-      },
-      {
-        q: `Will I track 50 runs on Strava in ${year}?`
+        q: `Will I go to the gym 50 times in ${year}?`
       },
       {
         q: `Will I get COVID in ${year}?`,
@@ -166,19 +168,22 @@ const personalSuggestions = (year: number) => [
         q: `Will my total steps in ${year} be higher than in the previous year?`,
       },
       {
-        q: `Will I play pickleball in ${year}?`
+        q: `Will I play a new sport at least three times in ${year}?`
       },
       {
-        q: `Will I be able to do >=30 push-ups at some point in ${year}?`
+        q: `Will I be able to do 30 push-ups at some point in ${year}?`
       },
       {
         q: `Will I get a cold in ${year}?`,
       },
       {
-        q: `Will >99% of the food I eat be vegan for at least four months during ${year}?`,
+        q: `Will I meditate 20 times during ${year}?`,
       },
       {
-        q: `Will I meditate 20 times during ${year}?`,
+        q: `Will I feel overall more satisfied with life than in ${year} than in the previous year?`,
+      },
+      {
+        q: `Will I cycle at least 100 miles in ${year}?`,
       },
     ]
   },
@@ -210,6 +215,12 @@ const personalSuggestions = (year: number) => [
       {
         q: `Will I establish a weekly boardgame night meet-up in ${year}?`,
       },
+      {
+        q: `Will I ask <x> out in ${year}?`,
+      },
+      {
+        q: `If I ask <x> out in ${year}, will they say yes?`,
+      },
     ]
   },
   {
@@ -227,6 +238,18 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will I donate at least 10% of my salary to charity in ${year}?`,
+      },
+      {
+        q: `Will I quit my current job in ${year}?`,
+      },
+      {
+        q: `If I quit my current job in ${year}, will I be more satisfied with my life at the end of ${year}?`,
+      },
+      {
+        q: `Will I get fired in ${year}?`,
+      },
+      {
+        q: `Will I fire anyone in ${year}?`,
       },
       {
         q: `Will I attend a conference in ${year}?`,
@@ -257,9 +280,6 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `At the end of ${year}, will I think that the best experience of my life so far happened during ${year}?`,
-      },
-      {
-        q: `Will I write a novel in ${year}?`,
       },
       {
         q: `Will I conquer my fear of <x> in ${year}?`,
@@ -297,6 +317,8 @@ const personalSuggestions = (year: number) => [
     ]
   },
 ]
+
+
 const teamSuggestions = (year: number) => [
   {
     category: "Performance",
@@ -333,7 +355,7 @@ const teamSuggestions = (year: number) => [
         q: `Will we find a new major investor or donor in ${year}?`
       },
       {
-        q: `Will our spending be higher or lower than our mainline ${year} budget?`
+        q: `Will our spending be higher than our mainline ${year} budget?`
       },
       {
         q: `Will we reduce operational costs by at least <x>% in ${year}?`
@@ -466,6 +488,9 @@ const teamSuggestions = (year: number) => [
       },
       {
         q: `Will <x>'s predictions about our team in ${year} be more accurate than any other team member?`,
+      },
+      {
+        q: `Will our team make at least <x> forecasts via Fatebook for Slack during ${year}?`,
       },
     ]
   },

@@ -29,6 +29,8 @@ export function Predict({
   resolveByButtons,
   showQuestionSuggestionsButton = true,
   placeholder,
+  small,
+  smartSetDates = true,
 } : {
   questionDefaults?: {
     title?: string,
@@ -46,6 +48,8 @@ export function Predict({
   resolveByButtons?: {date: Date, label: string}[]
   showQuestionSuggestionsButton?: boolean
   placeholder?: string
+  small?: boolean
+  smartSetDates?: boolean
 }) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
@@ -177,6 +181,12 @@ export function Predict({
 
   useEffect(() => {
     setFocus("question")
+    if (questionDefaults?.title?.includes('<') && questionDefaults?.title?.includes('>')) {
+      const start = questionDefaults.title.indexOf('<')
+      const end = questionDefaults.title.indexOf('>') + 1
+      textAreaRef?.current?.setSelectionRange(start, end)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setFocus])
 
   const [highlightResolveBy, setHighlightResolveBy] = useState(false)
@@ -187,7 +197,7 @@ export function Predict({
   const [showSuggestions, setShowSuggestions] = useState(false)
 
   function smartUpdateResolveBy(newQuestionValue: string) {
-    if (!dirtyFields.resolveBy) {
+    if (!dirtyFields.resolveBy && smartSetDates) {
       const dateResult = chrono.parse(newQuestionValue, new Date(), { forwardDate: true })
       const newResolveBy = (dateResult.length === 1 && dateResult[0].date()) ?
         getDateYYYYMMDD(dateResult[0].date())
@@ -223,8 +233,9 @@ export function Predict({
           <div className="w-full relative">
             <TextareaAutosize
               className={clsx(
-                "w-full text-xl border-2 border-neutral-300 rounded-md py-4 pl-4 pr-16 resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
+                "w-full border-2 border-neutral-300 rounded-md resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
                 "focus:outline-indigo-700 placeholder:text-neutral-400",
+                small ? "text-md py-2 pl-4 pr-16" : "text-xl py-4 pl-4 pr-16"
               )}
               placeholder={placeholder || "Will I finish my project by Friday?"}
               maxRows={15}
@@ -251,13 +262,14 @@ export function Predict({
                 'btn btn-circle aspect-square absolute right-3 top-2 hover:opacity-100',
                 showSuggestions ? 'btn-active' : 'btn-ghost',
                 (!!question && !showSuggestions) ? 'opacity-20' : 'opacity-80',
+                small && 'btn-xs px-5 top-[0.2rem]'
               )}
               onClick={(e) => {
                 setShowSuggestions(!showSuggestions)
                 e.preventDefault()
               }}
             >
-              <LightBulbIcon height={16} width={16} />
+              <LightBulbIcon height={16} width={16} className="shrink-0" />
             </button>}
 
             <Transition
@@ -284,14 +296,22 @@ export function Predict({
           <div className="flex flex-row gap-8 flex-wrap justify-between">
             <div className='flex flex-row gap-2'>
               <div className='flex flex-col'>
-                <label className="flex" htmlFor="resolveBy">Resolve by
+                <label
+                  className={clsx(
+                    "flex",
+                    small && "text-sm",
+                  )}
+                  htmlFor="resolveBy"
+                >
+                  Resolve by
                   <InfoButton className='ml-1 tooltip-right' tooltip='When should I remind you to resolve this question?' />
                 </label>
                 <div className='flex flex-wrap gap-1'>
                   <div className='flex flex-col'>
                     <input
                       className={clsx(
-                        "text-md border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
+                        "border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
+                        small ? "text-sm" : "text-md",
                         errors.resolveBy && "border-red-500",
                         highlightResolveBy && "shadow-[0_0_50px_-1px_rgba(0,0,0,1)] shadow-indigo-700 duration-100"
                       )}
@@ -334,12 +354,18 @@ export function Predict({
               </div>
 
               <div className='min-w-fit'>
-                <label className="flex" htmlFor="resolveBy">Make a prediction
+                <label
+                  className={clsx(
+                    "flex",
+                    small && "text-sm",
+                  )}
+                  htmlFor="resolveBy">Make a prediction
                   <InfoButton className='ml-1 tooltip-left' tooltip='How likely do you think the answer is to be YES?' />
                 </label>
                 <div
                   className={clsx(
                     'text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:border-indigo-700 relative',
+                    small ? "text-sm" : "text-md",
                     errors.predictionPercentage && "border-red-500",
                   )}>
                   <div
@@ -353,7 +379,8 @@ export function Predict({
                   />
                   <input
                     className={clsx(
-                      "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 text-xl font-bold placeholder:font-normal placeholder:text-neutral-400"
+                      "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 font-bold placeholder:font-normal placeholder:text-neutral-400",
+                      small ? "text-md p-px" : "text-xl",
                     )}
                     autoComplete="off"
                     type='number'

@@ -9,6 +9,7 @@ import { api, getClientBaseUrl } from "../lib/web/trpc"
 import { useUserId } from '../lib/web/utils'
 import { UserListWithAuthorAndUsers } from "../prisma/additional"
 import { CopyToClipboard } from './CopyToClipboard'
+import { InfoButton } from './InfoButton'
 
 export function UserListDisplay({
   userList,
@@ -99,27 +100,42 @@ export function UserListDisplay({
           </>
         )}
         <div className="flex gap-2">
-          {<button
-            type="button"
-            className={clsx("btn btn-circle btn-xs",
-              isEditing ? "btn-primary" : "btn-ghost"
-            )}
-            onClick={(e) => {
-              e.stopPropagation()
-              e.preventDefault()
-              if (isEditing) {
-                setTimeout(() => setIsEditing(false), 500)
-              } else {
-                setIsEditing(true)
-              }
-            }}
-            disabled={userList.authorId !== userId}
-          >
-            {isEditing ? <CheckIcon className='w-4 h-4' /> : <PencilIcon className='w-4 h-4' />}
-          </button>}
+          {userList.authorId !== userId ? (
+            <InfoButton
+              tooltip={`You cannot edit this list because it was created by ${userList.author.name || "another user"}.`}
+              className="btn btn-circle btn-xs btn-ghost"
+              showInfoButton={false}
+            >
+              <button
+                type="button"
+                className={clsx("btn btn-circle btn-xs btn-ghost disabled:bg-white")}
+                disabled={true}
+              >
+                <PencilIcon className='w-4 h-4' />
+              </button>
+            </InfoButton>
+          ) : (
+            <button
+              type="button"
+              className={clsx("btn btn-circle btn-xs",
+                isEditing ? "btn-primary" : "btn-ghost"
+              )}
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                if (isEditing) {
+                  setTimeout(() => setIsEditing(false), 500)
+                } else {
+                  setIsEditing(true)
+                }
+              }}
+            >
+              {isEditing ? <CheckIcon className='w-4 h-4' /> : <PencilIcon className='w-4 h-4' />}
+            </button>
+          )}
           <button
             type="button"
-            className="btn btn-ghost btn-circle btn-xs"
+            className="btn btn-ghost btn-circle btn-xs disabled:bg-white"
             onClick={(e) => {
               e.stopPropagation()
               e.preventDefault()

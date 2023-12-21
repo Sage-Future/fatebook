@@ -1,25 +1,13 @@
 import { Question } from "@prisma/client"
-import { getClientBaseUrl } from "./trpc"
 import { useRouter } from "next/router"
-import { truncateString } from "./utils"
-
-function createQuestionSlug(question: Partial<Question>) {
-  return question.title
-    ? encodeURIComponent(
-        truncateString(question.title, 40, false)
-          .replace(/[^a-z0-9]+/gi, "-")
-          .toLowerCase()
-      )
-    : ""
-}
+import { getClientBaseUrl } from "./trpc"
+import { getSlug } from "./utils"
 
 export function getQuestionUrl(
   question: Partial<Question>,
   useRelativePath?: boolean
 ) {
-  return `${getClientBaseUrl(useRelativePath)}/q/${createQuestionSlug(
-    question
-  )}--${question.id}`
+  return `${getClientBaseUrl(useRelativePath)}/q/${getSlug(question.title)}--${question.id}`
 }
 
 export function useQuestionId() {

@@ -1,10 +1,11 @@
-import { Question, User } from "@prisma/client"
+import { Question, Tournament, User } from "@prisma/client"
 import { utcToZonedTime } from 'date-fns-tz'
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import React, { ReactNode } from "react"
 import { toast } from "react-hot-toast"
 import { getQuestionUrl } from "./question_url"
+import { getClientBaseUrl } from './trpc'
 
 
 export function useUserId() {
@@ -214,5 +215,24 @@ export function matchesAnEmailDomain(user: User | null) {
     emailDomains: {
       hasSome: user?.email.split('@').slice(-1) || ["NO MATCH"]
     }
+  }
+}
+
+export function getSlug(string: string | undefined) {
+  return string
+    ? encodeURIComponent(
+        truncateString(string, 40, false)
+          .replace(/[^a-z0-9]+/gi, "-")
+          .toLowerCase()
+      )
+    : ""
+}
+
+export function getTournamentUrl(tournament: Tournament, useRelativePath?: boolean) {
+  const fullSlug = `${getSlug(tournament.name)}--${tournament.id}`
+  if (tournament.predictYourYear) {
+    return `${getClientBaseUrl(useRelativePath)}/predict-your-year/${fullSlug}`
+  } else {
+    return `${getClientBaseUrl(useRelativePath)}/tournament/${fullSlug}`
   }
 }

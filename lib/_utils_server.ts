@@ -214,11 +214,15 @@ export function tokenizeString(instring : string) {
 
 export async function getSlackPermalinkFromChannelAndTS(messageTeamId: string, channel: string, timestamp: string){
   const url = `https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${timestamp}`
-  const data = await callSlackApi(messageTeamId, null, url, 'get', false) as {ok: boolean, permalink: string}
-  if (data.ok === false) {
-    console.error(`Error getting link for ${channel} and ${timestamp}:`, data)
+  try {
+    const data = await callSlackApi(messageTeamId, null, url, 'get', true) as {ok: boolean, permalink: string}
+    if (data?.ok === false) {
+      console.warn(`Could not get link for ${channel} and ${timestamp}:`, data)
+    }
+    return data?.permalink
+  } catch (err) {
+    console.warn(`Could not get link for ${channel} and ${timestamp}. Continuing.`)
   }
-  return data?.permalink
 }
 
 export async function postBlockMessage(teamId: string, channel : string, blocks : Blocks, notificationText : string = '', additionalArgs : PostClearMessageAdditionalArgs = {}){
@@ -366,7 +370,7 @@ export async function callSlackApi(teamId: string, message: any, url: string, me
     ){
       const modifiedResponse = JSON.stringify(data).replace("error", "slackerr")
       console.log('Non-okay response calling Slack API:', {response: modifiedResponse, message, url}, JSON.stringify(message, null, 2))
-    }else{
+    } else {
       console.error('Error calling Slack API:', {response: JSON.stringify(data), message, url}, JSON.stringify(message, null, 2))
     }
     if (throwOnError) throw new Error(`Error calling Slack API ${data.error} ${JSON.stringify(data.response_metadata)}`)

@@ -1,4 +1,5 @@
 import { ChatBubbleOvalLeftIcon, RocketLaunchIcon, TrophyIcon } from '@heroicons/react/24/solid'
+import { useSession } from 'next-auth/react'
 import { NextSeo } from 'next-seo'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -11,12 +12,13 @@ export default function PredictYourYearLandingPage() {
   const createTournament = api.tournament.create.useMutation()
 
   const year = 2024
+  const user = useSession()?.data?.user
 
   const handleGetStarted = async ({teamMode}: {teamMode: boolean}) => {
     const tournamentId = generateRandomId()
     await createTournament.mutateAsync({
       id: tournamentId,
-      name: teamMode ? 'Your team\'s predictions for 2024' : 'Your predictions for 2024',
+      name: teamMode ? 'Your team\'s predictions for 2024' : `${user}'s predictions for 2024`,
       predictYourYear: year,
     })
     void router.push(`/predict-your-year/${tournamentId}`)
@@ -27,7 +29,7 @@ export default function PredictYourYearLandingPage() {
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto prose">
       <NextSeo
-        title={`Predict your life in ${year}`}
+        title={`Predict your ${year}`}
         description="What will the new year hold for you? Write down your predictions and review at the end of the year."
         canonical='https://fatebook.io/predict-your-year'
       />
@@ -50,14 +52,16 @@ export default function PredictYourYearLandingPage() {
           </li>
         </ul>
       </div>
-      {tournamentsQ.data?.filter(tournament => tournament.predictYourYear).map(tournament => (
-        <div key={tournament.id} className="flex flex-col gap-2 my-4">
+      {(tournamentsQ.data?.filter(tournament => tournament.predictYourYear).length || 0) > 0 && (
+        <div className="my-4">
           <h2 className="text-2xl font-bold mb-4">Pick up where you left off</h2>
-          <Link href={`/predict-your-year/${tournament.id}`} className="btn flex justify-start">
-            {tournament.name}
-          </Link>
+          {tournamentsQ.data?.filter(tournament => tournament.predictYourYear).map(tournament => (
+            <Link key={tournament.id} href={`/predict-your-year/${tournament.id}`} className="btn flex justify-start">
+              {tournament.name}
+            </Link>
+          ))}
         </div>
-      ))}
+      )}
       <h2 className="text-2xl font-bold mb-4">{"Let's get started"}</h2>
       <div className="flex gap-4">
         <button className="btn btn-lg py-4" disabled={createTournament.isLoading} onClick={() => { void handleGetStarted({teamMode: false}) }}>

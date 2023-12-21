@@ -2,6 +2,7 @@ import { PlusIcon } from "@heroicons/react/24/solid"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { api } from "../lib/web/trpc"
+import { getTournamentUrl } from '../lib/web/utils'
 
 export function Tournaments() {
   const tournamentsQ = api.tournament.getAll.useQuery()
@@ -20,7 +21,7 @@ export function Tournaments() {
           onClick={() => {
             void (async () => {
               const tournament = await createTournament.mutateAsync()
-              void router.push(`/tournament/${tournament.id}`)
+              void router.push(getTournamentUrl(tournament))
             })()
           }}
           disabled={createTournament.isLoading}
@@ -30,7 +31,7 @@ export function Tournaments() {
       </h2>
       {tournamentsQ.data?.map(tournament => (
         <span key={tournament.id} className="flex flex-col gap-2">
-          <Link href={`/tournament/${tournament.id}`} className="btn btn-ghost flex justify-start">
+          <Link href={getTournamentUrl(tournament)} className="btn btn-ghost flex justify-start">
             {tournament.name}
           </Link>
         </span>

@@ -5,6 +5,7 @@ import { forecastsAreHidden, formatDecimalNicely, getCommunityForecast, getResol
 import { getDateSlackFormat, getSlackPermalinkFromChannelAndTS, getUserNameOrProfileLink } from '../_utils_server'
 import { checkboxes } from './question_modal'
 import { Question, QuestionScore, Resolution, TargetType } from "@prisma/client"
+import { getQuestionUrl } from "../web/question_url"
 
 export interface ResolveQuestionActionParts {
   action: 'resolve'
@@ -187,13 +188,16 @@ export function feedbackOverflow(){
 }
 
 export async function getQuestionTitleLink(question: QuestionWithAuthorAndQuestionMessages | QuestionWithSlackMessagesAndForecasts) {
-  const questionTitle = `*${question.title}*`
-  if (question.questionMessages.length) {
-    const slackMessage = question.questionMessages[0]!
-    const slackPermalink = await getSlackPermalinkFromChannelAndTS(slackMessage.message.teamId, slackMessage.message.channel, slackMessage.message.ts)
-    return slackPermalink ? `*<${slackPermalink}|${question.title.replace('<','&lt;').replace('>','&gt;')}>*` : `*${question.title}*`
+  const cleanTitle = question.title.replace('<','&lt;').replace('>','&gt;')
+  const webLink = `*<${getQuestionUrl(question, false)}|${cleanTitle}>*`
+
+  if (!question.questionMessages || question.questionMessages.length === 0) {
+    return webLink
   }
-  return questionTitle
+
+  const slackMessage = question.questionMessages[0]!
+  const slackPermalink = await getSlackPermalinkFromChannelAndTS(slackMessage.message.teamId, slackMessage.message.channel, slackMessage.message.ts)
+  return `*<${slackPermalink || webLink}|cleanTitle`
 }
 
 export function maybeQuestionResolutionBlock(teamId : string, question : QuestionWithForecastWithUserWithProfiles) : SectionBlock[] {
