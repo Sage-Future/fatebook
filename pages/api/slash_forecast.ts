@@ -7,6 +7,7 @@ import { showCreateQuestionModal } from '../../lib/interactive_handlers/edit_que
 import { showWrongChannelModalView } from '../../lib/interactive_handlers/show_error_modal'
 import { assertHasAccess } from '../../lib/web/question_router'
 import { getQuestionIdFromUrl } from '../../lib/web/question_url'
+import { getTournamentUrl } from '../../lib/web/utils'
 
 export default async function forecast(req : VercelRequest, res : VercelResponse){
   const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body
@@ -45,6 +46,54 @@ async function postFromWeb(relativePath: string, teamId?: string, channelId?: st
       await postQuestionToSlack({ questionId: id, teamId, channelId, user: profile.user, slackUserId })
     } catch (e) {
       return await postEphemeralTextMessage(teamId, channelId, slackUserId, "We couldn't find a question at that URL.")
+    }
+  }
+
+  if (["tournament", "predict-your-year"].some(path => relativePath.startsWith(path))) {
+    const id = getQuestionIdFromUrl(relativePath)
+
+    if (!id) {
+      return await postEphemeralTextMessage(teamId, channelId, slackUserId, "It looks like there's a problem with the URL you pasted.")
+    }
+
+    const profile = (await getOrCreateProfile(teamId, slackUserId))
+    const user = profile.user
+    const tournament = await prisma.tournament.findUnique({
+      where: { id },
+      include: {
+        author: true,
+        questions: true,
+        userList: {
+          include: {
+            users: true
+          }
+        }
+      } })
+    if (!tournament) {
+      return await postEphemeralTextMessage(teamId, channelId, slackUserId, "We couldn't find a tournament at that URL.")
+    }
+
+    if (tournament.authorId !== user.id && !(tournament.anyoneInListCanEdit && tournament.userList?.users.some(u => u.id === user.id))) {
+      return await postEphemeralTextMessage(teamId, channelId, slackUserId, `You don't have permission to edit that tournament. Ask ${tournament.author.name || "its creator"}.`)
+    }
+
+    await prisma.tournament.update({
+      where: { id },
+      data: {
+        syncToSlackChannelId: channelId,
+        syncToSlackTeamId: teamId,
+      }
+    })
+
+    await postSlackMessage(teamId, {
+      channel: channelId,
+      text: `<@${slackUserId}> has started synced their forecasting tournament to this channel: *<${
+        getTournamentUrl(tournament)
+      }|${tournament.name}>*. New questions will be posted here.`,
+    }, slackUserId)
+    for (const question of tournament.questions) {
+      await postQuestionToSlack({ questionId: question.id, teamId, channelId, user, slackUserId })
+      await new Promise(r => setTimeout(r, 1000)) // avoid rate limits
     }
   }
 }

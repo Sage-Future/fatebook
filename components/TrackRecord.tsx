@@ -102,9 +102,9 @@ export function TrackRecord({
                   }</div>
                 <div className="stat-desc">
                   {title}
-                  {title === "All time" && percentileQ.data && percentileQ.data.absoluteScorePercentile && (
+                  {title === "All time" && percentileQ.data && percentileQ.data.absoluteScorePercentile !== null && (
                     <div className="ml-1 badge badge-sm badge-ghost bg-green-100 border-none">
-                      {`Top ${Math.round((percentileQ.data.absoluteScorePercentile) * 100)}%`}
+                      {`Top ${Math.round((percentileQ.data.absoluteScorePercentile || 0.01) * 100)}%`}
                     </div>
                   )}
                 </div>
