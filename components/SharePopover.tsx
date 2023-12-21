@@ -74,6 +74,13 @@ const SharePanel = React.forwardRef<
   const permalink = api.getSlackPermalink.useQuery(question.questionMessages?.length > 0 ? {
     ...question.questionMessages[0]!.message,
   } : undefined)
+  const [showInstructions, setShowInstructions] = React.useState(false)
+
+  const handleShareToSlack = () => {
+    const questionUrl = getQuestionUrl(question, false)
+    void navigator.clipboard.writeText(`/forecast ${questionUrl}`)
+    setShowInstructions(true)
+  }
 
   return <Popover.Panel className="absolute z-50 w-full cursor-auto" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
     <div className="absolute z-50 mt-2 w-72 md:w-96 lg:w-[29rem] right-0 md:left-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
@@ -81,7 +88,7 @@ const SharePanel = React.forwardRef<
         <EmailInput question={question} />
         <UserListDropdown question={question} />
         <SharePublicly question={question} />
-        {sharedToSlack && <div>
+        {sharedToSlack ? <div>
           <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -ml-2 inline" alt="" />
           <span className="text-sm">
             {permalink.data ?
@@ -89,6 +96,24 @@ const SharePanel = React.forwardRef<
               :
               "Shared in Slack"
             }
+          </span>
+        </div> : <div>
+          <span className="text-sm">
+            <button className="btn" onClick={handleShareToSlack}>
+              <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -mx-2 inline" alt="" />
+              Share in Slack
+              {showInstructions && " (command copied!)"}
+            </button>
+            {showInstructions && (
+              <div className="mt-2 bg-neutral-50 rounded-md p-2">
+                <span className="font-semibold">
+                  Paste into a Slack channel to share this question there
+                </span>
+                <span className="block text-neutral-400 italic">
+                  Make sure <Link href="/for-slack">Fatebook for Slack</Link> is installed first
+                </span>
+              </div>
+            )}
           </span>
         </div>}
       </div>
