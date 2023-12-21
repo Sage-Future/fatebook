@@ -197,7 +197,7 @@ export async function getQuestionTitleLink(question: QuestionWithAuthorAndQuesti
 
   const slackMessage = question.questionMessages[0]!
   const slackPermalink = await getSlackPermalinkFromChannelAndTS(slackMessage.message.teamId, slackMessage.message.channel, slackMessage.message.ts)
-  return `*<${slackPermalink || webLink}|cleanTitle`
+  return `*<${slackPermalink || webLink}|cleanTitle>*`
 }
 
 export function maybeQuestionResolutionBlock(teamId : string, question : QuestionWithForecastWithUserWithProfiles) : SectionBlock[] {
