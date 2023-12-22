@@ -159,6 +159,16 @@ export function Predict({
     }
   }, [setValue])
 
+  useEffect(() => {
+    const handlePredictAll = () => {
+      void handleSubmit(onSubmit)()
+    }
+    window.addEventListener('predictAll', handlePredictAll)
+    return () => {
+      window.removeEventListener('predictAll', handlePredictAll)
+    }
+  }, [handleSubmit, onSubmit])
+
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       void handleSubmit(onSubmit)()

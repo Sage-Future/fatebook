@@ -1,5 +1,5 @@
 import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
-import { CogIcon } from '@heroicons/react/24/solid'
+import { BoltIcon, CogIcon } from '@heroicons/react/24/solid'
 import { Tournament } from '@prisma/client'
 import { useSession } from 'next-auth/react'
 import { NextSeo } from 'next-seo'
@@ -154,6 +154,18 @@ export default function PredictYourYearPage() {
                 </button>}
               </div>
             )}
+            {questionDrafts.length > 1 &&
+              <button
+                className="btn btn-lg hover:scale-105 ml-auto"
+                onClick={() => {
+                  const predictAllEvent = new CustomEvent('predictAll')
+                  window.dispatchEvent(predictAllEvent)
+                }}
+              >
+                <BoltIcon className='w-4 h-4' />
+                Submit all predictions
+              </button>
+            }
             {isAdmin && <div className="flex justify-center">
               <button
                 className="btn btn-circle py-2.5 -mt-2"

@@ -103,14 +103,15 @@ export function Navbar({
 }
 
 function SpecialButton({url, label}: {url: string, label: ReactNode}) {
-  const router = useRouter()
   return (
-    <button className="btn btn-sm max-sm:btn-xs relative max-sm:w-24 max-sm:h-full max-sm:ml-auto mr-2 py-2" onClick={() => void router.push(url)}>
-      {label}
-      <div className="absolute -top-2 -right-2">
-        <SparklesIcon className="w-5 h-5 text-indigo-500 opacity-60 animate-pulse" />
-      </div>
-    </button>
+    <Link href={url}>
+      <button className="btn btn-sm max-sm:btn-xs relative max-sm:w-24 max-sm:h-full max-sm:ml-auto mr-2 py-2">
+        {label}
+        <div className="absolute -top-2 -right-2">
+          <SparklesIcon className="w-5 h-5 text-indigo-500 opacity-60 animate-pulse" />
+        </div>
+      </button>
+    </Link>
   )
 }
 
