@@ -5,7 +5,7 @@ import { Tournament, UserList } from '@prisma/client'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { api } from '../lib/web/trpc'
-import { getTournamentUrl, useUserId } from '../lib/web/utils'
+import { getTournamentUrl, getUserListUrl, useUserId } from '../lib/web/utils'
 import { CopyToClipboard } from './CopyToClipboard'
 import { SyncToSlack } from './SyncToSlack'
 import { UserListDisplay } from './UserListDisplay'
@@ -61,7 +61,7 @@ export function ShareTournament({
       <label className="label" htmlFor="anyoneInListCanEdit">
         <span className="label-text">
           {"Anyone in the "}{tournamentQ.data?.userList ?
-            <Link href={`/list/${tournamentQ.data.userListId}`}>
+            <Link href={getUserListUrl(tournamentQ.data.userList)}>
               {tournamentQ.data?.userList?.name}
             </Link>
             :
@@ -157,7 +157,7 @@ function UserListSelect({
   if (userId !== tournamentQ.data?.authorId) {
     return <label className="text-sm">
       <span className="font-semibold">Shared with user list: </span> {selectedUserList ?
-        <Link key={selectedUserList.id} href={`/list/${selectedUserList.id}`} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
+        <Link key={selectedUserList.id} href={getUserListUrl(selectedUserList)} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
       : "None"}
     </label>
   }

@@ -5,6 +5,7 @@ import { Tournaments } from "../components/Tournaments"
 import { TrackRecord } from "../components/TrackRecord"
 import { WhyForecastInfo } from '../components/WhyForecastInfo'
 import { useUserId } from "../lib/web/utils"
+import { UserLists } from "../components/UserLists"
 
 export default function HomePage() {
   const { status: sessionStatus } = useSession()
@@ -38,6 +39,7 @@ function Sidebar() {
     <div className="pt-28 lg:w-[320px] max-sm:hidden flex flex-col gap-12">
       {userId && <TrackRecord trackRecordUserId={userId} />}
       {userId && <Tournaments />}
+      {userId && <UserLists />}
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { UserList } from "@prisma/client"
 import clsx from 'clsx'
 import Link from 'next/link'
 import { api } from "../lib/web/trpc"
-import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { getUserListUrl, invalidateQuestion, useUserId } from '../lib/web/utils'
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { UserListDisplay } from './UserListDisplay'
 
@@ -30,10 +30,10 @@ export function UserListDropdown({
 
   if (userId !== question.userId) {
     return <label className="text-sm">
-      <span className="font-semibold">Shared with user lists: </span> {question.sharedWithLists?.map(list =>
+      <span className="font-semibold">Shared with teams: </span> {question.sharedWithLists?.map(list =>
         <Link
           key={list.id}
-          href={`/list/${list.id}`}
+          href={getUserListUrl(list)}
           onClick={(e) => e.stopPropagation()}
           className="ml-1">
             {list.name}
@@ -97,7 +97,7 @@ export function UserListDropdown({
             className="btn btn-ghost"
             onClick={() => createList.mutate({ name: "New list" })}
           >
-            <PlusIcon height={15} /> Create a new list
+            <PlusIcon height={15} /> Create a new team
           </button>
         </div>
       </Popover.Panel>

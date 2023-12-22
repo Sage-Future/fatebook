@@ -239,5 +239,5 @@ export function getTournamentUrl(tournament: Tournament, useRelativePath?: boole
 
 export function getUserListUrl(list: UserList, useRelativePath?: boolean) {
   const fullSlug = `${getSlug(list.name)}--${list.id}`
-  return `${getClientBaseUrl(useRelativePath)}/list/${fullSlug}`
+  return `${getClientBaseUrl(useRelativePath)}/team/${fullSlug}`
 }

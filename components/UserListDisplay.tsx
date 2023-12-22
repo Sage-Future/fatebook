@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { toast } from 'react-hot-toast'
 import { ReactMultiEmail } from 'react-multi-email'
 import { api, getClientBaseUrl } from "../lib/web/trpc"
-import { useUserId } from '../lib/web/utils'
+import { getUserListUrl, useUserId } from '../lib/web/utils'
 import { UserListWithAuthorAndUsers } from "../prisma/additional"
 import { CopyToClipboard } from './CopyToClipboard'
 import { InfoButton } from './InfoButton'
@@ -15,10 +15,12 @@ export function UserListDisplay({
   userList,
   bigHeading,
   onDelete,
+  compact,
 }: {
   userList: UserListWithAuthorAndUsers
   bigHeading?: boolean
   onDelete?: () => void
+  compact?: boolean
 }) {
   const userId = useUserId()
   const utils = api.useContext()
@@ -71,18 +73,19 @@ export function UserListDisplay({
         ) : (
           <>
             <Link
-              href={`/list/${userList.id}`}
+              href={getUserListUrl(userList)}
               className={clsx(
                 "p-1 my-auto no-underline hover:underline",
+                compact && "text-sm text-neutral-600"
               )}
-              target='_blank'
+              target={compact ? '_self' : '_blank'}
             >
               {bigHeading ?
                 <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
                 :
                 <>
                   {userList.name}
-                  <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
+                  {!compact && <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />}
 
                   {(userList.users.length > 0 || userList.emailDomains.length === 0) && (
                     <span className="block text-xs my-auto font-normal text-neutral-400">
@@ -99,10 +102,10 @@ export function UserListDisplay({
             </Link>
           </>
         )}
-        <div className="flex gap-2">
+        {!compact && <div className="flex gap-2">
           {userList.authorId !== userId ? (
             <InfoButton
-              tooltip={`You cannot edit this list because it was created by ${userList.author.name || "another user"}.`}
+              tooltip={`You cannot edit this team because it was created by ${userList.author.name || "another user"}.`}
               className="btn btn-circle btn-xs btn-ghost"
               showInfoButton={false}
             >
@@ -146,7 +149,7 @@ export function UserListDisplay({
           >
             <TrashIcon className='w-4 h-4' />
           </button>
-        </div>
+        </div>}
       </span>
       {isEditing && <EmailInput userList={userList} />}
     </div>
@@ -170,9 +173,9 @@ function EmailInput({
     <span onClick={(e) => e.stopPropagation()}>
       <label className="flex justify-between align-bottom text-sm font-medium text-neutral-700 mb-0.5">
         <span className='my-auto'>
-          List members
+          Team members
         </span>
-        <CopyToClipboard textToCopy={`${getClientBaseUrl(false)}/list/join/${userList.inviteId}`} buttonLabel='Copy invite link' />
+        <CopyToClipboard textToCopy={`${getClientBaseUrl(false)}/team/join/${userList.inviteId}`} buttonLabel='Copy invite link' />
       </label>
       <ReactMultiEmail
         className={clsx("text-sm w-44 md:w-[22rem] placeholder:text-neutral-400", updateList.isLoading && "opacity-50")}
@@ -213,7 +216,7 @@ function EmailInput({
               {(
                 (userList.emailDomains.length > 0) ? userList.emailDomains : ["yourcompany.com"])
                 .map((domain) => `everyone@${domain}`).join(" and ")}
-            </span> to this list
+            </span> to this team
           </label>
           <input
             type='text'

@@ -33,31 +33,31 @@ export default function ListPage() {
       listInviteId,
     }, {
       onSuccess(id) {
-        void router.push(`/list/${id}`)
+        void router.push(`/team/${id}`)
       }
     })
   }, [isJoining, joinViaLink, listInviteId, router, userId])
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo title={"Join user list"} />
+      <NextSeo title={"Join team"} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
           {
             !userId && <div className='text-center'>
               <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
-                Sign in or sign up to join this user list
+                Sign in or sign up to join this team
               </button>
             </div>
           }
           {
             joinViaLink.isLoading && <h3 className="text-neutral-600">
-              Joining user list...
+              Joining team...
             </h3>
           }
           {
             joinViaLink.error && <h3 className="text-neutral-600">
-              {"Something went wrong - we couldn't add you to the list"}
+              {"Something went wrong - we couldn't add you to the team"}
             </h3>
           }
         </div>

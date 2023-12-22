@@ -80,7 +80,7 @@ export async function postFromWeb(relativePath: string, teamId?: string, channel
     console.log("initial question sync complete")
 
 
-  } else if (relativePath.startsWith("/list/")) {
+  } else if (relativePath.startsWith("/team/")) {
     const id = getQuestionIdFromUrl(relativePath)
 
     if (!id) {

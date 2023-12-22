@@ -24,7 +24,7 @@ export default function ListPage() {
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo title={listQ.data?.name || "User List"} />
+      <NextSeo title={listQ.data?.name || "Team"} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
           {
@@ -39,7 +39,7 @@ export default function ListPage() {
               <h3 className="text-neutral-600">{listQ.isLoading ?
                 "Loading..."
                 :
-                (userId ? "This list doesn't exist or you're not a member" : "")}</h3>
+                (userId ? "This team doesn't exist or you're not a member" : "")}</h3>
             </div>
           }
           {
@@ -47,20 +47,20 @@ export default function ListPage() {
               <div className='flex flex-col gap-2'>
                 <UserListDisplay bigHeading={true} userList={listQ.data} onDelete={() => void router.push("/")} />
                 <span className='block'>
-                  A user list created by <Username user={listQ.data.author} />
+                  A team created by <Username user={listQ.data.author} />
                 </span>
                 <span className='block'>
-                  List members {listQ.data.users.length > 0 ? listQ.data.users.map(u => <Username key={u.id} user={u} className='ml-2' />) : <span className='italic'>none</span>}
+                  Team members {listQ.data.users.length > 0 ? listQ.data.users.map(u => <Username key={u.id} user={u} className='ml-2' />) : <span className='italic'>none</span>}
                 </span>
                 <span className='block'>
                   Email domains {listQ.data.emailDomains.length > 0 ? listQ.data.emailDomains.join(', ') : <span className='italic'>none</span>}
                 </span>
                 {userId && listQ.data.authorId === userId &&
-                  <SyncToSlack listType='list' url={getUserListUrl(listQ.data, false)} entity={listQ.data} />
+                  <SyncToSlack listType='team' url={getUserListUrl(listQ.data, false)} entity={listQ.data} />
                 }
                 <Questions
-                  title={"Your list's questions"}
-                  noQuestionsText='No questions in this list yet.'
+                  title={"Your team's questions"}
+                  noQuestionsText='No questions shared with this team yet.'
                   filterUserListId={listId}
                 />
               </div>

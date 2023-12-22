@@ -66,7 +66,7 @@ export type ExtraFilters = {
   showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
   theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
   filterTournamentId?: string // for fatebook.io/tournament/:id, show all questions from this tournament
-  filterUserListId?: string // for fatebook.io/list/:id, show all questions from this user list
+  filterUserListId?: string // for fatebook.io/team/:id, show all questions from this user list
 }
 
 export const questionRouter = router({
