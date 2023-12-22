@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { generateRandomId } from '../../lib/_utils_common'
 import { api } from '../../lib/web/trpc'
+import { signInToFatebook } from '../../lib/web/utils'
 
 export default function PredictYourYearLandingPage() {
   const router = useRouter()
@@ -16,6 +17,10 @@ export default function PredictYourYearLandingPage() {
   const user = useSession()?.data?.user
 
   const handleGetStarted = async ({teamMode}: {teamMode: boolean}) => {
+    if (!user) {
+      return void signInToFatebook()
+    }
+
     const tournamentId = generateRandomId()
     await createTournament.mutateAsync({
       id: tournamentId,
@@ -49,10 +54,10 @@ export default function PredictYourYearLandingPage() {
         }}
       />
       <h2 className="text-4xl font-bold mb-4">Predict your year</h2>
-      <p className="text-lg mb-8">What will the new year hold for you? Write down your predictions and review at the end of the year.</p>
+      <p className="text-lg mb-0">What will the new year hold for you? Write down your predictions and review at the end of the year.</p>
 
       {(tournamentsQ.data?.filter(tournament => tournament.predictYourYear).length || 0) > 0 && (
-        <div className="my-4 flex gap-2 flex-col">
+        <div className="flex gap-2 flex-col">
           <h2 className="text-2xl font-bold mb-4">Pick up where you left off</h2>
           {tournamentsQ.data?.filter(tournament => tournament.predictYourYear).map(tournament => (
             <Link key={tournament.id} href={`/predict-your-year/${tournament.id}`} className="btn flex justify-start">

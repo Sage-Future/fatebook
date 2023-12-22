@@ -187,7 +187,7 @@ export default function PredictYourYearPage() {
             <TournamentLeaderboard tournamentId={tournamentId} />
           </div>}
 
-          {true && <div className='text-sm mt-4 mx-auto'>
+          {userId !== tournamentQ.data?.authorId && <div className='text-sm mt-4 mx-auto'>
             <button onClick={() => void router.push("/predict-your-year")} className='btn font-semibold'>
               Create your own set of predictions for {year}, for yourself or with your team
             </button>

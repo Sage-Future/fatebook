@@ -25,10 +25,10 @@ export function QuestionsMultiselect({
       <Select
         value={localSelectedQuestions.map(questionId => {
           const question = allQuestions.find(q => q.id === questionId)
-          return { label: question ? question.title : questionId, value: questionId }
+          return { label: question ? question.title : "Loading...", value: questionId }
         })}
         onChange={(newValue) => {
-          const newQuestions = newValue.map(v => v.value)
+          const newQuestions = newValue.map((v: any) => v.value)
           setLocalSelectedQuestions(newQuestions)
           setQuestions(newQuestions)
         }}

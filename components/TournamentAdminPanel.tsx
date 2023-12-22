@@ -1,12 +1,11 @@
 import { ChevronDownIcon, ChevronLeftIcon } from '@heroicons/react/24/solid'
 import { Tournament } from '@prisma/client'
 import clsx from 'clsx'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
-import { getQuestionUrl } from '../lib/web/question_url'
 import { api } from '../lib/web/trpc'
 import { useUserId } from '../lib/web/utils'
+import { FixTournamentQuestionSharing } from './FixTournamentQuestionSharing'
 import { InfoButton } from './InfoButton'
 import { Predict } from './Predict'
 import { QuestionsMultiselect } from './QuestionsMultiselect'
@@ -153,32 +152,27 @@ export function TournamentAdminPanel({
               Tip
             </span>Make sure that the questions included in the tournament are shared, otherwise they may not be visible to all viewers of this tournament page.
           </span>
-          {tournamentQ.data?.sharedPublicly && tournamentQ.data?.questions.some(q => !q.sharedPublicly) && (
-            <div className="bg-indigo-100 px-6 text-sm rounded-lg mt-4">
-              <div>
-                <p>
-                  <span className='font-semibold'>
-                    Warning
-                  </span>: This tournament is shared publicly but contains some questions that are not shared publicly.
-                </p>
-                <p>
-                  These questions will not be visible to all viewers of this tournament page:
-                </p>
-                <ul>
-                  {tournamentQ.data?.questions.filter(q => !q.sharedPublicly).map(q => (
-                    <li key={q.id}>
-                      <Link href={getQuestionUrl(q)} target='_blank'>{q.title}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
         </div>
+        {!includeShareTournament &&
+          <FixTournamentQuestionSharing tournament={tournamentQ?.data} />
+        }
         {includeShareTournament && <>
           <h4>Share tournament</h4>
           <ShareTournament tournamentId={tournamentId} />
         </>}
+        <div className="form-control flex-row items-center gap-2">
+          <input
+            id="showLeaderboard"
+            type="checkbox"
+            className="checkbox"
+            checked={tournamentQ.data?.showLeaderboard}
+            onChange={(e) => handleUpdate({tournament: {showLeaderboard: e.target.checked}})}
+            disabled={!isAdmin}
+          />
+          <label className="label" htmlFor="showLeaderboard">
+            <span className="label-text">Show leaderboard</span>
+          </label>
+        </div>
         {isAdmin && <div className="form-control flex-row items-center gap-2">
           <button
             type='button'

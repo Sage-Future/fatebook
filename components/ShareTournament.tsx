@@ -9,6 +9,7 @@ import { getTournamentUrl, getUserListUrl, useUserId } from '../lib/web/utils'
 import { CopyToClipboard } from './CopyToClipboard'
 import { SyncToSlack } from './SyncToSlack'
 import { UserListDisplay } from './UserListDisplay'
+import { FixTournamentQuestionSharing } from './FixTournamentQuestionSharing'
 export function ShareTournament({
   tournamentId,
 }: {
@@ -87,6 +88,7 @@ export function ShareTournament({
       </label>
       {tournamentQ.data?.sharedPublicly && <CopyToClipboard textToCopy={getTournamentUrl(tournamentQ.data, false)} />}
     </div>
+    <FixTournamentQuestionSharing tournament={tournamentQ.data} />
     {tournamentQ.data?.sharedPublicly && <div className="form-control flex-row items-center gap-2">
       <input
         id="unlisted"
@@ -100,19 +102,6 @@ export function ShareTournament({
         <span className="label-text">{"Show in the public list of tournaments (coming soon!)"}</span>
       </label>
     </div>}
-    <div className="form-control flex-row items-center gap-2">
-      <input
-        id="showLeaderboard"
-        type="checkbox"
-        className="checkbox"
-        checked={tournamentQ.data?.showLeaderboard}
-        onChange={(e) => handleUpdate({tournament: {showLeaderboard: e.target.checked}})}
-        disabled={!isAdmin}
-      />
-      <label className="label" htmlFor="showLeaderboard">
-        <span className="label-text">Show leaderboard</span>
-      </label>
-    </div>
   </div>
 }
 

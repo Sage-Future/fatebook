@@ -148,3 +148,8 @@ export type QuestionWithTournamentsAndLists = Question & {
     tournaments: Tournament[]
     sharedWithLists: UserList[]
 }
+
+export type TournamentWithQuestionsAndSharedWithLists = Tournament & {
+    questions: QuestionWithUserLists[]
+    userList: UserList | null
+}

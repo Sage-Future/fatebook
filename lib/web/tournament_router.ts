@@ -155,6 +155,7 @@ export const tournamentRouter = router({
                 user: true,
               }
             },
+            sharedWithLists: true,
           },
         },
         userList: {
