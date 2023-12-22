@@ -1,5 +1,5 @@
 import { Bars3Icon, ScaleIcon } from "@heroicons/react/24/outline"
-import { ChevronDownIcon } from "@heroicons/react/24/solid"
+import { ChevronDownIcon, SparklesIcon } from "@heroicons/react/24/solid"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -33,6 +33,7 @@ export function Navbar({
     <li><Link href="/about">About</Link></li>
     <li><Link href="/public">Public predictions</Link></li>
     <li><Link href="https://discord.gg/mt9YVB8VDE">Discord</Link></li>
+    <li><Link href="/predict-your-year">Predict your year</Link></li>
     <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">Integrations</li>
     <li><Link href="/for-discord">Fatebook for Discord</Link></li>
     <li><Link href="/api-setup">Create forecasts by API</Link></li>
@@ -65,17 +66,23 @@ export function Navbar({
       <input id="my-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         {/* Navbar */}
-        <div className="navbar max-w-5xl mx-auto gap-4">
+        <div className="navbar max-w-5xl mx-auto">
           <div className="flex-none lg:hidden">
             <label htmlFor="my-drawer" className="btn btn-square btn-ghost">
               <Bars3Icon height={24} width={24} />
             </label>
           </div>
-          <div className="flex-1 -ml-4">
+          <div className="flex-1 -ml-4 flex gap-2">
             <Link href="/" className="btn btn-ghost normal-case text-xl flex gap-2">
               <ScaleIcon className="w-6 h-6 text-indigo-600" />
               Fatebook
             </Link>
+            <SpecialButton
+              url="/predict-your-year"
+              label={<span className="">
+                {"Predict your year in 2024"}
+              </span>}
+            />
           </div>
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">
@@ -92,6 +99,18 @@ export function Navbar({
 
       <Drawer menuItems={menuItems} moreMenuItems={moreMenuItems} />
     </div>
+  )
+}
+
+function SpecialButton({url, label}: {url: string, label: ReactNode}) {
+  const router = useRouter()
+  return (
+    <button className="btn btn-sm max-sm:btn-xs relative max-sm:w-24 max-sm:h-full max-sm:ml-auto mr-2 py-2" onClick={() => void router.push(url)}>
+      {label}
+      <div className="absolute -top-2 -right-2">
+        <SparklesIcon className="w-5 h-5 text-indigo-500 opacity-60 animate-pulse" />
+      </div>
+    </button>
   )
 }
 

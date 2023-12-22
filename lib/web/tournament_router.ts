@@ -201,11 +201,16 @@ export const tournamentRouter = router({
       if (!ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view tournaments" })
       }
+      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
       const tournaments = await prisma.tournament.findMany({
         where: {
           OR: [
             {authorId: ctx.userId},
-            {userList: {users: {some: {id: ctx.userId}}}}
+            {userList: {OR: [
+              {users: {some: {id: ctx.userId}}},
+              {...matchesAnEmailDomain(user)},
+              {authorId: ctx.userId},
+            ]}},
           ]
         },
       })
