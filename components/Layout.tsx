@@ -46,8 +46,8 @@ function BottomNav() {
   // only show when logged in
   if (!userId) return <></>
 
-  // only show on homepage
-  if (router.pathname !== "/") return <></>
+  // only show on homepage and stats page
+  if (router.pathname !== "/" && router.pathname !== "/stats") return <></>
 
   return (
     <div className="btm-nav z-[500] lg:hidden">
