@@ -4,6 +4,7 @@ import prisma from "../_utils_server"
 import { scrubApiKeyPropertyRecursive } from './question_router'
 import { publicProcedure, router } from "./trpc_base"
 import { matchesAnEmailDomain } from "./utils"
+import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 
 export const tournamentRouter = router({
   create: publicProcedure
@@ -49,7 +50,7 @@ export const tournamentRouter = router({
       if (!ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to update a tournament" })
       }
-      const tournament = await prisma.tournament.findUnique({
+      const oldTournament = await prisma.tournament.findUnique({
         where: {
           id: input.tournament.id,
         },
@@ -58,15 +59,21 @@ export const tournamentRouter = router({
             include: {
               users: true,
             }
-          }
+          },
+          questions: {
+            include: {
+              tournaments: true,
+              sharedWithLists: true,
+            }
+          },
         }
       })
-      if (!tournament) {
+      if (!oldTournament) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Tournament not found" })
       }
       if (
-        tournament.authorId !== ctx.userId
-        && !(tournament.anyoneInListCanEdit && tournament.userList?.users.find(u => u.id === ctx.userId))
+        oldTournament.authorId !== ctx.userId
+        && !(oldTournament.anyoneInListCanEdit && oldTournament.userList?.users.find(u => u.id === ctx.userId))
       ) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not the author of this tournament" })
       }
@@ -87,7 +94,25 @@ export const tournamentRouter = router({
             set: input.tournament.questions.map(q => ({ id: q }))
           } : undefined,
         },
+        include: {
+          questions: {
+            include: {
+              tournaments: true,
+              sharedWithLists: true,
+            }
+          },
+        }
       })
+
+      if (input.tournament.questions !== undefined) {
+        for (const question of updatedTournament.questions) {
+          await syncToSlackIfNeeded(question, ctx.userId)
+        }
+        for (const question of oldTournament.questions) {
+          await syncToSlackIfNeeded(question, ctx.userId, [oldTournament])
+        }
+      }
+
 
       return updatedTournament
     }),

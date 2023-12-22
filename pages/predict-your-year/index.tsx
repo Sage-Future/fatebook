@@ -21,7 +21,7 @@ export default function PredictYourYearLandingPage() {
       name: teamMode ? 'Your team\'s predictions for 2024' : `${user}'s predictions for 2024`,
       predictYourYear: year,
     })
-    void router.push(`/predict-your-year/${tournamentId}`)
+    void router.push(`/predict-your-year/${tournamentId}${teamMode ? '?team=1' : ''}`)
   }
 
   const tournamentsQ = api.tournament.getAll.useQuery()
@@ -53,7 +53,7 @@ export default function PredictYourYearLandingPage() {
         </ul>
       </div>
       {(tournamentsQ.data?.filter(tournament => tournament.predictYourYear).length || 0) > 0 && (
-        <div className="my-4">
+        <div className="my-4 flex gap-2 flex-col">
           <h2 className="text-2xl font-bold mb-4">Pick up where you left off</h2>
           {tournamentsQ.data?.filter(tournament => tournament.predictYourYear).map(tournament => (
             <Link key={tournament.id} href={`/predict-your-year/${tournament.id}`} className="btn flex justify-start">
@@ -62,7 +62,12 @@ export default function PredictYourYearLandingPage() {
           ))}
         </div>
       )}
-      <h2 className="text-2xl font-bold mb-4">{"Let's get started"}</h2>
+      <h2 className="text-2xl font-bold mb-4">
+      {(tournamentsQ.data?.filter(tournament => tournament.predictYourYear).length || 0) > 0 ?
+        "Or make a new page of predictions"
+        :
+        "Let's get started"
+      }</h2>
       <div className="flex gap-4">
         <button className="btn btn-lg py-4" disabled={createTournament.isLoading} onClick={() => { void handleGetStarted({teamMode: false}) }}>
           Predict your 2024: Personal predictions

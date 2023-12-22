@@ -1,4 +1,4 @@
-import { Question, Tournament, User } from "@prisma/client"
+import { Question, Tournament, User, UserList } from "@prisma/client"
 import { utcToZonedTime } from 'date-fns-tz'
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
@@ -235,4 +235,9 @@ export function getTournamentUrl(tournament: Tournament, useRelativePath?: boole
   } else {
     return `${getClientBaseUrl(useRelativePath)}/tournament/${fullSlug}`
   }
+}
+
+export function getUserListUrl(list: UserList, useRelativePath?: boolean) {
+  const fullSlug = `${getSlug(list.name)}--${list.id}`
+  return `${getClientBaseUrl(useRelativePath)}/list/${fullSlug}`
 }

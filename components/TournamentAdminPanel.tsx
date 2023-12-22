@@ -125,6 +125,21 @@ export function TournamentAdminPanel({
             onBlur={(e) => isAdmin && handleUpdate({ tournament: { description: e.target.value || null } })}
             disabled={!isAdmin} />
         </div>
+        {includeAddNewQuestion && isAdmin && <>
+          <h4 className="label">Add questions to this tournament</h4>
+          <Predict
+            questionDefaults={{
+              tournamentId,
+              unlisted: tournamentQ.data?.unlisted,
+              sharePublicly: tournamentQ.data?.sharedPublicly,
+              shareWithListIds: tournamentQ.data?.userListId ? [tournamentQ.data.userListId] : undefined,
+            }}
+            onQuestionCreate={() => {
+              void utils.tournament.get.invalidate({ id: tournamentId })
+            }}
+            small={true}
+          />
+        </>}
         <div className="form-control">
           <label className="label">
             <span className="label-text">Add existing questions to the tournament</span>
@@ -160,22 +175,10 @@ export function TournamentAdminPanel({
             </div>
           )}
         </div>
-        {includeAddNewQuestion && isAdmin && <>
-          <h4 className="label">Create new questions and add them to this tournament</h4>
-          <Predict
-            questionDefaults={{
-              tournamentId,
-              unlisted: tournamentQ.data?.unlisted,
-              sharePublicly: tournamentQ.data?.sharedPublicly,
-              shareWithListIds: tournamentQ.data?.userListId ? [tournamentQ.data.userListId] : undefined,
-            }}
-            onQuestionCreate={() => {
-              void utils.tournament.get.invalidate({ id: tournamentId })
-            }}
-            small={true}
-          />
+        {includeShareTournament && <>
+          <h4>Share tournament</h4>
+          <ShareTournament tournamentId={tournamentId} />
         </>}
-        {includeShareTournament && <ShareTournament tournamentId={tournamentId} />}
         {isAdmin && <div className="form-control flex-row items-center gap-2">
           <button
             type='button'

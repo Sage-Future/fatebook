@@ -1,6 +1,7 @@
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import prisma, { backendAnalyticsEvent } from '../_utils_server'
+import { syncToSlackIfNeeded } from '../interactive_handlers/postFromWeb'
 import { emailNewlySharedWithUsers, getQuestionAssertAuthor } from './question_router'
 import { publicProcedure, router } from './trpc_base'
 import { matchesAnEmailDomain } from './utils'
@@ -253,6 +254,7 @@ export const userListRouter = router({
             }
           },
           sharedWith: true,
+          tournaments: true,
         }
       })
 
@@ -269,6 +271,9 @@ export const userListRouter = router({
       ))
 
       await emailNewlySharedWithUsers(newUsersSharedWith, question)
+
+      const listsRemoved = (oldLists || []).filter(l => !input.listIds.includes(l.id))
+      await syncToSlackIfNeeded(question, ctx.userId, listsRemoved)
 
       await backendAnalyticsEvent("set_question_lists", {
         user: ctx.userId,

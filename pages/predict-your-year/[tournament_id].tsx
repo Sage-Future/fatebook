@@ -1,9 +1,12 @@
 import { PlusIcon, XMarkIcon } from '@heroicons/react/20/solid'
 import { CogIcon } from '@heroicons/react/24/solid'
+import { Tournament } from '@prisma/client'
 import { useSession } from 'next-auth/react'
 import { NextSeo } from 'next-seo'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { toast } from 'react-hot-toast'
 import { Predict } from '../../components/Predict'
 import { Questions } from '../../components/Questions'
 import { ShareTournament } from '../../components/ShareTournament'
@@ -13,8 +16,6 @@ import { TournamentLeaderboard } from '../../components/TournamentLeaderboard'
 import { generateRandomId } from '../../lib/_utils_common'
 import { api } from '../../lib/web/trpc'
 import { signInToFatebook } from '../../lib/web/utils'
-import { toast } from 'react-hot-toast'
-import Link from 'next/link'
 
 export default function PredictYourYearPage() {
   const router = useRouter()
@@ -22,7 +23,12 @@ export default function PredictYourYearPage() {
   const userId = user?.id
 
   // eslint-disable-next-line no-unused-vars
-  const [teamMode, setTeamMode] = useState(false)
+  const [teamMode, setTeamMode] = useState(router.query.team === '1')
+  useEffect(() => {
+    if (router.query.team === '1') {
+      setTeamMode(true)
+    }
+  }, [router.query.team])
 
   const year = 2024
 
@@ -81,7 +87,7 @@ export default function PredictYourYearPage() {
       />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px] flex flex-col gap-10 relative">
-          {userId && <SettingsButtons teamMode={teamMode} tournamentId={tournamentId} />}
+          {userId && tournamentQ.data && <SettingsButtons teamMode={teamMode} tournament={tournamentQ.data} />}
 
           {
             !userId && <div className='text-center'>
@@ -180,18 +186,24 @@ export default function PredictYourYearPage() {
           {tournamentQ.data?.showLeaderboard && <div className='overflow-x-auto max-w-[90vw]'>
             <TournamentLeaderboard tournamentId={tournamentId} />
           </div>}
+
+          {true && <div className='text-sm mt-4 mx-auto'>
+            <button onClick={() => void router.push("/predict-your-year")} className='btn font-semibold'>
+              Create your own set of predictions for {year}, for yourself or with your team
+            </button>
+          </div>}
         </div>
       </div>
     </div>
   )
 }
 
-function SettingsButtons({teamMode, tournamentId}: { teamMode: boolean, tournamentId: string }) {
+function SettingsButtons({teamMode, tournament}: { teamMode: boolean, tournament: Tournament }) {
   return <div
     className='ml-auto max-sm:-mt-4 -mb-10 sm:absolute right-0 top-4 flex gap-2'
   >
     <button
-      className="btn"
+      className="btn btn-primary"
       onClick={() => (document?.getElementById('tournament_share_modal') as any)?.showModal()}
     >
       Share with your {teamMode ? "team" : "friends"}
@@ -204,7 +216,7 @@ function SettingsButtons({teamMode, tournamentId}: { teamMode: boolean, tourname
           </button>
         </form>
         <h3 className="font-bold text-lg mt-0">Share</h3>
-        <ShareTournament tournamentId={tournamentId} />
+        <ShareTournament tournamentId={tournament.id} />
       </div>
     </dialog>
 
@@ -222,7 +234,7 @@ function SettingsButtons({teamMode, tournamentId}: { teamMode: boolean, tourname
           </button>
         </form>
         <TournamentAdminPanel
-          tournamentId={tournamentId}
+          tournamentId={tournament.id}
           includeAddNewQuestion={false}
           includeShareTournament={false}
           collapsible={false} />

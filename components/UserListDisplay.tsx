@@ -221,7 +221,7 @@ function EmailInput({
             onClick={(e) => e.stopPropagation()}
             placeholder='yourcompany.com'
             className={clsx(
-              "text-sm w-44 md:w-[22rem] p-2",
+              "text-sm w-44 md:w-[22rem] p-2 block",
               "border rounded-md focus:outline-indigo-700 placeholder:text-neutral-400",
               updateList.isLoading ? "opacity-50" : "opacity-100"
             )}

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { api } from '../lib/web/trpc'
 import { getTournamentUrl, useUserId } from '../lib/web/utils'
 import { CopyToClipboard } from './CopyToClipboard'
+import { SyncToSlack } from './SyncToSlack'
 import { UserListDisplay } from './UserListDisplay'
 export function ShareTournament({
   tournamentId,
@@ -69,6 +70,9 @@ export function ShareTournament({
         </span>
       </label>
     </div>
+    <div className='mt-4'>
+      {tournamentQ.data && <SyncToSlack listType='tournament' url={getTournamentUrl(tournamentQ.data)} entity={tournamentQ.data} />}
+    </div >
     <div className="form-control flex-row items-center gap-2">
       <input
         id="sharedPublicly"
@@ -153,7 +157,7 @@ function UserListSelect({
   if (userId !== tournamentQ.data?.authorId) {
     return <label className="text-sm">
       <span className="font-semibold">Shared with user list: </span> {selectedUserList ?
-        <Link key={selectedUserList.id} href={`list/${selectedUserList.id}`} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
+        <Link key={selectedUserList.id} href={`/list/${selectedUserList.id}`} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
       : "None"}
     </label>
   }

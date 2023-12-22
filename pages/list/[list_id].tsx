@@ -1,10 +1,11 @@
 import { NextSeo } from 'next-seo'
 import { useRouter } from 'next/router'
 import { Questions } from '../../components/Questions'
+import { SyncToSlack } from '../../components/SyncToSlack'
 import { UserListDisplay } from '../../components/UserListDisplay'
 import { Username } from '../../components/Username'
 import { api } from '../../lib/web/trpc'
-import { signInToFatebook, useUserId } from '../../lib/web/utils'
+import { getUserListUrl, signInToFatebook, useUserId } from '../../lib/web/utils'
 
 export default function ListPage() {
   const userId = useUserId()
@@ -20,8 +21,6 @@ export default function ListPage() {
   }, {
     retry: false,
   })
-
-  // const isAdmin = listQ.data?.authorId === userId
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
@@ -45,23 +44,26 @@ export default function ListPage() {
           }
           {
             listQ.data ?
-              <>
+              <div className='flex flex-col gap-2'>
                 <UserListDisplay bigHeading={true} userList={listQ.data} onDelete={() => void router.push("/")} />
-                <p>
+                <span className='block'>
                   A user list created by <Username user={listQ.data.author} />
-                </p>
-                <p>
-                  List members: {listQ.data.users.length > 0 ? listQ.data.users.map(u => <Username key={u.id} user={u} className='ml-2' />) : <span className='italic'>none</span>}
-                </p>
-                <p>
-                  Email domains: {listQ.data.emailDomains.length > 0 ? listQ.data.emailDomains.join(', ') : <span className='italic'>none</span>}
-                </p>
+                </span>
+                <span className='block'>
+                  List members {listQ.data.users.length > 0 ? listQ.data.users.map(u => <Username key={u.id} user={u} className='ml-2' />) : <span className='italic'>none</span>}
+                </span>
+                <span className='block'>
+                  Email domains {listQ.data.emailDomains.length > 0 ? listQ.data.emailDomains.join(', ') : <span className='italic'>none</span>}
+                </span>
+                {userId && listQ.data.authorId === userId &&
+                  <SyncToSlack listType='list' url={getUserListUrl(listQ.data, false)} entity={listQ.data} />
+                }
                 <Questions
                   title={"Your list's questions"}
                   noQuestionsText='No questions in this list yet.'
                   filterUserListId={listId}
                 />
-              </>
+              </div>
               :
               <h3 className="text-neutral-600">{listQ.isLoading ? "Loading..." : ""}</h3>
           }

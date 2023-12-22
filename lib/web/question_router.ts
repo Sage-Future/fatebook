@@ -5,7 +5,7 @@ import { getBucketedForecasts } from "../../pages/api/calibration_graph"
 import {
   QuestionWithForecasts,
   QuestionWithForecastsAndSharedWithAndLists,
-  QuestionWithUserAndSharedWith,
+  QuestionWithUserAndSharedWith
 } from "../../prisma/additional"
 import { forecastsAreHidden, getDateYYYYMMDD } from "../_utils_common"
 import prisma, {
@@ -13,6 +13,7 @@ import prisma, {
   updateForecastQuestionMessages,
 } from "../_utils_server"
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
+import { syncToSlackIfNeeded } from '../interactive_handlers/postFromWeb'
 import {
   handleQuestionResolution,
   undoQuestionResolution,
@@ -287,6 +288,10 @@ export const questionRouter = router({
             connect: input.shareWithListIds.map(id => ({ id }))
           } : undefined,
         },
+        include: {
+          tournaments: true,
+          sharedWithLists: true,
+        },
       })
 
       await backendAnalyticsEvent("question_created", {
@@ -303,6 +308,7 @@ export const questionRouter = router({
         })
       }
 
+      await syncToSlackIfNeeded(question, ctx.userId)
       return { url: getQuestionUrl(question), ...input }
     }),
 
