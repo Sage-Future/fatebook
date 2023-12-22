@@ -77,7 +77,7 @@ export function TournamentAdminPanel({
             placement='bottom'
             tooltip={isAdmin ?
                 (tournamentQ?.data.anyoneInListCanEdit ?
-                    `Anyone in the ${tournamentQ?.data?.userList?.name} list can view and change these settings.`
+                    `Anyone in the ${tournamentQ?.data?.userList?.name} team can view and change these settings.`
                     :
                     'Only you can view and change these settings.')
                 :

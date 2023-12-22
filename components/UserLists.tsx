@@ -19,7 +19,7 @@ export function UserLists() {
           className="btn btn-ghost"
           onClick={() => {
             void (async () => {
-              const userList = await createUserList.mutateAsync({ name: 'New List' })
+              const userList = await createUserList.mutateAsync({ name: 'New team' })
               void router.push(getUserListUrl(userList))
             })()
           }}

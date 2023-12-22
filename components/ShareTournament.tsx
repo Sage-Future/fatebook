@@ -65,8 +65,8 @@ export function ShareTournament({
               {tournamentQ.data?.userList?.name}
             </Link>
             :
-            "selected list"
-          }{" list can edit and add questions to this tournament"}
+            "selected team"
+          }{" team can edit and add questions to this tournament"}
         </span>
       </label>
     </div>
@@ -156,7 +156,7 @@ function UserListSelect({
 
   if (userId !== tournamentQ.data?.authorId) {
     return <label className="text-sm">
-      <span className="font-semibold">Shared with user list: </span> {selectedUserList ?
+      <span className="font-semibold">Shared with team: </span> {selectedUserList ?
         <Link key={selectedUserList.id} href={getUserListUrl(selectedUserList)} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
       : "None"}
     </label>
@@ -165,7 +165,7 @@ function UserListSelect({
   return (
     <Popover as="div" className="relative w-full">
       <Popover.Button className="btn text-sm flex gap-0">
-        {selectedUserList ? `Shared with ${selectedUserList.name}` : "Share with a list of users"}
+        {selectedUserList ? `Shared with ${selectedUserList.name}` : "Share with a team"}
         <ChevronDownIcon
           className="ml-2 -mr-2 h-5 w-5 text-neutral-400"
           aria-hidden="true"
@@ -203,14 +203,14 @@ function UserListSelect({
             })
             :
             <div className='px-6 italic'>
-              {userListsQ.isSuccess ? "Loading..." : "Create a named list of people who you want to share multiple tournaments with"}
+              {userListsQ.isSuccess ? "Loading..." : "Create a team"}
             </div>
           }
           <button
             className="btn btn-ghost"
-            onClick={() => createList.mutate({ name: "New list" })}
+            onClick={() => createList.mutate({ name: "New team" })}
           >
-            <PlusIcon height={15} /> Create a new list <span className='text-xs text-neutral-400'>
+            <PlusIcon height={15} /> Create a new team <span className='text-xs text-neutral-400'>
               (e.g. for your team, friends, or class)
             </span>
           </button>

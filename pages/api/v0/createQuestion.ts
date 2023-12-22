@@ -85,7 +85,7 @@ const createQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     const missingLists = shareWithLists.filter(list => !userLists.some(userList => userList.name === list))
     if (missingLists.length > 0) {
       res.status(400).json({
-        error: `The following lists do not exist or you are not part of them: ${missingLists.join(', ')}`,
+        error: `The following teams do not exist or you are not part of them: ${missingLists.join(', ')}`,
       })
       return
     }

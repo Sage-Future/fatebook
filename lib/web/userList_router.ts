@@ -50,7 +50,7 @@ export const userListRouter = router({
         }
       })
       if (!userList) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "User list not found" })
+        throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" })
       }
       const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
       if (!ctx.userId || (
@@ -58,7 +58,7 @@ export const userListRouter = router({
         !userList.users.find(u => u.id === ctx.userId) &&
         !userList.emailDomains?.some(domain => user?.email.endsWith(domain))
       )) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this user list" })
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this team" })
       }
 
       return userList
@@ -74,7 +74,7 @@ export const userListRouter = router({
     )
     .mutation(async ({input, ctx}) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a list" })
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a team" })
       }
 
       const userList = await prisma.userList.create({
@@ -297,10 +297,10 @@ export const userListRouter = router({
         }
       })
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to join a list" })
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to join a team" })
       }
       if (!userList) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "User list not found" })
+        throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" })
       }
 
       await prisma.userList.update({

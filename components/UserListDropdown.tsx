@@ -45,7 +45,7 @@ export function UserListDropdown({
   return (
     <Popover as="div" className="relative w-full">
       <Popover.Button className="btn text-sm flex gap-0">
-        {question.sharedWithLists?.length > 0 ? `Shared with ${question.sharedWithLists.map(list => list.name).join(', ')}` : "Share with lists"}
+        {question.sharedWithLists?.length > 0 ? `Shared with ${question.sharedWithLists.map(list => list.name).join(', ')}` : "Share with teams"}
         <ChevronDownIcon
           className="ml-2 -mr-2 h-5 w-5 text-neutral-400"
           aria-hidden="true"
@@ -90,12 +90,12 @@ export function UserListDropdown({
             })
             :
             <div className='px-6 italic'>
-              {userListsQ.isSuccess ? "Loading..." : "Create a named list of people who you want to share multiple questions with"}
+              {userListsQ.isSuccess ? "Loading..." : "Create a team of people who you want to share multiple questions with"}
             </div>
           }
           <button
             className="btn btn-ghost"
-            onClick={() => createList.mutate({ name: "New list" })}
+            onClick={() => createList.mutate({ name: "New team" })}
           >
             <PlusIcon height={15} /> Create a new team
           </button>

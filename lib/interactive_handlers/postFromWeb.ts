@@ -97,18 +97,18 @@ export async function postFromWeb(relativePath: string, teamId?: string, channel
       }
     })
     if (!userList) {
-      return await postEphemeralTextMessage(teamId, channelId, slackUserId, "We couldn't find a user list at that URL.")
+      return await postEphemeralTextMessage(teamId, channelId, slackUserId, "We couldn't find a team at that URL.")
     }
 
     if (userList.authorId !== user.id) {
-      return await postEphemeralTextMessage(teamId, channelId, slackUserId, `You don't have permission to edit that user list. Ask ${userList.author.name || "its creator"}.`)
+      return await postEphemeralTextMessage(teamId, channelId, slackUserId, `You don't have permission to edit that team. Ask ${userList.author.name || "its creator"}.`)
     }
 
     if (userList.syncToSlackChannelId || userList.syncToSlackTeamId) {
-      return await postEphemeralTextMessage(teamId, channelId, slackUserId, `That user list is already synced to a Slack channel, <#${userList.syncToSlackChannelId}>.`)
+      return await postEphemeralTextMessage(teamId, channelId, slackUserId, `That team is already synced to a Slack channel, <#${userList.syncToSlackChannelId}>.`)
     }
 
-    console.log("syncing user list ", userList)
+    console.log("syncing team ", userList)
     await prisma.userList.update({
       where: { id },
       data: {

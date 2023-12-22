@@ -48,7 +48,6 @@ export default function PredictYourYearLandingPage() {
           siteName: 'Fatebook',
         }}
       />
-      <Image src="/telescope_future_1200_white.png" width={1200} height={686} alt="" />
       <h2 className="text-4xl font-bold mb-4">Predict your year</h2>
       <p className="text-lg mb-8">What will the new year hold for you? Write down your predictions and review at the end of the year.</p>
 
@@ -96,6 +95,8 @@ export default function PredictYourYearLandingPage() {
           </li>
         </ul>
       </div>
+
+      <Image src="/telescope_future_1200_white.png" width={1200} height={686} alt="" />
     </div>
   )
 }
