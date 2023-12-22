@@ -56,7 +56,7 @@ export function ShareTournament({
         className="checkbox"
         checked={tournamentQ.data?.anyoneInListCanEdit}
         onChange={(e) => handleUpdate({tournament: {anyoneInListCanEdit: e.target.checked}})}
-        disabled={!tournamentQ.data?.userListId || !isAdmin}
+        disabled={!tournamentQ.data?.userListId || userId !== tournamentQ.data?.authorId}
       />
       <label className="label" htmlFor="anyoneInListCanEdit">
         <span className="label-text">

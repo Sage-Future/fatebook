@@ -19,7 +19,7 @@ export default function PredictYourYearLandingPage() {
     const tournamentId = generateRandomId()
     await createTournament.mutateAsync({
       id: tournamentId,
-      name: teamMode ? 'Your team\'s predictions for 2024' : `${user}'s predictions for 2024`,
+      name: teamMode ? 'Your team\'s predictions for 2024' : `${user?.name}'s predictions for 2024`,
       predictYourYear: year,
     })
     void router.push(`/predict-your-year/${tournamentId}${teamMode ? '?team=1' : ''}`)
