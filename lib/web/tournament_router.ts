@@ -212,16 +212,18 @@ export const tournamentRouter = router({
       const tournaments = await prisma.tournament.findMany({
         where: {
           AND: [
-            {OR: [
-              {authorId: ctx.userId},
-              {userList: {OR: [
-                {users: {some: {id: ctx.userId}}},
-                {...matchesAnEmailDomain(user)},
+            (input?.includePublic ?
+              { sharedPublicly: true, unlisted: false }
+              :
+              {OR: [
                 {authorId: ctx.userId},
+                {userList: {OR: [
+                  {users: {some: {id: ctx.userId}}},
+                  {...matchesAnEmailDomain(user)},
+                  {authorId: ctx.userId},
               ]}},
-            ]},
-              (input?.includePublic ? { sharedPublicly: true, unlisted: false } : {}),
-              (input?.onlyIncludePredictYourYear ? { predictYourYear: { gt: 0 } } : {}),
+            ]}),
+            (input?.onlyIncludePredictYourYear ? { predictYourYear: { gt: 0 } } : {}),
           ]
         },
       })
