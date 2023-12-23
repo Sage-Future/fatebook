@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as chrono from 'chrono-node'
 import clsx from "clsx"
 import { useSession } from 'next-auth/react'
-import React, { KeyboardEvent, useEffect, useRef, useState } from 'react'
+import React, { KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { SubmitHandler, useForm } from "react-hook-form"
 import { mergeRefs } from 'react-merge-refs'
@@ -84,7 +84,8 @@ export function Predict({
     }
   })
 
-  const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = (data, e) => {
+  const [tagsPreview, setTagsPreview] = useState<string[]>([])
+  const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> = useCallback((data, e) => {
     e?.preventDefault() // don't reload the page
 
     if (!userId) {
@@ -128,7 +129,7 @@ export function Predict({
     setTagsPreview([])
 
     reset()
-  }
+  }, [createQuestion, embedded, errors, onQuestionCreate, questionDefaults?.sharePublicly, questionDefaults?.shareWithListIds, questionDefaults?.tournamentId, questionDefaults?.unlisted, reset, tagsPreview, userId])
 
   useEffect(() => {
     if (resetTrigger) {
@@ -228,7 +229,6 @@ export function Predict({
     const tags = question.match(/#\w+/g)
     return tags?.map(t => t.replace("#", "")) || []
   }
-  const [tagsPreview, setTagsPreview] = useState<string[]>([])
   function updateTagsPreview(question: string) {
     const tags = getTags(question)
     if (tags.length > 0 || tagsPreview.length > 0) {

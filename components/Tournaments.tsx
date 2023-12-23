@@ -4,19 +4,35 @@ import { useRouter } from "next/router"
 import { api } from "../lib/web/trpc"
 import { getTournamentUrl } from '../lib/web/utils'
 
-export function Tournaments() {
-  const tournamentsQ = api.tournament.getAll.useQuery()
+export function Tournaments({
+  title = "Tournaments",
+  includePublic = false,
+  onlyIncludePredictYourYear = false,
+  showCreateButton = true,
+} : {
+  title: string,
+  includePublic?: boolean,
+  onlyIncludePredictYourYear?: boolean,
+  showCreateButton?: boolean,
+}) {
+  const tournamentsQ = api.tournament.getAll.useQuery({
+    includePublic,
+    onlyIncludePredictYourYear,
+  })
   const createTournament = api.tournament.create.useMutation()
   const router = useRouter()
+
+  if (!showCreateButton && !tournamentsQ.data?.length) {
+    return <></>
+  }
 
   return (
     <div className="prose">
       <h2 className="flex flex-row gap-2 justify-between mr-3 my-0 select-none">
         <span>
-          Tournaments
-          <span className="text-sm uppercase text-indigo-500 ml-2">New</span>
+          {title}
         </span>
-        <button
+        {showCreateButton && <button
           className="btn btn-ghost"
           onClick={() => {
             void (async () => {
@@ -27,7 +43,7 @@ export function Tournaments() {
           disabled={createTournament.isLoading}
         >
           <PlusIcon width={16} height={16} />
-        </button>
+        </button>}
       </h2>
       {tournamentsQ.data?.map(tournament => (
         <span key={tournament.id} className="flex flex-col gap-2">

@@ -1,10 +1,10 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import prisma from "../_utils_server"
+import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import { scrubApiKeyPropertyRecursive } from './question_router'
 import { publicProcedure, router } from "./trpc_base"
 import { matchesAnEmailDomain } from "./utils"
-import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 
 export const tournamentRouter = router({
   create: publicProcedure
@@ -198,20 +198,30 @@ export const tournamentRouter = router({
     }),
 
   getAll: publicProcedure
-    .query(async ({ ctx }) => {
-      if (!ctx.userId) {
+    .input(
+      z.object({
+        includePublic: z.boolean().optional(),
+        onlyIncludePredictYourYear: z.boolean().optional(),
+      }).optional()
+    )
+    .query(async ({ input, ctx }) => {
+      if (!ctx.userId && !input?.onlyIncludePredictYourYear) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view tournaments" })
       }
       const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
       const tournaments = await prisma.tournament.findMany({
         where: {
-          OR: [
-            {authorId: ctx.userId},
-            {userList: {OR: [
-              {users: {some: {id: ctx.userId}}},
-              {...matchesAnEmailDomain(user)},
+          AND: [
+            {OR: [
               {authorId: ctx.userId},
-            ]}},
+              {userList: {OR: [
+                {users: {some: {id: ctx.userId}}},
+                {...matchesAnEmailDomain(user)},
+                {authorId: ctx.userId},
+              ]}},
+              (input?.includePublic ? { sharedPublicly: true, unlisted: false } : {}),
+            ]},
+            (input?.onlyIncludePredictYourYear ? { predictYourYear: { gt: 0 } } : {}),
           ]
         },
       })

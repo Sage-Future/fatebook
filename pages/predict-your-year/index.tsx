@@ -4,6 +4,7 @@ import { NextSeo } from 'next-seo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { Tournaments } from '../../components/Tournaments'
 import { generateRandomId } from '../../lib/_utils_common'
 import { api } from '../../lib/web/trpc'
 import { signInToFatebook } from '../../lib/web/utils'
@@ -16,21 +17,22 @@ export default function PredictYourYearLandingPage() {
   const year = 2024
   const user = useSession()?.data?.user
 
+  const tournamentsQ = api.tournament.getAll.useQuery()
+
   const handleGetStarted = async ({teamMode}: {teamMode: boolean}) => {
     if (!user) {
       return void signInToFatebook()
     }
 
     const tournamentId = generateRandomId()
+    const name = teamMode ? 'Your team\'s predictions for 2024' : `${user?.name}'s predictions for 2024`
     await createTournament.mutateAsync({
       id: tournamentId,
-      name: teamMode ? 'Your team\'s predictions for 2024' : `${user?.name}'s predictions for 2024`,
+      name: `${tournamentsQ.data?.some(tournament => tournament.name === name) ? `${name} (2)` : name}`,
       predictYourYear: year,
     })
     void router.push(`/predict-your-year/${tournamentId}${teamMode ? '?team=1' : ''}`)
   }
-
-  const tournamentsQ = api.tournament.getAll.useQuery()
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto prose">
@@ -100,6 +102,8 @@ export default function PredictYourYearLandingPage() {
           </li>
         </ul>
       </div>
+
+      <Tournaments title="Public predictions for 2024" onlyIncludePredictYourYear={true} includePublic={true} showCreateButton={false} />
 
       <Image src="/telescope_future_1200_white.png" width={1200} height={686} alt="" />
     </div>
