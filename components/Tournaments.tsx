@@ -10,7 +10,7 @@ export function Tournaments({
   onlyIncludePredictYourYear = false,
   showCreateButton = true,
 } : {
-  title: string,
+  title?: string,
   includePublic?: boolean,
   onlyIncludePredictYourYear?: boolean,
   showCreateButton?: boolean,
