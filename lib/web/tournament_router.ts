@@ -219,9 +219,9 @@ export const tournamentRouter = router({
                 {...matchesAnEmailDomain(user)},
                 {authorId: ctx.userId},
               ]}},
-              (input?.includePublic ? { sharedPublicly: true, unlisted: false } : {}),
             ]},
-            (input?.onlyIncludePredictYourYear ? { predictYourYear: { gt: 0 } } : {}),
+              (input?.includePublic ? { sharedPublicly: true, unlisted: false } : {}),
+              (input?.onlyIncludePredictYourYear ? { predictYourYear: { gt: 0 } } : {}),
           ]
         },
       })
