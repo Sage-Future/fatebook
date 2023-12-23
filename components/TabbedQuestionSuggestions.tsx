@@ -1,6 +1,6 @@
 import { CheckIcon } from '@heroicons/react/20/solid'
 import { ScaleIcon } from '@heroicons/react/24/outline'
-import { BriefcaseIcon, ChartBarIcon, CurrencyDollarIcon, GlobeAsiaAustraliaIcon, HeartIcon, LifebuoyIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/solid'
+import { BriefcaseIcon, ChartBarIcon, CurrencyDollarIcon, GlobeAsiaAustraliaIcon, HeartIcon, LifebuoyIcon, MapIcon, TrophyIcon, UserGroupIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import { useState } from 'react'
@@ -93,7 +93,7 @@ function QuestionSuggestionsByCategory({
               className='w-full'
             >
               {question.label && <div className='bg-neutral-50 px-2 py-1 rounded-lg w-full'>
-                <ReactMarkdown className='text-sm ml-4 italic text-neutral-500 w-full'>{question.label}</ReactMarkdown>
+                <ReactMarkdown className='text-sm ml-4 pr-4 italic text-neutral-500 w-full'>{question.label}</ReactMarkdown>
               </div>}
               {question.q && <button
                 className={clsx(
@@ -145,6 +145,9 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will I think my ${year} goals were appropriately ambitious at the end of the year?`
+      },
+      {
+        label: "Feeling bold? You could make a friendly bet with a friend to give you extra motivation to hit your goal!",
       },
     ],
   },
@@ -267,7 +270,7 @@ const personalSuggestions = (year: number) => [
   },
   {
     category: "Adventure",
-    icon: <GlobeAsiaAustraliaIcon className="w-6 h-6" />,
+    icon: <MapIcon className="w-6 h-6" />,
     questions: [
       {
         q: `Will I visit a new country in ${year}?`,
@@ -293,6 +296,30 @@ const personalSuggestions = (year: number) => [
     ]
   },
   {
+    category: "World",
+    icon: <GlobeAsiaAustraliaIcon className="w-6 h-6" />,
+    questions: [
+      {
+        q: `Will Biden be re-elected in ${year}?`,
+      },
+      {
+        q: `Will the loser of the 2024 US election concede defeat in ${year}?`,
+      },
+      {
+        q: `Will Taylor Swift and Travis Kelce break up in ${year}?`,
+      },
+      {
+        q: `Will GPT-5 be released in ${year}?`,
+      },
+      {
+        q: `Will the Chiefs win the Super Bowl in ${year}?`,
+      },
+      {
+        q: `Will BJP win India's ${year} general election?`,
+      },
+    ]
+  },
+  {
     category: "Meta",
     icon: <ScaleIcon className="w-6 h-6" />,
     questions: [
@@ -313,6 +340,9 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will my predictions about my life in ${year} be more accurate than any of my friends?`,
+      },
+      {
+        label: `We'll send you a reminder at the end of ${year} to reflect on your predictions and record what actually happened.\n\nIn the meantime, you can always come back to [Fatebook](https://fatebook.io) to update your predictions or add new ones. You can also use Fatebook to predict their day-to-day - e.g. 'will I finish writing this blogpost by the end of the day?'\n\nHere's to a great ${year}!`,
       },
     ]
   },
