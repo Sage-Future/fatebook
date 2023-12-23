@@ -66,7 +66,7 @@ export function ShareTournament({
               {tournamentQ.data?.userList?.name}
             </Link>
             :
-            "selected team"
+            "selected"
           }{" team can edit and add questions to this tournament"}
         </span>
       </label>
