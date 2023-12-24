@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_DIRECT_URL")
+  // directUrl = env("DATABASE_DIRECT_URL")
 }
 
 model Workspace {
@@ -259,7 +259,7 @@ model Tournament {
   authorId             String
   author               User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   sharedPublicly       Boolean    @default(false)
-  unlisted             Boolean    @default(false)
+  unlisted             Boolean    @default(true)
   userList             UserList?  @relation(fields: [userListId], references: [id], onDelete: Cascade)
   userListId           String?
   anyoneInListCanEdit  Boolean    @default(false)

@@ -118,6 +118,9 @@ export default function PredictYourYearPage() {
                     title: draft.defaultTitle,
                     tournamentId,
                     resolveBy: new Date(`${year + 1}-01-01`),
+                    unlisted: tournamentQ.data?.unlisted,
+                    sharePublicly: tournamentQ.data?.sharedPublicly,
+                    shareWithListIds: tournamentQ.data?.userListId ? [tournamentQ.data.userListId] : [],
                   }}
                   onQuestionCreate={() => {
                     void utils.tournament.get.invalidate({ id: tournamentId })
