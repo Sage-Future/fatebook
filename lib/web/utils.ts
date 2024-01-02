@@ -228,7 +228,7 @@ export function getSlug(string: string | undefined) {
     : ""
 }
 
-export function getTournamentUrl(tournament: Tournament, useRelativePath?: boolean) {
+export function getTournamentUrl(tournament: Tournament, useRelativePath: boolean) {
   const fullSlug = `${getSlug(tournament.name)}--${tournament.id}`
   if (tournament.predictYourYear) {
     return `${getClientBaseUrl(useRelativePath)}/predict-your-year/${fullSlug}`
@@ -237,7 +237,7 @@ export function getTournamentUrl(tournament: Tournament, useRelativePath?: boole
   }
 }
 
-export function getUserListUrl(list: UserList, useRelativePath?: boolean) {
+export function getUserListUrl(list: UserList, useRelativePath: boolean) {
   const fullSlug = `${getSlug(list.name)}--${list.id}`
   return `${getClientBaseUrl(useRelativePath)}/team/${fullSlug}`
 }

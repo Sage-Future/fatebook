@@ -20,7 +20,7 @@ export function UserLists() {
           onClick={() => {
             void (async () => {
               const userList = await createUserList.mutateAsync({ name: 'New team' })
-              void router.push(getUserListUrl(userList))
+              void router.push(getUserListUrl(userList, true))
             })()
           }}
           disabled={createUserList.isLoading}

@@ -69,7 +69,7 @@ export async function postFromWeb(relativePath: string, teamId?: string, channel
 
     await postSlackMessage(teamId, {
       channel: channelId,
-      text: `<@${slackUserId}> has started synced their forecasting tournament to this channel: *<${getTournamentUrl(tournament)}|${tournament.name}>*. New questions will be posted here.`,
+      text: `<@${slackUserId}> has started synced their forecasting tournament to this channel: *<${getTournamentUrl(tournament, false)}|${tournament.name}>*. New questions will be posted here.`,
     }, slackUserId)
     console.log("initial question sync")
     for (const question of tournament.questions) {

@@ -73,7 +73,7 @@ export function UserListDisplay({
         ) : (
           <>
             <Link
-              href={getUserListUrl(userList)}
+              href={getUserListUrl(userList, true)}
               className={clsx(
                 "p-1 my-auto no-underline hover:underline",
                 compact && "text-sm text-neutral-600"

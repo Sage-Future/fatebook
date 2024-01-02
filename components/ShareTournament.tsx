@@ -72,7 +72,7 @@ export function ShareTournament({
       </label>
     </div>
     <div className='mt-4'>
-      {tournamentQ.data && <SyncToSlack listType='tournament' url={getTournamentUrl(tournamentQ.data)} entity={tournamentQ.data} />}
+      {tournamentQ.data && <SyncToSlack listType='tournament' url={getTournamentUrl(tournamentQ.data, false)} entity={tournamentQ.data} />}
     </div >
     <div className="form-control flex-row items-center gap-2">
       <input

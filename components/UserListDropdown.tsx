@@ -33,7 +33,7 @@ export function UserListDropdown({
       <span className="font-semibold">Shared with teams: </span> {question.sharedWithLists?.map(list =>
         <Link
           key={list.id}
-          href={getUserListUrl(list)}
+          href={getUserListUrl(list, true)}
           onClick={(e) => e.stopPropagation()}
           className="ml-1">
             {list.name}

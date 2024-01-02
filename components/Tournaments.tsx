@@ -37,7 +37,7 @@ export function Tournaments({
           onClick={() => {
             void (async () => {
               const tournament = await createTournament.mutateAsync()
-              void router.push(getTournamentUrl(tournament))
+              void router.push(getTournamentUrl(tournament, true))
             })()
           }}
           disabled={createTournament.isLoading}
@@ -47,7 +47,7 @@ export function Tournaments({
       </h2>
       {tournamentsQ.data?.map(tournament => (
         <span key={tournament.id} className="flex flex-col gap-2">
-          <Link href={getTournamentUrl(tournament)} className="btn btn-ghost flex justify-start">
+          <Link href={getTournamentUrl(tournament, true)} className="btn btn-ghost flex justify-start">
             {tournament.name}
           </Link>
         </span>
