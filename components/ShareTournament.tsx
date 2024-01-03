@@ -7,9 +7,9 @@ import Link from 'next/link'
 import { api } from '../lib/web/trpc'
 import { getTournamentUrl, getUserListUrl, useUserId } from '../lib/web/utils'
 import { CopyToClipboard } from './CopyToClipboard'
+import { FixTournamentQuestionSharing } from './FixTournamentQuestionSharing'
 import { SyncToSlack } from './SyncToSlack'
 import { UserListDisplay } from './UserListDisplay'
-import { FixTournamentQuestionSharing } from './FixTournamentQuestionSharing'
 export function ShareTournament({
   tournamentId,
 }: {
@@ -62,7 +62,7 @@ export function ShareTournament({
       <label className="label" htmlFor="anyoneInListCanEdit">
         <span className="label-text">
           {"Anyone in the "}{tournamentQ.data?.userList ?
-            <Link href={getUserListUrl(tournamentQ.data.userList)}>
+            <Link href={getUserListUrl(tournamentQ.data.userList, true)}>
               {tournamentQ.data?.userList?.name}
             </Link>
             :
@@ -146,7 +146,7 @@ function UserListSelect({
   if (userId !== tournamentQ.data?.authorId) {
     return <label className="text-sm">
       <span className="font-semibold">Shared with team: </span> {selectedUserList ?
-        <Link key={selectedUserList.id} href={getUserListUrl(selectedUserList)} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
+        <Link key={selectedUserList.id} href={getUserListUrl(selectedUserList, true)} onClick={(e) => e.stopPropagation()} className="ml-1">{selectedUserList.name}</Link>
       : "None"}
     </label>
   }
