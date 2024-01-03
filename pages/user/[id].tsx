@@ -1,9 +1,9 @@
+import { User } from '@prisma/client'
+import { NextSeo } from 'next-seo'
 import { useRouter } from 'next/router'
 import { Questions } from '../../components/Questions'
-import { api } from '../../lib/web/trpc'
 import { TrackRecord } from '../../components/TrackRecord'
-import { NextSeo } from 'next-seo'
-import { User } from '@prisma/client'
+import { api } from '../../lib/web/trpc'
 
 export default function UserPage() {
   const theirUserId = useUserPageId()
@@ -39,5 +39,5 @@ function useUserPageId() {
 }
 
 export function getUserPageUrl(user: User) {
-  return `/user/${encodeURIComponent(user.name?.replace(" ", "-") || "")}--${user.id}`
+  return `/user/${encodeURIComponent(user?.name?.replace(" ", "-") || "")}--${user?.id}`
 }
