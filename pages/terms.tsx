@@ -6,9 +6,7 @@ export default function TermsPage() {
   return (
     <div className="prose mx-auto my-8">
       <NextSeo title="Privacy" />
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-        {termsMd}
-      </ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{termsMd}</ReactMarkdown>
     </div>
   )
 }

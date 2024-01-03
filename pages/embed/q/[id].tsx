@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react"
 import { QuestionOrSignIn } from "../../../components/QuestionOrSignIn"
 import { sendToHost, useListenForSessionReload } from "../../../lib/web/embed"
 
-
 export default function QuestionEmbed() {
   const ref = useRef<HTMLDivElement>(null)
 
@@ -10,7 +9,7 @@ export default function QuestionEmbed() {
     if (!ref.current) return
 
     const resizeObserver = new ResizeObserver(() => {
-      sendToHost('resize_iframe', {box: ref.current!.getBoundingClientRect()})
+      sendToHost("resize_iframe", { box: ref.current!.getBoundingClientRect() })
     })
 
     resizeObserver.observe(ref.current)
@@ -20,9 +19,11 @@ export default function QuestionEmbed() {
 
   useListenForSessionReload()
 
-  return <div ref={ref} className="max-h-[500px] overflow-auto">
-    <QuestionOrSignIn embedded={true} alwaysExpand={true}></QuestionOrSignIn>
-  </div>
+  return (
+    <div ref={ref} className="max-h-[500px] overflow-auto">
+      <QuestionOrSignIn embedded={true} alwaysExpand={true}></QuestionOrSignIn>
+    </div>
+  )
 }
 
 // Strips away the header and footer

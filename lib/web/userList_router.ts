@@ -1,43 +1,49 @@
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
-import prisma, { backendAnalyticsEvent } from '../_utils_server'
-import { syncToSlackIfNeeded } from '../interactive_handlers/postFromWeb'
-import { emailNewlySharedWithUsers, getQuestionAssertAuthor } from './question_router'
-import { publicProcedure, router } from './trpc_base'
-import { matchesAnEmailDomain } from './utils'
+import { TRPCError } from "@trpc/server"
+import { z } from "zod"
+import prisma, { backendAnalyticsEvent } from "../_utils_server"
+import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
+import {
+  emailNewlySharedWithUsers,
+  getQuestionAssertAuthor,
+} from "./question_router"
+import { publicProcedure, router } from "./trpc_base"
+import { matchesAnEmailDomain } from "./utils"
 
 export const userListRouter = router({
-  getUserLists: publicProcedure
-    .query(async ({ ctx }) => {
-      if (!ctx.userId) {
-        return null
-      }
+  getUserLists: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.userId) {
+      return null
+    }
 
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
-      return await prisma.userList.findMany({
-        where: {
-          OR: [
-            {authorId: ctx.userId},
-            {users: {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId || "NO MATCH" },
+    })
+    return await prisma.userList.findMany({
+      where: {
+        OR: [
+          { authorId: ctx.userId },
+          {
+            users: {
               some: {
                 id: ctx.userId,
-              }
-            }},
-            {...matchesAnEmailDomain(user)},
-          ]
-        },
-        include: {
-          author: true,
-          users: true,
-        }
-      })
-    }),
+              },
+            },
+          },
+          { ...matchesAnEmailDomain(user) },
+        ],
+      },
+      include: {
+        author: true,
+        users: true,
+      },
+    })
+  }),
 
   get: publicProcedure
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       const userList = await prisma.userList.findUnique({
@@ -47,34 +53,44 @@ export const userListRouter = router({
         include: {
           users: true,
           author: true,
-        }
+        },
       })
       if (!userList) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" })
       }
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
-      if (!ctx.userId || (
-        userList.authorId !== ctx.userId &&
-        !userList.users.find(u => u.id === ctx.userId) &&
-        !userList.emailDomains?.some(domain => user?.email.endsWith(domain))
-      )) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this team" })
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.userId || "NO MATCH" },
+      })
+      if (
+        !ctx.userId ||
+        (userList.authorId !== ctx.userId &&
+          !userList.users.find((u) => u.id === ctx.userId) &&
+          !userList.emailDomains?.some(
+            (domain) => user?.email.endsWith(domain),
+          ))
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You don't have access to this team",
+        })
       }
 
       return userList
-    }
-  ),
+    }),
 
   createList: publicProcedure
     .input(
       z.object({
         name: z.string(),
         userEmails: z.array(z.string()).optional(),
-      })
+      }),
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a team" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to create a team",
+        })
       }
 
       const userList = await prisma.userList.create({
@@ -82,16 +98,16 @@ export const userListRouter = router({
           name: input.name,
           author: {
             connect: {
-              id: ctx.userId
-            }
+              id: ctx.userId,
+            },
           },
           users: {
-            connect: input.userEmails?.map(email => ({ email }))
-          }
+            connect: input.userEmails?.map((email) => ({ email })),
+          },
         },
         include: {
           users: true,
-        }
+        },
       })
 
       await backendAnalyticsEvent("create_user_list", {
@@ -109,13 +125,13 @@ export const userListRouter = router({
         name: z.string().optional(),
         userEmails: z.array(z.string()).optional(),
         emailDomains: z.array(z.string()).optional(),
-      })
+      }),
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       const oldList = await prisma.userList.findUnique({
         where: {
           id: input.listId,
-        }
+        },
       })
       if (!oldList || !ctx.userId || oldList.authorId !== ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "" })
@@ -132,7 +148,7 @@ export const userListRouter = router({
         })
 
         const nonExistingUsers = input.userEmails.filter(
-          (email) => !existingUsers.some((u) => u.email === email)
+          (email) => !existingUsers.some((u) => u.email === email),
         )
 
         if (nonExistingUsers.length > 0) {
@@ -149,10 +165,10 @@ export const userListRouter = router({
         data: {
           name: input?.name,
           users: {
-            set: input.userEmails?.map(email => ({ email }))
+            set: input.userEmails?.map((email) => ({ email })),
           },
           emailDomains: input.emailDomains,
-        }
+        },
       })
 
       await backendAnalyticsEvent("update_user_list", {
@@ -165,13 +181,13 @@ export const userListRouter = router({
     .input(
       z.object({
         listId: z.string(),
-      })
+      }),
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       const oldList = await prisma.userList.findUnique({
         where: {
           id: input.listId,
-        }
+        },
       })
       if (!oldList || !ctx.userId || oldList.authorId !== ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "" })
@@ -219,19 +235,21 @@ export const userListRouter = router({
       z.object({
         questionId: z.string(),
         listIds: z.array(z.string()),
-      })
+      }),
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
-      const oldLists = (await prisma.question.findUnique({
-        where: {
-          id: input.questionId,
-        },
-        include: {
-          sharedWithLists: true,
-        }
-      }))?.sharedWithLists
+      const oldLists = (
+        await prisma.question.findUnique({
+          where: {
+            id: input.questionId,
+          },
+          include: {
+            sharedWithLists: true,
+          },
+        })
+      )?.sharedWithLists
 
       const question = await prisma.question.update({
         where: {
@@ -239,40 +257,49 @@ export const userListRouter = router({
         },
         data: {
           sharedWithLists: {
-            set: input.listIds.map(id => ({ id }))
+            set: input.listIds.map((id) => ({ id })),
           },
         },
         include: {
           user: {
             include: {
               profiles: true,
-            }
+            },
           },
           sharedWithLists: {
             include: {
               users: true,
-            }
+            },
           },
           sharedWith: true,
           tournaments: true,
-        }
+        },
       })
 
       // email only people newly shared with
       // todo - could track everyone we've emailed and only email new people
-      const newListIds = input.listIds.filter(id => !(oldLists?.map(l => l.id) || []).includes(id))
-      const newUsersSharedWith = Array.from(new Set(question.sharedWithLists
-        .filter(l => newListIds.includes(l.id))
-        .flatMap(l => l.users)
-        .filter(u => u.id !== ctx.userId
-          && !(question.sharedWith?.map(u => u.id) || []).includes(u.id)
-        )
-        .map(u => u.email)
-      ))
+      const newListIds = input.listIds.filter(
+        (id) => !(oldLists?.map((l) => l.id) || []).includes(id),
+      )
+      const newUsersSharedWith = Array.from(
+        new Set(
+          question.sharedWithLists
+            .filter((l) => newListIds.includes(l.id))
+            .flatMap((l) => l.users)
+            .filter(
+              (u) =>
+                u.id !== ctx.userId &&
+                !(question.sharedWith?.map((u) => u.id) || []).includes(u.id),
+            )
+            .map((u) => u.email),
+        ),
+      )
 
       await emailNewlySharedWithUsers(newUsersSharedWith, question)
 
-      const listsRemoved = (oldLists || []).filter(l => !input.listIds.includes(l.id))
+      const listsRemoved = (oldLists || []).filter(
+        (l) => !input.listIds.includes(l.id),
+      )
       await syncToSlackIfNeeded(question, ctx.userId, listsRemoved)
 
       await backendAnalyticsEvent("set_question_lists", {
@@ -285,19 +312,22 @@ export const userListRouter = router({
     .input(
       z.object({
         listInviteId: z.string(),
-      })
+      }),
     )
-    .mutation(async ({input, ctx}) => {
+    .mutation(async ({ input, ctx }) => {
       const userList = await prisma.userList.findUnique({
         where: {
           inviteId: input.listInviteId,
         },
         include: {
           users: true,
-        }
+        },
       })
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to join a team" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to join a team",
+        })
       }
       if (!userList) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" })
@@ -311,9 +341,9 @@ export const userListRouter = router({
           users: {
             connect: {
               id: ctx.userId,
-            }
-          }
-        }
+            },
+          },
+        },
       })
 
       await backendAnalyticsEvent("join_user_list_from_link", {
@@ -322,6 +352,5 @@ export const userListRouter = router({
       })
 
       return userList.id
-    }
-  ),
+    }),
 })

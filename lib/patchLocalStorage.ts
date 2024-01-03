@@ -22,8 +22,8 @@
   Unfortunately, disabling this stops session update from changing the page within the embed frames,
   after extensive investigation the best we can do at the moment is reload the embed everytime it's vibility changes if it's unauthenticated (this is done in embed.js "useListenForSessionReload()")
 */
-export function patchLocalStorage () {
-  if (location.href.includes('/embed/')) {
+export function patchLocalStorage() {
+  if (location.href.includes("/embed/")) {
     // prevent receiving
     window.addEventListener("storage", (event) => {
       if (event.newValue) {

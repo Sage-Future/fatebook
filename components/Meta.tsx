@@ -12,8 +12,7 @@ export default function Meta() {
         locale: "en_US",
         url: "https://fatebook.io/",
         title: "Fatebook",
-        description:
-          "Track your predictions, make better decisions.",
+        description: "Track your predictions, make better decisions.",
         siteName: "Fatebook",
         images: [
           {

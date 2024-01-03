@@ -48,7 +48,8 @@ export const api = createTRPCNext<AppRouter>({
       queryClientConfig: {
         defaultOptions: {
           queries: {
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+            retryDelay: (attemptIndex) =>
+              Math.min(1000 * 2 ** attemptIndex, 30000),
             onError: (error) => {
               if (typeof window === "undefined") return false
               if (!(error instanceof TRPCClientError)) return false
@@ -62,14 +63,15 @@ export const api = createTRPCNext<AppRouter>({
                   `Oops, something went wrong.` +
                     (process.env.NODE_ENV === "development"
                       ? `\n${error.name} ${error.message}`
-                      : "")
+                      : ""),
                 )
                 return false
               }
             },
           },
           mutations: {
-            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+            retryDelay: (attemptIndex) =>
+              Math.min(1000 * 2 ** attemptIndex, 30000),
             onError: (error) => {
               if (typeof window === "undefined") return false
               if (!(error instanceof TRPCClientError)) return false
@@ -79,7 +81,7 @@ export const api = createTRPCNext<AppRouter>({
                   `Oops, something went wrong.` +
                     (process.env.NODE_ENV === "development"
                       ? `\n${error.name} ${error.message}`
-                      : "")
+                      : ""),
                 )
                 return false
               }

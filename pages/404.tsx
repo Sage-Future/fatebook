@@ -1,5 +1,5 @@
-import { NextSeo } from 'next-seo'
-import Link from 'next/link'
+import { NextSeo } from "next-seo"
+import Link from "next/link"
 export default function Custom404() {
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">

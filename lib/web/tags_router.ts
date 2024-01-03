@@ -1,27 +1,26 @@
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
-import prisma, { backendAnalyticsEvent } from '../_utils_server'
-import { publicProcedure, router } from './trpc_base'
+import { TRPCError } from "@trpc/server"
+import { z } from "zod"
+import prisma, { backendAnalyticsEvent } from "../_utils_server"
+import { publicProcedure, router } from "./trpc_base"
 
 export const tagsRouter = router({
-  getAll: publicProcedure
-    .query(async ({ ctx }) => {
-      if (!ctx.userId) {
-        return null
-      }
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.userId) {
+      return null
+    }
 
-      return await prisma.tag.findMany({
-        where: {
-          userId: ctx.userId,
-        },
-      })
-    }),
+    return await prisma.tag.findMany({
+      where: {
+        userId: ctx.userId,
+      },
+    })
+  }),
 
   getByName: publicProcedure
     .input(
       z.object({
         tagName: z.string(),
-      })
+      }),
     )
     .query(async ({ input, ctx }) => {
       if (!ctx.userId) {
@@ -47,11 +46,14 @@ export const tagsRouter = router({
       z.object({
         tags: z.string().array(),
         questionId: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to add a tag" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to add a tag",
+        })
       }
 
       await prisma.question.update({
@@ -66,7 +68,7 @@ export const tagsRouter = router({
                 name_userId: {
                   name,
                   userId: ctx.userId || "",
-                }
+                },
               },
               create: {
                 name,
@@ -78,7 +80,7 @@ export const tagsRouter = router({
               },
             })),
           },
-        }
+        },
       })
 
       // delete any now unused tags

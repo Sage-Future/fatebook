@@ -1,10 +1,17 @@
-import { VercelRequest, VercelResponse } from '@vercel/node'
-import fetch from 'node-fetch'
-import { clientId, clientSecret, questionWritingTipsUrl } from '../../../lib/_constants'
-import prisma, { backendAnalyticsEvent, postSlackMessage } from '../../../lib/_utils_server'
+import { VercelRequest, VercelResponse } from "@vercel/node"
+import fetch from "node-fetch"
+import {
+  clientId,
+  clientSecret,
+  questionWritingTipsUrl,
+} from "../../../lib/_constants"
+import prisma, {
+  backendAnalyticsEvent,
+  postSlackMessage,
+} from "../../../lib/_utils_server"
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.query?.error && req.query?.error === 'access_denied') {
+  if (req.query?.error && req.query?.error === "access_denied") {
     res.redirect("/for-slack")
   }
 
@@ -20,21 +27,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const response = await fetch(
     `https://slack.com/api/oauth.v2.access?client_id=${clientId}&client_secret=${clientSecret}&code=${tempCode}`,
     {
-      method: 'post',
+      method: "post",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
       },
-    })
-  let data = await response.json() as {ok: boolean, access_token: string, team: { id: string, name: string }, scope: string, authed_user: { id: string }, bot_user_id?: string}
-  console.log({data})
+    },
+  )
+  let data = (await response.json()) as {
+    ok: boolean
+    access_token: string
+    team: { id: string; name: string }
+    scope: string
+    authed_user: { id: string }
+    bot_user_id?: string
+  }
+  console.log({ data })
   if (data.ok === false) {
-    console.error('Error getting permanent token:', data, ' for temp code: ', tempCode, ' and client id: ', clientId)
-    throw new Error('Error getting permanent token')
+    console.error(
+      "Error getting permanent token:",
+      data,
+      " for temp code: ",
+      tempCode,
+      " and client id: ",
+      clientId,
+    )
+    throw new Error("Error getting permanent token")
   }
 
   if (!data.access_token || !data.team || !data.team.id || !data.team.name) {
-    console.error('Missing data from response:', data)
-    throw new Error('Missing data from response')
+    console.error("Missing data from response:", data)
+    throw new Error("Missing data from response")
   }
 
   // store the token in db
@@ -55,10 +77,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const user = data?.authed_user?.id
   if (user) {
-    const fatebookMention = data.bot_user_id ? `<@${data.bot_user_id}>` : "@Fatebook"
-    await postSlackMessage(data.team.id, {
-      channel: user,
-      text: `You've added Fatebook to ${data.team.name}!\n
+    const fatebookMention = data.bot_user_id
+      ? `<@${data.bot_user_id}>`
+      : "@Fatebook"
+    await postSlackMessage(
+      data.team.id,
+      {
+        channel: user,
+        text: `You've added Fatebook to ${data.team.name}!\n
 *Here’s a message you can copy and paste to introduce it to your team:*\n\n
 ${fatebookMention} is now added to this workspace! It lets us track our predictions, right here in Slack.\n
 You can create a forecasting question like “Will we release the podcast by Tuesday?” by typing \`/forecast\` . Then, everyone in the channel can add their predictions. When Tuesday comes around, you can resolve the question as Yes, No or Ambiguous.\n
@@ -69,8 +95,10 @@ Some ideas of questions we can forecast on:\n
   :chart_with_upwards_trend: Project progress: \`"/forecast Will we move office this year?"\`\n
   :earth_africa: Project-relevant events: \`"/forecast Will GPT-5 be released before 2025?"\`\n
 <${questionWritingTipsUrl}|More question ideas>\n`,
-      mrkdwn: true,
-    }, user)
+        mrkdwn: true,
+      },
+      user,
+    )
     console.log("DMed user who installed")
   } else {
     console.error("Missing user id, did not DM on install. In response: ", data)

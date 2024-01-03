@@ -6,9 +6,7 @@ export default function PrivacyPage() {
   return (
     <div className="prose mx-auto my-8">
       <NextSeo title="Privacy" />
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-        {privacyMd}
-      </ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{privacyMd}</ReactMarkdown>
     </div>
   )
 }

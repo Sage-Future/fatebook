@@ -1,12 +1,11 @@
 import { Question, Tournament, User, UserList } from "@prisma/client"
-import { utcToZonedTime } from 'date-fns-tz'
+import { utcToZonedTime } from "date-fns-tz"
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import React, { ReactNode } from "react"
 import { toast } from "react-hot-toast"
 import { getQuestionUrl } from "./question_url"
-import { getClientBaseUrl } from './trpc'
-
+import { getClientBaseUrl } from "./trpc"
 
 export function useUserId() {
   const session = useSession()
@@ -15,30 +14,34 @@ export function useUserId() {
 
 export async function signInToFatebook() {
   if (isWebview(window.navigator.userAgent)) {
-    toast("Open Fatebook in Safari or Chrome to sign in.\n\nGoogle does not support this browser.", {
-      duration: 10000,
-    })
+    toast(
+      "Open Fatebook in Safari or Chrome to sign in.\n\nGoogle does not support this browser.",
+      {
+        duration: 10000,
+      },
+    )
     return
   }
   await signIn("google", { redirect: true })
 }
 
-export function getChartJsParams(buckets: number[],
+export function getChartJsParams(
+  buckets: number[],
   bucketedForecasts: { bucket: number; mean: number; count: number }[],
   interactive = false,
-  hideTitles=false,
+  hideTitles = false,
   isThisUser = true,
 ) {
   const pronoun = isThisUser ? "Your" : "Their"
   return {
     type: "line",
     data: {
-      labels: buckets.map(b => (b * 100).toFixed(0) + "%"),
+      labels: buckets.map((b) => (b * 100).toFixed(0) + "%"),
       datasets: [
         {
           backgroundColor: "#4e46e59c",
           borderColor: "#4e46e59c",
-          data: bucketedForecasts.map(f => f.mean * 100),
+          data: bucketedForecasts.map((f) => f.mean * 100),
           label: `${pronoun} calibration`,
           borderWidth: 1,
           fill: false,
@@ -52,73 +55,81 @@ export function getChartJsParams(buckets: number[],
           fill: false,
           pointRadius: 0,
           borderWidth: 1,
-        }
-      ]
+        },
+      ],
     },
     options: {
       maintainAspectRatio: true,
       spanGaps: false,
       elements: {
         line: {
-          tension: 0.000001
-        }
-      },
-      plugins: interactive ? {
-        legend: {
-          maxWidth: 100,
-          labels: {
-            usePointStyle: true,
-          },
-          onClick: () => {} // overwrite default behaviour of hiding points
-        }
-      } : {
-        legend: {
-          labels: {
-            usePointStyle: true,
-          }
-        }
-      },
-      scales: interactive ? {
-        y: {
-          title: {
-            display: true,
-            text: '% of questions that resolved Yes',
-            color: hideTitles ? "transparent" : "gray"
-          },
-          ticks: {
-            // Include a dollar sign in the ticks
-            callback: (value: any) =>  value + "%"
-          }
+          tension: 0.000001,
         },
-        x: {
-          title: {
-            display: true,
-            text: `${pronoun} forecast (bucketed by nearest 10%)`,
-            color: hideTitles ? "transparent" : "gray",
-          },
-        }
-      } : {
-        xAxes: [{
-          display: true,
-          scaleLabel: {
-            display: true,
-            labelString: `${pronoun} forecast (bucketed by nearest 10%)`
-          },
-          gridLines: {
-            color: "#1e1e1e",
+      },
+      plugins: interactive
+        ? {
+            legend: {
+              maxWidth: 100,
+              labels: {
+                usePointStyle: true,
+              },
+              onClick: () => {}, // overwrite default behaviour of hiding points
+            },
           }
-        }],
-        yAxes: [{
-          display: true,
-          scaleLabel: {
-            display: true,
-            labelString: '% of questions that resolved Yes'
+        : {
+            legend: {
+              labels: {
+                usePointStyle: true,
+              },
+            },
           },
-          gridLines: {
-            color: "#1e1e1e",
+      scales: interactive
+        ? {
+            y: {
+              title: {
+                display: true,
+                text: "% of questions that resolved Yes",
+                color: hideTitles ? "transparent" : "gray",
+              },
+              ticks: {
+                // Include a dollar sign in the ticks
+                callback: (value: any) => value + "%",
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: `${pronoun} forecast (bucketed by nearest 10%)`,
+                color: hideTitles ? "transparent" : "gray",
+              },
+            },
           }
-        }],
-      }
+        : {
+            xAxes: [
+              {
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: `${pronoun} forecast (bucketed by nearest 10%)`,
+                },
+                gridLines: {
+                  color: "#1e1e1e",
+                },
+              },
+            ],
+            yAxes: [
+              {
+                display: true,
+                scaleLabel: {
+                  display: true,
+                  labelString: "% of questions that resolved Yes",
+                },
+                gridLines: {
+                  color: "#1e1e1e",
+                },
+              },
+            ],
+          },
     },
   }
 }
@@ -132,21 +143,32 @@ export function getPredictionBookIdPrefix() {
 }
 
 export function getCsvIdPrefix() {
-  return 'cs_'
+  return "cs_"
 }
 
 export function ifEmpty<T>(value: Array<T>, defaultValue: ReactNode) {
-  return (!value || value?.length === 0) ? defaultValue : value
+  return !value || value?.length === 0 ? defaultValue : value
 }
 
-export async function invalidateQuestion(utils: any, question: Question | {id: string}) {
-  await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({}, {
-    refetchPage: (page: any) => page.items.some((item: any) => item.id === question.id)
-  })
+export async function invalidateQuestion(
+  utils: any,
+  question: Question | { id: string },
+) {
+  await utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate(
+    {},
+    {
+      refetchPage: (page: any) =>
+        page.items.some((item: any) => item.id === question.id),
+    },
+  )
   await utils.question.getQuestion.invalidate({ questionId: question.id })
 }
 
-export function truncateString(str: string | undefined, length: number, includeEllipsis = true) {
+export function truncateString(
+  str: string | undefined,
+  length: number,
+  includeEllipsis = true,
+) {
   if (!str) return ""
 
   if (str.length <= length) return str
@@ -154,7 +176,8 @@ export function truncateString(str: string | undefined, length: number, includeE
   // split on words
   const words = str.split(" ")
 
-  if (words.length === 1) return str.substring(0, length) + (includeEllipsis ? "..." : "")
+  if (words.length === 1)
+    return str.substring(0, length) + (includeEllipsis ? "..." : "")
 
   let truncated = ""
   for (const word of words) {
@@ -166,15 +189,19 @@ export function truncateString(str: string | undefined, length: number, includeE
 
 export const webFeedbackUrl = "https://forms.gle/mfyCqLG4pLoEqYfy9"
 
-export function downloadBlob(content: any, filename: string, contentType: string) {
+export function downloadBlob(
+  content: any,
+  filename: string,
+  contentType: string,
+) {
   // Create a blob
   var blob = new Blob([content], { type: contentType })
   var url = URL.createObjectURL(blob)
 
   // Create a link to download it
-  var pom = document.createElement('a')
+  var pom = document.createElement("a")
   pom.href = url
-  pom.setAttribute('download', filename)
+  pom.setAttribute("download", filename)
   pom.click()
 }
 
@@ -192,11 +219,13 @@ export function transitionProps() {
 }
 
 export function hashString(str: string) {
-  var hash = 0, i, chr
+  var hash = 0,
+    i,
+    chr
   if (str.length === 0) return hash
   for (i = 0; i < str.length; i++) {
-    chr   = str.charCodeAt(i)
-    hash  = ((hash << 5) - hash) + chr
+    chr = str.charCodeAt(i)
+    hash = (hash << 5) - hash + chr
     // Convert to 32bit integer
     hash |= 0
   }
@@ -213,8 +242,8 @@ export function utcDateStrToLocalDate(utcDateStr: string) {
 export function matchesAnEmailDomain(user: User | null) {
   return {
     emailDomains: {
-      hasSome: user?.email.split('@').slice(-1) || ["NO MATCH"]
-    }
+      hasSome: user?.email.split("@").slice(-1) || ["NO MATCH"],
+    },
   }
 }
 
@@ -223,12 +252,15 @@ export function getSlug(string: string | undefined) {
     ? encodeURIComponent(
         truncateString(string, 40, false)
           .replace(/[^a-z0-9]+/gi, "-")
-          .toLowerCase()
+          .toLowerCase(),
       )
     : ""
 }
 
-export function getTournamentUrl(tournament: Tournament, useRelativePath: boolean) {
+export function getTournamentUrl(
+  tournament: Tournament,
+  useRelativePath: boolean,
+) {
   const fullSlug = `${getSlug(tournament.name)}--${tournament.id}`
   if (tournament.predictYourYear) {
     return `${getClientBaseUrl(useRelativePath)}/predict-your-year/${fullSlug}`

@@ -4,44 +4,46 @@
 
 :root {
   /* is white by default, which is an issue for our embeds */
-  background-color: transparent; 
+  background-color: transparent;
 }
 
-:root, body, #__next {
+:root,
+body,
+#__next {
   height: 100%;
 }
 
 @layer components {
   .button {
-    @apply inline-flex gap-1 items-center px-4 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-neutral-200 hover:bg-neutral-300 text-neutral-700
+    @apply inline-flex gap-1 items-center px-4 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm disabled:opacity-50 disabled:cursor-not-allowed bg-neutral-200 hover:bg-neutral-300 text-neutral-700;
   }
   button.primary {
-    @apply text-white bg-indigo-600 hover:bg-indigo-700
+    @apply text-white bg-indigo-600 hover:bg-indigo-700;
   }
   button.white {
-    @apply text-black bg-white hover:bg-neutral-50 
+    @apply text-black bg-white hover:bg-neutral-50;
   }
   .btn {
-    @apply normal-case min-h-[40px] h-auto animate-none
+    @apply normal-case min-h-[40px] h-auto animate-none;
   }
   button {
-    @apply select-none
+    @apply select-none;
   }
   .btn-primary {
-    @apply text-white
+    @apply text-white;
   }
   .menu li > a {
-    @apply active:bg-neutral-300 active:text-black !important
+    @apply active:bg-neutral-300 active:text-black !important;
   }
   input:disabled {
     /* Override iOS / Android font color change */
-    -webkit-text-fill-color:black;
+    -webkit-text-fill-color: black;
     /* Override iOS opacity change affecting text & background color */
     /* setting this to 0.7 rather than 1 for UpdateableTextForecast, todo do something smarter */
-    -webkit-opacity:0.7;
+    -webkit-opacity: 0.7;
   }
 
   .tooltip:before {
-    max-width: 12rem
+    max-width: 12rem;
   }
 }

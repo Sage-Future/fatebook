@@ -1,14 +1,16 @@
-import { TRPCError } from '@trpc/server'
-import { z } from 'zod'
-import { sendEmailReadyToResolveNotification } from '../../pages/api/check_for_message_updates'
-import prisma, { backendAnalyticsEvent, getSlackPermalinkFromChannelAndTS } from '../_utils_server'
-import { importRouter } from './import_router'
-import { questionRouter } from './question_router'
-import { tagsRouter } from './tags_router'
-import { tournamentRouter } from './tournament_router'
-import { publicProcedure, router } from './trpc_base'
-import { userListRouter } from './userList_router'
-
+import { TRPCError } from "@trpc/server"
+import { z } from "zod"
+import { sendEmailReadyToResolveNotification } from "../../pages/api/check_for_message_updates"
+import prisma, {
+  backendAnalyticsEvent,
+  getSlackPermalinkFromChannelAndTS,
+} from "../_utils_server"
+import { importRouter } from "./import_router"
+import { questionRouter } from "./question_router"
+import { tagsRouter } from "./tags_router"
+import { tournamentRouter } from "./tournament_router"
+import { publicProcedure, router } from "./trpc_base"
+import { userListRouter } from "./userList_router"
 
 export const appRouter = router({
   question: questionRouter,
@@ -33,22 +35,30 @@ export const appRouter = router({
         },
       })
       if (!question) {
-        throw new Error('question not found')
+        throw new Error("question not found")
       }
       await sendEmailReadyToResolveNotification(question)
     }),
 
   getSlackPermalink: publicProcedure
     .input(
-      z.object({
-        teamId: z.string(),
-        channel: z.string(),
-        ts: z.string(),
-      }).optional(),
+      z
+        .object({
+          teamId: z.string(),
+          channel: z.string(),
+          ts: z.string(),
+        })
+        .optional(),
     )
     .query(async ({ input }) => {
-      if (!input) { return null }
-      return await getSlackPermalinkFromChannelAndTS(input.teamId, input.channel, input.ts)
+      if (!input) {
+        return null
+      }
+      return await getSlackPermalinkFromChannelAndTS(
+        input.teamId,
+        input.channel,
+        input.ts,
+      )
     }),
 
   unsubscribe: publicProcedure
@@ -66,8 +76,8 @@ export const appRouter = router({
       })
       if (!user) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'User not found',
+          code: "NOT_FOUND",
+          message: "User not found",
         })
       }
 
@@ -80,10 +90,13 @@ export const appRouter = router({
         },
       })
 
-      await backendAnalyticsEvent(input.setUnsubscribed ? 'email_unsubscribe' : 'email_resubscribe', {
-        platform: 'web',
-        email: input.userEmail,
-      })
+      await backendAnalyticsEvent(
+        input.setUnsubscribed ? "email_unsubscribe" : "email_resubscribe",
+        {
+          platform: "web",
+          email: input.userEmail,
+        },
+      )
     }),
 
   editName: publicProcedure
@@ -94,7 +107,10 @@ export const appRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      if ((input.newName !== undefined && input.newName.length === 0) || !ctx.userId) {
+      if (
+        (input.newName !== undefined && input.newName.length === 0) ||
+        !ctx.userId
+      ) {
         return
       }
 
@@ -109,39 +125,39 @@ export const appRouter = router({
       })
     }),
 
-  getApiKey: publicProcedure
-    .query(async ({ ctx }) => {
-      if (!ctx.userId) {
-        return null
-      }
+  getApiKey: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.userId) {
+      return null
+    }
 
-      const user = await prisma.user.findUnique({
-        where: {
-          id: ctx.userId,
-        },
-      })
+    const user = await prisma.user.findUnique({
+      where: {
+        id: ctx.userId,
+      },
+    })
 
-      return user?.apiKey
-    }),
+    return user?.apiKey
+  }),
 
-  regenerateApiKey: publicProcedure
-    .mutation(async ({ ctx }) => {
-      if (!ctx.userId) {
-        return null
-      }
+  regenerateApiKey: publicProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.userId) {
+      return null
+    }
 
-      const newApiKey = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      await prisma.user.update({
-        where: {
-          id: ctx.userId,
-        },
-        data: {
-          apiKey: newApiKey,
-        },
-      })
+    const newApiKey =
+      Math.random().toString(36).substring(2, 15) +
+      Math.random().toString(36).substring(2, 15)
+    await prisma.user.update({
+      where: {
+        id: ctx.userId,
+      },
+      data: {
+        apiKey: newApiKey,
+      },
+    })
 
-      return newApiKey
-    }),
+    return newApiKey
+  }),
 
   getUserInfo: publicProcedure
     .input(
@@ -160,11 +176,13 @@ export const appRouter = router({
         },
       })
 
-      return user ? {
-        name: user.name || undefined,
-        image: user.image || undefined,
-        id: user.id,
-      } :  undefined
+      return user
+        ? {
+            name: user.name || undefined,
+            image: user.image || undefined,
+            id: user.id,
+          }
+        : undefined
     }),
 })
 

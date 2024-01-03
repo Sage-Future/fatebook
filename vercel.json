@@ -1,6 +1,8 @@
 {
-  "crons": [{
-    "path": "/api/check_for_message_updates?key=e623c56b6d2adb695b99",
-    "schedule": "0 1 * * *"
-  }]
+  "crons": [
+    {
+      "path": "/api/check_for_message_updates?key=e623c56b6d2adb695b99",
+      "schedule": "0 1 * * *"
+    }
+  ]
 }

@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node'
+import { VercelRequest, VercelResponse } from "@vercel/node"
 import { installGlobalCommands } from "../../../lib/discord/utils"
 
 enum ApplicationCommandOptionType {
@@ -46,8 +46,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           required: true,
           min_value: 0,
           max_value: 100,
-        }
-      ]
+        },
+      ],
     },
   ])
 

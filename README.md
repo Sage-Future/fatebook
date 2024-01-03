@@ -7,6 +7,7 @@ This repo includes [fatebook.io](https://fatebook.io), [Fatebook for Slack](fate
 You can report bugs in the [Issues](https://github.com/Sage-Future/fatebook/issues) tab. You can make feature requests there or in our [Discord](https://discord.gg/mt9YVB8VDE).
 
 ## Tech stack
+
 - Prisma
 - Next.js
 - Vercel

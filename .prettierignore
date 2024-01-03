@@ -1,0 +1,8 @@
+build
+coverage
+.next
+node_modules
+.vscode
+.vercel
+ios
+out

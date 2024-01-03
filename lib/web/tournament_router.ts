@@ -2,22 +2,27 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import prisma from "../_utils_server"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
-import { scrubApiKeyPropertyRecursive } from './question_router'
+import { scrubApiKeyPropertyRecursive } from "./question_router"
 import { publicProcedure, router } from "./trpc_base"
 import { matchesAnEmailDomain } from "./utils"
 
 export const tournamentRouter = router({
   create: publicProcedure
     .input(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        predictYourYear: z.number().optional(),
-      }).optional()
+      z
+        .object({
+          id: z.string(),
+          name: z.string(),
+          predictYourYear: z.number().optional(),
+        })
+        .optional(),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a tournament" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to create a tournament",
+        })
       }
       const newTournament = await prisma.tournament.create({
         data: {
@@ -44,11 +49,14 @@ export const tournamentRouter = router({
           questions: z.array(z.string()).optional(),
           anyoneInListCanEdit: z.boolean().optional(),
         }),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to update a tournament" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to update a tournament",
+        })
       }
       const oldTournament = await prisma.tournament.findUnique({
         where: {
@@ -58,24 +66,33 @@ export const tournamentRouter = router({
           userList: {
             include: {
               users: true,
-            }
+            },
           },
           questions: {
             include: {
               tournaments: true,
               sharedWithLists: true,
-            }
+            },
           },
-        }
+        },
       })
       if (!oldTournament) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Tournament not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tournament not found",
+        })
       }
       if (
-        oldTournament.authorId !== ctx.userId
-        && !(oldTournament.anyoneInListCanEdit && oldTournament.userList?.users.find(u => u.id === ctx.userId))
+        oldTournament.authorId !== ctx.userId &&
+        !(
+          oldTournament.anyoneInListCanEdit &&
+          oldTournament.userList?.users.find((u) => u.id === ctx.userId)
+        )
       ) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not the author of this tournament" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not the author of this tournament",
+        })
       }
 
       const updatedTournament = await prisma.tournament.update({
@@ -90,18 +107,20 @@ export const tournamentRouter = router({
           userListId: input.tournament.userListId,
           showLeaderboard: input.tournament.showLeaderboard,
           anyoneInListCanEdit: input.tournament.anyoneInListCanEdit,
-          questions: input.tournament.questions ? {
-            set: input.tournament.questions.map(q => ({ id: q }))
-          } : undefined,
+          questions: input.tournament.questions
+            ? {
+                set: input.tournament.questions.map((q) => ({ id: q })),
+              }
+            : undefined,
         },
         include: {
           questions: {
             include: {
               tournaments: true,
               sharedWithLists: true,
-            }
+            },
           },
-        }
+        },
       })
 
       if (input.tournament.questions !== undefined) {
@@ -113,7 +132,6 @@ export const tournamentRouter = router({
         }
       }
 
-
       return updatedTournament
     }),
 
@@ -121,28 +139,38 @@ export const tournamentRouter = router({
     .input(
       z.object({
         id: z.string(),
-        createIfNotExists: z.object({
-          name: z.string().optional(),
-        }).optional(),
-      })
+        createIfNotExists: z
+          .object({
+            name: z.string().optional(),
+          })
+          .optional(),
+      }),
     )
     .query(async ({ input, ctx }) => {
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.userId || "NO MATCH" },
+      })
 
       const includes = {
         author: true,
         questions: {
           where: {
             OR: [
-              {sharedPublicly: true},
-              {userId: ctx.userId || "NO MATCH"},
-              {sharedWith: {some: {id: ctx.userId || "NO MATCH"}}},
-              { sharedWithLists: { some: { OR: [
-                { authorId: ctx.userId || "NO MATCH" },
-                { users: { some: { id: ctx.userId || "NO MATCH" } } },
-                matchesAnEmailDomain(user),
-              ], } } },
-            ]
+              { sharedPublicly: true },
+              { userId: ctx.userId || "NO MATCH" },
+              { sharedWith: { some: { id: ctx.userId || "NO MATCH" } } },
+              {
+                sharedWithLists: {
+                  some: {
+                    OR: [
+                      { authorId: ctx.userId || "NO MATCH" },
+                      { users: { some: { id: ctx.userId || "NO MATCH" } } },
+                      matchesAnEmailDomain(user),
+                    ],
+                  },
+                },
+              },
+            ],
           },
           include: {
             questionScores: {
@@ -153,7 +181,7 @@ export const tournamentRouter = router({
             forecasts: {
               include: {
                 user: true,
-              }
+              },
             },
             sharedWithLists: true,
           },
@@ -161,8 +189,8 @@ export const tournamentRouter = router({
         userList: {
           include: {
             users: true,
-          }
-        }
+          },
+        },
       }
       let tournament = await prisma.tournament.findUnique({
         where: {
@@ -172,7 +200,10 @@ export const tournamentRouter = router({
       })
       if (!tournament && input.createIfNotExists) {
         if (!ctx.userId) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to create a tournament" })
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You must be logged in to create a tournament",
+          })
         }
         tournament = await prisma.tournament.create({
           data: {
@@ -184,47 +215,67 @@ export const tournamentRouter = router({
         })
       }
       if (!tournament) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Tournament not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tournament not found",
+        })
       }
-      if (!tournament.sharedPublicly && (
-        !ctx.userId || (
-          ctx.userId !== tournament.authorId
-          && !tournament.userList?.users.find(u => u.id === ctx.userId)
-        )
-      )) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You don't have access to this tournament" })
+      if (
+        !tournament.sharedPublicly &&
+        (!ctx.userId ||
+          (ctx.userId !== tournament.authorId &&
+            !tournament.userList?.users.find((u) => u.id === ctx.userId)))
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You don't have access to this tournament",
+        })
       }
       return scrubApiKeyPropertyRecursive(tournament)
     }),
 
   getAll: publicProcedure
     .input(
-      z.object({
-        includePublic: z.boolean().optional(),
-        onlyIncludePredictYourYear: z.boolean().optional(),
-      }).optional()
+      z
+        .object({
+          includePublic: z.boolean().optional(),
+          onlyIncludePredictYourYear: z.boolean().optional(),
+        })
+        .optional(),
     )
     .query(async ({ input, ctx }) => {
       if (!ctx.userId && !input?.onlyIncludePredictYourYear) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to view tournaments" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to view tournaments",
+        })
       }
-      const user = await prisma.user.findUnique({ where: { id: ctx.userId || "NO MATCH" } })
+      const user = await prisma.user.findUnique({
+        where: { id: ctx.userId || "NO MATCH" },
+      })
       const tournaments = await prisma.tournament.findMany({
         where: {
           AND: [
-            (input?.includePublic ?
-              { sharedPublicly: true, unlisted: false }
-              :
-              {OR: [
-                {authorId: ctx.userId},
-                {userList: {OR: [
-                  {users: {some: {id: ctx.userId}}},
-                  {...matchesAnEmailDomain(user)},
-                  {authorId: ctx.userId},
-              ]}},
-            ]}),
-            (input?.onlyIncludePredictYourYear ? { predictYourYear: { gt: 0 } } : {}),
-          ]
+            input?.includePublic
+              ? { sharedPublicly: true, unlisted: false }
+              : {
+                  OR: [
+                    { authorId: ctx.userId },
+                    {
+                      userList: {
+                        OR: [
+                          { users: { some: { id: ctx.userId } } },
+                          { ...matchesAnEmailDomain(user) },
+                          { authorId: ctx.userId },
+                        ],
+                      },
+                    },
+                  ],
+                },
+            input?.onlyIncludePredictYourYear
+              ? { predictYourYear: { gt: 0 } }
+              : {},
+          ],
         },
       })
       return tournaments
@@ -234,11 +285,14 @@ export const tournamentRouter = router({
     .input(
       z.object({
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to delete a tournament" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to delete a tournament",
+        })
       }
       const tournament = await prisma.tournament.findUnique({
         where: {
@@ -246,10 +300,16 @@ export const tournamentRouter = router({
         },
       })
       if (!tournament) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Tournament not found" })
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tournament not found",
+        })
       }
       if (tournament.authorId !== ctx.userId) {
-        throw new TRPCError({ code: "UNAUTHORIZED", message: "You are not the author of this tournament" })
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not the author of this tournament",
+        })
       }
 
       await prisma.tournament.delete({
@@ -259,5 +319,3 @@ export const tournamentRouter = router({
       })
     }),
 })
-
-

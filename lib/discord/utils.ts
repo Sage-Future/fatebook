@@ -1,42 +1,51 @@
-import { VercelResponse } from '@vercel/node'
-import { verifyKey } from 'discord-interactions'
-import { NextRequest } from 'next/server'
+import { VercelResponse } from "@vercel/node"
+import { verifyKey } from "discord-interactions"
+import { NextRequest } from "next/server"
 
 export function verifyDiscordRequest(req: NextRequest, buf: ArrayBuffer) {
-  const signature = req.headers.get('X-Signature-Ed25519')
-  const timestamp = req.headers.get('X-Signature-Timestamp')
+  const signature = req.headers.get("X-Signature-Ed25519")
+  const timestamp = req.headers.get("X-Signature-Timestamp")
 
   if (!signature || !timestamp) {
-    console.warn('Missing signature or timestamp')
+    console.warn("Missing signature or timestamp")
     return false
   }
 
   if (!process.env.DISCORD_PUBLIC_KEY) {
-    throw new Error('Missing DISCORD_PUBLIC_KEY')
+    throw new Error("Missing DISCORD_PUBLIC_KEY")
   }
 
-  const isValidRequest = verifyKey(buf, signature, timestamp, process.env.DISCORD_PUBLIC_KEY)
+  const isValidRequest = verifyKey(
+    buf,
+    signature,
+    timestamp,
+    process.env.DISCORD_PUBLIC_KEY,
+  )
   if (!isValidRequest) {
-    console.log('Invalid request')
+    console.log("Invalid request")
     return false
   }
 
   return true
 }
 
-export async function makeDiscordRequest(endpoint: string, options: {body?: any, [key: string]: any}) {
+export async function makeDiscordRequest(
+  endpoint: string,
+  options: { body?: any; [key: string]: any },
+) {
   // append endpoint to root API URL
-  const url = 'https://discord.com/api/v10/' + endpoint
+  const url = "https://discord.com/api/v10/" + endpoint
   // Stringify payloads
   if (options.body) options.body = JSON.stringify(options.body)
 
   const res = await fetch(url, {
     headers: {
       Authorization: `Bot ${process.env.DISCORD_TOKEN}`,
-      'Content-Type': 'application/json; charset=UTF-8',
-      'User-Agent': 'DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)',
+      "Content-Type": "application/json; charset=UTF-8",
+      "User-Agent":
+        "DiscordBot (https://github.com/discord/discord-example-app, 1.0.0)",
     },
-    ...options
+    ...options,
   })
   // throw API errors
   if (!res.ok) {
@@ -55,7 +64,7 @@ export async function installGlobalCommands(appId: string, commands: any) {
 
   try {
     // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
-    await makeDiscordRequest(endpoint, { method: 'PUT', body: commands })
+    await makeDiscordRequest(endpoint, { method: "PUT", body: commands })
   } catch (err) {
     console.error(err)
   }
@@ -67,6 +76,6 @@ export function sendDiscordEphemeral(res: VercelResponse, content: string) {
     data: {
       content,
       flags: 64,
-    }
+    },
   })
 }

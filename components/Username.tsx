@@ -8,9 +8,9 @@ import { getUserPageUrl } from "../pages/user/[id]"
 export function Username({
   user,
   className,
-} : {
-  user: User,
-  className?: string,
+}: {
+  user: User
+  className?: string
 }) {
   const embedded = useIsEmbedded()
 
@@ -21,12 +21,9 @@ export function Username({
       className="no-underline hover:underline"
       target={embedded ? "_blank" : undefined}
     >
-      <span
-        className={clsx(
-          className,
-        )}>
+      <span className={clsx(className)}>
         <Image
-          src={user?.image || '/default_avatar.png'}
+          src={user?.image || "/default_avatar.png"}
           width={20}
           height={20}
           className="inline m-0 mr-2 rounded-full select-none aspect-square"

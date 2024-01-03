@@ -1,8 +1,8 @@
-import { NextSeo } from 'next-seo'
-import { TrackRecord } from '../components/TrackRecord'
-import { useUserId } from '../lib/web/utils'
-import { Tournaments } from '../components/Tournaments'
-import { UserLists } from '../components/UserLists'
+import { NextSeo } from "next-seo"
+import { TrackRecord } from "../components/TrackRecord"
+import { useUserId } from "../lib/web/utils"
+import { Tournaments } from "../components/Tournaments"
+import { UserLists } from "../components/UserLists"
 
 export default function StatsPage() {
   const userId = useUserId()
@@ -12,10 +12,12 @@ export default function StatsPage() {
       <NextSeo title="Stats" />
       <div className="mx-auto">
         {userId && <TrackRecord trackRecordUserId={userId} />}
-        {userId && <div className='prose mx-auto mt-14 flex flex-col gap-8'>
-          <Tournaments />
-          <UserLists />
-        </div>}
+        {userId && (
+          <div className="prose mx-auto mt-14 flex flex-col gap-8">
+            <Tournaments />
+            <UserLists />
+          </div>
+        )}
       </div>
     </div>
   )

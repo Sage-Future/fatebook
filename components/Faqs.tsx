@@ -9,7 +9,7 @@ export default function Faqs({
   return (
     <div className="max-w-7xl mx-auto py-12 px-4 divide-y divide-neutral-200 sm:px-6 lg:py-16 lg:px-8">
       <h2 className="text-3xl font-extrabold text-neutral-900">
-            Frequently asked questions
+        Frequently asked questions
       </h2>
       <div className="mt-8">
         <dl className="divide-y divide-neutral-200">

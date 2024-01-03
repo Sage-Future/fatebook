@@ -1,41 +1,69 @@
-import { Profile, User } from '@prisma/client'
-import prisma, { backendAnalyticsEvent, postSlackMessage } from '../_utils_server'
-import { buildQuestionBlocks } from '../blocks-designs/question'
+import { Profile, User } from "@prisma/client"
+import prisma, {
+  backendAnalyticsEvent,
+  postSlackMessage,
+} from "../_utils_server"
+import { buildQuestionBlocks } from "../blocks-designs/question"
 
-export async function createForecastingQuestion(teamId: string, { question, date, forecastNum, profile, user, channelId, notes, hideForecastsUntil, slackUserId }:{ question: string, date: Date, forecastNum?: number, profile: Profile, user: User, channelId: string, notes?: string, hideForecastsUntil?: Date | null, slackUserId?: string}) {
+export async function createForecastingQuestion(
+  teamId: string,
+  {
+    question,
+    date,
+    forecastNum,
+    profile,
+    user,
+    channelId,
+    notes,
+    hideForecastsUntil,
+    slackUserId,
+  }: {
+    question: string
+    date: Date
+    forecastNum?: number
+    profile: Profile
+    user: User
+    channelId: string
+    notes?: string
+    hideForecastsUntil?: Date | null
+    slackUserId?: string
+  },
+) {
   console.log("creating")
   const createdQuestion = await prisma.question.create({
     data: {
-      title     : question,
-      resolveBy : date,
-      userId  : user.id,
-      profileId  : profile.id,
+      title: question,
+      resolveBy: date,
+      userId: user.id,
+      profileId: profile.id,
       notes,
       hideForecastsUntil,
-      forecasts : forecastNum ? {
-        create: {
-          profileId : profile.id,
-          userId : user.id,
-          forecast : forecastNum
-        }
-      } : {}
+      forecasts: forecastNum
+        ? {
+            create: {
+              profileId: profile.id,
+              userId: user.id,
+              forecast: forecastNum,
+            },
+          }
+        : {},
     },
     include: {
       user: {
         include: {
-          profiles: true
-        }
+          profiles: true,
+        },
       },
       forecasts: {
         include: {
           user: {
             include: {
-              profiles: true
-            }
-          }
-        }
-      }
-    }
+              profiles: true,
+            },
+          },
+        },
+      },
+    },
   })
 
   console.log("created")
@@ -45,13 +73,17 @@ export async function createForecastingQuestion(teamId: string, { question, date
   let questionPostedSuccessfully = true
   let data
   try {
-    data = await postSlackMessage(teamId, {
-      channel: channelId,
-      text: `Forecasting question created: ${question}`,
-      blocks: questionBlocks,
-      unfurl_links: false,
-      unfurl_media: false
-    }, slackUserId)
+    data = await postSlackMessage(
+      teamId,
+      {
+        channel: channelId,
+        text: `Forecasting question created: ${question}`,
+        blocks: questionBlocks,
+        unfurl_links: false,
+        unfurl_media: false,
+      },
+      slackUserId,
+    )
 
     if ((data as any)?.notifiedUserAboutEmptyChannel) {
       questionPostedSuccessfully = false
@@ -70,10 +102,12 @@ export async function createForecastingQuestion(teamId: string, { question, date
   if (!questionPostedSuccessfully) {
     await prisma.question.delete({
       where: {
-        id: createdQuestion.id
-      }
+        id: createdQuestion.id,
+      },
     })
-    console.log('Immediately deleted question because slack message failed to post')
+    console.log(
+      "Immediately deleted question because slack message failed to post",
+    )
     return
   }
 
@@ -82,10 +116,10 @@ export async function createForecastingQuestion(teamId: string, { question, date
     throw new Error("Missing message.ts in response")
   }
 
-  console.log(`updating `, {data})
+  console.log(`updating `, { data })
   await prisma.question.update({
     where: {
-      id: createdQuestion.id
+      id: createdQuestion.id,
     },
     data: {
       questionMessages: {
@@ -95,11 +129,11 @@ export async function createForecastingQuestion(teamId: string, { question, date
               ts: data.ts,
               channel: channelId,
               teamId: teamId,
-            }
-          }
-        }
-      }
-    }
+            },
+          },
+        },
+      },
+    },
   })
   console.log("Recorded question message ts ", data?.ts)
 

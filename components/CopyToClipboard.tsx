@@ -4,8 +4,8 @@ import { useState } from "react"
 export function CopyToClipboard({
   textToCopy,
   buttonLabel = "Copy link",
-} : {
-  textToCopy: string,
+}: {
+  textToCopy: string
   buttonLabel?: string
 }) {
   const [copied, setCopied] = useState(false)
@@ -21,11 +21,7 @@ export function CopyToClipboard({
         }}
       >
         <ClipboardIcon className="inline shrink-0" height={15} />
-        {copied ?
-          <span>Copied!</span>
-          :
-          <span>{buttonLabel}</span>
-        }
+        {copied ? <span>Copied!</span> : <span>{buttonLabel}</span>}
       </button>
     </div>
   )

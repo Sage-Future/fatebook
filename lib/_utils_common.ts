@@ -1,14 +1,24 @@
-import { Forecast, Question, QuestionScore, Resolution } from '@prisma/client'
-import type { Decimal } from '@prisma/client/runtime/library'
-import { QuestionWithForecasts } from '../prisma/additional'
-import { maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing, numberOfDaysInRecentPeriod, scorePrepad } from './_constants'
-
+import { Forecast, Question, QuestionScore, Resolution } from "@prisma/client"
+import type { Decimal } from "@prisma/client/runtime/library"
+import { QuestionWithForecasts } from "../prisma/additional"
+import {
+  maxDecimalPlacesScoreForecastListing,
+  maxScoreDecimalPlacesListing,
+  numberOfDaysInRecentPeriod,
+  scorePrepad,
+} from "./_constants"
 
 export function forecastsAreHidden(question: Question) {
-  return Boolean(question.hideForecastsUntil && question.hideForecastsUntil.getTime() > Date.now())
+  return Boolean(
+    question.hideForecastsUntil &&
+      question.hideForecastsUntil.getTime() > Date.now(),
+  )
 }
 
-export function getMostRecentForecastPerUser(forecasts: Forecast[], date: Date): [string, Forecast][] {
+export function getMostRecentForecastPerUser(
+  forecasts: Forecast[],
+  date: Date,
+): [string, Forecast][] {
   const forecastsPerUser = new Map<string, Forecast>()
   for (const forecast of forecasts) {
     const authorId = forecast.userId
@@ -31,43 +41,64 @@ interface HasForecasts {
     userId: string
   }[]
 }
-export function getMostRecentForecastForUser<T extends HasForecasts>(question: T , userId:String) {
-    const forecasts = question.forecasts.filter(f => f.userId === userId).sort(
-    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-  )
+export function getMostRecentForecastForUser<T extends HasForecasts>(
+  question: T,
+  userId: String,
+) {
+  const forecasts = question.forecasts
+    .filter((f) => f.userId === userId)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   return forecasts && forecasts.length ? forecasts[0] : null
 }
 
-export function getGeometricCommunityForecast(question: QuestionWithForecasts, date: Date): number {
+export function getGeometricCommunityForecast(
+  question: QuestionWithForecasts,
+  date: Date,
+): number {
   // get all forecasts for this question
-  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
+  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(
+    question.forecasts,
+    date,
+  ).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
   // sum each forecast
   const productOfForecasts: number = uptoDateForecasts.reduce(
     (acc, forecast) => acc * (forecast / (1 - forecast)),
-    1
+    1,
   )
-  const geoMeanOfOdds = Math.pow(productOfForecasts, 1 / (uptoDateForecasts.length))
+  const geoMeanOfOdds = Math.pow(
+    productOfForecasts,
+    1 / uptoDateForecasts.length,
+  )
   return geoMeanOfOdds / (1 + geoMeanOfOdds)
 }
 
-export function getCommunityForecast(question: QuestionWithForecasts, date: Date): number {
+export function getCommunityForecast(
+  question: QuestionWithForecasts,
+  date: Date,
+): number {
   return getGeometricCommunityForecast(question, date)
 }
 
-export function getArithmeticCommunityForecast(question: QuestionWithForecasts, date: Date): number {
+export function getArithmeticCommunityForecast(
+  question: QuestionWithForecasts,
+  date: Date,
+): number {
   // get all forecasts for this question
-  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(question.forecasts, date).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
+  const uptoDateForecasts: number[] = getMostRecentForecastPerUser(
+    question.forecasts,
+    date,
+  ).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
   // sum each forecast
   const summedForecasts: number = uptoDateForecasts.reduce(
     (acc, forecast) => acc + forecast,
-    0
+    0,
   )
   // divide by number of forecasts
   return summedForecasts / uptoDateForecasts.length
 }
 
 export function conciseDateTime(date: Date, includeTime = true) {
-  let timeStr = ''
+  let timeStr = ""
   if (includeTime)
     timeStr = `${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())} on `
   return `${timeStr}${getDateYYYYMMDD(date)}`
@@ -79,40 +110,59 @@ export function nudgeAwayFromZeroOrOne(num: number) {
   return num
 }
 
-export function displayForecast(forecast: Forecast, decimalPlaces: number): string {
+export function displayForecast(
+  forecast: Forecast,
+  decimalPlaces: number,
+): string {
   return `${
-    forecast?.forecast ?
-      formatDecimalNicely(forecast.forecast.times(100).toNumber(), decimalPlaces)
-      :
-      "?"
+    forecast?.forecast
+      ? formatDecimalNicely(
+          forecast.forecast.times(100).toNumber(),
+          decimalPlaces,
+        )
+      : "?"
   }%`
 }
 
-export function formatScoreNicely(num: number, maxDigits: number, significantDigits: number): string {
+export function formatScoreNicely(
+  num: number,
+  maxDigits: number,
+  significantDigits: number,
+): string {
   const rounded = +num.toPrecision(significantDigits)
   return formatDecimalNicely(rounded, maxDigits)
 }
 
-export function formatDecimalNicely(num: number, decimalPlaces: number): string {
-  return num.toLocaleString('en-US', {
+export function formatDecimalNicely(
+  num: number,
+  decimalPlaces: number,
+): string {
+  return num.toLocaleString("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: decimalPlaces,
   })
 }
 
-export function showSignificantFigures(num: number, significantFigures: number): string {
-  return num.toLocaleString('en-US', {
+export function showSignificantFigures(
+  num: number,
+  significantFigures: number,
+): string {
+  return num.toLocaleString("en-US", {
     minimumFractionDigits: 0,
     maximumSignificantDigits: significantFigures,
   })
 }
 
 export function getDateYYYYMMDD(date: Date) {
-  return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(date.getDate())}`
+  return `${date.getFullYear()}-${zeroPad(date.getMonth() + 1)}-${zeroPad(
+    date.getDate(),
+  )}`
 }
 
 export function getDateTimeYYYYMMDDHHMMSS(date: Date) {
-  return `${getDateYYYYMMDD(date)} ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}:${date.getSeconds()}`
+  return `${getDateYYYYMMDD(date)} ${zeroPad(date.getHours())}:${zeroPad(
+    date.getMinutes(),
+  )}:${date.getSeconds()}`
 }
 
 export function unixTimestamp(date: Date) {
@@ -120,7 +170,7 @@ export function unixTimestamp(date: Date) {
 }
 
 export function zeroPad(num: number) {
-  return num.toString().padStart(2, '0')
+  return num.toString().padStart(2, "0")
 }
 
 export function round(number: number, places = 2) {
@@ -129,28 +179,37 @@ export function round(number: number, places = 2) {
 }
 
 export function resolutionToString(resolution: Resolution) {
-  return resolution.toString().charAt(0).toUpperCase() + resolution.toString().slice(1).toLowerCase()
+  return (
+    resolution.toString().charAt(0).toUpperCase() +
+    resolution.toString().slice(1).toLowerCase()
+  )
 }
 
 export function getResolutionEmoji(resolution: Resolution | null) {
   switch (resolution) {
     case Resolution.YES:
-      return '✅'
+      return "✅"
     case Resolution.NO:
-      return '❎'
+      return "❎"
     case Resolution.AMBIGUOUS:
-      return '❔'
+      return "❔"
     default:
-      return ''
+      return ""
   }
 }
 
-export function floatEquality(a: number, b: number, tolerance: number = 0.0001) {
+export function floatEquality(
+  a: number,
+  b: number,
+  tolerance: number = 0.0001,
+) {
   return Math.abs(a - b) < tolerance
 }
 
 export function averageScores(scores: (number | undefined)[]) {
-  const existentScores = scores.filter((s: number | undefined) => s != undefined) as number[]
+  const existentScores = scores.filter(
+    (s: number | undefined) => s != undefined,
+  ) as number[]
   if (existentScores.length == 0) {
     return undefined
   } else {
@@ -160,7 +219,7 @@ export function averageScores(scores: (number | undefined)[]) {
 
 export function toSentenceCase(str: string) {
   if (str.length === 0) {
-    return ''
+    return ""
   }
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
@@ -172,52 +231,78 @@ export function tomorrowDate() {
 }
 
 type ScoreDetails = {
-  brierScore: number;
-  rBrierScore: number | undefined;
-  ranking: number;
-  totalParticipants: number;
-};
+  brierScore: number
+  rBrierScore: number | undefined
+  ranking: number
+  totalParticipants: number
+}
 type QScoreLite = {
-  absolute: number;
-  relative: number | undefined;
-};
-export function populateDetails(questionScores: QuestionScore[]): { recentDetails: ScoreDetails; overallDetails: ScoreDetails; } {
-  const recentScores = questionScores.filter((qs: QuestionScore) => qs.createdAt > new Date(Date.now() - 1000 * 60 * 60 * 24 * numberOfDaysInRecentPeriod))
+  absolute: number
+  relative: number | undefined
+}
+export function populateDetails(questionScores: QuestionScore[]): {
+  recentDetails: ScoreDetails
+  overallDetails: ScoreDetails
+} {
+  const recentScores = questionScores
+    .filter(
+      (qs: QuestionScore) =>
+        qs.createdAt >
+        new Date(Date.now() - 1000 * 60 * 60 * 24 * numberOfDaysInRecentPeriod),
+    )
     .map((qs: QuestionScore) => {
       return {
         absolute: qs.absoluteScore.toNumber(),
-        relative: qs.relativeScore?.toNumber()
+        relative: qs.relativeScore?.toNumber(),
       }
     })
 
   const overallScores = questionScores.map((qs: QuestionScore) => {
     return {
       absolute: qs.absoluteScore.toNumber(),
-      relative: qs.relativeScore?.toNumber()
+      relative: qs.relativeScore?.toNumber(),
     }
   })
   const recentDetails = {
-    brierScore: averageScores(recentScores.map((qs: QScoreLite) => qs.absolute))!,
-    rBrierScore: averageScores(recentScores.map((qs: QScoreLite) => qs.relative)),
+    brierScore: averageScores(
+      recentScores.map((qs: QScoreLite) => qs.absolute),
+    )!,
+    rBrierScore: averageScores(
+      recentScores.map((qs: QScoreLite) => qs.relative),
+    ),
     ranking: 0,
     totalParticipants: 0,
   }
   const overallDetails = {
-    brierScore: averageScores(overallScores.map((qs: QScoreLite) => qs.absolute))!,
-    rBrierScore: averageScores(overallScores.map((qs: QScoreLite) => qs.relative)),
+    brierScore: averageScores(
+      overallScores.map((qs: QScoreLite) => qs.absolute),
+    )!,
+    rBrierScore: averageScores(
+      overallScores.map((qs: QScoreLite) => qs.relative),
+    ),
     ranking: 0,
     totalParticipants: 0,
   }
   return { recentDetails, overallDetails }
 }
 
-export function padAndFormatScore(score: number, maxprepad: number = scorePrepad) {
-  let prepad  = maxprepad
+export function padAndFormatScore(
+  score: number,
+  maxprepad: number = scorePrepad,
+) {
+  let prepad = maxprepad
 
-  if (score < 0)
-    prepad = prepad - 2
+  if (score < 0) prepad = prepad - 2
 
-  const scorePadded = ' '.repeat(prepad) + '`'+ formatScoreNicely(score, maxDecimalPlacesScoreForecastListing, maxScoreDecimalPlacesListing) + '`'
+  const scorePadded =
+    " ".repeat(prepad) +
+    "`" +
+    formatScoreNicely(
+      score,
+      maxDecimalPlacesScoreForecastListing,
+      maxScoreDecimalPlacesListing,
+    ) +
+    "`"
   return scorePadded
 }
 
@@ -233,5 +318,8 @@ export function joinWithOr(list: string[]) {
 }
 
 export function generateRandomId() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  )
 }

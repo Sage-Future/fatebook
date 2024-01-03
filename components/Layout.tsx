@@ -12,20 +12,25 @@ export function Layout({
   showCreateAccountButton = true,
   showNavbar = true,
 }: {
-  children: ReactNode,
+  children: ReactNode
   showForSlackButton?: boolean
   showNavbar?: boolean
   showCreateAccountButton?: boolean
 }) {
-  const main = <main className="bg-neutral-50 grow pb-8 lg:pb-12">
-    {children}
-  </main>
+  const main = (
+    <main className="bg-neutral-50 grow pb-8 lg:pb-12">{children}</main>
+  )
   return (
     <>
       <div className="flex flex-col min-h-screen ">
-        {showNavbar && <Navbar showForSlackButton={showForSlackButton} showCreateAccountButton={showCreateAccountButton}>
-          {main}
-        </Navbar>}
+        {showNavbar && (
+          <Navbar
+            showForSlackButton={showForSlackButton}
+            showCreateAccountButton={showCreateAccountButton}
+          >
+            {main}
+          </Navbar>
+        )}
 
         {!showNavbar && main}
 
@@ -34,7 +39,7 @@ export function Layout({
           <Footer />
         </div>
         <div className="py-12 lg:hidden bg-neutral-50"></div>
-      </div >
+      </div>
     </>
   )
 }
@@ -61,18 +66,16 @@ function BottomNav() {
           path: "/stats",
           title: "Stats",
           icon: <ChartBarIcon width={24} />,
-        }
+        },
       ].map(({ path, icon, title }) => (
         <button
           key={title}
-          className={clsx(
-            "text-primary",
-            (router.pathname === path) && "active")}
-          onClick={() => void router.push(path)}>
+          className={clsx("text-primary", router.pathname === path && "active")}
+          onClick={() => void router.push(path)}
+        >
           {icon}
         </button>
-      ))
-      }
+      ))}
     </div>
   )
 }

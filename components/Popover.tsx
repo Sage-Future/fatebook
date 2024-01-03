@@ -14,7 +14,7 @@ import {
   useId,
   useInteractions,
   useMergeRefs,
-  useRole
+  useRole,
 } from "@floating-ui/react"
 import { motion } from "framer-motion"
 import * as React from "react"
@@ -32,13 +32,11 @@ export function usePopover({
   placement = "top",
   modal,
   open: controlledOpen,
-  onOpenChange: setControlledOpen
+  onOpenChange: setControlledOpen,
 }: PopoverOptions = {}) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(initialOpen)
   const [labelId, setLabelId] = React.useState<string | undefined>()
-  const [descriptionId, setDescriptionId] = React.useState<
-    string | undefined
-  >()
+  const [descriptionId, setDescriptionId] = React.useState<string | undefined>()
 
   const open = controlledOpen ?? uncontrolledOpen
   const setOpen = setControlledOpen ?? setUncontrolledOpen
@@ -53,16 +51,16 @@ export function usePopover({
       flip({
         crossAxis: placement.includes("-"),
         fallbackAxisSideDirection: "end",
-        padding: 5
+        padding: 5,
       }),
       shift({ padding: 5 }),
-    ]
+    ],
   })
 
   const context = data.context
 
   const click = useClick(context, {
-    enabled: controlledOpen == null
+    enabled: controlledOpen == null,
   })
   const hover = useHover(context, {
     enabled: controlledOpen == null,
@@ -83,18 +81,16 @@ export function usePopover({
       labelId,
       descriptionId,
       setLabelId,
-      setDescriptionId
+      setDescriptionId,
     }),
-    [open, setOpen, interactions, data, modal, labelId, descriptionId]
+    [open, setOpen, interactions, data, modal, labelId, descriptionId],
   )
 }
 
 type ContextType =
   | (ReturnType<typeof usePopover> & {
       setLabelId: React.Dispatch<React.SetStateAction<string | undefined>>
-      setDescriptionId: React.Dispatch<
-        React.SetStateAction<string | undefined>
-      >
+      setDescriptionId: React.Dispatch<React.SetStateAction<string | undefined>>
     })
   | null
 
@@ -148,8 +144,8 @@ export const PopoverTrigger = React.forwardRef<
         ref,
         ...props,
         ...children.props,
-        "data-state": context.open ? "open" : "closed"
-      })
+        "data-state": context.open ? "open" : "closed",
+      }),
     )
   }
 
@@ -169,7 +165,7 @@ export const PopoverTrigger = React.forwardRef<
 export const PopoverContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLProps<HTMLDivElement>
-// eslint-disable-next-line react/prop-types
+  // eslint-disable-next-line react/prop-types
 >(function PopoverContent({ style, ...props }, propRef) {
   const { context: floatingContext, ...context } = usePopoverContext()
   const ref = useMergeRefs([context.refs.setFloating, propRef])
@@ -180,8 +176,8 @@ export const PopoverContent = React.forwardRef<
     <FloatingPortal>
       <FloatingFocusManager context={floatingContext} modal={context.modal}>
         <motion.div
-          initial={{className: "sm:opacity-0"}} // disable animation on mobile because it double-triggers
-          animate={{opacity: 1, transition: {duration: 0.15}}}
+          initial={{ className: "sm:opacity-0" }} // disable animation on mobile because it double-triggers
+          animate={{ opacity: 1, transition: { duration: 0.15 } }}
           ref={ref}
           style={{ ...context.floatingStyles, ...style }}
           aria-labelledby={context.labelId}

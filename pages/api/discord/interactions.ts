@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function createForecast(
   req: VercelRequest,
   res: VercelResponse,
-  user: User
+  user: User,
 ) {
   const title = req.body.data.options?.[0]?.value
   const resolveByStr = req.body.data.options?.[1]?.value
@@ -62,7 +62,7 @@ async function createForecast(
   if (!title || !resolveByStr || prediction == undefined) {
     return sendDiscordEphemeral(
       res,
-      "Please provide a question, resolve by date, and prediction" + youSaid
+      "Please provide a question, resolve by date, and prediction" + youSaid,
     )
   }
 
@@ -73,7 +73,7 @@ async function createForecast(
     return sendDiscordEphemeral(
       res,
       "Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and 2024/12/5" +
-        youSaid
+        youSaid,
     )
   }
   const resolveBy = dateResult[0].start.date()
@@ -82,7 +82,7 @@ async function createForecast(
     return sendDiscordEphemeral(
       res,
       "Please provide a valid prediction (0-100%). Don't include the % sign! " +
-        youSaid
+        youSaid,
     )
   }
 
@@ -127,7 +127,7 @@ function postQuestionMessage(
   res: VercelResponse,
   question: QuestionWithUserAndForecasts,
   authorDiscordName: string | undefined,
-  authorForecastPercent: number
+  authorForecastPercent: number,
 ) {
   const questionUrl = getQuestionUrl(question, false)
   res.send({
@@ -227,6 +227,6 @@ async function handleLoginModalSubmit(req: VercelRequest, res: VercelResponse) {
 
   return sendDiscordEphemeral(
     res,
-    `Your Fatebook account is connected! Now you can use /forecast to make a prediction`
+    `Your Fatebook account is connected! Now you can use /forecast to make a prediction`,
   )
 }

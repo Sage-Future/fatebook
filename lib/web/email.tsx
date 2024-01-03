@@ -1,5 +1,5 @@
 import { ServerClient } from "postmark"
-import { renderToString } from 'react-dom/server'
+import { renderToString } from "react-dom/server"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { getUnsubscribeUrl } from "../../pages/unsubscribe"
@@ -36,19 +36,19 @@ export async function sendBatchedEmails() {
         {
           notifications: {
             some: {
-              emailSentAt: null
-            }
-          }
+              emailSentAt: null,
+            },
+          },
         },
         {
           notifications: {
             none: {
               emailSentAt: {
                 gte: twoHoursAgo,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       ],
     },
     include: {
@@ -58,17 +58,18 @@ export async function sendBatchedEmails() {
 
   for (const user of users) {
     const notifications = user.notifications
-      .filter(notification => notification.emailSentAt === null)
+      .filter((notification) => notification.emailSentAt === null)
       .map((notification) => {
         return renderToString(
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {notification.content}
-          </ReactMarkdown>
+          </ReactMarkdown>,
         )
-      }).join('<br/><br/>')
+      })
+      .join("<br/><br/>")
 
     await sendEmail({
-      subject: 'Your Notifications',
+      subject: "Your Notifications",
       htmlBody: notifications,
       textBody: notifications,
       to: user.email,
@@ -109,13 +110,13 @@ export async function sendEmail({
   console.log("Sending email...")
   const client = new ServerClient(postmarkApiToken)
   const response = await client.sendEmail({
-    "From": "reminders@fatebook.io",
-    "ReplyTo": "hello@sage-future.org",
-    "To": to,
-    "Subject": subject,
-    "HtmlBody": htmlBody,
-    "TextBody": textBody,
-    "MessageStream": "outbound"
+    From: "reminders@fatebook.io",
+    ReplyTo: "hello@sage-future.org",
+    To: to,
+    Subject: subject,
+    HtmlBody: htmlBody,
+    TextBody: textBody,
+    MessageStream: "outbound",
   })
 
   if (response.ErrorCode) {
@@ -132,6 +133,8 @@ export function fatebookEmailFooter(userEmailAddress: string) {
 <p><i><a href="https://fatebook.io">Fatebook</a> helps you rapidly make and track predictions about the future.</i></p>
 <br/>
 <p><a href=${webFeedbackUrl}>Give feedback on Fatebook</a></p>
-<p><a href=${getUnsubscribeUrl(userEmailAddress)}>Unsubscribe from all emails from Fatebook</a></p>
+<p><a href=${getUnsubscribeUrl(
+    userEmailAddress,
+  )}>Unsubscribe from all emails from Fatebook</a></p>
 `
 }

@@ -1,6 +1,10 @@
 import React, { useEffect } from "react"
 import { useRouter } from "next/router"
-import { sendToHost, useListenForSessionReload, useRespondToPing } from "../../lib/web/embed"
+import {
+  sendToHost,
+  useListenForSessionReload,
+  useRespondToPing,
+} from "../../lib/web/embed"
 import "../../components/QuestionOrSignIn" // ensure code we need is pre-loaded
 
 // shows nothing, but starts listening for requests to load a question
@@ -16,15 +20,17 @@ export default function QuestionLoaderEmbed() {
     if (runOnce) return
 
     runOnce = true
-    window.addEventListener('message', (event: MessageEvent<any>) => {
-      if (typeof event.data !== 'object' || !event.data.isFatebook) return
+    window.addEventListener("message", (event: MessageEvent<any>) => {
+      if (typeof event.data !== "object" || !event.data.isFatebook) return
 
-      if (event.data.action === 'load_question') {
-        router.push(`/embed/q/${event.data.questionId}${window.location.search}`).catch(e => console.error(e))
+      if (event.data.action === "load_question") {
+        router
+          .push(`/embed/q/${event.data.questionId}${window.location.search}`)
+          .catch((e) => console.error(e))
       }
     })
 
-    sendToHost('question_loader_listening')
+    sendToHost("question_loader_listening")
 
     // warning: don't deregister, else we can't navigate more than once
     // eslint-disable-next-line react-hooks/exhaustive-deps

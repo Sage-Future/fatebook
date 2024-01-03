@@ -13,7 +13,7 @@ export function FormattedDate({
   currentDateShowToday = false,
   hoverTooltip = true,
   includeTime = true,
-} : {
+}: {
   date: Date | undefined
   prefix?: ReactNode | string
   postfix?: ReactNode | string
@@ -30,28 +30,52 @@ export function FormattedDate({
     return <></>
   }
 
-  const showDistance = alwaysUseDistance
-  || (date.getTime() <= Date.now() && ((Date.now() - date.getTime()) <= oneWeekMs * 8))
-  || (date.getTime() > Date.now() && date.getTime() - Date.now() < oneWeekMs)
+  const showDistance =
+    alwaysUseDistance ||
+    (date.getTime() <= Date.now() &&
+      Date.now() - date.getTime() <= oneWeekMs * 8) ||
+    (date.getTime() > Date.now() && date.getTime() - Date.now() < oneWeekMs)
 
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "June",
+    "July",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+  ]
   const day = date.getDate()
   const monthIndex = date.getMonth()
-  const suffix = [1, 21, 31].includes(day) ? "st" : [2, 22].includes(day) ? "nd" : [3, 23].includes(day) ? "rd" : "th"
-  const fullDate = `${monthNames[monthIndex]} `
-  + `${day}${suffix}`
-  + `${date.getFullYear() !== new Date().getFullYear() ? ` ${date.getFullYear()}` : ""}`
+  const suffix = [1, 21, 31].includes(day)
+    ? "st"
+    : [2, 22].includes(day)
+      ? "nd"
+      : [3, 23].includes(day)
+        ? "rd"
+        : "th"
+  const fullDate =
+    `${monthNames[monthIndex]} ` +
+    `${day}${suffix}` +
+    `${
+      date.getFullYear() !== new Date().getFullYear()
+        ? ` ${date.getFullYear()}`
+        : ""
+    }`
 
   let formattedDate
   try {
-    formattedDate = showDistance ?
-      (
-        currentDateShowToday && getDateYYYYMMDD(date) === getDateYYYYMMDD(new Date()) ?
-          "today"
-          :
-          intlFormatDistance(date, new Date()))
-      :
-      fullDate
+    formattedDate = showDistance
+      ? currentDateShowToday &&
+        getDateYYYYMMDD(date) === getDateYYYYMMDD(new Date())
+        ? "today"
+        : intlFormatDistance(date, new Date())
+      : fullDate
   } catch (e) {
     console.error(e)
     return <></>
@@ -61,14 +85,14 @@ export function FormattedDate({
     <span
       className={clsx(hoverTooltip && `md:tooltip`, className)}
       suppressHydrationWarning={true}
-      data-tip={`${getDateYYYYMMDD(date)}${includeTime ? ` at ${date.toLocaleTimeString()}`: ""}`}
+      data-tip={`${getDateYYYYMMDD(date)}${
+        includeTime ? ` at ${date.toLocaleTimeString()}` : ""
+      }`}
     >
       {prefix}
-      {capitalise ?
-        formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
-        :
-        formattedDate
-      }
+      {capitalise
+        ? formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+        : formattedDate}
       {postfix}
     </span>
   )

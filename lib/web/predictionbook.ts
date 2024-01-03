@@ -46,20 +46,23 @@ interface MyPredictionsResponse {
   predictions: PBQuestion[]
 }
 
-export async function importFromPredictionBook(predictionBookApiToken: string, fatebookUserId: string) {
+export async function importFromPredictionBook(
+  predictionBookApiToken: string,
+  fatebookUserId: string,
+) {
   console.log("Importing from PredictionBook")
 
   var page = 1
   var questions: PBQuestion[] = []
   var user: PBUser | null = null
   while (page < 1000) {
-    const myPredictionsPage = await fetch(`https://predictionbook.com/api/my_predictions?${
-      new URLSearchParams({
+    const myPredictionsPage = await fetch(
+      `https://predictionbook.com/api/my_predictions?${new URLSearchParams({
         api_token: predictionBookApiToken,
         page: page.toString(),
         page_size: "1000", // this is the max
-      }).toString()
-    }`)
+      }).toString()}`,
+    )
     const response: MyPredictionsResponse = await myPredictionsPage.json()
     if (!response.predictions || !response.predictions.length) {
       break
@@ -79,20 +82,26 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
       title: question.description_with_group, // Prediction group is prepended to the prediction title, if it exists
       createdAt: new Date(question.created_at),
       resolved: question.outcome !== null,
-      resolution: question.outcome === null ? null : question.outcome ? Resolution.YES : Resolution.NO,
+      resolution:
+        question.outcome === null
+          ? null
+          : question.outcome
+            ? Resolution.YES
+            : Resolution.NO,
       resolveBy: new Date(question.deadline),
-      resolvedAt: question.outcome === null ?
-        null
-        :
-        question.last_judgement_at ?
-          new Date(question.last_judgement_at)
-          :
-          // PredictionBook previously didn't have a "resolved_at" field, so we used the deadline
-          // or if there was an update after the deadline then just add 24 hours to the last update time
-          max([
-            new Date(new Date(question.updated_at).getTime() + 24 * 60 * 60 * 1000),
-            new Date(question.deadline)
-          ]),
+      resolvedAt:
+        question.outcome === null
+          ? null
+          : question.last_judgement_at
+            ? new Date(question.last_judgement_at)
+            : // PredictionBook previously didn't have a "resolved_at" field, so we used the deadline
+              // or if there was an update after the deadline then just add 24 hours to the last update time
+              max([
+                new Date(
+                  new Date(question.updated_at).getTime() + 24 * 60 * 60 * 1000,
+                ),
+                new Date(question.deadline),
+              ]),
       sharedPublicly: question.visibility === "visible_to_everyone",
       notes: `[This question was imported from PredictionBook](https://predictionbook.com/predictions/${question.id})`,
     }
@@ -106,35 +115,37 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
         user: {
           connect: {
             id: fatebookUserId,
-          }
+          },
         },
         forecasts: {
           createMany: {
             data: question.responses
-              .filter(r => r.confidence !== null && r.user_id === user?.user_id)
+              .filter(
+                (r) => r.confidence !== null && r.user_id === user?.user_id,
+              )
               .map((response) => ({
                 forecast: response.confidence! / 100,
                 createdAt: new Date(response.created_at),
-                userId: fatebookUserId // todo check if other people' predictions on my questions show up here
-              }))
+                userId: fatebookUserId, // todo check if other people' predictions on my questions show up here
+              })),
           },
         },
         comments: {
           createMany: {
             data: question.responses
-              .filter(r => r.comment !== null && r.user_id === user?.user_id)
+              .filter((r) => r.comment !== null && r.user_id === user?.user_id)
               .map((response) => ({
                 comment: response.comment!,
                 createdAt: new Date(response.created_at),
-                userId: fatebookUserId // todo check if other people' predictions on my questions show up here
-              }))
+                userId: fatebookUserId, // todo check if other people' predictions on my questions show up here
+              })),
           },
-        }
+        },
       },
       include: {
         forecasts: true,
         questionScores: true,
-      }
+      },
     })
 
     if (upsertedQuestion.resolution && upsertedQuestion.resolvedAt) {
@@ -147,7 +158,7 @@ export async function importFromPredictionBook(predictionBookApiToken: string, f
         },
         data: {
           createdAt: upsertedQuestion.resolvedAt,
-        }
+        },
       })
       console.log("Scored question ", upsertedQuestion.id)
     }

@@ -1,8 +1,8 @@
-import { NextSeo } from 'next-seo'
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown'
-import remarkGfm from 'remark-gfm'
-import { WhyForecastInfo } from '../components/WhyForecastInfo'
-import { webFeedbackUrl } from '../lib/web/utils'
+import { NextSeo } from "next-seo"
+import { ReactMarkdown } from "react-markdown/lib/react-markdown"
+import remarkGfm from "remark-gfm"
+import { WhyForecastInfo } from "../components/WhyForecastInfo"
+import { webFeedbackUrl } from "../lib/web/utils"
 
 const about = String.raw`
 Fatebook aims to be the fastest way to make and track your predictions.
@@ -16,17 +16,12 @@ You can use Fatebook through [fatebook.io](https://fatebook.io) or in [Slack](/f
 Fatebook is open source. You can find the code on [GitHub](https://github.com/Sage-Future/fatebook). Contributions welcome!`
 
 export default function AboutPage() {
-
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <NextSeo title="About" />
       <div className="prose mx-auto">
-        <h2>
-          About
-        </h2>
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {about}
-        </ReactMarkdown>
+        <h2>About</h2>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{about}</ReactMarkdown>
         <div className="my-4">
           <WhyForecastInfo />
         </div>

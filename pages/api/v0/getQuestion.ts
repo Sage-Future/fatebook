@@ -2,7 +2,11 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { getServerSession } from "next-auth"
 import NextCors from "nextjs-cors"
 import prisma from "../../../lib/_utils_server"
-import { assertHasAccess, scrubApiKeyPropertyRecursive, scrubHiddenForecastsFromQuestion } from '../../../lib/web/question_router'
+import {
+  assertHasAccess,
+  scrubApiKeyPropertyRecursive,
+  scrubHiddenForecastsFromQuestion,
+} from "../../../lib/web/question_router"
 import { authOptions } from "../auth/[...nextauth]"
 
 import { getMostRecentForecastForUser } from "../../../lib/_utils_common"
@@ -87,10 +91,10 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
               id: true,
               name: true,
               image: true,
-            }
+            },
           },
-        }
-      }
+        },
+      },
     },
   })
 
@@ -107,17 +111,16 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
 
   try {
     assertHasAccess({ userId: authedUserId }, question, user)
-  } catch(e) {
+  } catch (e) {
     return res.status(401).json({
-      message: "You don't have access to that question. Check your API key at https://fatebook.io/api-setup",
+      message:
+        "You don't have access to that question. Check your API key at https://fatebook.io/api-setup",
     })
   }
 
   const userName = question!.user.name
-  const prediction = getMostRecentForecastForUser(
-    question!,
-    question!.userId
-  )?.forecast
+  const prediction = getMostRecentForecastForUser(question!, question!.userId)
+    ?.forecast
 
   if (req.query.conciseQuestionDetails) {
     res.status(200).json({
@@ -126,26 +129,34 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
       prediction,
     })
   } else {
-    res.status(200).json(scrubApiKeyPropertyRecursive({
-      title: question?.title,
-      yourLatestPrediction: prediction,
-      resolved: question?.resolved,
-      resolution: question?.resolution,
-      resolveBy: question?.resolveBy,
-      resolvedAt: question?.resolvedAt,
-      forecasts: scrubHiddenForecastsFromQuestion(question, authedUserId)?.forecasts.map(f => ({
-        forecast: f.forecast.toNumber(),
-        createdAt: f.createdAt,
-        user: {
-          id: f.user.id,
-          name: f.user.name,
-          image: f.user.image,
+    res.status(200).json(
+      scrubApiKeyPropertyRecursive(
+        {
+          title: question?.title,
+          yourLatestPrediction: prediction,
+          resolved: question?.resolved,
+          resolution: question?.resolution,
+          resolveBy: question?.resolveBy,
+          resolvedAt: question?.resolvedAt,
+          forecasts: scrubHiddenForecastsFromQuestion(
+            question,
+            authedUserId,
+          )?.forecasts.map((f) => ({
+            forecast: f.forecast.toNumber(),
+            createdAt: f.createdAt,
+            user: {
+              id: f.user.id,
+              name: f.user.name,
+              image: f.user.image,
+            },
+          })),
+          createdAt: question?.createdAt,
+          notes: question?.notes,
+          questionScores: question?.questionScores,
         },
-      })),
-      createdAt: question?.createdAt,
-      notes: question?.notes,
-      questionScores: question?.questionScores,
-    }, ["email", "discordUserId", "unsubscribedFromEmailsAt"]))
+        ["email", "discordUserId", "unsubscribedFromEmailsAt"],
+      ),
+    )
   }
 }
 export default getQuestionPublicApi

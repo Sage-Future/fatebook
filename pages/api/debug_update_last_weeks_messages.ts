@@ -1,12 +1,15 @@
 import { VercelRequest, VercelResponse } from "@vercel/node"
-import prisma, { updateForecastQuestionMessages } from '../../lib/_utils_server'
+import prisma, { updateForecastQuestionMessages } from "../../lib/_utils_server"
 
-export default async function updateLastWeeksQuestions(req: VercelRequest, res: VercelResponse) {
+export default async function updateLastWeeksQuestions(
+  req: VercelRequest,
+  res: VercelResponse,
+) {
   const LAST_X_DAYS = 7
   const qs = await prisma.question.findMany({
     where: {
       createdAt: {
-        gte: new Date(Date.now() - LAST_X_DAYS * 24 * 60 * 60 * 1000)
+        gte: new Date(Date.now() - LAST_X_DAYS * 24 * 60 * 60 * 1000),
       },
     },
     include: {
@@ -14,33 +17,32 @@ export default async function updateLastWeeksQuestions(req: VercelRequest, res: 
         include: {
           user: {
             include: {
-              profiles: true
-            }
-          }
-        }
+              profiles: true,
+            },
+          },
+        },
       },
       user: {
         include: {
-          profiles: true
-        }
+          profiles: true,
+        },
       },
       questionMessages: {
         include: {
-          message: true
-        }
+          message: true,
+        },
       },
       resolutionMessages: {
         include: {
-          message: true
-        }
+          message: true,
+        },
       },
       pingResolveMessages: {
         include: {
-          message: true
-        }
-      }
-
-    }
+          message: true,
+        },
+      },
+    },
   })
 
   for (const q of qs) {
@@ -55,4 +57,3 @@ export default async function updateLastWeeksQuestions(req: VercelRequest, res: 
   }
   return res.status(200).json(qs)
 }
-

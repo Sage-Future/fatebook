@@ -1,14 +1,21 @@
 import { NextRequest } from "next/server"
 
-export async function validateSlackRequest(request: NextRequest, signingSecret: string, body: string) {
+export async function validateSlackRequest(
+  request: NextRequest,
+  signingSecret: string,
+  body: string,
+) {
   const headers = request.headers
 
-  const timestamp = headers.get('x-slack-request-timestamp')
-  if (!timestamp || Math.abs(new Date().getTime() / 1000 - Number(timestamp)) > 60 * 5) {
+  const timestamp = headers.get("x-slack-request-timestamp")
+  if (
+    !timestamp ||
+    Math.abs(new Date().getTime() / 1000 - Number(timestamp)) > 60 * 5
+  ) {
     // The request timestamp is more than five minutes from local time (or is missing)
     return false
   }
-  const slackSignature = headers.get('x-slack-signature')
+  const slackSignature = headers.get("x-slack-signature")
   if (!slackSignature) {
     return false
   }
@@ -20,14 +27,14 @@ export async function validateSlackRequest(request: NextRequest, signingSecret: 
     enc.encode(signingSecret),
     { name: "HMAC", hash: "SHA-256" },
     false,
-    ["verify"]
+    ["verify"],
   )
 
   const isValid = crypto.subtle.verify(
     "HMAC",
     key,
     hexToBuffer(slackSignature.substring(3)),
-    enc.encode(`v0:${timestamp}:${body}`)
+    enc.encode(`v0:${timestamp}:${body}`),
   )
 
   return isValid

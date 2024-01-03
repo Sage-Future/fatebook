@@ -1,13 +1,13 @@
 .fatebook-predict-embed {
-  position: absolute!important;
-  
-  width: 100%!important;
-  height: 100%!important;
-  min-width: 100%!important;
-  min-height: 100%!important;
+  position: absolute !important;
 
-  top:0;
-  left:0;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+
+  top: 0;
+  left: 0;
   z-index: 9999999;
   border: none;
   color-scheme: normal;
@@ -33,7 +33,7 @@
 
 .fatebook-question-embed {
   display: none;
-  border:1px solid black;
+  border: 1px solid black;
 
   position: absolute;
   width: 500px;
@@ -43,11 +43,10 @@
   transition: height 0.2s;
   overflow: auto;
   color-scheme: normal;
-  top:0;
-  left:0;
+  top: 0;
+  left: 0;
 
   border-color: #dadce0;
   border-radius: 8px;
-  box-shadow: 0 1px 3px 1px rgba(60, 64, 67, .15);
+  box-shadow: 0 1px 3px 1px rgba(60, 64, 67, 0.15);
 }
-

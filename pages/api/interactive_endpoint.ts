@@ -1,14 +1,30 @@
-import { VercelRequest, VercelResponse } from '@vercel/node'
-import { BlockActionPayload } from 'seratch-slack-types/app-backend/interactive-components/BlockActionPayload'
-import { QuestionModalActionParts, unpackBlockActionId } from '../../lib/blocks-designs/_block_utils'
-import { buttonHomeAppPageNavigation } from '../../lib/interactive_handlers/app_home'
-import { deleteQuestionSlack, questionModalSubmitted, showEditQuestionModal, updateFromCheckboxes } from '../../lib/interactive_handlers/edit_question_modal'
-import { showForecastLogModal } from '../../lib/interactive_handlers/question_forecast_log_modal'
-import { questionOverflowAction } from '../../lib/interactive_handlers/question_overflow'
+import { VercelRequest, VercelResponse } from "@vercel/node"
+import { BlockActionPayload } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
+import {
+  QuestionModalActionParts,
+  unpackBlockActionId,
+} from "../../lib/blocks-designs/_block_utils"
+import { buttonHomeAppPageNavigation } from "../../lib/interactive_handlers/app_home"
+import {
+  deleteQuestionSlack,
+  questionModalSubmitted,
+  showEditQuestionModal,
+  updateFromCheckboxes,
+} from "../../lib/interactive_handlers/edit_question_modal"
+import { showForecastLogModal } from "../../lib/interactive_handlers/question_forecast_log_modal"
+import { questionOverflowAction } from "../../lib/interactive_handlers/question_overflow"
 
-import { buttonCancelStaleReminder, buttonTargetAdjust, buttonTargetSet, buttonTriggerTargetSet } from '../../lib/interactive_handlers/reminders'
-import { buttonUndoResolution, resolve } from '../../lib/interactive_handlers/resolve'
-import { submitTextForecast } from '../../lib/interactive_handlers/submit_text_forecast'
+import {
+  buttonCancelStaleReminder,
+  buttonTargetAdjust,
+  buttonTargetSet,
+  buttonTriggerTargetSet,
+} from "../../lib/interactive_handlers/reminders"
+import {
+  buttonUndoResolution,
+  resolve,
+} from "../../lib/interactive_handlers/resolve"
+import { submitTextForecast } from "../../lib/interactive_handlers/submit_text_forecast"
 
 async function blockActions(payload: BlockActionPayload) {
   for (const action of payload.actions!) {
@@ -17,116 +33,133 @@ async function blockActions(payload: BlockActionPayload) {
       return
     }
     const actionParts = unpackBlockActionId(action.action_id)
-    let callbackParts : QuestionModalActionParts = {action: 'qModal',
+    let callbackParts: QuestionModalActionParts = {
+      action: "qModal",
       isCreating: false,
-      channel: '',
+      channel: "",
     }
-    if (payload.view?.callback_id?.startsWith('question_modal')) {
+    if (payload.view?.callback_id?.startsWith("question_modal")) {
       // extract callback_id after 'question_modal'
-      const actionId = payload.view.callback_id.substring('question_modal'.length)
+      const actionId = payload.view.callback_id.substring(
+        "question_modal".length,
+      )
       callbackParts = unpackBlockActionId(actionId) as QuestionModalActionParts
     }
     switch (actionParts.action) {
-      case 'resolve':
-        console.log('  resolve')
-        await resolve(actionParts, payload?.response_url, payload.user?.id, action.selected_option?.value, payload?.team?.id)
+      case "resolve":
+        console.log("  resolve")
+        await resolve(
+          actionParts,
+          payload?.response_url,
+          payload.user?.id,
+          action.selected_option?.value,
+          payload?.team?.id,
+        )
         break
 
-      case 'submitTextForecast':
+      case "submitTextForecast":
         await submitTextForecast(actionParts, action, payload)
         break
 
-      case 'updateResolutionDate':
-        console.log('  updateResolutionDate: user changed resolution date in modal, do nothing')
+      case "updateResolutionDate":
+        console.log(
+          "  updateResolutionDate: user changed resolution date in modal, do nothing",
+        )
         break
 
-      case 'updateHideForecastsDate':
-        console.log('  updateHideForecastsDate: user changed hide date in modal, do nothing')
+      case "updateHideForecastsDate":
+        console.log(
+          "  updateHideForecastsDate: user changed hide date in modal, do nothing",
+        )
         break
 
-      case 'editQuestionBtn':
+      case "editQuestionBtn":
         await showEditQuestionModal(actionParts, payload)
         break
 
-      case 'questionOverflow':
+      case "questionOverflow":
         await questionOverflowAction(actionParts, action, payload)
         break
 
-      case 'undoResolve':
+      case "undoResolve":
         await buttonUndoResolution(actionParts, payload)
         break
 
-      case 'deleteQuestion':
+      case "deleteQuestion":
         await deleteQuestionSlack(actionParts, payload)
         break
 
-      case 'homeAppPageNavigation':
+      case "homeAppPageNavigation":
         await buttonHomeAppPageNavigation(actionParts, payload)
         break
 
-      case 'viewForecastLog':
+      case "viewForecastLog":
         await showForecastLogModal(actionParts, payload)
         break
 
-      case 'optionsCheckBox':
+      case "optionsCheckBox":
         await updateFromCheckboxes(actionParts, payload, callbackParts.channel)
         break
 
-      case 'targetAdjust':
+      case "targetAdjust":
         await buttonTargetAdjust(actionParts, payload)
         break
 
-      case 'targetSet':
+      case "targetSet":
         await buttonTargetSet(actionParts, payload)
         break
 
-      case 'forecastMore':
+      case "forecastMore":
         await buttonTriggerTargetSet(actionParts, payload)
         break
 
-      case 'cancelStaleReminder':
+      case "cancelStaleReminder":
         await buttonCancelStaleReminder(actionParts, payload)
         break
 
       default:
-        console.warn('Unknown action: ', actionParts)
+        console.warn("Unknown action: ", actionParts)
         break
     }
   }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const reqbody = (typeof req.body === 'string') ? JSON.parse(req.body) : req.body
+  const reqbody = typeof req.body === "string" ? JSON.parse(req.body) : req.body
   const payload = JSON.parse(reqbody.payload) as BlockActionPayload
   switch (payload.type) {
-    case 'block_actions':
-      console.log('block_actions')
+    case "block_actions":
+      console.log("block_actions")
       await blockActions(payload)
-      console.log('block_actions done')
+      console.log("block_actions done")
       break
-    case 'view_submission':
-      console.log('view_submission')
-      if (payload.view?.callback_id?.startsWith('question_modal')) {
+    case "view_submission":
+      console.log("view_submission")
+      if (payload.view?.callback_id?.startsWith("question_modal")) {
         // extract callback_id after 'question_modal'
-        const actionId = payload.view.callback_id.substring('question_modal'.length)
-        const actionParts = unpackBlockActionId(actionId) as QuestionModalActionParts
+        const actionId = payload.view.callback_id.substring(
+          "question_modal".length,
+        )
+        const actionParts = unpackBlockActionId(
+          actionId,
+        ) as QuestionModalActionParts
         await questionModalSubmitted(payload, actionParts)
       }
       break
-    case 'view_closed':
-      console.log('view_closed')
+    case "view_closed":
+      console.log("view_closed")
       break
-    case 'message_action':
-      console.log('message_action')
+    case "message_action":
+      console.log("message_action")
       break
-    case 'shortcut':
-      console.log('shortcut')
+    case "shortcut":
+      console.log("shortcut")
       break
     default:
-      console.log('default')
+      console.log("default")
       break
   }
 
-  console.log('handler done')
+  console.log("handler done")
   res.status(200).send(null)
 }

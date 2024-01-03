@@ -22,7 +22,7 @@
   },
   "author": "hello@sage-future.org",
   "short_name": "Fatebook",
-  
+
   "commands": {
     "open_modal": {
       "suggested_key": {

@@ -1,13 +1,13 @@
-import { User } from '@prisma/client'
-import { NextSeo } from 'next-seo'
-import { useRouter } from 'next/router'
-import { Questions } from '../../components/Questions'
-import { TrackRecord } from '../../components/TrackRecord'
-import { api } from '../../lib/web/trpc'
+import { User } from "@prisma/client"
+import { NextSeo } from "next-seo"
+import { useRouter } from "next/router"
+import { Questions } from "../../components/Questions"
+import { TrackRecord } from "../../components/TrackRecord"
+import { api } from "../../lib/web/trpc"
 
 export default function UserPage() {
   const theirUserId = useUserPageId()
-  const theirUserInfoQ = api.getUserInfo.useQuery({userId: theirUserId})
+  const theirUserInfoQ = api.getUserInfo.useQuery({ userId: theirUserId })
 
   return (
     <div className="max-sm:flex-col-reverse gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
@@ -15,17 +15,21 @@ export default function UserPage() {
       <div className="prose mx-auto lg:w-[650px]">
         <Questions
           theirUserId={theirUserId}
-          title={<>
-            {theirUserInfoQ?.data ? theirUserInfoQ?.data?.name + "'s public predictions" : "Loading..."}
-          </>}
-          noQuestionsText='No publicly shared predictions yet.'
+          title={
+            <>
+              {theirUserInfoQ?.data
+                ? theirUserInfoQ?.data?.name + "'s public predictions"
+                : "Loading..."}
+            </>
+          }
+          noQuestionsText="No publicly shared predictions yet."
         />
       </div>
 
       <div className="md:pt-28 lg:w-[320px]">
         <TrackRecord trackRecordUserId={theirUserId} />
       </div>
-  </div>
+    </div>
   )
 }
 
@@ -39,5 +43,7 @@ function useUserPageId() {
 }
 
 export function getUserPageUrl(user: User) {
-  return `/user/${encodeURIComponent(user?.name?.replace(" ", "-") || "")}--${user?.id}`
+  return `/user/${encodeURIComponent(
+    user?.name?.replace(" ", "-") || "",
+  )}--${user?.id}`
 }

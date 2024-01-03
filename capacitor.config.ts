@@ -1,9 +1,9 @@
-import { CapacitorConfig } from '@capacitor/cli'
+import { CapacitorConfig } from "@capacitor/cli"
 
 const config: CapacitorConfig = {
-  appId: 'org.sagefuture.fatebook',
-  appName: 'Fatebook',
-  webDir: 'out',
+  appId: "org.sagefuture.fatebook",
+  appName: "Fatebook",
+  webDir: "out",
   bundledWebRuntime: false,
 
   // // hot reload - dev only

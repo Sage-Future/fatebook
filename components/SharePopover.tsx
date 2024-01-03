@@ -1,42 +1,58 @@
 import { Popover, Transition } from "@headlessui/react"
-import { ChevronDownIcon, LinkIcon, LockClosedIcon, UserGroupIcon, UsersIcon } from '@heroicons/react/20/solid'
+import {
+  ChevronDownIcon,
+  LinkIcon,
+  LockClosedIcon,
+  UserGroupIcon,
+  UsersIcon,
+} from "@heroicons/react/20/solid"
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
-import React, { Fragment, useState } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import React, { Fragment, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { ReactMultiEmail } from "react-multi-email"
-import 'react-multi-email/dist/style.css'
+import "react-multi-email/dist/style.css"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
-import { invalidateQuestion, useUserId } from '../lib/web/utils'
+import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"
 
-
 export function SharePopover({
-  question
+  question,
 }: {
   question: QuestionWithStandardIncludes
 }) {
-  const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
+  const sharedToSlack =
+    !!question.questionMessages && question.questionMessages.length > 0
   return (
     <div className="">
       <Popover as="div" className="inline-block text-left relative w-full">
-        <div className='w-full text-right md:text-center'>
+        <div className="w-full text-right md:text-center">
           <Popover.Button className="button text-sm">
             {question.sharedPublicly ? (
-              question.unlisted ?
-                <><LinkIcon height={15} /> <span>Shared link</span></>
-                :
-                <><UserGroupIcon height={15} /> <span>Public</span></>
-            ) :
-              question.sharedWith?.length > 0 || question.sharedWithLists?.length > 0 || sharedToSlack ? (
-                <><UsersIcon height={15} /> <span>Shared</span></>
+              question.unlisted ? (
+                <>
+                  <LinkIcon height={15} /> <span>Shared link</span>
+                </>
               ) : (
-                <><LockClosedIcon height={15} /> <span>Only me</span></>
-              )}
+                <>
+                  <UserGroupIcon height={15} /> <span>Public</span>
+                </>
+              )
+            ) : question.sharedWith?.length > 0 ||
+              question.sharedWithLists?.length > 0 ||
+              sharedToSlack ? (
+              <>
+                <UsersIcon height={15} /> <span>Shared</span>
+              </>
+            ) : (
+              <>
+                <LockClosedIcon height={15} /> <span>Only me</span>
+              </>
+            )}
             <ChevronDownIcon
               className="-mr-2 h-5 w-5 text-neutral-400"
               aria-hidden="true"
@@ -64,16 +80,24 @@ export function SharePopover({
 const SharePanel = React.forwardRef<
   HTMLDivElement,
   { question: QuestionWithStandardIncludes }
->(function SharePanel({
-  question
-}: {
-  question: QuestionWithStandardIncludes
-}, forwardedRef) {
-  const sharedToSlack = !!question.questionMessages && question.questionMessages.length > 0
+>(function SharePanel(
+  {
+    question,
+  }: {
+    question: QuestionWithStandardIncludes
+  },
+  forwardedRef,
+) {
+  const sharedToSlack =
+    !!question.questionMessages && question.questionMessages.length > 0
 
-  const permalink = api.getSlackPermalink.useQuery(question.questionMessages?.length > 0 ? {
-    ...question.questionMessages[0]!.message,
-  } : undefined)
+  const permalink = api.getSlackPermalink.useQuery(
+    question.questionMessages?.length > 0
+      ? {
+          ...question.questionMessages[0]!.message,
+        }
+      : undefined,
+  )
   const [showInstructions, setShowInstructions] = React.useState(false)
 
   const handleShareToSlack = () => {
@@ -82,47 +106,73 @@ const SharePanel = React.forwardRef<
     setShowInstructions(true)
   }
 
-  return <Popover.Panel className="absolute z-50 w-full cursor-auto" ref={forwardedRef} onClick={(e) => e.stopPropagation()}>
-    <div className="absolute z-50 mt-2 w-72 md:w-96 lg:w-[29rem] right-0 md:left-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-      <div className="p-4 flex flex-col gap-2">
-        <EmailInput question={question} />
-        <UserListDropdown question={question} />
-        <SharePublicly question={question} />
-        {sharedToSlack ? <div>
-          <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -ml-2 inline" alt="" />
-          <span className="text-sm">
-            {permalink.data ?
-              <Link href={permalink.data} target="_blank">Shared in Slack</Link>
-              :
-              "Shared in Slack"
-            }
-          </span>
-        </div> : <div>
-          <span className="text-sm">
-            <button className="btn" onClick={handleShareToSlack}>
-              <Image src="/slack-logo.svg" width={30} height={30} className="m-0 -mx-2 inline" alt="" />
-              Share in Slack
-              {showInstructions && " (command copied!)"}
-            </button>
-            {showInstructions && (
-              <div className="mt-2 bg-neutral-50 rounded-md p-2">
-                <span className="font-semibold">
-                  Paste into a Slack channel to share this question there
-                </span>
-                <span className="block text-neutral-400 italic">
-                  Make sure <Link href="/for-slack">Fatebook for Slack</Link> is installed first
-                </span>
-              </div>
-            )}
-          </span>
-        </div>}
+  return (
+    <Popover.Panel
+      className="absolute z-50 w-full cursor-auto"
+      ref={forwardedRef}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="absolute z-50 mt-2 w-72 md:w-96 lg:w-[29rem] right-0 md:left-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+        <div className="p-4 flex flex-col gap-2">
+          <EmailInput question={question} />
+          <UserListDropdown question={question} />
+          <SharePublicly question={question} />
+          {sharedToSlack ? (
+            <div>
+              <Image
+                src="/slack-logo.svg"
+                width={30}
+                height={30}
+                className="m-0 -ml-2 inline"
+                alt=""
+              />
+              <span className="text-sm">
+                {permalink.data ? (
+                  <Link href={permalink.data} target="_blank">
+                    Shared in Slack
+                  </Link>
+                ) : (
+                  "Shared in Slack"
+                )}
+              </span>
+            </div>
+          ) : (
+            <div>
+              <span className="text-sm">
+                <button className="btn" onClick={handleShareToSlack}>
+                  <Image
+                    src="/slack-logo.svg"
+                    width={30}
+                    height={30}
+                    className="m-0 -mx-2 inline"
+                    alt=""
+                  />
+                  Share in Slack
+                  {showInstructions && " (command copied!)"}
+                </button>
+                {showInstructions && (
+                  <div className="mt-2 bg-neutral-50 rounded-md p-2">
+                    <span className="font-semibold">
+                      Paste into a Slack channel to share this question there
+                    </span>
+                    <span className="block text-neutral-400 italic">
+                      Make sure{" "}
+                      <Link href="/for-slack">Fatebook for Slack</Link> is
+                      installed first
+                    </span>
+                  </div>
+                )}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  </Popover.Panel>
+    </Popover.Panel>
+  )
 })
 
 function SharePublicly({
-  question
+  question,
 }: {
   question: QuestionWithStandardIncludes
 }) {
@@ -131,7 +181,7 @@ function SharePublicly({
   const setSharedPublicly = api.question.setSharedPublicly.useMutation({
     async onSuccess() {
       await invalidateQuestion(utils, question)
-    }
+    },
   })
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -141,8 +191,12 @@ function SharePublicly({
             <input
               id="sharePublicly"
               type="checkbox"
-              className={clsx(userId !== question.userId && "cursor-not-allowed")}
-              disabled={userId !== question.userId || setSharedPublicly.isLoading}
+              className={clsx(
+                userId !== question.userId && "cursor-not-allowed",
+              )}
+              disabled={
+                userId !== question.userId || setSharedPublicly.isLoading
+              }
               checked={question.sharedPublicly}
               onChange={(e) => {
                 setSharedPublicly.mutate({
@@ -151,54 +205,62 @@ function SharePublicly({
                 })
               }}
             />
-            <label htmlFor="sharePublicly" className="text-sm my-auto">Share with anyone with the link</label>
+            <label htmlFor="sharePublicly" className="text-sm my-auto">
+              Share with anyone with the link
+            </label>
           </div>
-          {question.sharedPublicly && <CopyToClipboard textToCopy={getQuestionUrl(question, false)} />}
+          {question.sharedPublicly && (
+            <CopyToClipboard textToCopy={getQuestionUrl(question, false)} />
+          )}
         </div>
       </div>
-      {question.sharedPublicly && <div className="flex gap-2">
-        <input
-          id="unlisted"
-          type="checkbox"
-          className={clsx(userId !== question.userId && "cursor-not-allowed")}
-          disabled={userId !== question.userId || setSharedPublicly.isLoading}
-          checked={!question.unlisted}
-          onChange={(e) => {
-            setSharedPublicly.mutate({
-              questionId: question.id,
-              unlisted: !e.target.checked,
-            })
-          }}
-        />
-        <label htmlFor="unlisted" className="text-sm my-auto">{"Show on the "}
-          <Link href="/public" onClick={(e) => e.stopPropagation()}>
-            public questions page
-          </Link>
-        </label>
-      </div>}
+      {question.sharedPublicly && (
+        <div className="flex gap-2">
+          <input
+            id="unlisted"
+            type="checkbox"
+            className={clsx(userId !== question.userId && "cursor-not-allowed")}
+            disabled={userId !== question.userId || setSharedPublicly.isLoading}
+            checked={!question.unlisted}
+            onChange={(e) => {
+              setSharedPublicly.mutate({
+                questionId: question.id,
+                unlisted: !e.target.checked,
+              })
+            }}
+          />
+          <label htmlFor="unlisted" className="text-sm my-auto">
+            {"Show on the "}
+            <Link href="/public" onClick={(e) => e.stopPropagation()}>
+              public questions page
+            </Link>
+          </label>
+        </div>
+      )}
     </ErrorBoundary>
   )
 }
 
-function EmailInput({
-  question
-}: {
-  question: QuestionWithStandardIncludes
-}) {
-  const [emails, setEmails] = useState<string[]>(question.sharedWith.map((user) => user.email))
+function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
+  const [emails, setEmails] = useState<string[]>(
+    question.sharedWith.map((user) => user.email),
+  )
   const userId = useUserId()
   const utils = api.useContext()
   const setSharedWith = api.question.setSharedWith.useMutation({
     async onSuccess() {
       await invalidateQuestion(utils, question)
-    }
+    },
   })
 
   if (userId !== question.userId) {
     if (question.sharedWith.length > 0) {
-      return <label className="text-sm">
-        <span className="font-semibold">Shared with</span> {question.sharedWith.map((user) => user.email).join(", ")}
-      </label>
+      return (
+        <label className="text-sm">
+          <span className="font-semibold">Shared with</span>{" "}
+          {question.sharedWith.map((user) => user.email).join(", ")}
+        </label>
+      )
     } else {
       return <></>
     }

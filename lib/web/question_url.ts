@@ -5,9 +5,11 @@ import { getSlug } from "./utils"
 
 export function getQuestionUrl(
   question: Partial<Question>,
-  useRelativePath?: boolean
+  useRelativePath?: boolean,
 ) {
-  return `${getClientBaseUrl(useRelativePath)}/q/${getSlug(question.title)}--${question.id}`
+  return `${getClientBaseUrl(useRelativePath)}/q/${getSlug(question.title)}--${
+    question.id
+  }`
 }
 
 export function useQuestionId() {

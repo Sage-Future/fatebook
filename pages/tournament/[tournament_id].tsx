@@ -1,10 +1,10 @@
-import { NextSeo } from 'next-seo'
-import { useRouter } from 'next/router'
-import { Questions } from '../../components/Questions'
-import { TournamentAdminPanel } from '../../components/TournamentAdminPanel'
-import { TournamentLeaderboard } from '../../components/TournamentLeaderboard'
-import { api } from '../../lib/web/trpc'
-import { signInToFatebook, useUserId } from '../../lib/web/utils'
+import { NextSeo } from "next-seo"
+import { useRouter } from "next/router"
+import { Questions } from "../../components/Questions"
+import { TournamentAdminPanel } from "../../components/TournamentAdminPanel"
+import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
+import { api } from "../../lib/web/trpc"
+import { signInToFatebook, useUserId } from "../../lib/web/utils"
 
 export default function TournamentPage() {
   const userId = useUserId()
@@ -12,46 +12,56 @@ export default function TournamentPage() {
 
   // allow an optional ignored slug text before `--` character
   const parts =
-    router.query.tournament_id && (router.query.tournament_id as string).match(/(.*)--(.*)/)
-  const tournamentId = parts ? parts[2] : (router.query.tournament_id as string) || ""
+    router.query.tournament_id &&
+    (router.query.tournament_id as string).match(/(.*)--(.*)/)
+  const tournamentId = parts
+    ? parts[2]
+    : (router.query.tournament_id as string) || ""
 
   const tournamentQ = api.tournament.get.useQuery({
     id: tournamentId,
   })
 
-  const isAdmin = userId && tournamentQ.data?.authorId === userId
-    || (tournamentQ.data?.anyoneInListCanEdit && tournamentQ.data?.userList?.users.find(u => u.id === userId))
+  const isAdmin =
+    (userId && tournamentQ.data?.authorId === userId) ||
+    (tournamentQ.data?.anyoneInListCanEdit &&
+      tournamentQ.data?.userList?.users.find((u) => u.id === userId))
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <NextSeo title={tournamentQ.data?.name || "Prediction tournament"} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
-          {
-            !userId && <div className='text-center'>
-              <button className="button primary mx-auto" onClick={() => void signInToFatebook()}>
+          {!userId && (
+            <div className="text-center">
+              <button
+                className="button primary mx-auto"
+                onClick={() => void signInToFatebook()}
+              >
                 Sign in to see all questions and add your own predictions
               </button>
             </div>
-          }
-          {
-            isAdmin && <TournamentAdminPanel tournamentId={tournamentId} />
-          }
-          {
-            tournamentQ.data ?
-              <Questions
-                title={tournamentQ.data?.name ? `${tournamentQ.data.name}` : "Loading..."}
-                noQuestionsText='No questions in this tournament yet.'
-                filterTournamentId={tournamentId}
-                description={tournamentQ.data?.description || undefined}
-              />
-              :
-              <h3 className="text-neutral-600">{tournamentQ.isLoading ? "Loading..." : ""}</h3>
-          }
+          )}
+          {isAdmin && <TournamentAdminPanel tournamentId={tournamentId} />}
+          {tournamentQ.data ? (
+            <Questions
+              title={
+                tournamentQ.data?.name
+                  ? `${tournamentQ.data.name}`
+                  : "Loading..."
+              }
+              noQuestionsText="No questions in this tournament yet."
+              filterTournamentId={tournamentId}
+              description={tournamentQ.data?.description || undefined}
+            />
+          ) : (
+            <h3 className="text-neutral-600">
+              {tournamentQ.isLoading ? "Loading..." : ""}
+            </h3>
+          )}
           <TournamentLeaderboard tournamentId={tournamentId} />
         </div>
       </div>
     </div>
   )
 }
-
