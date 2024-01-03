@@ -5,9 +5,9 @@ import prisma, { backendAnalyticsEvent, getSlackPermalinkFromChannelAndTS } from
 import { importRouter } from './import_router'
 import { questionRouter } from './question_router'
 import { tagsRouter } from './tags_router'
+import { tournamentRouter } from './tournament_router'
 import { publicProcedure, router } from './trpc_base'
 import { userListRouter } from './userList_router'
-import { tournamentRouter } from './tournament_router'
 
 
 export const appRouter = router({
@@ -55,6 +55,7 @@ export const appRouter = router({
     .input(
       z.object({
         userEmail: z.string(),
+        setUnsubscribed: z.boolean(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -75,11 +76,11 @@ export const appRouter = router({
           email: input.userEmail,
         },
         data: {
-          unsubscribedFromEmailsAt: new Date(),
+          unsubscribedFromEmailsAt: input.setUnsubscribed ? new Date() : null,
         },
       })
 
-      await backendAnalyticsEvent('email_unsubscribe', {
+      await backendAnalyticsEvent(input.setUnsubscribed ? 'email_unsubscribe' : 'email_resubscribe', {
         platform: 'web',
         email: input.userEmail,
       })

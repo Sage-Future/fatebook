@@ -63,10 +63,10 @@ export default function ApiPage() {
 
         <p className="bg-neutral-200 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/createQuestion"}
-          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br/>
-          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span><br/>
-          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span><br/>
-          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span><br/>
+          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br />
+          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span><br />
+          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span><br />
+          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span><br />
         </p>
 
         <p>
@@ -75,18 +75,18 @@ export default function ApiPage() {
 
         <p className="bg-neutral-200 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/createQuestion"}
-          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br/>
-          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span><br/>
-          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span><br/>
-          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span><br/>
-          {"&tags="}<span className='bg-neutral-300 font-semibold'>{"TAG_1"}</span><br/>
-          {"&tags="}<span className='bg-neutral-300 font-semibold'>{"TAG_2"}</span><br/>
-          {"&sharePublicly="}<span className='bg-neutral-300 font-semibold'>{"yes"}</span><br/>
-          {"&shareWithLists="}<span className='bg-neutral-300 font-semibold'>{"LIST_NAME_1"}</span><br/>
-          {"&shareWithLists="}<span className='bg-neutral-300 font-semibold'>{"LIST_NAME_2"}</span><br/>
-          {"&shareWithEmail="}<span className='bg-neutral-300 font-semibold'>{"EMAIL_1"}</span><br/>
-          {"&shareWithEmail="}<span className='bg-neutral-300 font-semibold'>{"EMAIL_2"}</span><br/>
-          {"&hideForecastsUntil="}<span className='bg-neutral-300 font-semibold'>{"HIDE_FORECASTS_UNTIL_DATE_YYYY-MM-DD"}</span><br/>
+          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br />
+          {"&title="}<span className='bg-neutral-300 font-semibold'>{"YOUR_QUESTION_TITLE"}</span><br />
+          {"&resolveBy="}<span className='bg-neutral-300 font-semibold'>{"RESOLUTION_DATE_YYYY-MM-DD"}</span><br />
+          {"&forecast="}<span className='bg-neutral-300 font-semibold'>{"FORECAST_BETWEEN_0_AND_1"}</span><br />
+          {"&tags="}<span className='bg-neutral-300 font-semibold'>{"TAG_1"}</span><br />
+          {"&tags="}<span className='bg-neutral-300 font-semibold'>{"TAG_2"}</span><br />
+          {"&sharePublicly="}<span className='bg-neutral-300 font-semibold'>{"yes"}</span><br />
+          {"&shareWithLists="}<span className='bg-neutral-300 font-semibold'>{"LIST_NAME_1"}</span><br />
+          {"&shareWithLists="}<span className='bg-neutral-300 font-semibold'>{"LIST_NAME_2"}</span><br />
+          {"&shareWithEmail="}<span className='bg-neutral-300 font-semibold'>{"EMAIL_1"}</span><br />
+          {"&shareWithEmail="}<span className='bg-neutral-300 font-semibold'>{"EMAIL_2"}</span><br />
+          {"&hideForecastsUntil="}<span className='bg-neutral-300 font-semibold'>{"HIDE_FORECASTS_UNTIL_DATE_YYYY-MM-DD"}</span><br />
         </p>
 
         <p>
@@ -128,8 +128,8 @@ export default function ApiPage() {
 
         <p className="bg-neutral-200 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/getQuestion"}
-          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br/>
-          {"&questionId="}<span className='bg-neutral-300 font-semibold'>{"QUESTION_ID"}</span><br/>
+          {"?apiKey="}{apiKey.data || "YOUR_API_KEY"}<br />
+          {"&questionId="}<span className='bg-neutral-300 font-semibold'>{"QUESTION_ID"}</span><br />
         </p>
 
         <p>
@@ -139,7 +139,7 @@ export default function ApiPage() {
         </p>
 
         <p>
-          Click <a href={`https://fatebook.io/api/v0/getQuestion?apiKey=${apiKey.data || "YOUR_API_KEY"}&questionId=clkqtczp00001l008qcrma6s7`} target='_blank'>here</a> to see an example of the getQuestion endpoint in action.
+          Click <a href={`https://fatebook.io/api/v0/getQuestion?apiKey=${apiKey.data || "YOUR_API_KEY"}&questionId=clkqtczp00001l008qcrma6s7`} target='_blank' rel="noreferrer">here</a> to see an example of the getQuestion endpoint in action.
         </p>
       </div>
     </div>

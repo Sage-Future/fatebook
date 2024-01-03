@@ -169,6 +169,7 @@ export const PopoverTrigger = React.forwardRef<
 export const PopoverContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLProps<HTMLDivElement>
+// eslint-disable-next-line react/prop-types
 >(function PopoverContent({ style, ...props }, propRef) {
   const { context: floatingContext, ...context } = usePopoverContext()
   const ref = useMergeRefs([context.refs.setFloating, propRef])
@@ -243,6 +244,7 @@ export const PopoverClose = React.forwardRef<
       ref={ref}
       {...props}
       onClick={(event) => {
+        // eslint-disable-next-line react/prop-types
         props.onClick?.(event)
         setOpen(false)
       }}

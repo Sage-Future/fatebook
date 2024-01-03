@@ -8,5 +8,6 @@
     "typescript"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint"
 }
