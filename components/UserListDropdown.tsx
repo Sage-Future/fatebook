@@ -9,7 +9,12 @@ import { UserList } from "@prisma/client"
 import clsx from "clsx"
 import Link from "next/link"
 import { api } from "../lib/web/trpc"
-import { getUserListUrl, invalidateQuestion, useUserId } from "../lib/web/utils"
+import {
+  getUserListUrl,
+  ifEmpty,
+  invalidateQuestion,
+  useUserId,
+} from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { UserListDisplay } from "./UserListDisplay"
 
@@ -36,16 +41,19 @@ export function UserListDropdown({
     return (
       <label className="text-sm">
         <span className="font-semibold">Shared with teams: </span>{" "}
-        {question.sharedWithLists?.map((list) => (
-          <Link
-            key={list.id}
-            href={getUserListUrl(list, true)}
-            onClick={(e) => e.stopPropagation()}
-            className="ml-1"
-          >
-            {list.name}
-          </Link>
-        )) || "None"}
+        {ifEmpty(
+          question.sharedWithLists?.map((list) => (
+            <Link
+              key={list.id}
+              href={getUserListUrl(list, true)}
+              onClick={(e) => e.stopPropagation()}
+              className="ml-1"
+            >
+              {list.name}
+            </Link>
+          )),
+          "None",
+        ) || "None"}
       </label>
     )
   }
