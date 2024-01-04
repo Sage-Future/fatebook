@@ -8,11 +8,9 @@ import { getQuestionUrl } from "../../../lib/web/question_url"
 import { UserListWithAuthorAndUsers } from "../../../prisma/additional"
 
 const createQuestionSchema = z.object({
-  apiKey: z
-    .string()
-    .nonempty({
-      message: "apiKey must be a string (see https://fatebook.io/api-setup)",
-    }),
+  apiKey: z.string().nonempty({
+    message: "apiKey must be a string (see https://fatebook.io/api-setup)",
+  }),
   title: z.string().nonempty({ message: "title must be a string" }),
   resolveBy: z
     .string()

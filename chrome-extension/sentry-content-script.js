@@ -410,13 +410,11 @@ var Sentry = (function (t) {
         n.reverse(),
           z.test(n[n.length - 1].function || "") &&
             (n.pop(), z.test(n[n.length - 1].function || "") && n.pop())
-        return n
-          .slice(0, 50)
-          .map((t) => ({
-            ...t,
-            filename: t.filename || n[n.length - 1].filename,
-            function: t.function || "?",
-          }))
+        return n.slice(0, 50).map((t) => ({
+          ...t,
+          filename: t.filename || n[n.length - 1].filename,
+          function: t.function || "?",
+        }))
       })(r)
     }
   }
