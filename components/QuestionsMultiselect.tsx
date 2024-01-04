@@ -7,20 +7,33 @@ export function QuestionsMultiselect({
   setQuestions,
   disabled,
   placeholder = "Select questions...",
+  includeTournamentQuestions,
 }: {
   questions: string[]
   setQuestions: (questionIds: string[]) => void
   disabled?: boolean
   placeholder?: string
+  includeTournamentQuestions?: string
 }) {
   const [localSelectedQuestions, setLocalSelectedQuestions] =
     useState<string[]>(questions)
   const allQuestionsQ =
     api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useQuery({
-      limit: 100,
+      limit: 10000,
       cursor: 0,
     })
-  const allQuestions = allQuestionsQ.data?.items ?? []
+  const currentTournamentQuestionsQ =
+    api.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.useQuery({
+      limit: 10000,
+      cursor: 0,
+      extraFilters: {
+        filterTournamentId: includeTournamentQuestions,
+      },
+    })
+  const allQuestions = [
+    ...(allQuestionsQ.data?.items || []),
+    ...(currentTournamentQuestionsQ.data?.items || []),
+  ]
 
   return (
     <div className="">

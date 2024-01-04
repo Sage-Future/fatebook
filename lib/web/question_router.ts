@@ -71,9 +71,9 @@ const questionIncludes = (userId: string | undefined) => ({
 })
 
 export type ExtraFilters = {
-  resolved: boolean
-  readyToResolve: boolean
-  resolvingSoon: boolean
+  resolved?: boolean
+  readyToResolve?: boolean
+  resolvingSoon?: boolean
   filterTagIds?: string[]
   showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
   theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
@@ -152,13 +152,13 @@ export const questionRouter = router({
   getQuestionsUserCreatedOrForecastedOnOrIsSharedWith: publicProcedure
     .input(
       z.object({
-        limit: z.number().min(1).max(100).nullish(),
+        limit: z.number().min(1).nullish(),
         cursor: z.number(),
         extraFilters: z
           .object({
-            resolved: z.boolean(),
-            readyToResolve: z.boolean(),
-            resolvingSoon: z.boolean(),
+            resolved: z.boolean().optional(),
+            readyToResolve: z.boolean().optional(),
+            resolvingSoon: z.boolean().optional(),
             filterTagIds: z.array(z.string()).optional(),
             showAllPublic: z.boolean().optional(),
             theirUserId: z.string().optional(),
@@ -586,12 +586,12 @@ export const questionRouter = router({
         ]).filter((u) => u && u.id !== submittedForecast.user.id)) {
           await createNotification({
             userId: user.id,
-            title: `${submittedForecast.user.name || "Someone"} predicted ${
-              submittedForecast.forecast.toNumber() * 100
-            }% on "${q.title}"`,
-            content: `${submittedForecast.user.name || "Someone"} predicted **${
-              submittedForecast.forecast.toNumber() * 100
-            }%** on ${getMarkdownLinkQuestionTitle(q)}.`,
+            title: `${submittedForecast.user.name || "Someone"} predicted on "${
+              q.title
+            }"`,
+            content: `${
+              submittedForecast.user.name || "Someone"
+            } predicted on ${getMarkdownLinkQuestionTitle(q)}.`,
             tags: ["new_forecast", q.id],
             url: getQuestionUrl(q),
           })

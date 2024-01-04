@@ -10,6 +10,7 @@ import { InfoButton } from "./InfoButton"
 import { Predict } from "./Predict"
 import { QuestionsMultiselect } from "./QuestionsMultiselect"
 import { ShareTournament } from "./ShareTournament"
+import { Username } from "./Username"
 
 export function TournamentAdminPanel({
   tournamentId,
@@ -113,7 +114,8 @@ export function TournamentAdminPanel({
           {!isAdmin && (
             <p className="text-neutral-400 text-sm">
               You are not an admin of this tournament and cannot change these
-              settings.
+              settings. The tournament was created by{" "}
+              {<Username user={tournamentQ.data.author} />}
             </p>
           )}
           <div className="form-control">
@@ -187,6 +189,7 @@ export function TournamentAdminPanel({
                 handleUpdate({ tournament: {}, questions: questionIds })
               }
               disabled={!isAdmin}
+              includeTournamentQuestions={tournamentId}
             />
             <span className="text-sm mt-2">
               <span className="font-semibold mr-2">Tip</span>Make sure that the
