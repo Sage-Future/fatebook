@@ -74,7 +74,7 @@ export function SyncToSlack({
             questions added in the future
           </span>
           <span className="block text-neutral-400 italic mt-2">
-            Make sure <Link href="/for-slack">Fatebook for Slack</Link> is
+            Make sure <Link href="/for-slack" target="_blank">Fatebook for Slack</Link> is
             installed first
           </span>
         </div>

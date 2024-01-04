@@ -157,8 +157,10 @@ const SharePanel = React.forwardRef<
                     </span>
                     <span className="block text-neutral-400 italic">
                       Make sure{" "}
-                      <Link href="/for-slack">Fatebook for Slack</Link> is
-                      installed first
+                      <Link href="/for-slack" target="_blank">
+                        Fatebook for Slack
+                      </Link>{" "}
+                      is installed first
                     </span>
                   </div>
                 )}

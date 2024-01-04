@@ -323,3 +323,10 @@ export function generateRandomId() {
     Math.random().toString(36).substring(2, 15)
   )
 }
+
+export function filterToUniqueIds(arr: { id: any }[]) {
+  const uniqueArray = arr.filter(
+    (v, i, a) => a.findIndex((t) => t.id === v.id) === i,
+  )
+  return uniqueArray
+}

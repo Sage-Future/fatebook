@@ -7,7 +7,11 @@ import {
   QuestionWithForecastsAndSharedWithAndLists,
   QuestionWithUserAndSharedWith,
 } from "../../prisma/additional"
-import { forecastsAreHidden, getDateYYYYMMDD } from "../_utils_common"
+import {
+  filterToUniqueIds,
+  forecastsAreHidden,
+  getDateYYYYMMDD,
+} from "../_utils_common"
 import prisma, {
   backendAnalyticsEvent,
   updateForecastQuestionMessages,
@@ -18,11 +22,19 @@ import {
   handleQuestionResolution,
   undoQuestionResolution,
 } from "../interactive_handlers/resolve"
-import { fatebookEmailFooter, sendEmail } from "./email"
 import { questionsToCsv } from "./export"
+import {
+  createNotification,
+  fatebookEmailFooter,
+  sendEmailUnbatched,
+} from "./notifications"
 import { getQuestionUrl } from "./question_url"
 import { Context, publicProcedure, router } from "./trpc_base"
-import { getHtmlLinkQuestionTitle, matchesAnEmailDomain } from "./utils"
+import {
+  getHtmlLinkQuestionTitle,
+  getMarkdownLinkQuestionTitle,
+  matchesAnEmailDomain,
+} from "./utils"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -565,27 +577,23 @@ export const questionRouter = router({
         q.forecasts.length < 4 ||
         mostRecentForecast.createdAt.getTime() < twoHoursAgo.getTime()
       ) {
-        for (const email of Array.from(
-          new Set([
-            q.user.email,
-            ...q.forecasts.map((f) => f.user.email),
-            ...q.comments.map((c) => c.user.email),
-            ...q.sharedWith.map((u) => u.email),
-            ...q.sharedWithLists.flatMap((l) => l.users.map((u) => u.email)),
-          ]),
-        ).filter((e) => e && e !== submittedForecast.user.email)) {
-          await sendEmail({
-            to: email,
-            subject: `${submittedForecast.user.name || "Someone"} predicted ${
+        for (const user of filterToUniqueIds([
+          q.user,
+          ...q.forecasts.map((f) => f.user),
+          ...q.comments.map((c) => c.user),
+          ...q.sharedWith,
+          ...q.sharedWithLists.flatMap((l) => l.users),
+        ]).filter((u) => u && u.id !== submittedForecast.user.id)) {
+          await createNotification({
+            userId: user.id,
+            title: `${submittedForecast.user.name || "Someone"} predicted ${
               submittedForecast.forecast.toNumber() * 100
             }% on "${q.title}"`,
-            textBody: `New prediction`,
-            htmlBody: `
-              <p>${submittedForecast.user.name || "Someone"} predicted ${
-                submittedForecast.forecast.toNumber() * 100
-              }% on ${getHtmlLinkQuestionTitle(q)}.</p>
-              ${fatebookEmailFooter(email)}
-            `,
+            content: `${submittedForecast.user.name || "Someone"} predicted **${
+              submittedForecast.forecast.toNumber() * 100
+            }%** on ${getMarkdownLinkQuestionTitle(q)}.`,
+            tags: ["new_forecast", q.id],
+            url: getQuestionUrl(q),
           })
         }
       }
@@ -672,30 +680,25 @@ export const questionRouter = router({
         question.comments.length < 4 ||
         mostRecentComment.createdAt.getTime() < twoHoursAgo.getTime()
       ) {
-        for (const email of Array.from(
-          new Set([
-            question.user.email,
-            ...question.forecasts.map((f) => f.user.email),
-            ...question.comments.map((c) => c.user.email),
-            ...question.sharedWith.map((u) => u.email),
-            ...question.sharedWithLists.flatMap((l) =>
-              l.users.map((u) => u.email),
-            ),
-          ]),
-        ).filter((e) => e && e !== newComment.user.email)) {
-          await sendEmail({
-            to: email,
-            subject: `${newComment.user.name || "Someone"} commented on "${
+        for (const user of filterToUniqueIds([
+          question.user,
+          ...question.forecasts.map((f) => f.user),
+          ...question.comments.map((c) => c.user),
+          ...question.sharedWith,
+          ...question.sharedWithLists.flatMap((l) => l.users),
+        ]).filter((u) => u && u.id !== newComment.user.id)) {
+          await createNotification({
+            userId: user.id,
+            title: `${newComment.user.name || "Someone"} commented on "${
               question.title
             }"`,
-            textBody: `"${newComment.comment}"`,
-            htmlBody: `
-              <p>${
-                newComment.user.name || "Someone"
-              } commented on ${getHtmlLinkQuestionTitle(question)}:</p>
-              <p>${newComment.comment}</p>
-              ${fatebookEmailFooter(email)}
-            `,
+            content: `${
+              newComment.user.name || "Someone"
+            } commented on ${getMarkdownLinkQuestionTitle(question)}:\n\n${
+              newComment.comment
+            }`,
+            tags: ["new_comment", question.id],
+            url: getQuestionUrl(question),
           })
         }
       }
@@ -1091,18 +1094,33 @@ export async function emailNewlySharedWithUsers(
   await Promise.all(
     newlySharedWith.map(async (email) => {
       const author = question.user.name || question.user.email
-      await sendEmail({
-        to: email,
-        subject: `${author} shared a prediction with you`,
-        textBody: `"${question.title}"`,
-        htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(
-          question,
-        )}</b></p>
+      const user = await prisma.user.findUnique({ where: { email } })
+      if (user) {
+        await createNotification({
+          userId: user.id,
+          title: `${author} shared a prediction with you`,
+          content: `${author} shared a prediction with you: **${getMarkdownLinkQuestionTitle(
+            question,
+          )}**\n\n[See ${author}'s prediction and add your own on Fatebook.](${getQuestionUrl(
+            question,
+          )})`,
+          url: getQuestionUrl(question),
+          tags: ["shared_prediction", question.id],
+        })
+      } else {
+        await sendEmailUnbatched({
+          to: email,
+          subject: `${author} shared a prediction with you`,
+          textBody: `"${question.title}"`,
+          htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(
+            question,
+          )}</b></p>
 <p><a href=${getQuestionUrl(
-          question,
-        )}>See ${author}'s prediction and add your own on Fatebook.</a></p>
+            question,
+          )}>See ${author}'s prediction and add your own on Fatebook.</a></p>
 ${fatebookEmailFooter(email)}`,
-      })
+        })
+      }
     }),
   )
 }

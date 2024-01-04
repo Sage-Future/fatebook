@@ -138,6 +138,10 @@ export function getHtmlLinkQuestionTitle(question: Question) {
   return `<a href="${getQuestionUrl(question, false)}">${question.title}</a>`
 }
 
+export function getMarkdownLinkQuestionTitle(question: Question) {
+  return `[${question.title}](${getQuestionUrl(question, false)})`
+}
+
 export function getPredictionBookIdPrefix() {
   return "pb_"
 }

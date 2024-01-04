@@ -10,13 +10,16 @@ import prisma, {
 import { buildResolveQuestionBlocks } from "../../lib/blocks-designs/resolve_question"
 import { buildStaleForecastsReminderBlock } from "../../lib/blocks-designs/stale_forecasts"
 import { buildTargetNotification } from "../../lib/blocks-designs/target_setting"
-import { fatebookEmailFooter, sendEmail } from "../../lib/web/email"
+import {
+  fatebookEmailFooter,
+  sendEmailUnbatched,
+} from "../../lib/web/notifications"
+import { getQuestionUrl } from "../../lib/web/question_url"
 import { getHtmlLinkQuestionTitle } from "../../lib/web/utils"
 import {
   ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts,
   ForecastWithQuestionWithSlackMessagesAndForecasts,
 } from "../../prisma/additional"
-import { getQuestionUrl } from "../../lib/web/question_url"
 
 export const config = {
   maxDuration: 300,
@@ -161,7 +164,7 @@ async function notifyAuthorsToResolveQuestions() {
 export async function sendEmailReadyToResolveNotification(
   question: Question & { user: User },
 ) {
-  await sendEmail({
+  await sendEmailUnbatched({
     subject: `Ready to resolve: ${question.title}`,
     to: question.user.email,
     textBody: `Are you ready to resolve your question: ${question.title}`,
@@ -470,7 +473,7 @@ async function sendEmailForStaleForecasts(
   user: User,
 ) {
   if (staleForecastsForProfile.length > 0) {
-    await sendEmail({
+    await sendEmailUnbatched({
       subject:
         `It's two weeks since you predicted on '${staleForecastsForProfile[0].question.title}'` +
         (staleForecastsForProfile.length > 1

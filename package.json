@@ -5,18 +5,19 @@
   "type": "module",
   "scripts": {
     "prebuild": "prisma generate",
-    "dev": "dotenv next dev -- -p 3005",
-    "ssl-proxy": "npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3000 --target 3005",
+    "dev": "npm run ssl-proxy & dotenv next dev -- -p 3005",
     "build": "next build",
     "start": "next start",
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "ssl-proxy": "npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3000 --target 3005",
     "lint": "next lint --dir lib --dir pages --dir components",
+    "format": "prettier --write .",
     "studio": "prisma studio",
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios",
     "zip": "zip -r extension chrome-extension"
   },
   "git": {
-    "pre-commit": "lint"
+    "pre-commit": ["format", "lint"]
   },
   "dependencies": {
     "@capacitor/android": "^4.8.0",

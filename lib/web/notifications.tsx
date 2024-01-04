@@ -1,25 +1,28 @@
 import { ServerClient } from "postmark"
 import { renderToString } from "react-dom/server"
 import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
 import prisma, { backendAnalyticsEvent } from "../_utils_server"
 import { webFeedbackUrl } from "./utils"
 
 export async function createNotification({
+  title,
   content,
   url,
   tags,
   userId,
 }: {
+  title: string
   content: string
   url: string
   tags: string[]
   userId: string
 }) {
+  await backendAnalyticsEvent("notification_created", { platform: "web" })
   return await prisma.notification.create({
     data: {
+      title,
       content,
       url,
       tags,
@@ -29,9 +32,10 @@ export async function createNotification({
 }
 
 export async function sendBatchedEmails() {
-  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
+  const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000)
   const users = await prisma.user.findMany({
     where: {
+      // user has some unsent emails and no emails sent in the last 5 hours
       AND: [
         {
           notifications: {
@@ -44,7 +48,7 @@ export async function sendBatchedEmails() {
           notifications: {
             none: {
               emailSentAt: {
-                gte: twoHoursAgo,
+                gte: fiveHoursAgo,
               },
             },
           },
@@ -59,25 +63,32 @@ export async function sendBatchedEmails() {
   for (const user of users) {
     const notifications = user.notifications
       .filter((notification) => notification.emailSentAt === null)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) // oldest first
+    const notificationsHtml = notifications
       .map((notification) => {
         return renderToString(
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {notification.content}
-          </ReactMarkdown>,
+          <ReactMarkdown>{notification.content}</ReactMarkdown>,
         )
       })
       .join("<br/><br/>")
 
-    await sendEmail({
-      subject: "Your Notifications",
-      htmlBody: notifications,
-      textBody: notifications,
+    await sendEmailUnbatched({
+      subject:
+        notifications.length === 1
+          ? notifications[0].title
+          : "New activity on your predictions",
+      htmlBody: notificationsHtml + fatebookEmailFooter(user.email),
+      textBody: `${notifications.length} new notification${
+        notifications.length === 1 ? "" : "s"
+      }`,
       to: user.email,
     })
 
     await prisma.notification.updateMany({
       where: {
-        userId: user.id,
+        id: {
+          in: notifications.map((notification) => notification.id),
+        },
       },
       data: {
         emailSentAt: new Date(),
@@ -86,7 +97,7 @@ export async function sendBatchedEmails() {
   }
 }
 
-export async function sendEmail({
+export async function sendEmailUnbatched({
   subject,
   htmlBody,
   textBody,

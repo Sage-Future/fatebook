@@ -3,6 +3,15 @@
     {
       "path": "/api/check_for_message_updates?key=e623c56b6d2adb695b99",
       "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/send_batched_emails?key=e623c56b6d2adb695b99",
+      "schedule": "*/5 * * * *"
     }
-  ]
+  ],
+  "functions": {
+    "pages/api/**/*": {
+      "maxDuration": 300
+    }
+  }
 }

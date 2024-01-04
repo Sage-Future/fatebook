@@ -13,16 +13,6 @@
     "tsconfigRootDir": "./"
   },
   "rules": {
-    "react/jsx-first-prop-new-line": [2, "multiline"],
-    "react/jsx-max-props-per-line": [
-      2,
-      {
-        "maximum": 1,
-        "when": "multiline"
-      }
-    ],
-    "react/jsx-indent-props": [2, 2],
-    "semi": ["error", "never"],
     "@typescript-eslint/naming-convention": [
       "error",
       {
@@ -68,8 +58,7 @@
     ],
     "require-await": "error",
     "@typescript-eslint/no-misused-promises": "error",
-    "@typescript-eslint/no-floating-promises": "error",
-    "no-trailing-spaces": "error"
+    "@typescript-eslint/no-floating-promises": "error"
   },
   "overrides": [
     {
