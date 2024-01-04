@@ -93,7 +93,10 @@ export function Question({
             key={question.id}
           >
             <span className="col-span-2 flex gap-4 mb-1 justify-between">
-              <span className={"font-semibold"} key={`${question.id}title`}>
+              <span
+                className={"font-semibold overflow-auto break-words"}
+                key={`${question.id}title`}
+              >
                 <Link
                   href={getQuestionUrl(question)}
                   key={question.id}
