@@ -996,16 +996,35 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
               }
             : input.extraFilters?.filterUserListId
               ? {
-                  sharedWithLists: {
-                    some: {
-                      id: input.extraFilters.filterUserListId,
-                      OR: [
-                        { authorId: userIdIfAuthed },
-                        { users: { some: { id: userIdIfAuthed } } },
-                        matchesAnEmailDomain(user),
-                      ],
+                  OR: [
+                    {
+                      sharedWithLists: {
+                        some: {
+                          id: input.extraFilters.filterUserListId,
+                          OR: [
+                            { authorId: userIdIfAuthed },
+                            { users: { some: { id: userIdIfAuthed } } },
+                            matchesAnEmailDomain(user),
+                          ],
+                        },
+                      },
                     },
-                  },
+                    // if the question is in a tournament shared with the user list, also include it
+                    {
+                      tournaments: {
+                        some: {
+                          userList: {
+                            id: input.extraFilters?.filterUserListId,
+                            OR: [
+                              { authorId: userIdIfAuthed },
+                              { users: { some: { id: userIdIfAuthed } } },
+                              matchesAnEmailDomain(user),
+                            ],
+                          },
+                        },
+                      },
+                    },
+                  ],
                 }
               : {
                   // only show questions I've created, forecasted on, or are shared with me
