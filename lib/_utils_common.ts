@@ -330,3 +330,11 @@ export function filterToUniqueIds(arr: { id: any }[]) {
   )
   return uniqueArray
 }
+
+export function containsWords(str: string, searchString: string) {
+  const words = searchString
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.trim())
+  return words.every((word) => str.toLowerCase().includes(word.toLowerCase()))
+}

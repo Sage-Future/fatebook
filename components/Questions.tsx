@@ -6,6 +6,7 @@ import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
 import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import remarkGfm from "remark-gfm"
+import { containsWords } from "../lib/_utils_common"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
@@ -126,9 +127,8 @@ export function Questions({
             !questions.some(
               (q) =>
                 extraFilters?.searchString &&
-                q?.title
-                  .toLowerCase()
-                  .includes(extraFilters?.searchString.toLowerCase()),
+                q &&
+                containsWords(q.title, extraFilters.searchString),
             ) && (
               <div className="italic text-neutral-500 text-sm text-center">
                 {"No questions match your search"}
@@ -148,9 +148,10 @@ export function Questions({
                   <div
                     className={clsx(
                       extraFilters.searchString &&
-                        !question.title
-                          .toLowerCase()
-                          .includes(extraFilters.searchString.toLowerCase()) &&
+                        !containsWords(
+                          question.title,
+                          extraFilters.searchString,
+                        ) &&
                         "opacity-50 hover:opacity-100 transition-opacity",
                     )}
                   >

@@ -278,9 +278,13 @@ export function getUserListUrl(list: UserList, useRelativePath: boolean) {
   return `${getClientBaseUrl(useRelativePath)}/team/${fullSlug}`
 }
 
-export function createPostgresSearchString(str: string) {
-  return str
-    .split(" ")
-    .map((word) => `${word}`)
-    .join(" & ")
+export function createPostgresSearchString(query: string) {
+  // Split the query into words
+  const words = query
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.trim())
+
+  // Join the words with the & operator and return
+  return words.join(" & ")
 }
