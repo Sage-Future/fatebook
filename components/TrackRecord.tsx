@@ -96,7 +96,7 @@ export function TrackRecord({
                 <div className="stat-title flex flex-row gap-0.5 md:gap-1">
                   Brier score
                   <InfoButton
-                    tooltip="Lower is better!"
+                    tooltip="Lower is better! Calculated as 2x the average squared difference between your forecast and the outcome."
                     className="tooltip-bottom"
                   />
                 </div>
@@ -130,7 +130,7 @@ export function TrackRecord({
                   <div className="stat-title flex flex-row gap-0.5 md:gap-1">
                     Relative Brier
                     <InfoButton
-                      tooltip="Relative to the median on each question"
+                      tooltip="Relative to the median of other forecasters' Brier scores on each question"
                       className="tooltip-left"
                     />
                   </div>
