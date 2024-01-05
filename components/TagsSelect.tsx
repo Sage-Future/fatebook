@@ -1,7 +1,8 @@
+import clsx from "clsx"
 import Link from "next/link"
 import { useState } from "react"
-import { components } from "react-select"
-import Select from "react-select/creatable"
+import Select, { components } from "react-select"
+import CreatableSelect from "react-select/creatable"
 import { api } from "../lib/web/trpc"
 import { getTagPageUrl } from "../pages/tag/[tag]"
 
@@ -10,19 +11,23 @@ export function TagsSelect({
   setTags,
   disabled,
   placeholder = "Add tags...",
+  allowCreation = true,
 }: {
   tags: string[]
   setTags: (tags: string[]) => void
   disabled?: boolean
   placeholder?: string
+  allowCreation?: boolean
 }) {
   const [localTags, setLocalTags] = useState<string[]>(tags)
   const allTagsQ = api.tags.getAll.useQuery()
   const allTags = allTagsQ.data ?? []
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const SelectComponent = allowCreation ? CreatableSelect : Select
   return (
     <div className="">
-      <Select
+      <SelectComponent
         value={localTags.map((tag) => ({ label: tag, value: tag }))}
         onChange={(newValue) => {
           console.log(newValue)
@@ -30,18 +35,29 @@ export function TagsSelect({
           setLocalTags(newTags)
           setTags(newTags)
         }}
-        onCreateOption={(newValue) => {
-          const newTags = [...localTags, newValue]
-          setLocalTags(newTags)
-          setTags(newTags)
-        }}
+        onCreateOption={
+          allowCreation
+            ? (newValue) => {
+                const newTags = [...localTags, newValue]
+                setLocalTags(newTags)
+                setTags(newTags)
+              }
+            : undefined
+        }
         options={allTags.map((tag) => ({ label: tag.name, value: tag.name }))}
         hideSelectedOptions={true}
-        formatCreateLabel={(inputValue) => `Add new tag "${inputValue}"`}
+        formatCreateLabel={
+          allowCreation
+            ? (inputValue) => `Add new tag "${inputValue}"`
+            : undefined
+        }
         className="cursor-text"
         classNames={{
           control: () =>
-            "!bg-neutral-200 !border-none shadow-inner !cursor-text md:px-2",
+            clsx(
+              "!border-none shadow-inner !cursor-text md:px-2",
+              allowCreation ? "!bg-neutral-200" : "!bg-neutral-100",
+            ),
           multiValue: () =>
             "!bg-white shadow-sm px-0.5 !rounded-md !cursor-pointer not-prose",
           multiValueLabel: () => "hover:underline hover:bg-neutral-100",
@@ -63,7 +79,9 @@ export function TagsSelect({
           }),
         }}
         noOptionsMessage={() =>
-          "Type to add a tag. Your tags are visible only to you."
+          allowCreation
+            ? "Type to add a tag. Your tags are visible only to you."
+            : "Tag your forecasting questions, then you can filter by them here to see your track record for specific tags (e.g. 'time tracking', 'AI' or 'in-depth forecasts')."
         }
         closeMenuOnSelect={false}
         components={{

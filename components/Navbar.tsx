@@ -1,5 +1,6 @@
 import { Bars3Icon, ScaleIcon } from "@heroicons/react/24/outline"
 import { ChevronDownIcon, SparklesIcon } from "@heroicons/react/24/solid"
+import clsx from "clsx"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -10,6 +11,7 @@ import { api } from "../lib/web/trpc"
 import {
   downloadBlob,
   signInToFatebook,
+  useUserId,
   webFeedbackUrl,
 } from "../lib/web/utils"
 import Footer from "./Footer"
@@ -124,7 +126,7 @@ export function Navbar({
               <Bars3Icon height={24} width={24} />
             </label>
           </div>
-          <div className="flex-1 -ml-4 flex gap-2">
+          <div className="flex-1 -ml-4 flex gap-0">
             <Link
               href="/"
               className="btn btn-ghost normal-case text-xl flex gap-2"
@@ -140,9 +142,7 @@ export function Navbar({
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">{menuItems}</ul>
           </div>
-          <div className="flex-none">
-            {AccountMenu(showCreateAccountButton)}
-          </div>
+          <div className="">{AccountMenu(showCreateAccountButton)}</div>
         </div>
         {children}
       </div>
@@ -153,9 +153,16 @@ export function Navbar({
 }
 
 function SpecialButton({ url, label }: { url: string; label: ReactNode }) {
+  const userId = useUserId()
+
   return (
     <Link href={url}>
-      <button className="btn btn-sm max-sm:btn-xs relative max-sm:w-24 max-sm:h-full max-sm:ml-auto mr-2 py-2">
+      <button
+        className={clsx(
+          "btn btn-sm relative max-sm:btn-xs max-sm:w-24 max-sm:h-full max-sm:ml-auto mr-2 py-2",
+          !userId && "max-sm:hidden", // not enough space otherwise
+        )}
+      >
         {label}
         <div className="absolute -top-2 -right-2">
           <SparklesIcon className="w-5 h-5 text-indigo-500 opacity-60 animate-pulse" />
@@ -276,10 +283,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
     </details>
   ) : (
     showCreateAccountButton && (
-      <button
-        className="btn normal-case"
-        onClick={() => void signInToFatebook()}
-      >
+      <button className="btn" onClick={() => void signInToFatebook()}>
         Log in or sign up
       </button>
     )
