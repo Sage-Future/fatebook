@@ -277,3 +277,10 @@ export function getUserListUrl(list: UserList, useRelativePath: boolean) {
   const fullSlug = `${getSlug(list.name)}--${list.id}`
   return `${getClientBaseUrl(useRelativePath)}/team/${fullSlug}`
 }
+
+export function createPostgresSearchString(str: string) {
+  return str
+    .split(" ")
+    .map((word) => `${word}`)
+    .join(" & ")
+}

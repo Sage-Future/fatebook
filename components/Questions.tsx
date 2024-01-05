@@ -1,3 +1,4 @@
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid"
 import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
@@ -122,6 +123,18 @@ export function Questions({
       )}
       <motion.div className="grid gap-6 relative">
         <AnimatePresence initial={false} mode="popLayout">
+          {extraFilters.searchString &&
+            !questions.some(
+              (q) =>
+                extraFilters?.searchString &&
+                q?.title
+                  .toLowerCase()
+                  .includes(extraFilters?.searchString.toLowerCase()),
+            ) && (
+              <div className="italic text-neutral-500 text-sm text-center">
+                {"No questions match your search"}
+              </div>
+            )}
           {ifEmpty(
             questions.map((question, index, array) =>
               question ? (
@@ -133,16 +146,28 @@ export function Questions({
                       array[index - 1]?.[orderedBy],
                     )}
                   />
-                  <Question
-                    question={question}
-                    key={question.id}
-                    startExpanded={
-                      index === 0 && question.userId === session.data?.user.id
-                    }
-                    zIndex={
-                      questions?.length ? questions?.length - index : undefined
-                    }
-                  />
+                  <div
+                    className={clsx(
+                      extraFilters.searchString &&
+                        !question.title
+                          .toLowerCase()
+                          .includes(extraFilters.searchString.toLowerCase()) &&
+                        "opacity-50 hover:opacity-100 transition-opacity",
+                    )}
+                  >
+                    <Question
+                      question={question}
+                      key={question.id}
+                      startExpanded={
+                        index === 0 && question.userId === session.data?.user.id
+                      }
+                      zIndex={
+                        questions?.length
+                          ? questions?.length - index
+                          : undefined
+                      }
+                    />
+                  </div>
                 </React.Fragment>
               ) : (
                 <></>
@@ -192,25 +217,85 @@ function FilterControls({
   extraFilters: ExtraFilters
   setExtraFilters: (extraFilters: ExtraFilters) => void
 }) {
+  const [searchVisible, setSearchVisible] = useState(false)
+  const [searchString, setSearchString] = useState("")
+
   return (
     <div className="flex flex-row flex-wrap gap-2" id="filters">
-      <button
-        onClick={() =>
-          setExtraFilters({
-            ...extraFilters,
-            resolved: false,
-            readyToResolve: false,
-            resolvingSoon: !extraFilters.resolvingSoon,
-          })
-        }
-        className={clsx(
-          "btn",
-          extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
+      {!searchVisible && (
+        <button
+          onClick={() => setSearchVisible(!searchVisible)}
+          className="btn text-neutral-500"
+        >
+          <MagnifyingGlassIcon height={16} />
+        </button>
+      )}
+
+      <AnimatePresence mode="popLayout">
+        {searchVisible && (
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            className="relative"
+          >
+            <input
+              type="text"
+              value={searchString}
+              placeholder="Search..."
+              autoFocus
+              onBlur={() => {
+                if (searchString === "") {
+                  setSearchVisible(false)
+                }
+              }}
+              onChange={(e) => {
+                setSearchString(e.target.value)
+                setExtraFilters({
+                  ...extraFilters,
+                  searchString: e.target.value,
+                  resolvingSoon: false,
+                })
+              }}
+              className="text-sm py-2 px-4 focus:border-indigo-500 outline-none block w-full border-2 border-neutral-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-neutral-100 pr-11 placeholder:text-neutral-400"
+            />
+            <button
+              onClick={() => {
+                setSearchString("")
+                setSearchVisible(false)
+                setExtraFilters({
+                  ...extraFilters,
+                  searchString: "",
+                })
+              }}
+              className="btn btn-xs absolute right-0 top-0 btn-ghost rounded-full text-neutral-500"
+            >
+              <XMarkIcon height={16} />
+            </button>
+          </motion.div>
         )}
-      >
-        {extraFilters.resolvingSoon && <CheckCircleIcon height={16} />}
-        Resolving soon
-      </button>
+      </AnimatePresence>
+
+      {!searchVisible && (
+        <button
+          onClick={() =>
+            setExtraFilters({
+              ...extraFilters,
+              resolved: false,
+              readyToResolve: false,
+              resolvingSoon: !extraFilters.resolvingSoon,
+            })
+          }
+          className={clsx(
+            "btn",
+            extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
+          )}
+          disabled={!!searchString}
+        >
+          {extraFilters.resolvingSoon && <CheckCircleIcon height={16} />}
+          Resolving soon
+        </button>
+      )}
 
       <button
         onClick={() =>

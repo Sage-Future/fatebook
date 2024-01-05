@@ -33,12 +33,14 @@ export function Question({
   startExpanded,
   zIndex,
   embedded,
+  className,
 }: {
   question: QuestionWithStandardIncludes
   alwaysExpand?: boolean
   startExpanded?: boolean
   zIndex?: number
   embedded?: boolean
+  className?: string
 }) {
   const [manuallyExpanded, setManuallyExpanded] =
     useState<boolean>(!!startExpanded)
@@ -60,6 +62,7 @@ export function Question({
         className={clsx(
           "transition-transform group",
           !embedded && "hover:scale-[1.01]",
+          className,
         )}
         style={zIndex ? { zIndex } : undefined}
       >

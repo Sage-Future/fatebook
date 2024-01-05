@@ -31,6 +31,7 @@ import {
 import { getQuestionUrl } from "./question_url"
 import { Context, publicProcedure, router } from "./trpc_base"
 import {
+  createPostgresSearchString,
   getHtmlLinkQuestionTitle,
   getMarkdownLinkQuestionTitle,
   matchesAnEmailDomain,
@@ -79,6 +80,7 @@ export type ExtraFilters = {
   theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
   filterTournamentId?: string // for fatebook.io/tournament/:id, show all questions from this tournament
   filterUserListId?: string // for fatebook.io/team/:id, show all questions from this user list
+  searchString?: string
 }
 
 export const questionRouter = router({
@@ -164,6 +166,7 @@ export const questionRouter = router({
             theirUserId: z.string().optional(),
             filterTournamentId: z.string().optional(),
             filterUserListId: z.string().optional(),
+            searchString: z.string().optional(),
           })
           .optional(),
       }),
@@ -941,17 +944,25 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
-    orderBy: input.extraFilters?.resolvingSoon
+    orderBy: input.extraFilters?.searchString
       ? {
-          resolveBy: "asc",
-        }
-      : input.extraFilters?.filterTournamentId
-        ? {
-            createdAt: "asc",
-          }
-        : {
-            createdAt: "desc",
+          _relevance: {
+            fields: ["title"],
+            search: createPostgresSearchString(input.extraFilters.searchString),
+            sort: "desc",
           },
+        }
+      : input.extraFilters?.resolvingSoon
+        ? {
+            resolveBy: "asc",
+          }
+        : input.extraFilters?.filterTournamentId
+          ? {
+              createdAt: "asc",
+            }
+          : {
+              createdAt: "desc",
+            },
     where: {
       AND: [
         input.extraFilters?.showAllPublic
