@@ -44,7 +44,10 @@ export function SyncToSlack({
 
   return (
     <div className="text-sm">
-      <button className="btn" onClick={handleShareToSlack}>
+      <button
+        className="btn flex flex-row gap-2 flex-nowrap"
+        onClick={handleShareToSlack}
+      >
         <Image
           src="/slack-logo.svg"
           width={30}
@@ -52,14 +55,16 @@ export function SyncToSlack({
           className="m-0 -mx-2 inline"
           alt=""
         />
-        Sync this {listType}
-        {"'s"} questions to Slack
-        {showInstructions && (
-          <>
-            <br />
-            {" (command copied!)"}
-          </>
-        )}
+        <span>
+          Sync this {listType}
+          {"'s"} questions to Slack
+          {showInstructions && (
+            <>
+              <br />
+              {" (command copied!)"}
+            </>
+          )}
+        </span>
       </button>
       {showInstructions && (
         <div className="mt-2 bg-neutral-100 rounded-md p-4 relative max-w-lg">

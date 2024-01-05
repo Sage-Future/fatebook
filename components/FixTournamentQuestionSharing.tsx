@@ -5,8 +5,8 @@ import { useState } from "react"
 import { toast } from "react-hot-toast"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
-import type { TournamentWithQuestionsAndSharedWithLists } from "../prisma/additional"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
+import type { TournamentWithQuestionsAndSharedWithLists } from "../prisma/additional"
 
 export function FixTournamentQuestionSharing({
   tournament,
@@ -71,7 +71,8 @@ export function FixTournamentQuestionSharing({
         {[
           {
             questions: unsharedPublicly,
-            title: "questions in this tournament aren't shared publicly",
+            title:
+              "questions in this tournament aren't shared with anyone with the link",
             handleShare: handleSharePublicly,
             expand: expandPublicly,
             setExpand: setExpandPublicly,

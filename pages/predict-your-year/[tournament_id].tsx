@@ -156,7 +156,16 @@ export default function PredictYourYearPage() {
                         : [],
                     }}
                     onQuestionCreate={() => {
-                      void utils.tournament.get.invalidate({ id: tournamentId })
+                      void utils.tournament.get.invalidate({
+                        id: tournamentId,
+                      })
+                      void utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate(
+                        {
+                          extraFilters: {
+                            filterTournamentId: tournamentId,
+                          },
+                        },
+                      )
                       setQuestionDrafts((drafts) =>
                         drafts.filter((d) => d.key !== draft.key),
                       )
@@ -294,7 +303,7 @@ function SettingsButtons({
         Share with your {teamMode ? "team" : "friends"}
       </button>
       <dialog id="tournament_share_modal" className="modal max-sm:modal-top">
-        <div className="modal-box overflow-visible">
+        <div className="modal-box max-w-[100vw] sm:max-w-prose">
           <form method="dialog" className="modal-backdrop">
             <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
               <XMarkIcon className="w-6 h-6 text-neutral-500" />
