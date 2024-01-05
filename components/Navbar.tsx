@@ -159,7 +159,7 @@ function SpecialButton({ url, label }: { url: string; label: ReactNode }) {
     <Link href={url}>
       <button
         className={clsx(
-          "btn btn-sm relative max-sm:btn-xs max-sm:w-24 max-sm:h-full max-sm:ml-auto mr-2 py-2",
+          "btn btn-sm relative max-sm:btn-xs max-sm:w-24 max-sm:h-full ml-2 max-sm:ml-auto mr-2 py-2",
           !userId && "max-sm:hidden", // not enough space otherwise
         )}
       >

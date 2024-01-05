@@ -16,6 +16,12 @@ export default function Meta() {
         siteName: "Fatebook",
         images: [
           {
+            url: "https://fatebook.io/telescope_future_1200_white.png",
+            width: 1200,
+            height: 686,
+            alt: "",
+          },
+          {
             url: "https://fatebook.io/mclean.png",
             width: 800,
             height: 533,

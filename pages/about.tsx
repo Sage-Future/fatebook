@@ -1,4 +1,5 @@
 import { NextSeo } from "next-seo"
+import Image from "next/image"
 import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import remarkGfm from "remark-gfm"
 import { WhyForecastInfo } from "../components/WhyForecastInfo"
@@ -25,6 +26,13 @@ export default function AboutPage() {
         <div className="my-4">
           <WhyForecastInfo />
         </div>
+
+        <Image
+          src="/telescope_future_1200_white.png"
+          width={1200}
+          height={686}
+          alt=""
+        />
       </div>
     </div>
   )

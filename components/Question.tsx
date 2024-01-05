@@ -124,18 +124,18 @@ export function Question({
               <SharePopover question={question} />
               {question.resolvedAt ? (
                 <span
-                  className="text-sm text-neutral-400 my-auto"
+                  className="text-sm text-neutral-400 my-auto text-center max-sm:text-left [text-wrap:balanced]"
                   key={`${question.id}resolve`}
                 >
-                  <FormattedDate
-                    prefix={"Resolved "}
-                    date={question.resolvedAt}
-                  />
+                  <span>
+                    Resolved <br />
+                  </span>
+                  <FormattedDate date={question.resolvedAt} />
                 </span>
               ) : (
                 <button
                   className={clsx(
-                    "rounded-md font-normal text-sm my-auto relative text-left px-0.5",
+                    "rounded-md font-normal text-sm my-auto relative px-0.5 max-sm:text-left [text-wrap:balanced]",
                     editable &&
                       "hover:bg-neutral-100 transition-colors group/resolveBy",
                     question.resolveBy < new Date()
@@ -171,25 +171,30 @@ export function Question({
                 >
                   {question.resolveBy < new Date() ? (
                     <FormattedDate
+                      className="[text-wrap:balanced]"
                       prefix={
-                        <>
-                          <span>Ready to resolve</span>
+                        <span className="font-semibold">
+                          Ready to resolve
                           <br />
-                          {"("}
-                        </>
+                        </span>
                       }
                       date={question.resolveBy}
-                      postfix=")"
+                      postfix=""
                       currentDateShowToday={true}
                       includeTime={false}
+                      capitalise={true}
                     />
                   ) : (
-                    <FormattedDate
-                      className="[text-wrap:balanced]"
-                      prefix={"Resolves "}
-                      date={question.resolveBy}
-                      includeTime={false}
-                    />
+                    <span>
+                      <span>
+                        Resolves <br />
+                      </span>
+                      <FormattedDate
+                        className="[text-wrap:balanced]"
+                        date={question.resolveBy}
+                        includeTime={false}
+                      />
+                    </span>
                   )}
                   <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
                 </button>

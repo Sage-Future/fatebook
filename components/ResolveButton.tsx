@@ -43,7 +43,9 @@ export function ResolveButton({ question }: { question: Question }) {
                   ? "bg-red-500 text-white"
                   : resolution === "AMBIGUOUS"
                     ? "bg-blue-500 text-white"
-                    : "bg-neutral-200 text-neutral-700",
+                    : question.resolveBy < new Date()
+                      ? "bg-neutral-200 text-neutral-700 ring-2 ring-inset ring-indigo-200 ring-opacity-70 hover:ring-opacity-100"
+                      : "bg-neutral-200 text-neutral-700",
             )}
             disabled={
               resolveQuestion.isLoading ||
