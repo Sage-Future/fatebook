@@ -81,7 +81,9 @@ export function Navbar({
         <Link href={webFeedbackUrl}>Submit feedback</Link>
       </li>
       <li>
-        <Link href={webFeedbackUrl}>Report a problem</Link>
+        <Link href={"https://forms.gle/TvG4AShfEBoGogEF9"}>
+          Report a problem
+        </Link>
       </li>
     </>
   )
