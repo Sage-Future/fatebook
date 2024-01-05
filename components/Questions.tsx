@@ -1,5 +1,3 @@
-import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid"
-import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import clsx from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
 import { useSession } from "next-auth/react"
@@ -11,6 +9,7 @@ import remarkGfm from "remark-gfm"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
+import { FilterControls } from "./FilterControls"
 import { Question } from "./Question"
 
 export function Questions({
@@ -95,7 +94,7 @@ export function Questions({
   return (
     <div>
       <div className="flex max-sm:flex-col justify-between pt-6 pb-4">
-        <h3 className="select-none flex gap-4 my-auto">
+        <h3 className="select-none flex gap-4 mt-2 mb-0 max-w-[80%]">
           {title || "Your forecasts"}
           {questionsQ.isLoading && (
             <div className="mt-2.5">
@@ -206,132 +205,6 @@ function DateSeparator({ header }: { header: string | undefined }) {
       <div className="border-b border-neutral-200 opacity-70 inline-block grow my-auto" />
       {header}
       <div className="border-b border-neutral-200 opacity-70 inline-block grow my-auto" />
-    </div>
-  )
-}
-
-function FilterControls({
-  extraFilters,
-  setExtraFilters,
-}: {
-  extraFilters: ExtraFilters
-  setExtraFilters: (extraFilters: ExtraFilters) => void
-}) {
-  const [searchVisible, setSearchVisible] = useState(false)
-  const [searchString, setSearchString] = useState("")
-
-  return (
-    <div className="flex flex-row flex-wrap gap-2" id="filters">
-      {!searchVisible && (
-        <button
-          onClick={() => setSearchVisible(!searchVisible)}
-          className="btn text-neutral-500"
-        >
-          <MagnifyingGlassIcon height={16} />
-        </button>
-      )}
-
-      <AnimatePresence mode="popLayout">
-        {searchVisible && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            className="relative"
-          >
-            <input
-              type="text"
-              value={searchString}
-              placeholder="Search..."
-              autoFocus
-              onBlur={() => {
-                if (searchString === "") {
-                  setSearchVisible(false)
-                }
-              }}
-              onChange={(e) => {
-                setSearchString(e.target.value)
-                setExtraFilters({
-                  ...extraFilters,
-                  searchString: e.target.value,
-                  resolvingSoon: false,
-                })
-              }}
-              className="text-sm py-2 px-4 focus:border-indigo-500 outline-none block w-full border-2 border-neutral-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-neutral-100 pr-11 placeholder:text-neutral-400"
-            />
-            <button
-              onClick={() => {
-                setSearchString("")
-                setSearchVisible(false)
-                setExtraFilters({
-                  ...extraFilters,
-                  searchString: "",
-                })
-              }}
-              className="btn btn-xs absolute right-0 top-0 btn-ghost rounded-full text-neutral-500"
-            >
-              <XMarkIcon height={16} />
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {!searchVisible && (
-        <button
-          onClick={() =>
-            setExtraFilters({
-              ...extraFilters,
-              resolved: false,
-              readyToResolve: false,
-              resolvingSoon: !extraFilters.resolvingSoon,
-            })
-          }
-          className={clsx(
-            "btn",
-            extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
-          )}
-          disabled={!!searchString}
-        >
-          {extraFilters.resolvingSoon && <CheckCircleIcon height={16} />}
-          Resolving soon
-        </button>
-      )}
-
-      <button
-        onClick={() =>
-          setExtraFilters({
-            ...extraFilters,
-            resolved: false,
-            resolvingSoon: false,
-            readyToResolve: !extraFilters.readyToResolve,
-          })
-        }
-        className={clsx(
-          "btn",
-          extraFilters.readyToResolve ? "btn-primary" : "text-neutral-500",
-        )}
-      >
-        {extraFilters.readyToResolve && <CheckCircleIcon height={16} />}
-        Ready to resolve
-      </button>
-
-      <button
-        onClick={() =>
-          setExtraFilters({
-            ...extraFilters,
-            readyToResolve: false,
-            resolvingSoon: false,
-            resolved: !extraFilters.resolved,
-          })
-        }
-        className={clsx(
-          "btn",
-          extraFilters.resolved ? "btn-primary" : "text-neutral-500",
-        )}
-      >
-        {extraFilters.resolved && <CheckCircleIcon height={16} />}
-        Resolved
-      </button>
     </div>
   )
 }

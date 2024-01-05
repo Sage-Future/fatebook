@@ -129,7 +129,7 @@ export default function PredictYourYearPage() {
               noQuestionsText=" "
               filterTournamentId={tournamentId}
               description={tournamentQ.data?.description || undefined}
-              showFilterButtons={false}
+              // showFilterButtons={false}
             />
           ) : (
             <h3 className="text-neutral-600">
@@ -291,7 +291,7 @@ function SettingsButtons({
   tournament: Tournament
 }) {
   return (
-    <div className="ml-auto max-sm:-mt-4 -mb-10 sm:absolute right-0 top-4 flex gap-2">
+    <div className="ml-auto -mt-2 -mb-10 right-0 top-4 flex gap-2">
       <button
         className="btn btn-primary"
         onClick={() =>
