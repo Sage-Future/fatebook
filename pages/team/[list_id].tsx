@@ -1,5 +1,6 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
+import { Predict } from "../../components/Predict"
 import { Questions } from "../../components/Questions"
 import { SyncToSlack } from "../../components/SyncToSlack"
 import { UserListDisplay } from "../../components/UserListDisplay"
@@ -14,6 +15,7 @@ import {
 export default function ListPage() {
   const userId = useUserId()
   const router = useRouter()
+  const utils = api.useContext()
 
   // allow an optional ignored slug text before `--` character
   const parts =
@@ -90,6 +92,22 @@ export default function ListPage() {
                   entity={listQ.data}
                 />
               )}
+              <h3>Share new questions with this list</h3>
+              <Predict
+                questionDefaults={{
+                  shareWithListIds: [listId],
+                }}
+                small={true}
+                onQuestionCreate={() => {
+                  void utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate(
+                    {
+                      extraFilters: {
+                        filterUserListId: listId,
+                      },
+                    },
+                  )
+                }}
+              />
               <Questions
                 title={"Your team's questions"}
                 noQuestionsText="No questions shared with this team yet."

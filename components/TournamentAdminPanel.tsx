@@ -171,6 +171,13 @@ export function TournamentAdminPanel({
                 }}
                 onQuestionCreate={() => {
                   void utils.tournament.get.invalidate({ id: tournamentId })
+                  void utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate(
+                    {
+                      extraFilters: {
+                        filterTournamentId: tournamentId,
+                      },
+                    },
+                  )
                 }}
                 small={true}
               />
