@@ -68,6 +68,22 @@ export function getChartJsParams(
       },
       plugins: interactive
         ? {
+            tooltip: {
+              callbacks: {
+                label: (context: any) => {
+                  const label = context.dataset.label || ""
+                  if (label) {
+                    const resolvedQuestions =
+                      bucketedForecasts?.[context?.dataIndex]?.count
+                    return `${label}: ${context.parsed.y}%${
+                      resolvedQuestions !== undefined &&
+                      ` (on ${resolvedQuestions} questions)`
+                    }`
+                  }
+                  return ""
+                },
+              },
+            },
             legend: {
               maxWidth: 100,
               labels: {
