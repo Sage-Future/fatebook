@@ -151,7 +151,11 @@ export function Questions({
                   <div
                     className={clsx(
                       extraFilters.searchString &&
-                        !searchMatches(question, userId, extraFilters.searchString) &&
+                        !searchMatches(
+                          question,
+                          userId,
+                          extraFilters.searchString,
+                        ) &&
                         "opacity-50 hover:opacity-100 transition-opacity",
                     )}
                   >

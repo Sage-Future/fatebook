@@ -76,7 +76,8 @@ export function getChartJsParams(
                   if (label) {
                     const resolvedQuestions =
                       bucketedForecasts?.[context?.dataIndex]?.count
-                    return `${label}: ${context.parsed.y}%${
+
+                    return `${label}: ${context.parsed.y.toFixed(0)}%${
                       resolvedQuestions !== undefined &&
                       ` (on ${resolvedQuestions} questions)`
                     }`
