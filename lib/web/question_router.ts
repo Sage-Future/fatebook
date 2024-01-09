@@ -34,6 +34,7 @@ import {
   createPostgresSearchString,
   getHtmlLinkQuestionTitle,
   getMarkdownLinkQuestionTitle,
+  getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
 
@@ -941,28 +942,35 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
     ? await prisma.user.findUnique({ where: { id: userIdIfAuthed } })
     : null
 
+  const searchedPredictionBounds = getSearchedPredictionBounds(
+    input.extraFilters?.searchString,
+  )
+
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
-    orderBy: input.extraFilters?.searchString
-      ? {
-          _relevance: {
-            fields: ["title"],
-            search: createPostgresSearchString(input.extraFilters.searchString),
-            sort: "desc",
-          },
-        }
-      : input.extraFilters?.resolvingSoon
+    orderBy:
+      input.extraFilters?.searchString && searchedPredictionBounds === undefined
         ? {
-            resolveBy: "asc",
-          }
-        : input.extraFilters?.filterTournamentId
-          ? {
-              createdAt: "asc",
-            }
-          : {
-              createdAt: "desc",
+            _relevance: {
+              fields: ["title"],
+              search: createPostgresSearchString(
+                input.extraFilters.searchString,
+              ),
+              sort: "desc",
             },
+          }
+        : input.extraFilters?.resolvingSoon
+          ? {
+              resolveBy: "asc",
+            }
+          : input.extraFilters?.filterTournamentId
+            ? {
+                createdAt: "asc",
+              }
+            : {
+                createdAt: "desc",
+              },
     where: {
       AND: [
         input.extraFilters?.showAllPublic
@@ -1097,6 +1105,19 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                 some: {
                   id: {
                     in: input.extraFilters.filterTagIds,
+                  },
+                },
+              },
+            }
+          : {},
+        searchedPredictionBounds
+          ? {
+              forecasts: {
+                some: {
+                  userId: userIdIfAuthed,
+                  forecast: {
+                    gte: searchedPredictionBounds.lowerBound / 100,
+                    lte: searchedPredictionBounds.upperBound / 100,
                   },
                 },
               },

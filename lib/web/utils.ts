@@ -4,6 +4,7 @@ import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import React, { ReactNode } from "react"
 import { toast } from "react-hot-toast"
+import { QuestionWithForecasts } from "../../prisma/additional"
 import { getQuestionUrl } from "./question_url"
 import { getClientBaseUrl } from "./trpc"
 
@@ -303,4 +304,47 @@ export function createPostgresSearchString(query: string) {
 
   // Join the words with the & operator and return
   return words.join(" & ")
+}
+
+export function getSearchedPredictionBounds(searchString: string | undefined) {
+  const searchForPredictionPercent = searchString?.match(
+    /^(\d+(?:\.\d+)?)%?\s?-?\s?(\d+(?:\.\d+)?)?%$/, // e.g. "20% - 80%" or "30.5%"
+  )
+  if (searchForPredictionPercent) {
+    const lowerBound = parseFloat(searchForPredictionPercent[1])
+    const upperBound = searchForPredictionPercent[2]
+      ? parseFloat(searchForPredictionPercent[2])
+      : lowerBound
+    return {
+      lowerBound,
+      upperBound,
+    }
+  }
+}
+
+export function searchMatches(
+  question: QuestionWithForecasts,
+  userId: string | undefined,
+  searchString: string,
+) {
+  const bounds = getSearchedPredictionBounds(searchString)
+  if (bounds) {
+    return question.forecasts
+      .filter((f) => f.userId === userId)
+      .some((f) => {
+        const userForecastPercent = f.forecast.toNumber() * 100
+        return (
+          userForecastPercent >= bounds.lowerBound &&
+          userForecastPercent <= bounds.upperBound
+        )
+      })
+  }
+
+  const words = searchString
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.trim())
+  return words.every((word) =>
+    question.title.toLowerCase().includes(word.toLowerCase()),
+  )
 }

@@ -6,10 +6,9 @@ import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
 import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import remarkGfm from "remark-gfm"
-import { containsWords } from "../lib/_utils_common"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
-import { ifEmpty } from "../lib/web/utils"
+import { ifEmpty, searchMatches } from "../lib/web/utils"
 import { FilterControls } from "./FilterControls"
 import { Question } from "./Question"
 
@@ -37,6 +36,7 @@ export function Questions({
   showFilterButtons?: boolean
 }) {
   const session = useSession()
+  const userId = session.data?.user.id
 
   const [extraFilters, setExtraFilters] = useState<ExtraFilters>({
     resolved: false,
@@ -128,9 +128,12 @@ export function Questions({
               (q) =>
                 extraFilters?.searchString &&
                 q &&
-                containsWords(q.title, extraFilters.searchString),
+                searchMatches(q, userId, extraFilters.searchString),
             ) && (
-              <div className="italic text-neutral-500 text-sm text-center">
+              <div
+                className="italic text-neutral-500 text-sm text-center"
+                key="no match"
+              >
                 {"No questions match your search"}
               </div>
             )}
@@ -148,10 +151,7 @@ export function Questions({
                   <div
                     className={clsx(
                       extraFilters.searchString &&
-                        !containsWords(
-                          question.title,
-                          extraFilters.searchString,
-                        ) &&
+                        !searchMatches(question, userId, extraFilters.searchString) &&
                         "opacity-50 hover:opacity-100 transition-opacity",
                     )}
                   >
