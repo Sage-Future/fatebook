@@ -23,7 +23,7 @@
   Sentry.setTag("extension_instance", extensionInfo.extensionInstanceId)
 
   Sentry.wrap(() => {
-    extensionInfo.isDev = false
+    extensionInfo.isDev = true
     const FATEBOOK_HOST = extensionInfo.isDev ? "localhost:3000" : "fatebook.io"
     const FATEBOOK_URL = extensionInfo.isDev
       ? "https://localhost:3000/"
@@ -38,7 +38,10 @@
     const EMBED_LOCATION = getEmbedLocation()
 
     function getEmbedLocation() {
-      if (window.location.href.includes("docs.google.com/document")) {
+      if (
+        window.location.href.includes("docs.google.com/document") ||
+        window.location.href.includes("docs.google.com/spreadsheets")
+      ) {
         return EMBED_LOCATIONS.GOOGLE_DOCS
       } else if (
         window.location.host === "fatebook.io" ||
@@ -434,7 +437,9 @@
 
       // The div that contains the popup doesn't exist initially, so we must watch for it
       function waitForLinkPopupToExist() {
-        const kixEditor = document.querySelector(".kix-appview-editor")
+        const kixEditor =
+          document.querySelector(".kix-appview-editor") || // google docs
+          document.querySelector(".docs-gm") // google sheets
         if (!kixEditor) {
           Sentry.captureException(
             new Error("could not find kixEditor element in gdoc page"),
@@ -443,11 +448,22 @@
         }
 
         const reactToChange = (mutationList, observer) => {
-          const linkPopup = document.querySelector(".docs-linkbubble-bubble")
+          const linkPopup =
+            document.querySelector(".waffle-multilink-tooltip") || // google sheets
+            document.querySelector(".docs-linkbubble-bubble") // google docs
           if (linkPopup) {
-            observer.disconnect()
-            linkPopup.appendChild(gdocLinkPopupBlockingElement)
+            if (linkPopup.classList.contains("waffle-multilink-tooltip")) {
+              const bubbleEl = linkPopup.querySelector(
+                ".docs-linkbubble-bubble",
+              )
+              // bubbleEl isn't immediately added to DOM
+              if (!bubbleEl) return // so do not disconnect observer yet
+              bubbleEl.appendChild(gdocLinkPopupBlockingElement)
+            } else {
+              linkPopup.appendChild(gdocLinkPopupBlockingElement)
+            }
 
+            observer.disconnect()
             watchLinkPopup(linkPopup)
           }
         }
