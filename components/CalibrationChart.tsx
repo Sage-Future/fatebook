@@ -84,8 +84,10 @@ export function CalibrationChart({
               const midpoint = element.index * 10 // e.g. "70"
               const range = [midpoint - 5, midpoint + 5]
               const searchString = `${range[0]}-${range[1]}%`
-              window.dispatchEvent(new CustomEvent('setSearchString', { detail: searchString }))
-              console.log({searchString})
+              window.dispatchEvent(
+                new CustomEvent("setSearchString", { detail: searchString }),
+              )
+              console.log({ searchString })
             })
         }}
       />
