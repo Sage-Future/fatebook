@@ -10,8 +10,8 @@ import {
   Tooltip,
 } from "chart.js"
 import clsx from "clsx"
-import { useState } from "react"
-import { Line } from "react-chartjs-2"
+import { useRef, useState } from "react"
+import { Line, getElementAtEvent } from "react-chartjs-2"
 import { api } from "../lib/web/trpc"
 import { getChartJsParams, useUserId } from "../lib/web/utils"
 
@@ -39,6 +39,7 @@ export function CalibrationChart({
     tags: tags,
   })
   const [hovered, setHovered] = useState(false)
+  const chartRef = useRef()
 
   if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>
 
@@ -76,6 +77,17 @@ export function CalibrationChart({
             },
           },
         ]}
+        ref={chartRef}
+        onClick={(event) => {
+          chartRef.current &&
+            getElementAtEvent(chartRef.current, event)?.forEach((element) => {
+              const midpoint = element.index * 10 // e.g. "70"
+              const range = [midpoint - 5, midpoint + 5]
+              const searchString = `${range[0]}-${range[1]}%`
+              window.dispatchEvent(new CustomEvent('setSearchString', { detail: searchString }))
+              console.log({searchString})
+            })
+        }}
       />
       <button
         className={"btn btn-ghost btn-xs absolute bottom-4 left-2"}

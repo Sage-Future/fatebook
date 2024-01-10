@@ -28,6 +28,24 @@ export function FilterControls({
     }
   }, [])
 
+  useEffect(() => {
+    const handleSetSearchString = (event: Event) => {
+      console.log({ event })
+      const customEvent = event as CustomEvent
+      setSearchString(customEvent.detail)
+      setSearchVisible(true)
+      setExtraFilters({
+        ...extraFilters,
+        searchString: customEvent.detail,
+        resolved: true,
+      })
+    }
+    window.addEventListener("setSearchString", handleSetSearchString)
+    return () => {
+      window.removeEventListener("setSearchString", handleSetSearchString)
+    }
+  }, [setSearchString, extraFilters, setExtraFilters, setSearchVisible])
+
   return (
     <div className="@container grow sm:ml-2">
       <div className="flex flex-row gap-1 justify-end" id="filters">
