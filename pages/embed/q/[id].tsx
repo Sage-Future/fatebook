@@ -1,9 +1,11 @@
+import { useRouter } from "next/router"
 import React, { useEffect, useRef } from "react"
 import { QuestionOrSignIn } from "../../../components/QuestionOrSignIn"
 import { sendToHost, useListenForSessionReload } from "../../../lib/web/embed"
 
 export default function QuestionEmbed() {
   const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     if (!ref.current) return
@@ -21,7 +23,11 @@ export default function QuestionEmbed() {
 
   return (
     <div ref={ref} className="max-h-[500px] overflow-auto bg-white">
-      <QuestionOrSignIn embedded={true} alwaysExpand={true}></QuestionOrSignIn>
+      <QuestionOrSignIn
+        embedded={true}
+        alwaysExpand={!router.query.compact}
+        requireSignIn={router.query.requireSignIn !== "false"}
+      />
     </div>
   )
 }

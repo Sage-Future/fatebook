@@ -58,6 +58,11 @@ export function Navbar({
       <li>
         <Link href="/api-setup">Create forecasts by API</Link>
       </li>
+      <li>
+        <Link href="/embed">
+          Embed in your website <NewDot />
+        </Link>
+      </li>
       <li className="text-gray-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">
         Your forecasts
       </li>
@@ -103,7 +108,7 @@ export function Navbar({
       <li className="hidden lg:block">
         <div className="dropdown dropdown-hover dropdown-bottom dropdown-end active:bg-neutral-200 active:text-black">
           <label className="flex gap-1" tabIndex={0}>
-            <ChevronDownIcon width={16} /> More{" "}
+            <ChevronDownIcon width={16} /> More <NewDot />
             <div className="div my-auto ml-0.5"></div>
           </label>
           <ul
@@ -294,5 +299,5 @@ function AccountMenu(showCreateAccountButton: boolean) {
 
 // eslint-disable-next-line no-unused-vars
 function NewDot() {
-  return <div className="w-2 h-2 bg-indigo-400 rounded-full" />
+  return <div className="w-2 h-2 ml-0.5 my-auto bg-indigo-400 rounded-full" />
 }

@@ -9,9 +9,11 @@ import { Question as QuestionComp } from "./Question"
 export function QuestionOrSignIn({
   embedded,
   alwaysExpand,
+  requireSignIn,
 }: {
   embedded: boolean
   alwaysExpand: boolean
+  requireSignIn?: boolean
 }) {
   const { data: session, status: authStatus } = useSession()
 
@@ -36,7 +38,7 @@ export function QuestionOrSignIn({
   }
 
   // check signed in
-  if (!session?.user.id && (embedded || !question?.sharedPublicly)) {
+  if (!session?.user.id && (requireSignIn || !question?.sharedPublicly)) {
     return embedded ? (
       <div className="flex h-full items-center justify-center">
         <h3 className="text-neutral-600">
