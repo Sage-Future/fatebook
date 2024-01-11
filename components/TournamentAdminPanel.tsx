@@ -39,7 +39,10 @@ export function TournamentAdminPanel({
     },
   })
 
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const adminPanelCollapsedLocalStorageKey = `tournamentAdminCollapsed_${tournamentId}`
+  const [isCollapsed, setIsCollapsed] = useState(
+    localStorage.getItem(adminPanelCollapsedLocalStorageKey) === "true",
+  )
 
   const userId = useUserId()
   const utils = api.useContext()
@@ -98,6 +101,11 @@ export function TournamentAdminPanel({
             className="btn btn-ghost"
             onClick={(e) => {
               setIsCollapsed(!isCollapsed)
+              // persist across pageloads
+              localStorage.setItem(
+                adminPanelCollapsedLocalStorageKey,
+                !isCollapsed ? "true" : "false",
+              )
               e.preventDefault()
             }}
           >
