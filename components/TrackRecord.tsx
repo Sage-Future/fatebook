@@ -6,7 +6,7 @@ import {
 import clsx from "clsx"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import GitHubCalendar from "react-github-contribution-calendar"
 import {
@@ -32,13 +32,11 @@ export function TrackRecord({
   const router = useRouter()
   console.log({ path: router.pathname })
   const showCollapseButton = router.pathname === "/"
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(() =>
-    JSON.parse(localStorage.getItem("isCollapsed") || "false"),
+  const [isCollapsed, setIsCollapsed] = useState(
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
+      : false,
   )
-
-  useEffect(() => {
-    localStorage.setItem("isCollapsed", JSON.stringify(isCollapsed))
-  }, [isCollapsed])
 
   const userName = api.getUserInfo.useQuery(
     {
