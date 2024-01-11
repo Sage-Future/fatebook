@@ -1,5 +1,4 @@
 import clsx from "clsx"
-import { useInView } from "framer-motion"
 import { NextSeo } from "next-seo"
 import Image from "next/image"
 import Link from "next/link"
@@ -173,15 +172,6 @@ function DemoVideoDisplay() {
 
 function DemoVideo({ src, caption }: { src: string; caption: string }) {
   const ref = useRef<HTMLDivElement | null>(null)
-  const inView = useInView(ref, { amount: "all" })
-
-  useEffect(() => {
-    if (inView) {
-      void ref.current?.querySelector("video")?.play()
-    } else {
-      ref.current?.querySelector("video")?.pause()
-    }
-  }, [inView])
 
   const [loading, setLoading] = useState(true)
   return (
@@ -197,14 +187,11 @@ function DemoVideo({ src, caption }: { src: string; caption: string }) {
       <video
         muted
         loop
-        autoPlay={false}
+        autoPlay={true}
         controls={false}
         width={992}
         height={576}
-        className={clsx(
-          "transition-all rounded-lg",
-          inView ? "shadow-2xl" : "shadow-xl opacity-50 scale-90",
-        )}
+        className={clsx("transition-all rounded-lg shadow-2xl")}
         onWaiting={() => setLoading(true)}
         onPlaying={() => setLoading(false)}
       >
@@ -212,7 +199,7 @@ function DemoVideo({ src, caption }: { src: string; caption: string }) {
       </video>
       {loading && (
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-          <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+          <span className="loading loading-spinner loading-lg translate-y-full opacity-90"></span>
         </div>
       )}
     </div>

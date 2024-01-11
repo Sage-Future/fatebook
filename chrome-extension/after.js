@@ -23,7 +23,7 @@
   Sentry.setTag("extension_instance", extensionInfo.extensionInstanceId)
 
   Sentry.wrap(() => {
-    extensionInfo.isDev = true
+    extensionInfo.isDev = false
     const FATEBOOK_HOST = extensionInfo.isDev ? "localhost:3000" : "fatebook.io"
     const FATEBOOK_URL = extensionInfo.isDev
       ? "https://localhost:3000/"
