@@ -1,4 +1,4 @@
-import { PlusIcon } from "@heroicons/react/24/solid"
+import { PlusIcon } from "@heroicons/react/20/solid"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { api } from "../lib/web/trpc"
