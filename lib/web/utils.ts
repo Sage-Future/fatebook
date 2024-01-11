@@ -74,12 +74,14 @@ export function getChartJsParams(
                 label: (context: any) => {
                   const label = context.dataset.label || ""
                   if (label) {
-                    const resolvedQuestions =
+                    const resolvedForecasts =
                       bucketedForecasts?.[context?.dataIndex]?.count
 
                     return `${label}: ${context.parsed.y.toFixed(0)}%${
-                      resolvedQuestions !== undefined &&
-                      ` (on ${resolvedQuestions} questions)`
+                      resolvedForecasts !== undefined &&
+                      ` (on ${resolvedForecasts} forecast${
+                        resolvedForecasts > 1 ? "s" : ""
+                      })`
                     }`
                   }
                   return ""
