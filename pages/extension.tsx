@@ -186,6 +186,7 @@ function DemoVideo({ src, caption }: { src: string; caption: string }) {
       </h2>
       <video
         muted
+        playsInline
         loop
         autoPlay={true}
         controls={false}
