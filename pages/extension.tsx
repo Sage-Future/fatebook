@@ -131,6 +131,11 @@ function DemoVideoDisplay() {
             text: "...in Google Docs",
           },
           {
+            src: "/meet.webm",
+            caption: "Instantly create and embed predictions in Google Meet",
+            text: "...in Google Meet",
+          },
+          {
             src: "/asana2x.webm",
             caption: "Instantly create and embed predictions in your todo list",
             text: "...in your todo list",
@@ -197,6 +202,7 @@ function DemoVideo({ src, caption }: { src: string; caption: string }) {
         onPlaying={() => setLoading(false)}
       >
         <source src={src} />
+        <source src={src.replace(".webm", ".mov")} /> {/* Safari */}
       </video>
       {loading && (
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
