@@ -1,3 +1,4 @@
+import clsx from "clsx"
 import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
 import { useQuestionId } from "../lib/web/question_url"
@@ -23,7 +24,12 @@ export function QuestionOrSignIn({
 
   if (authStatus === "loading" || qQuery.isLoading) {
     return (
-      <span className="text-neutral-200 italic text-sm ml-4 mt-8">
+      <span
+        className={clsx(
+          "text-neutral-200 italic text-sm ml-4 mt-8",
+          embedded && "bg-white p-6",
+        )}
+      >
         Loading...
       </span>
     )
@@ -57,7 +63,7 @@ export function QuestionOrSignIn({
   // check we got the question okay
   if (qQuery.status === "error" || (qQuery.status === "success" && !question)) {
     return (
-      <h3 className="text-neutral-600">
+      <h3 className={clsx("text-neutral-600", embedded && "bg-white p-6")}>
         {`This question doesn't exist or ` +
           (session?.user.email
             ? `your account (${session?.user.email}) doesn't have access`

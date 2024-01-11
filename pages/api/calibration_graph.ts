@@ -83,23 +83,23 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
     return undefined
   }
 
-  const avgForecastPerQuestion = questions.map((q) => {
-    return {
-      forecast:
-        q.forecasts.reduce((acc, f) => acc + f.forecast.toNumber(), 0) /
-        q.forecasts.length,
+  const forecasts = questions.flatMap((q) =>
+    q.forecasts.map((f) => ({
+      forecast: f.forecast.toNumber(),
       resolution: q.resolution,
-    }
-  })
+    })),
+  )
 
-  const bucketSize = 0.1
+  const halfBucketSize = 0.05
   const buckets = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
   const bucketedForecasts = buckets.map((bucket) => {
-    const forecastsInBucket = avgForecastPerQuestion.filter(
-      (f) =>
-        f.forecast >= bucket - bucketSize / 2 &&
-        f.forecast < bucket + bucketSize / 2,
-    )
+    const forecastsInBucket = forecasts.filter((f) => {
+      return (
+        f.forecast >= bucket - halfBucketSize &&
+        // without this fudge, 0.85 is included in the 0.8 and 0.9 buckets
+        f.forecast < bucket + halfBucketSize - 0.00000001
+      )
+    })
 
     return {
       bucket: bucket,

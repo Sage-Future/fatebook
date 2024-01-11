@@ -326,7 +326,7 @@
       ).json()
 
       if (link.innerText === href) {
-        let pasteString = `⚖ ${questionDetails.title}`
+        let pasteString = `⚖ ${questionDetails?.title || href}`
         if (questionDetails.prediction)
           pasteString += ` (${questionDetails.user.name}: ${
             questionDetails.prediction !== undefined

@@ -20,7 +20,7 @@ export default function QuestionEmbed() {
   useListenForSessionReload()
 
   return (
-    <div ref={ref} className="max-h-[500px] overflow-auto">
+    <div ref={ref} className="max-h-[500px] overflow-auto bg-white">
       <QuestionOrSignIn embedded={true} alwaysExpand={true}></QuestionOrSignIn>
     </div>
   )
