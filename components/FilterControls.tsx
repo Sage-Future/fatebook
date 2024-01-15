@@ -81,7 +81,6 @@ export function FilterControls({
                   setExtraFilters({
                     ...extraFilters,
                     searchString: e.target.value,
-                    resolvingSoon: false,
                   })
                 }}
                 className="text-sm py-2 px-4 focus:border-indigo-500 outline-none block w-full border-2 border-neutral-300 rounded-md p-4 resize-none disabled:opacity-25 disabled:bg-neutral-100 pr-11 placeholder:text-neutral-400 min-w-[150px]"
@@ -123,7 +122,6 @@ export function FilterControls({
             "btn hidden @xl:block",
             extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
           )}
-          disabled={!!searchString}
         >
           {extraFilters.resolvingSoon && (
             <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
@@ -206,7 +204,6 @@ export function FilterControls({
                 "btn",
                 extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
               )}
-              disabled={!!searchString}
             >
               {extraFilters.resolvingSoon && (
                 <CheckCircleIcon

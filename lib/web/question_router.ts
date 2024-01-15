@@ -31,7 +31,6 @@ import {
 import { getQuestionUrl } from "./question_url"
 import { Context, publicProcedure, router } from "./trpc_base"
 import {
-  createPostgresSearchString,
   getHtmlLinkQuestionTitle,
   getMarkdownLinkQuestionTitle,
   getSearchedPredictionBounds,
@@ -949,28 +948,17 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
   const questions = await prisma.question.findMany({
     skip: skip,
     take: limit + 1,
-    orderBy:
-      input.extraFilters?.searchString && searchedPredictionBounds === undefined
+    orderBy: input.extraFilters?.resolvingSoon
+      ? {
+          resolveBy: "asc",
+        }
+      : input.extraFilters?.filterTournamentId
         ? {
-            _relevance: {
-              fields: ["title"],
-              search: createPostgresSearchString(
-                input.extraFilters.searchString,
-              ),
-              sort: "desc",
-            },
+            createdAt: "asc",
           }
-        : input.extraFilters?.resolvingSoon
-          ? {
-              resolveBy: "asc",
-            }
-          : input.extraFilters?.filterTournamentId
-            ? {
-                createdAt: "asc",
-              }
-            : {
-                createdAt: "desc",
-              },
+        : {
+            createdAt: "desc",
+          },
     where: {
       AND: [
         input.extraFilters?.showAllPublic
@@ -1122,7 +1110,28 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                 },
               },
             }
-          : {},
+          : input.extraFilters?.searchString
+            ? {
+                OR: [
+                  {
+                    title: {
+                      contains: input.extraFilters.searchString,
+                      mode: "insensitive",
+                    },
+                  },
+                  {
+                    comments: {
+                      some: {
+                        comment: {
+                          contains: input.extraFilters.searchString,
+                          mode: "insensitive",
+                        },
+                      },
+                    },
+                  },
+                ],
+              }
+            : {},
       ],
     },
     include: questionIncludes(ctx.userId),

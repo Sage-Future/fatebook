@@ -1,4 +1,3 @@
-import clsx from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
 import { useSession } from "next-auth/react"
 import React, { ReactNode, useState } from "react"
@@ -8,7 +7,7 @@ import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import remarkGfm from "remark-gfm"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
-import { ifEmpty, searchMatches } from "../lib/web/utils"
+import { ifEmpty } from "../lib/web/utils"
 import { FilterControls } from "./FilterControls"
 import { Question } from "./Question"
 
@@ -36,7 +35,6 @@ export function Questions({
   showFilterButtons?: boolean
 }) {
   const session = useSession()
-  const userId = session.data?.user.id
 
   const [extraFilters, setExtraFilters] = useState<ExtraFilters>({
     resolved: false,
@@ -123,20 +121,6 @@ export function Questions({
       )}
       <motion.div className="grid gap-6 relative">
         <AnimatePresence initial={false} mode="popLayout">
-          {extraFilters.searchString &&
-            !questions.some(
-              (q) =>
-                extraFilters?.searchString &&
-                q &&
-                searchMatches(q, userId, extraFilters.searchString),
-            ) && (
-              <div
-                className="italic text-neutral-500 text-sm text-center"
-                key="no match"
-              >
-                {"No questions match your search"}
-              </div>
-            )}
           {ifEmpty(
             questions.map((question, index, array) =>
               question ? (
@@ -148,36 +132,22 @@ export function Questions({
                       array[index - 1]?.[orderedBy],
                     )}
                   />
-                  <div
-                    className={clsx(
-                      extraFilters.searchString &&
-                        !searchMatches(
-                          question,
-                          userId,
-                          extraFilters.searchString,
-                        ) &&
-                        "opacity-50 hover:opacity-100 transition-opacity",
-                    )}
-                  >
-                    <Question
-                      question={question}
-                      key={question.id}
-                      startExpanded={
-                        index === 0 && question.userId === session.data?.user.id
-                      }
-                      zIndex={
-                        questions?.length
-                          ? questions?.length - index
-                          : undefined
-                      }
-                    />
-                  </div>
+                  <Question
+                    question={question}
+                    key={question.id}
+                    startExpanded={
+                      index === 0 && question.userId === session.data?.user.id
+                    }
+                    zIndex={
+                      questions?.length ? questions?.length - index : undefined
+                    }
+                  />
                 </React.Fragment>
               ) : (
                 <></>
               ),
             ),
-            <div className="italic text-neutral-500 text-sm">
+            <div className="italic text-neutral-500 text-sm mt-4 text-center">
               {filtersApplied
                 ? "No questions match your filters."
                 : noQuestionsText}
