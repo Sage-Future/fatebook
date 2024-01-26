@@ -30,7 +30,6 @@ export function TrackRecord({
 
   const isThisUser = trackRecordUserId === thisUserId
   const router = useRouter()
-  console.log({ path: router.pathname })
   const showCollapseButton = router.pathname === "/"
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" && isThisUser
