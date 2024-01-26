@@ -1,10 +1,10 @@
 import clsx from "clsx"
 import { useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
+import { getMostRecentForecastForUser } from "../lib/_utils_common"
 import { sendToHost } from "../lib/web/embed"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
-import { getMostRecentForecastForUser } from "../lib/_utils_common"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 
 function closeLinkPopup() {
@@ -125,8 +125,13 @@ export function UpdateableLatestForecast({
             onChange={(e) => {
               setLocalForecast(e.target.value)
 
-              // for mobile users - update forecast when they stop typing, e.g. if they pressed "done"
-              updateOrResetDebounced(e.target.value)
+              // for iOS users - update forecast when they stop typing, e.g. if they pressed "done"
+              if (
+                /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+                !(window as any).MSStream
+              ) {
+                updateOrResetDebounced(e.target.value)
+              }
             }}
             onClick={(e) => {
               e.stopPropagation()
