@@ -130,10 +130,14 @@ export function Question({
                   className="text-sm text-neutral-400 my-auto text-center max-sm:text-left [text-wrap:balanced]"
                   key={`${question.id}resolve`}
                 >
-                  <span>
-                    Resolved <br />
-                  </span>
-                  <FormattedDate date={question.resolvedAt} />
+                  <FormattedDate
+                    prefix={
+                      <span>
+                        Resolved <br />
+                      </span>
+                    }
+                    date={question.resolvedAt}
+                  />
                 </span>
               ) : (
                 <button

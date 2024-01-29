@@ -29,7 +29,7 @@ export function InfoButton({
       </PopoverTrigger>
       <PopoverContent
         className={clsx(
-          "Popover z-[10000] bg-indigo-100 p-2 max-w-[15rem] rounded-md text-sm transition-opacity duration-200 shadow-sm outline-none",
+          "Popover z-[10000] bg-neutral-800 text-neutral-200 px-2 py-1 max-w-[15rem] rounded-lg text-sm transition-opacity duration-200 shadow-sm outline-none",
         )}
         onMouseEnter={() => setPopoverHovered(true)}
         onMouseLeave={() => setPopoverHovered(false)}

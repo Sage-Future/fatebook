@@ -424,7 +424,7 @@ export function Predict({
                           alwaysUseDistance={true}
                           capitalise={true}
                           currentDateShowToday={true}
-                          hoverTooltip={false}
+                          includeTime={false}
                         />
                       )}
                       {resolveByButtons && (

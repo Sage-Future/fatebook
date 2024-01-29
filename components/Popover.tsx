@@ -176,7 +176,7 @@ export const PopoverContent = React.forwardRef<
     <FloatingPortal>
       <FloatingFocusManager context={floatingContext} modal={context.modal}>
         <motion.div
-          initial={{ className: "sm:opacity-0" }} // disable animation on mobile because it double-triggers
+          initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: 0.15 } }}
           ref={ref}
           style={{ ...context.floatingStyles, ...style }}

@@ -2,6 +2,7 @@ import clsx from "clsx"
 import { intlFormatDistance } from "date-fns"
 import { HTMLAttributes, ReactNode } from "react"
 import { getDateYYYYMMDD } from "../lib/_utils_common"
+import { InfoButton } from "./InfoButton"
 
 export function FormattedDate({
   date,
@@ -11,7 +12,6 @@ export function FormattedDate({
   alwaysUseDistance = false,
   capitalise = false,
   currentDateShowToday = false,
-  hoverTooltip = true,
   includeTime = true,
 }: {
   date: Date | undefined
@@ -21,7 +21,6 @@ export function FormattedDate({
   alwaysUseDistance?: boolean
   capitalise?: boolean
   currentDateShowToday?: boolean
-  hoverTooltip?: boolean
   includeTime?: boolean
 }) {
   const oneWeekMs = 1000 * 60 * 60 * 24 * 7
@@ -82,18 +81,19 @@ export function FormattedDate({
   }
 
   return (
-    <span
-      className={clsx(hoverTooltip && `md:tooltip`, className)}
-      suppressHydrationWarning={true}
-      data-tip={`${getDateYYYYMMDD(date)}${
+    <InfoButton
+      tooltip={`${getDateYYYYMMDD(date)}${
         includeTime ? ` at ${date.toLocaleTimeString()}` : ""
       }`}
+      showInfoButton={false}
     >
-      {prefix}
-      {capitalise
-        ? formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
-        : formattedDate}
-      {postfix}
-    </span>
+      <span className={clsx(className)} suppressHydrationWarning={true}>
+        {prefix}
+        {capitalise
+          ? formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1)
+          : formattedDate}
+        {postfix}
+      </span>
+    </InfoButton>
   )
 }
