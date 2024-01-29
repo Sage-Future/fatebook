@@ -1,7 +1,12 @@
 import { NextSeo } from "next-seo"
+import dynamic from "next/dynamic"
 import Link from "next/link"
+import "swagger-ui-react/swagger-ui.css"
 import { api } from "../lib/web/trpc"
 import { signInToFatebook, useUserId } from "../lib/web/utils"
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const SwaggerUI = dynamic(() => import("swagger-ui-react"), { ssr: false })
 
 export default function ApiPage() {
   const userId = useUserId()
@@ -223,6 +228,7 @@ export default function ApiPage() {
           to see an example of the getQuestion endpoint in action.
         </p>
       </div>
+      <SwaggerUI url="/api/openapi.json" />
     </div>
   )
 }

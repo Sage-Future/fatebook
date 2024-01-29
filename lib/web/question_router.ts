@@ -71,17 +71,49 @@ const questionIncludes = (userId: string | undefined) => ({
   },
 })
 
-export type ExtraFilters = {
-  resolved?: boolean
-  readyToResolve?: boolean
-  resolvingSoon?: boolean
-  filterTagIds?: string[]
-  showAllPublic?: boolean // for fatebook.io/public, show all public questions from all users
-  theirUserId?: string // for fatebook.io/user/:id, show all questions from this user
-  filterTournamentId?: string // for fatebook.io/tournament/:id, show all questions from this tournament
-  filterUserListId?: string // for fatebook.io/team/:id, show all questions from this user list
-  searchString?: string
-}
+const zodExtraFilters = z.object({
+  resolved: z
+    .boolean({ description: "Only get resolved questions" })
+    .optional(),
+  readyToResolve: z
+    .boolean({ description: "Only get questions ready to be resolved" })
+    .optional(),
+  resolvingSoon: z
+    .boolean({ description: "Only get questions that are resolving soon" })
+    .optional(),
+  filterTagIds: z
+    .array(
+      z.string({ description: "Only get questions with any of these tags" }),
+    )
+    .optional(),
+  showAllPublic: z
+    .boolean({
+      description:
+        "Show all public questions from fatebook.io/public (if false, get only questions you've created, forecasted on, or are shared with you)",
+    })
+    .optional(),
+  searchString: z
+    .string({ description: "Only get questions containing this search string" })
+    .optional(),
+  theirUserId: z
+    .string({
+      description:
+        "Show questions created by this user (instead of your questions)",
+    })
+    .optional(),
+  filterTournamentId: z
+    .string({
+      description:
+        "Show questions in this tournament (instead of your questions)",
+    })
+    .optional(),
+  filterUserListId: z
+    .string({
+      description: "Show questions in this team (instead of your questions)",
+    })
+    .optional(),
+})
+export type ExtraFilters = z.infer<typeof zodExtraFilters>
 
 export const questionRouter = router({
   getQuestion: publicProcedure
@@ -156,19 +188,7 @@ export const questionRouter = router({
       z.object({
         limit: z.number().min(1).nullish(),
         cursor: z.number(),
-        extraFilters: z
-          .object({
-            resolved: z.boolean().optional(),
-            readyToResolve: z.boolean().optional(),
-            resolvingSoon: z.boolean().optional(),
-            filterTagIds: z.array(z.string()).optional(),
-            showAllPublic: z.boolean().optional(),
-            theirUserId: z.string().optional(),
-            filterTournamentId: z.string().optional(),
-            filterUserListId: z.string().optional(),
-            searchString: z.string().optional(),
-          })
-          .optional(),
+        extraFilters: zodExtraFilters.optional(),
       }),
     )
     .query(async ({ input, ctx }) => {
@@ -184,6 +204,69 @@ export const questionRouter = router({
       return await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
         input,
         ctx,
+      )
+    }),
+
+  getQuestionsApiProcedure: publicProcedure
+    .input(
+      z.object({
+        apiKey: z.string({
+          description: "Your Fatebook API key. Get it at fatebook.io/api-setup",
+        }),
+        ...{
+          ...zodExtraFilters.shape,
+          filterTagIds: z
+            .string({
+              description:
+                "Comma-separated list of tag IDs. Only get questions with at least one of these tags",
+            })
+            .optional(),
+        },
+        limit: z
+          .number({
+            description: "Maximum number of questions to return. Default = 100",
+          })
+          .optional(),
+        cursor: z
+          .number({
+            description:
+              "Used for pagination. 0 = return the first [limit] questions, 100 = skip the first 100 questions and return the next [limit] questions.",
+          })
+          .optional(),
+      }),
+    )
+    .meta({ openapi: { method: "GET", path: "/v0/getQuestions" } })
+    .output(
+      z.object({
+        items: z.array(z.any()),
+      }),
+    ) // required for openapi
+    .query(async ({ input }) => {
+      const user = await getUserByApiKeyOrThrow(input.apiKey)
+
+      return scrubApiKeyPropertyRecursive(
+        await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
+          {
+            cursor: input.cursor || 0,
+            limit: input.limit,
+            extraFilters: {
+              ...input,
+              filterTagIds: input.filterTagIds?.split(","),
+            },
+          },
+          {
+            userId: user.id,
+            session: null,
+          },
+        ),
+        [
+          "email",
+          "discordUserId",
+          "apiKey",
+          "unsubscribedFromEmailsAt",
+          "emailVerified",
+          "staleReminder",
+        ],
       )
     }),
 
@@ -1276,10 +1359,25 @@ export function scrubApiKeyPropertyRecursive<T>(
   // warning - this mutates the object
   for (const key in obj) {
     if (key === "apiKey" || otherKeysToScrub?.includes(key)) {
-      ;(obj as any)[key] = "scrubbed"
+      ;(obj as any)[key] = undefined
     } else if (typeof obj[key] === "object") {
-      obj[key] = scrubApiKeyPropertyRecursive(obj[key])
+      obj[key] = scrubApiKeyPropertyRecursive(obj[key], otherKeysToScrub)
     }
   }
   return obj
+}
+
+async function getUserByApiKeyOrThrow(apiKey: string) {
+  const user = await prisma.user.findFirst({
+    where: {
+      apiKey,
+    },
+  })
+  if (user) {
+    return user
+  }
+  throw new TRPCError({
+    code: "UNAUTHORIZED",
+    message: "Could not find a user with that API key",
+  })
 }
