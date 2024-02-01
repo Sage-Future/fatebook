@@ -36,8 +36,6 @@ export function Navbar({
     },
   })
 
-  const userId = useUserId()
-
   const moreMenuItems = (
     <>
       <li>
@@ -150,12 +148,12 @@ export function Navbar({
               <ScaleIcon className="w-6 h-6 text-indigo-600" />
               Fatebook
             </Link>
-            {userId && (
+            {/* {userId && (
               <SpecialButton
                 url="/impact-survey"
                 label={<span className="">{"Take the impact survey"}</span>}
               />
-            )}
+            )} */}
           </div>
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">{menuItems}</ul>
@@ -170,6 +168,7 @@ export function Navbar({
   )
 }
 
+// eslint-disable-next-line no-unused-vars
 function SpecialButton({ url, label }: { url: string; label: ReactNode }) {
   const userId = useUserId()
 
