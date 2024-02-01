@@ -17,6 +17,7 @@ import {
 import Footer from "./Footer"
 
 export function Navbar({
+  // eslint-disable-next-line no-unused-vars
   showForSlackButton = true,
   showCreateAccountButton = true,
   children,
@@ -34,6 +35,8 @@ export function Navbar({
       downloadBlob(data, "fatebook-forecasts.csv", "text/csv;charset=utf-8;")
     },
   })
+
+  const userId = useUserId()
 
   const moreMenuItems = (
     <>
@@ -53,15 +56,19 @@ export function Navbar({
         Integrations
       </li>
       <li>
+        <Link href="/extension">Fatebook for Chrome</Link>
+      </li>
+      <li>
+        <Link href="/for-slack">Fatebook for Slack</Link>
+      </li>
+      <li>
         <Link href="/for-discord">Fatebook for Discord</Link>
       </li>
       <li>
         <Link href="/api-setup">Create forecasts by API</Link>
       </li>
       <li>
-        <Link href="/embed">
-          Embed in your website <NewDot />
-        </Link>
+        <Link href="/embed">Embed in your website</Link>
       </li>
       <li className="text-gray-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">
         Your forecasts
@@ -95,11 +102,13 @@ export function Navbar({
 
   const menuItems = (
     <>
-      {showForSlackButton && (
-        <li>
-          <Link href="/for-slack">Fatebook for Slack</Link>
-        </li>
-      )}
+      {/* {showForSlackButton && ( */}
+      <li>
+        <Link href="/extension">
+          Fatebook for Chrome <NewDot />
+        </Link>
+      </li>
+      {/* )} */}
       <li>
         <Link href="https://quantifiedintuitions.org">
           Quantified Intuitions
@@ -108,7 +117,7 @@ export function Navbar({
       <li className="hidden lg:block">
         <div className="dropdown dropdown-hover dropdown-bottom dropdown-end active:bg-neutral-200 active:text-black">
           <label className="flex gap-1" tabIndex={0}>
-            <ChevronDownIcon width={16} /> More <NewDot />
+            <ChevronDownIcon width={16} /> More
             <div className="div my-auto ml-0.5"></div>
           </label>
           <ul
@@ -141,10 +150,12 @@ export function Navbar({
               <ScaleIcon className="w-6 h-6 text-indigo-600" />
               Fatebook
             </Link>
-            <SpecialButton
-              url="/predict-your-year"
-              label={<span className="">{"Predict your year in 2024"}</span>}
-            />
+            {userId && (
+              <SpecialButton
+                url="/impact-survey"
+                label={<span className="">{"Take the impact survey"}</span>}
+              />
+            )}
           </div>
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">{menuItems}</ul>
