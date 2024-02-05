@@ -47,3 +47,13 @@ body,
     max-width: 12rem;
   }
 }
+
+.showScrollbar::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+
+.showScrollbar::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.4);
+}

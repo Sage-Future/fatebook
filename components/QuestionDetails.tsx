@@ -191,7 +191,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto">
+      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
         {events.length ? (
           events
             .sort(
