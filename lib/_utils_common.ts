@@ -116,10 +116,7 @@ export function displayForecast(
 ): string {
   return `${
     forecast?.forecast
-      ? formatDecimalNicely(
-          forecast.forecast.times(100).toNumber(),
-          decimalPlaces,
-        )
+      ? formatDecimalNicely(forecast.forecast.toNumber() * 100, decimalPlaces)
       : "?"
   }%`
 }
@@ -137,6 +134,14 @@ export function formatDecimalNicely(
   num: number,
   decimalPlaces: number,
 ): string {
+  // for close to 100 or 0, show 3 decimal places
+  if (decimalPlaces === 2 && num > 99.99 && num < 100) {
+    decimalPlaces = 3
+  }
+  if (decimalPlaces === 2 && num < 0.01 && num > 0) {
+    decimalPlaces = 3
+  }
+
   return num.toLocaleString("en-US", {
     minimumFractionDigits: 0,
     maximumFractionDigits: decimalPlaces,

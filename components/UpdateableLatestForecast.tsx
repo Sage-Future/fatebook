@@ -31,7 +31,7 @@ export function UpdateableLatestForecast({
     : null
 
   const defaultVal = latestForecast?.forecast
-    ? latestForecast.forecast.times(100).toString().toString()
+    ? (latestForecast?.forecast.toNumber() * 100).toString()
     : ""
   const [localForecast, setLocalForecast] = useState<string>(defaultVal)
 
