@@ -84,10 +84,19 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
   }
 
   const forecasts = questions.flatMap((q) =>
-    q.forecasts.map((f) => ({
-      forecast: f.forecast.toNumber(),
-      resolution: q.resolution,
-    })),
+    q.forecasts
+      // don't include forecasts made <1 minute before another forecast on same question by same user
+      .filter(
+        (f) =>
+          !q.forecasts.some((f2) => {
+            const timeDiff = f2.createdAt.getTime() - f.createdAt.getTime()
+            return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
+          }),
+      )
+      .map((f) => ({
+        forecast: f.forecast.toNumber(),
+        resolution: q.resolution,
+      })),
   )
 
   const halfBucketSize = 0.05
