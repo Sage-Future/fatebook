@@ -176,6 +176,9 @@ export const appRouter = router({
         where: {
           id: input.userId,
         },
+        include: {
+          notifications: true,
+        },
       })
 
       return user
@@ -186,6 +189,22 @@ export const appRouter = router({
           }
         : undefined
     }),
+
+  getUserNotifications: publicProcedure.query(({ ctx }) => {
+    if (!ctx.userId) {
+      return null
+    }
+
+    return prisma.notification.findMany({
+      where: {
+        userId: ctx.userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 20,
+    })
+  }),
 })
 
 export type AppRouter = typeof appRouter

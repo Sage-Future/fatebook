@@ -653,35 +653,24 @@ export const questionRouter = router({
       )
 
       const q = submittedForecast.question
-      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
-      const mostRecentForecast = q.forecasts.sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-      )[0]
-
-      if (
-        !mostRecentForecast ||
-        q.forecasts.length < 4 ||
-        mostRecentForecast.createdAt.getTime() < twoHoursAgo.getTime()
-      ) {
-        for (const user of filterToUniqueIds([
-          q.user,
-          ...q.forecasts.map((f) => f.user),
-          ...q.comments.map((c) => c.user),
-          ...q.sharedWith,
-          ...q.sharedWithLists.flatMap((l) => l.users),
-        ]).filter((u) => u && u.id !== submittedForecast.user.id)) {
-          await createNotification({
-            userId: user.id,
-            title: `${submittedForecast.user.name || "Someone"} predicted on "${
-              q.title
-            }"`,
-            content: `${
-              submittedForecast.user.name || "Someone"
-            } predicted on ${getMarkdownLinkQuestionTitle(q)}.`,
-            tags: ["new_forecast", q.id],
-            url: getQuestionUrl(q),
-          })
-        }
+      for (const user of filterToUniqueIds([
+        q.user,
+        ...q.forecasts.map((f) => f.user),
+        ...q.comments.map((c) => c.user),
+        ...q.sharedWith,
+        ...q.sharedWithLists.flatMap((l) => l.users),
+      ]).filter((u) => u && u.id !== submittedForecast.user.id)) {
+        await createNotification({
+          userId: user.id,
+          title: `${submittedForecast.user.name || "Someone"} predicted on "${
+            q.title
+          }"`,
+          content: `${
+            submittedForecast.user.name || "Someone"
+          } predicted on ${getMarkdownLinkQuestionTitle(q)}.`,
+          tags: ["new_forecast", q.id],
+          url: getQuestionUrl(q),
+        })
       }
 
       await backendAnalyticsEvent("forecast_submitted", {
@@ -756,37 +745,26 @@ export const questionRouter = router({
         },
       })
 
-      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
-      const mostRecentComment = question.comments.sort(
-        (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-      )[0]
-
-      if (
-        !mostRecentComment ||
-        question.comments.length < 4 ||
-        mostRecentComment.createdAt.getTime() < twoHoursAgo.getTime()
-      ) {
-        for (const user of filterToUniqueIds([
-          question.user,
-          ...question.forecasts.map((f) => f.user),
-          ...question.comments.map((c) => c.user),
-          ...question.sharedWith,
-          ...question.sharedWithLists.flatMap((l) => l.users),
-        ]).filter((u) => u && u.id !== newComment.user.id)) {
-          await createNotification({
-            userId: user.id,
-            title: `${newComment.user.name || "Someone"} commented on "${
-              question.title
-            }"`,
-            content: `${
-              newComment.user.name || "Someone"
-            } commented on ${getMarkdownLinkQuestionTitle(question)}:\n\n${
-              newComment.comment
-            }`,
-            tags: ["new_comment", question.id],
-            url: getQuestionUrl(question),
-          })
-        }
+      for (const user of filterToUniqueIds([
+        question.user,
+        ...question.forecasts.map((f) => f.user),
+        ...question.comments.map((c) => c.user),
+        ...question.sharedWith,
+        ...question.sharedWithLists.flatMap((l) => l.users),
+      ]).filter((u) => u && u.id !== newComment.user.id)) {
+        await createNotification({
+          userId: user.id,
+          title: `${newComment.user.name || "Someone"} commented on "${
+            question.title
+          }"`,
+          content: `${
+            newComment.user.name || "Someone"
+          } commented on ${getMarkdownLinkQuestionTitle(question)}:\n\n${
+            newComment.comment
+          }`,
+          tags: ["new_comment", question.id],
+          url: getQuestionUrl(question),
+        })
       }
 
       await backendAnalyticsEvent("comment_added", {

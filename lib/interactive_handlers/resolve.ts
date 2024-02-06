@@ -18,7 +18,12 @@ import {
 } from "../blocks-designs/_block_utils"
 import { buildQuestionResolvedBlocks } from "../blocks-designs/question_resolved"
 
-import { averageScores, getResolutionEmoji, round } from "../_utils_common"
+import {
+  averageScores,
+  filterToUniqueIds,
+  getResolutionEmoji,
+  round,
+} from "../_utils_common"
 import prisma, {
   backendAnalyticsEvent,
   getDateSlackFormat,
@@ -32,6 +37,9 @@ import prisma, {
   updateResolvePingQuestionMessages,
 } from "../_utils_server"
 import { buildQuestionResolvedBroadcastBlocks } from "../blocks-designs/question_resolved_broadcast"
+import { createNotification } from "../web/notifications"
+import { getQuestionUrl } from "../web/question_url"
+import { getMarkdownLinkQuestionTitle } from "../web/utils"
 
 async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -57,6 +65,17 @@ async function dbResolveQuestion(questionid: string, resolution: Resolution) {
               profiles: true,
             },
           },
+        },
+      },
+      comments: {
+        include: {
+          user: true,
+        },
+      },
+      sharedWith: true,
+      sharedWithLists: {
+        include: {
+          users: true,
         },
       },
       questionMessages: {
@@ -307,6 +326,31 @@ export async function handleQuestionResolution(
   await updateForecastQuestionMessages(question, "Question resolved!")
   await messageUsers(scores, question)
   await sendResolutionBroadcast(question)
+
+  const q = question
+  // for now, just do it if not shared to slack
+  // in future check per user if they forecasted via slack maybe
+  if (q.questionMessages.length === 0) {
+    for (const user of filterToUniqueIds([
+      q.user,
+      ...q.forecasts.map((f) => f.user),
+      ...q.comments.map((c) => c.user),
+      ...q.sharedWith,
+      ...q.sharedWithLists.flatMap((l) => l.users),
+    ]).filter((u) => u && u.id !== q.userId)) {
+      await createNotification({
+        userId: user.id,
+        title: `${q.user.name || "Someone"} resolved ${q.resolution}: "${
+          q.title
+        }"`,
+        content: `${q.user.name || "Someone"} resolved ${
+          q.resolution
+        }: ${getMarkdownLinkQuestionTitle(q)}`,
+        tags: ["question_resolved", q.id],
+        url: getQuestionUrl(q),
+      })
+    }
+  }
 }
 
 export async function scoreQuestion(
