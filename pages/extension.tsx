@@ -29,15 +29,9 @@ export default function ExtensionPage() {
       />
       <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-5xl">
         <div className="prose mx-auto">
-          <h2 className="text-3xl mb-2 font-extrabold text-neutral-900">
-            Fatebook for Chrome
-          </h2>
-          <h3 className="text-neutral-600">
-            Make and embed Fatebook predictions anywhere on the web
-          </h3>
           {justInstalled && (
-            <div className="prose mb-12">
-              <p>{"Thanks for installing Fatebook for Chrome!"}</p>
+            <div className="prose mb-12 mx-2 bg-indigo-50 p-4 rounded-xl">
+              <p>{"👋 Thanks for installing Fatebook for Chrome!"}</p>
 
               <p>
                 Try <Link href="https://doc.new">creating a Google Doc</Link>{" "}
@@ -48,15 +42,16 @@ export default function ExtensionPage() {
                 to make a prediction.
               </p>
               <p>
-                Or customise the keyboard shortcut at{" "}
+                You can customise the keyboard shortcut at{" "}
                 <span className="font-semibold">
                   chrome://extensions/shortcuts
                 </span>
               </p>
               {isArc && (
-                <p className="mx-2 bg-indigo-50 p-4">
-                  👋 Hey Arc user! We recommend changing the keyboard shortcut
-                  to{" "}
+                <p className="bg-indigo-50 pt-4">
+                  {
+                    "😎 Looks like you're using Arc! We recommend changing the keyboard shortcut to "
+                  }
                   <span className="font-semibold whitespace-nowrap">
                     Cmd-Shift-F
                   </span>{" "}
@@ -69,6 +64,13 @@ export default function ExtensionPage() {
               )}
             </div>
           )}
+
+          <h2 className="text-3xl mb-2 font-extrabold text-neutral-900">
+            Fatebook for Chrome
+          </h2>
+          <h3 className="text-neutral-600">
+            Make and embed Fatebook predictions anywhere on the web
+          </h3>
 
           <div className="flex mb-20">
             <div className="m-auto">
