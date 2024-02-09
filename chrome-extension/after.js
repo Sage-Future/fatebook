@@ -185,11 +185,13 @@
 
     let oldActiveElement
     function openModal() {
+      const selectedText = window.getSelection()?.toString()
+
       predictIframe.style.display = "block"
       oldActiveElement = document.activeElement
       predictIframe.focus()
 
-      sendMessage(predictIframe, "focus_modal")
+      sendMessage(predictIframe, "focus_modal", { defaultText: selectedText })
 
       document.body._originalOverflow = document.body.style.overflow
       document.body.style.overflow = "hidden"

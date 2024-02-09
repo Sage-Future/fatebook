@@ -2,7 +2,7 @@
 
 import { XCircleIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { copyToClipboard } from "../lib/web/clipboard"
 import { sendToHost } from "../lib/web/embed"
 import {
@@ -14,6 +14,7 @@ import { Predict } from "./Predict"
 export default function PredictModal() {
   const { data: session } = useSession()
   const [resetTrigger, setResetTrigger] = useState(false)
+  const [defaultText, setDefaultText] = useState("")
 
   // Listen for requests to focus the prediction modal
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -26,19 +27,24 @@ export default function PredictModal() {
         event.data.isFatebook &&
         event.data.action === "focus_modal"
       ) {
-        textAreaRef.current!.focus()
+        textAreaRef.current?.focus()
+        if (event.data?.defaultText) {
+          setDefaultText(event.data.defaultText)
+        }
       }
     })
   }, [])
 
   function cancelPrediction() {
+    setDefaultText("")
     sendToHost("prediction_cancel")
-    setResetTrigger(true)
+    setTimeout(() => setResetTrigger(true))
   }
 
   function predictionSuccess(predictionLink: string) {
+    setDefaultText("")
     sendToHost("prediction_create_success", { predictionLink })
-    setResetTrigger(true)
+    setTimeout(() => setResetTrigger(true))
   }
 
   // Listen for escape key within this iframe, close modal
@@ -86,16 +92,47 @@ export default function PredictModal() {
     },
     [session],
   )
+  const [isDragging, setIsDragging] = useState(false)
+  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 })
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  const startDrag = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDragging(true)
+    setStartPosition({
+      x: e.clientX - dragPosition.x,
+      y: e.clientY - dragPosition.y,
+    })
+    modalRef.current!.style.transition = "none"
+  }
+  const stopDrag = () => {
+    setIsDragging(false)
+    modalRef.current!.style.transition = "all 0.2s"
+  }
+  useEffect(() => {
+    if (!modalRef.current) return
+    modalRef.current.style.transform = `translate(${dragPosition.x}px, ${dragPosition.y}px)`
+  }, [dragPosition])
 
   return (
     <div
       className="flex items-center justify-center w-full h-full bg-black/40 p-12"
       onClick={() => cancelPrediction()}
+      onMouseMove={(e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDragging) return
+        const newX = e.clientX - startPosition.x
+        const newY = e.clientY - startPosition.y
+        setDragPosition({ x: newX, y: newY })
+      }}
+      onMouseUp={stopDrag}
     >
       <div
+        ref={modalRef}
         className="relative max-w-10xl p-10 pb-8 bg-neutral-50 rounded-sm"
+        onMouseDown={startDrag}
         onClick={(e) => e.stopPropagation()}
         onScroll={(e) => e.stopPropagation()}
+        style={{ position: "absolute", cursor: "grab" }}
       >
         <Predict
           resetTrigger={resetTrigger}
@@ -103,6 +140,9 @@ export default function PredictModal() {
           textAreaRef={textAreaRef}
           onQuestionCreate={onQuestionCreate}
           embedded={true}
+          questionDefaults={{
+            title: defaultText,
+          }}
         />
 
         <div

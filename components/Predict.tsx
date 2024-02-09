@@ -340,6 +340,7 @@ export function Predict({
               }}
               ref={mergedTextAreaRef}
               defaultValue={questionDefaults?.title}
+              onMouseDown={(e) => e.stopPropagation()}
               {...registerQuestion}
             />
 
@@ -417,6 +418,7 @@ export function Predict({
                         new Date(questionDefaults?.resolveBy || tomorrowDate()),
                       )}
                       onKeyDown={onDateKeydown}
+                      onMouseDown={(e) => e.stopPropagation()}
                       {...register("resolveBy", { required: true })}
                     />
                     <span className="italic text-neutral-400 text-sm p-1">
@@ -497,6 +499,7 @@ export function Predict({
                     pattern="[0-9[.]*"
                     placeholder="XX"
                     onKeyDown={onEnterSubmit}
+                    onMouseDown={(e) => e.stopPropagation()}
                     {...predictionPercentageRegister}
                     ref={(e) => {
                       predictionInputRef(e)
@@ -541,6 +544,7 @@ export function Predict({
                         e.currentTarget.checked ? "true" : "false",
                       )
                     }}
+                    onMouseDown={(e) => e.stopPropagation()}
                     {...register("sharePublicly")}
                   />
                 </div>
