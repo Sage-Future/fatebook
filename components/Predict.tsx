@@ -170,6 +170,7 @@ export function Predict({
         setTagsPreview([])
 
         reset()
+        textAreaRef?.current?.focus()
       },
       [
         createQuestion,
@@ -182,6 +183,7 @@ export function Predict({
         questionDefaults?.unlisted,
         reset,
         tagsPreview,
+        textAreaRef,
         userId,
       ],
     )
