@@ -53,10 +53,11 @@
       }
     }
 
-    console.log(
-      `initialising fatebook extension, location: "${EMBED_LOCATION}"`,
-      extensionInfo,
-    )
+    extensionInfo?.isDev &&
+      console.log(
+        `initialising fatebook extension, location: "${EMBED_LOCATION}"`,
+        extensionInfo,
+      )
 
     function getIsFatebookLink(href) {
       return href?.includes(`${FATEBOOK_HOST}/q/`)
@@ -92,9 +93,10 @@
             iframeMap,
           )
         } else {
-          console.log(
-            `received message "${event.data.action}" from "${iframe.src}"`,
-          )
+          extensionInfo?.isDev &&
+            console.log(
+              `received message "${event.data.action}" from "${iframe.src}"`,
+            )
           iframe.dispatchEvent(
             new CustomEvent(event.data.action, { detail: event.data }),
           )
@@ -105,7 +107,8 @@
     // ==== Listen for messages from extension background script ====
     chrome.runtime.onMessage.addListener(function (request) {
       Sentry.wrap(() => {
-        console.log(`received backend request ${request.action}`)
+        extensionInfo?.isDev &&
+          console.log(`received backend request ${request.action}`)
         if (request.action === "open_modal") {
           if (EMBED_LOCATION === EMBED_LOCATIONS.GOOGLE_DOCS) {
             const commentMenuItem = document.getElementById(":79")
@@ -158,7 +161,8 @@
     }
 
     function sendMessage(iframe, action, data) {
-      console.log(`sending message "${action}" to "${iframe.src}"`)
+      extensionInfo?.isDev &&
+        console.log(`sending message "${action}" to "${iframe.src}"`)
       pingIframe(iframe)
       iframe.contentWindow?.postMessage(
         { isFatebook: true, action, ...data },
