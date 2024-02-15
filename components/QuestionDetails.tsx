@@ -36,7 +36,8 @@ export function QuestionDetails({
     question.userId !== userId &&
     !question.resolution &&
     (question.forecasts.filter((f) => f.userId !== userId).length > 0 ||
-      question.comments.filter((c) => c.userId !== userId).length > 0)
+      question.comments.filter((c) => c.userId !== userId).length > 0) &&
+    !forecastsAreHidden(question, userId)
   const [showEvents, setShowEvents] = useState<boolean>(!hideOthersForecasts)
 
   const utils = api.useContext()
@@ -88,9 +89,9 @@ export function QuestionDetails({
             {question.hideForecastsUntil
               ? `Other users' forecasts are hidden until ${getDateYYYYMMDD(
                   question.hideForecastsUntil,
-                )} to prevent anchoring.`
+                )} to reduce anchoring.`
               : question.hideForecastsUntilPrediction &&
-                "Other users' forecasts are hidden until you make a prediction, to prevent anchoring."}
+                "Other users' forecasts are hidden until you make a prediction, to reduce anchoring."}
           </div>
         )}
         {showEvents ? (

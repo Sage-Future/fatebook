@@ -16,7 +16,7 @@ export function forecastsAreHidden(
     (!!question.hideForecastsUntil &&
       question.hideForecastsUntil.getTime() > Date.now()) ||
     (!!question.hideForecastsUntilPrediction &&
-      !question.forecasts.some((f) => f.userId === userId))
+      (!userId || !question.forecasts.some((f) => f.userId === userId)))
   )
 }
 

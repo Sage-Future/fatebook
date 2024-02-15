@@ -1333,7 +1333,7 @@ export function scrubHiddenForecastsFromQuestion<
   return {
     ...question,
     forecasts: question.forecasts.map((f) => {
-      const hideForecast = f.userId !== userId && userId
+      const hideForecast = f.userId !== userId || !userId
       return {
         ...f,
         ...(hideForecast
