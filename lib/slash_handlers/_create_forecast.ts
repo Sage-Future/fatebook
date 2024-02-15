@@ -15,6 +15,7 @@ export async function createForecastingQuestion(
     user,
     channelId,
     notes,
+    hideForecastsUntilPrediction,
     hideForecastsUntil,
     slackUserId,
   }: {
@@ -39,6 +40,7 @@ export async function createForecastingQuestion(
       profileId: profile.id,
       notes,
       hideForecastsUntil,
+      hideForecastsUntilPrediction,
       forecasts: forecastNum
         ? {
             create: {
