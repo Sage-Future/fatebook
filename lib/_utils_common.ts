@@ -1,4 +1,4 @@
-import { Forecast, Question, QuestionScore, Resolution } from "@prisma/client"
+import { Forecast, QuestionScore, Resolution } from "@prisma/client"
 import type { Decimal } from "@prisma/client/runtime/library"
 import { QuestionWithForecasts } from "../prisma/additional"
 import {
@@ -8,10 +8,15 @@ import {
   scorePrepad,
 } from "./_constants"
 
-export function forecastsAreHidden(question: Question) {
-  return Boolean(
-    question.hideForecastsUntil &&
-      question.hideForecastsUntil.getTime() > Date.now(),
+export function forecastsAreHidden(
+  question: QuestionWithForecasts,
+  userId: string | undefined,
+) {
+  return (
+    (!!question.hideForecastsUntil &&
+      question.hideForecastsUntil.getTime() > Date.now()) ||
+    (!!question.hideForecastsUntilPrediction &&
+      !question.forecasts.some((f) => f.userId === userId))
   )
 }
 

@@ -14,6 +14,7 @@ import prisma, {
 import {
   DeleteQuestionActionParts,
   EditQuestionBtnActionParts,
+  OptionSelection,
   OptionsCheckBoxActionParts,
   QuestionModalActionParts,
   parseSelectedCheckboxOptions,
@@ -125,6 +126,7 @@ interface ViewStateValues {
       type: string
       value?: string
       selected_date?: string
+      selected_options?: OptionSelection[]
     }
   }
 }
@@ -172,6 +174,19 @@ export async function questionModalSubmitted(
     throw new Error("missing question or resolution date")
   }
 
+  // get the value of the hide forecasts until prediction checkbox
+  const checkboxValue = Object.values(
+    payload.view.state.values as ViewStateValues,
+  ).find((v) => Object.keys(v)[0]?.includes('"action":"optionsCheckBox"'))
+  const selectedCheckboxes =
+    checkboxValue && Object.values(checkboxValue)?.[0]?.selected_options
+  const hideForecastsUntilPrediction =
+    (selectedCheckboxes &&
+      parseSelectedCheckboxOptions(selectedCheckboxes).find(
+        (cb) => cb.valueLabel === "hide_forecasts_until_prediction",
+      )?.value) ||
+    false
+
   if (actionParts.isCreating) {
     const profile = await getOrCreateProfile(
       payload.user.team_id,
@@ -185,6 +200,7 @@ export async function questionModalSubmitted(
       profile,
       user: profile.user,
       notes,
+      hideForecastsUntilPrediction,
       hideForecastsUntil,
       slackUserId: payload.user.id,
     })
@@ -198,6 +214,7 @@ export async function questionModalSubmitted(
         resolveBy: new Date(resolutionDate),
         notes,
         hideForecastsUntil,
+        hideForecastsUntilPrediction,
       },
       include: {
         forecasts: {
@@ -344,9 +361,6 @@ export async function updateFromCheckboxes(
   const checkboxOptions = parseSelectedCheckboxOptions(
     payload.actions?.[0].selected_options,
   )
-  const updateHideForecasts = checkboxOptions.find(
-    (cb) => cb.valueLabel === "hide_forecasts_until_date",
-  )?.value
   const questionPart = {
     id: actionParts.questionId,
     resolveBy: new Date(actionParts.questionResolutionDate),
@@ -355,7 +369,11 @@ export async function updateFromCheckboxes(
     questionPart,
     actionParts.isCreating,
     channel,
-    updateHideForecasts,
+    checkboxOptions.find((cb) => cb.valueLabel === "hide_forecasts_until_date")
+      ?.value,
+    checkboxOptions.find(
+      (cb) => cb.valueLabel === "hide_forecasts_until_prediction",
+    )?.value,
   )
 
   await callSlackApi(

@@ -45,7 +45,7 @@ export async function buildQuestionBlocks(
   teamId: string,
   question: QuestionWithForecastWithUserWithProfiles,
 ): Promise<Blocks> {
-  const hideForecasts = forecastsAreHidden(question)
+  const hideForecasts = forecastsAreHidden(question, undefined)
 
   return [
     {
@@ -165,14 +165,20 @@ function makeForecastListing(
     type: "section",
     text: markdownBlock(
       hideForecasts
-        ? `_Forecasts are hidden until ${getDateSlackFormat(
-            question.hideForecastsUntil!,
-            false,
-            "date_short_pretty",
-          )}_`
+        ? question.hideForecastsUntil
+          ? `_Forecasts are hidden until ${getDateSlackFormat(
+              question.hideForecastsUntil!,
+              false,
+              "date_short_pretty",
+            )}_`
+          : "_Forecasts are hidden until you make a prediction_"
         : "*Latest forecasts*",
     ),
-    ...viewAllForecastsAccessory(question.id, hideForecasts),
+    ...viewAllForecastsAccessory(
+      question.id,
+      hideForecasts,
+      !!question.hideForecastsUntilPrediction,
+    ),
   }
 
   if (hideForecasts) {
@@ -218,10 +224,17 @@ function makeForecastListing(
 const viewAllForecastsAccessory = (
   questionId: string,
   hideForecasts: boolean,
+  hideForecastsUntilPrediction: boolean,
 ) => ({
   accessory: {
     type: "button",
-    text: textBlock(hideForecasts ? "View my forecasts" : "View all"),
+    text: textBlock(
+      hideForecasts
+        ? hideForecastsUntilPrediction
+          ? "View forecasts"
+          : "View my forecasts"
+        : "View all",
+    ),
     action_id: toActionId({
       action: "viewForecastLog",
       questionId,
@@ -254,7 +267,11 @@ async function makeResolvedQuestionListing(
             "date_short_pretty",
           )}_`,
         ),
-        ...viewAllForecastsAccessory(question.id, hideForecasts),
+        ...viewAllForecastsAccessory(
+          question.id,
+          hideForecasts,
+          !!question.hideForecastsUntilPrediction,
+        ),
       },
     ]
   }
@@ -268,7 +285,11 @@ async function makeResolvedQuestionListing(
     {
       type: "section",
       text: markdownBlock("*Top forecasters*"),
-      ...viewAllForecastsAccessory(question.id, hideForecasts),
+      ...viewAllForecastsAccessory(
+        question.id,
+        hideForecasts,
+        !!question.hideForecastsUntilPrediction,
+      ),
     },
     ...scores
       .sort((a, b) => a.rank - b.rank)

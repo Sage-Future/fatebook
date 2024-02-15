@@ -88,6 +88,7 @@ const SharePanel = React.forwardRef<
   },
   forwardedRef,
 ) {
+  const userId = useUserId()
   const sharedToSlack =
     !!question.questionMessages && question.questionMessages.length > 0
 
@@ -106,6 +107,14 @@ const SharePanel = React.forwardRef<
     setShowInstructions(true)
   }
 
+  const utils = api.useContext()
+  const hideForecastsUntilPredict =
+    api.question.setHideForecastsUntilPrediction.useMutation({
+      async onSuccess() {
+        await invalidateQuestion(utils, question)
+      },
+    })
+
   return (
     <Popover.Panel
       className="absolute z-50 w-full cursor-auto"
@@ -117,6 +126,33 @@ const SharePanel = React.forwardRef<
           <EmailInput question={question} />
           <UserListDropdown question={question} />
           <SharePublicly question={question} />
+          <div className="flex gap-2 items-center">
+            <input
+              id="hideForecastsUntilPredict"
+              type="checkbox"
+              className={clsx(
+                "checkbox",
+                userId !== question.userId && "cursor-not-allowed",
+              )}
+              disabled={
+                userId !== question.userId ||
+                hideForecastsUntilPredict.isLoading
+              }
+              checked={!!question.hideForecastsUntilPrediction}
+              onChange={(e) => {
+                hideForecastsUntilPredict.mutate({
+                  questionId: question.id,
+                  hideForecastsUntilPrediction: e.target.checked,
+                })
+              }}
+            />
+            <label
+              htmlFor="hideForecastsUntilPredict"
+              className="text-sm my-auto cursor-pointer"
+            >
+              {"Hide forecasts for each viewer until they've made a prediction"}
+            </label>
+          </div>
           {sharedToSlack ? (
             <div>
               <Image
@@ -189,11 +225,12 @@ function SharePublicly({
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <div className="flex flex-col gap-2">
         <div className="flex gap-2 justify-between">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <input
               id="sharePublicly"
               type="checkbox"
               className={clsx(
+                "checkbox",
                 userId !== question.userId && "cursor-not-allowed",
               )}
               disabled={
@@ -207,7 +244,10 @@ function SharePublicly({
                 })
               }}
             />
-            <label htmlFor="sharePublicly" className="text-sm my-auto">
+            <label
+              htmlFor="sharePublicly"
+              className="text-sm my-auto cursor-pointer"
+            >
               Share with anyone with the link
             </label>
           </div>
@@ -217,11 +257,14 @@ function SharePublicly({
         </div>
       </div>
       {question.sharedPublicly && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <input
             id="unlisted"
             type="checkbox"
-            className={clsx(userId !== question.userId && "cursor-not-allowed")}
+            className={clsx(
+              "checkbox",
+              userId !== question.userId && "cursor-not-allowed",
+            )}
             disabled={userId !== question.userId || setSharedPublicly.isLoading}
             checked={!question.unlisted}
             onChange={(e) => {
@@ -231,7 +274,7 @@ function SharePublicly({
               })
             }}
           />
-          <label htmlFor="unlisted" className="text-sm my-auto">
+          <label htmlFor="unlisted" className="text-sm my-auto cursor-pointer">
             {"Show on the "}
             <Link href="/public" onClick={(e) => e.stopPropagation()}>
               public questions page

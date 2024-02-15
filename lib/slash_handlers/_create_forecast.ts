@@ -25,6 +25,7 @@ export async function createForecastingQuestion(
     user: User
     channelId: string
     notes?: string
+    hideForecastsUntilPrediction?: boolean
     hideForecastsUntil?: Date | null
     slackUserId?: string
   },

@@ -484,6 +484,26 @@ export const questionRouter = router({
       })
     }),
 
+  setHideForecastsUntilPrediction: publicProcedure
+    .input(
+      z.object({
+        questionId: z.string(),
+        hideForecastsUntilPrediction: z.boolean(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      await getQuestionAssertAuthor(ctx, input.questionId)
+
+      await prisma.question.update({
+        where: {
+          id: input.questionId,
+        },
+        data: {
+          hideForecastsUntilPrediction: input.hideForecastsUntilPrediction,
+        },
+      })
+    }),
+
   setSharedWith: publicProcedure
     .input(
       z.object({
@@ -1306,7 +1326,7 @@ export function scrubHiddenForecastsFromQuestion<
 >(question: QuestionX, userId: string | undefined) {
   question = scrubApiKeyPropertyRecursive(question)
 
-  if (!forecastsAreHidden(question)) {
+  if (!forecastsAreHidden(question, userId)) {
     return question
   }
 

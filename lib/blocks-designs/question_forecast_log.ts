@@ -1,9 +1,6 @@
 import { Forecast } from "@prisma/client"
 import { ModalView } from "@slack/types"
-import {
-  ForecastWithUserWithProfiles,
-  QuestionWithForecastWithUserWithProfiles,
-} from "../../prisma/additional"
+import { QuestionWithForecastWithUserWithProfiles } from "../../prisma/additional"
 import {
   defaultDisplayPictureUrl,
   maxDecimalPlacesForecastLogListing,
@@ -30,9 +27,12 @@ export function buildQuestionForecastLogModalView(
   question: QuestionWithForecastWithUserWithProfiles,
   slackUserId: string,
 ): ModalView {
-  const hideForecasts = forecastsAreHidden(question)
+  const userId = question.forecasts.find((forecast) =>
+    forecast.user.profiles.find((p) => p.slackId === slackUserId),
+  )?.user.id
+  const hideForecasts = forecastsAreHidden(question, userId)
   const forecasts = hideForecasts
-    ? getForecastsOfUser(question.forecasts, slackUserId)
+    ? question.forecasts.filter((forecast) => forecast.user.id === userId)
     : question.forecasts
   const title = hideForecasts ? "My forecasts" : "All forecasts"
   return {
@@ -66,26 +66,21 @@ export function buildQuestionForecastLogModalView(
             ),
           ],
         })),
-      ...(forecasts.length === 0
+      ...(forecasts.length === 0 ||
+      (question.hideForecastsUntilPrediction && hideForecasts)
         ? [
             {
               type: "context",
-              elements: [markdownBlock(noForecastsMessage)],
+              elements: [
+                markdownBlock(
+                  question.hideForecastsUntilPrediction && hideForecasts
+                    ? "_Make a forecast to see others' forecasts_"
+                    : noForecastsMessage,
+                ),
+              ],
             },
           ]
         : []),
     ],
   }
-}
-
-function getForecastsOfUser(
-  forecasts: ForecastWithUserWithProfiles[],
-  slackUserId: string,
-) {
-  const userId = forecasts.find((forecast) =>
-    forecast.user.profiles.find((p) => p.slackId === slackUserId),
-  )?.user.id
-  return userId
-    ? forecasts.filter((forecast) => forecast.user.id === userId)
-    : []
 }

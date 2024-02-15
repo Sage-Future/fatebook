@@ -83,11 +83,14 @@ export function QuestionDetails({
             )}
           </div>
         )}
-        {forecastsAreHidden(question) && question.hideForecastsUntil && (
+        {forecastsAreHidden(question, userId) && (
           <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
-            {`Other users' forecasts are hidden until ${getDateYYYYMMDD(
-              question.hideForecastsUntil,
-            )} to prevent anchoring.`}
+            {question.hideForecastsUntil
+              ? `Other users' forecasts are hidden until ${getDateYYYYMMDD(
+                  question.hideForecastsUntil,
+                )} to prevent anchoring.`
+              : question.hideForecastsUntilPrediction &&
+                "Other users' forecasts are hidden until you make a prediction, to prevent anchoring."}
           </div>
         )}
         {showEvents ? (
@@ -104,6 +107,8 @@ export function QuestionDetails({
 }
 
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
+  const userId = useUserId()
+
   let events: { timestamp: Date; el: ReactNode }[] = [
     question.forecasts.map((f) => ({
       timestamp: f.createdAt,
@@ -185,7 +190,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   const numForecasters = new Set(question.forecasts.map((f) => f.userId)).size
   const communityAverage =
-    !forecastsAreHidden(question) &&
+    !forecastsAreHidden(question, userId) &&
     numForecasters > 1 &&
     getCommunityForecast(question, new Date())
 

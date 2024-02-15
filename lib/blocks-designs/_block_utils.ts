@@ -1,3 +1,4 @@
+import { Question, QuestionScore, Resolution, TargetType } from "@prisma/client"
 import {
   ActionsBlock,
   Block,
@@ -39,9 +40,8 @@ import {
   getSlackPermalinkFromChannelAndTS,
   getUserNameOrProfileLink,
 } from "../_utils_server"
-import { checkboxes } from "./question_modal"
-import { Question, QuestionScore, Resolution, TargetType } from "@prisma/client"
 import { getQuestionUrl } from "../web/question_url"
+import { checkboxes } from "./question_modal"
 
 export interface ResolveQuestionActionParts {
   action: "resolve"
@@ -447,7 +447,10 @@ export async function buildForecastQuestionText(
   const yourForecastValuePadded = "You:" + padForecast(yourForecastValueStr)
 
   // get the length of the string to represent forecast.forecast as two digit decimal
-  const commForecastValueStr = forecastsAreHidden(forecast.question)
+  const commForecastValueStr = forecastsAreHidden(
+    forecast.question,
+    forecast.userId,
+  )
     ? "?"
     : formatDecimalNicely(
         100 * getCommunityForecast(forecast.question, new Date()),

@@ -13,16 +13,22 @@ export function buildEditQuestionModalView(
   question: Partial<Question>,
   isCreating: boolean,
   channel: string,
-  hideForecastsJustChecked?: boolean,
+  hideForecastsUntilDateJustChecked?: boolean,
+  hideForecastsUntilPredictionJustChecked?: boolean,
 ): ModalView {
-  const isHidingForecasts =
-    hideForecastsJustChecked !== undefined
-      ? hideForecastsJustChecked
+  const isHidingUntilDate =
+    hideForecastsUntilDateJustChecked !== undefined
+      ? hideForecastsUntilDateJustChecked
       : question.hideForecastsUntil != undefined
   const hideUntil =
     question?.hideForecastsUntil ||
     question?.resolveBy ||
     new Date(Date.now() + 3600 * 1000 * 24) // default = tomorrow
+
+  const isHidingUntilPrediction =
+    hideForecastsUntilPredictionJustChecked !== undefined
+      ? hideForecastsUntilPredictionJustChecked
+      : !!question.hideForecastsUntilPrediction
 
   return {
     type: "modal",
@@ -75,8 +81,14 @@ export function buildEditQuestionModalView(
         },
         optional: true,
       },
-      optionsCheckboxes(isHidingForecasts, isCreating, hideUntil, question?.id),
-      ...(isHidingForecasts ? [hideForecastsUntilDatePicker(hideUntil)] : []),
+      optionsCheckboxes(
+        isHidingUntilDate,
+        isHidingUntilPrediction,
+        isCreating,
+        hideUntil,
+        question?.id,
+      ),
+      ...(isHidingUntilDate ? [hideForecastsUntilDatePicker(hideUntil)] : []),
       ...(isCreating
         ? []
         : [
@@ -110,19 +122,27 @@ export function buildEditQuestionModalView(
   }
 }
 
-const hideCheckbox = {
-  label: "Hide forecasts until a specific date to prevent anchoring",
+const hideUntilDateCheckbox = {
+  label: "Hide forecasts until a specific date",
   valueLabel: "hide_forecasts_until_date",
 }
-export const checkboxes: CheckboxOption[] = [hideCheckbox]
+const hideUntilPredictionCheckbox = {
+  label: "Hide forecasts for each viewer until they've made a prediction",
+  valueLabel: "hide_forecasts_until_prediction",
+}
+export const checkboxes: CheckboxOption[] = [
+  hideUntilPredictionCheckbox,
+  hideUntilDateCheckbox,
+]
 
 function optionsCheckboxes(
-  isHidingForecasts: boolean,
+  isHidingUntilDate: boolean,
+  isHidingUntilPrediction: boolean,
   isCreating: boolean,
   hideUntil: Date,
   questionId?: string,
 ) {
-  console.log({ isHidingForecasts, hideUntil })
+  console.log({ isHidingUntilDate, isHidingUntilPrediction, hideUntil })
   const toCheckbox = (cb: CheckboxOption) => ({
     text: textBlock(cb.label),
     value: cb.valueLabel,
@@ -135,8 +155,15 @@ function optionsCheckboxes(
     accessory: {
       type: "checkboxes",
       options: [...checkboxes.map(toCheckbox)],
-      ...(isHidingForecasts
-        ? { initial_options: [toCheckbox(hideCheckbox)] }
+      ...(isHidingUntilDate || isHidingUntilPrediction
+        ? {
+            initial_options: [
+              ...(isHidingUntilPrediction
+                ? [toCheckbox(hideUntilPredictionCheckbox)]
+                : []),
+              ...(isHidingUntilDate ? [toCheckbox(hideUntilDateCheckbox)] : []),
+            ],
+          }
         : {}),
       action_id: toActionId({
         action: "optionsCheckBox",

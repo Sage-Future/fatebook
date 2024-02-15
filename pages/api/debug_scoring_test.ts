@@ -67,6 +67,7 @@ function getQuestion(days: number): Question {
     profileId: 0,
     notes: null,
     hideForecastsUntil: null,
+    hideForecastsUntilPrediction: null,
     sharedPublicly: false,
     unlisted: false,
   }

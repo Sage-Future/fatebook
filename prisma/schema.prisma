@@ -1,11 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DATABASE_DIRECT_URL")
 }
 
@@ -43,33 +43,34 @@ model QuestionScore {
 }
 
 model Question {
-  id                  String                   @id @default(cuid())
-  createdAt           DateTime                 @default(now())
-  comment             String? // todo remove, unused
-  profileId           Int?
-  title               String                   @db.Text
-  resolveBy           DateTime
-  resolved            Boolean                  @default(false)
-  pingedForResolution Boolean                  @default(false)
-  resolution          Resolution?
-  resolvedAt          DateTime?
-  notes               String?
-  hideForecastsUntil  DateTime?
-  userId              String
-  forecasts           Forecast[]
-  pingResolveMessages PingSlackMessage[]
-  profile             Profile?                 @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
-  user                User                     @relation("author", fields: [userId], references: [id], onDelete: Cascade)
-  sharedWith          User[]                   @relation("questionsSharedWith")
-  sharedWithLists     UserList[]
-  sharedPublicly      Boolean                  @default(false)
-  unlisted            Boolean                  @default(true)
-  questionScores      QuestionScore[]
-  questionMessages    QuestionSlackMessage[]
-  resolutionMessages  ResolutionSlackMessage[]
-  comments            Comment[]
-  tags                Tag[]
-  tournaments         Tournament[]
+  id                           String                   @id @default(cuid())
+  createdAt                    DateTime                 @default(now())
+  comment                      String? // todo remove, unused
+  profileId                    Int?
+  title                        String                   @db.Text
+  resolveBy                    DateTime
+  resolved                     Boolean                  @default(false)
+  pingedForResolution          Boolean                  @default(false)
+  resolution                   Resolution?
+  resolvedAt                   DateTime?
+  notes                        String?
+  hideForecastsUntil           DateTime?
+  hideForecastsUntilPrediction Boolean?                 @default(false)
+  userId                       String
+  forecasts                    Forecast[]
+  pingResolveMessages          PingSlackMessage[]
+  profile                      Profile?                 @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Question_authorId_fkey")
+  user                         User                     @relation("author", fields: [userId], references: [id], onDelete: Cascade)
+  sharedWith                   User[]                   @relation("questionsSharedWith")
+  sharedWithLists              UserList[]
+  sharedPublicly               Boolean                  @default(false)
+  unlisted                     Boolean                  @default(true)
+  questionScores               QuestionScore[]
+  questionMessages             QuestionSlackMessage[]
+  resolutionMessages           ResolutionSlackMessage[]
+  comments                     Comment[]
+  tags                         Tag[]
+  tournaments                  Tournament[]
 }
 
 model Tag {
