@@ -104,7 +104,7 @@ export async function buildQuestionBlocks(
     ...(question.resolution && question.resolution !== Resolution.AMBIGUOUS
       ? await makeResolvedQuestionListing(teamId, hideForecasts, question)
       : makeForecastListing(teamId, hideForecasts, question)),
-    ...(question.forecasts.length === 0
+    ...(question.forecasts.length === 0 && !hideForecasts
       ? [
           {
             type: "context",
