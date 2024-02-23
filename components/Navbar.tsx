@@ -91,9 +91,7 @@ export function Navbar({
         <Link href={webFeedbackUrl}>Submit feedback</Link>
       </li>
       <li>
-        <Link href={"/impact-survey"}>
-          Take the impact survey
-        </Link>
+        <Link href={"/impact-survey"}>Take the impact survey</Link>
       </li>
       <li>
         <Link href={"https://forms.gle/TvG4AShfEBoGogEF9"}>
