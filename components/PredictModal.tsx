@@ -37,6 +37,7 @@ export default function PredictModal() {
 
   function cancelPrediction() {
     setDefaultText("")
+    console.log("sending prediction_cancel to host")
     sendToHost("prediction_cancel")
     setTimeout(() => setResetTrigger(true))
   }
@@ -81,8 +82,8 @@ export default function PredictModal() {
       copyToClipboard({
         "text/plain": urlObj.toString(),
         ...// skip HTML version for twitter (it uses that instead of the plain text version)
-        (window.location.ancestorOrigins.contains("https://twitter.com") ||
-        window.location.ancestorOrigins.contains("https://x.com")
+        (window.location?.ancestorOrigins?.contains("https://twitter.com") ||
+        window.location?.ancestorOrigins?.contains("https://x.com")
           ? {}
           : makeClipboardHtmlLink(richTextData)),
         ...makeRichGoogleDocsLink(richTextData),
