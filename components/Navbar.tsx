@@ -26,8 +26,6 @@ export function Navbar({
   showCreateAccountButton?: boolean
   children: ReactNode
 }) {
-  const userId = useUserId()
-
   const exportData = api.question.exportAllQuestions.useMutation({
     onSuccess(data) {
       if (!data || data === "") {
@@ -150,12 +148,12 @@ export function Navbar({
               <ScaleIcon className="w-6 h-6 text-indigo-600" />
               Fatebook
             </Link>
-            {userId && (
+            {/* {userId && (
               <SpecialButton
-                url="/impact-survey"
-                label={<span className="">{"Take the impact survey"}</span>}
+                url="/extension"
+                label={<span className="">{"Get the"}</span>}
               />
-            )}
+            )} */}
           </div>
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">{menuItems}</ul>
