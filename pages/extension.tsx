@@ -20,6 +20,14 @@ export default function ExtensionPage() {
     }, 1000)
   }, [])
 
+  const [isFirefox, setIsFirefox] = useState(false)
+
+  useEffect(() => {
+    const userAgent = navigator.userAgent
+    const firefox = userAgent.includes("Firefox")
+    setIsFirefox(firefox)
+  }, [])
+
   return (
     <div className="bg-neutral-50 grow">
       <NextSeo
@@ -32,6 +40,15 @@ export default function ExtensionPage() {
           {justInstalled && (
             <div className="prose mb-12 mx-2 bg-indigo-50 p-4 rounded-xl">
               <p>{"👋 Thanks for installing Fatebook for Chrome!"}</p>
+
+              {isFirefox && (
+                <p>
+                  <b>
+                    To finish installing, click the jigsaw button, click on
+                    Fatebook for Chrome, and accept additional permissions.
+                  </b>
+                </p>
+              )}
 
               <p>
                 Try <Link href="https://doc.new">creating a Google Doc</Link>{" "}

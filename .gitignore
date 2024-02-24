@@ -12,7 +12,7 @@ out
 
 *.code-workspace
 
-extension.zip
+extension*.zip
 
 localhost-key.pem
 localhost.pem

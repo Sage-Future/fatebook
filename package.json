@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "studio": "prisma studio",
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios",
-    "zip": "zip -r extension chrome-extension"
+    "zip": "echo \"have you set isDev=false and incremented version num?\" && bash zip-extensions.sh"
   },
   "git": {
     "pre-commit": [

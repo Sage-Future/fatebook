@@ -1,15 +1,15 @@
 ;(async () => {
-  importScripts("sentry-background.js")
+  // importScripts("sentry-background.js")
 
   const extensionInstanceId = uuidv4()
 
-  Sentry.init({
-    dsn: "https://032132527a4f59861f03150a5b6facfc@o4505800000471040.ingest.sentry.io/4505800011218944",
-    tracesSampleRate: 0,
-    integrations: [],
-  })
+  // Sentry.init({
+  //   dsn: "https://032132527a4f59861f03150a5b6facfc@o4505800000471040.ingest.sentry.io/4505800011218944",
+  //   tracesSampleRate: 0,
+  //   integrations: [],
+  // })
 
-  Sentry.setTag("extension_instance", extensionInstanceId)
+  // Sentry.setTag("extension_instance", extensionInstanceId)
 
   // Provide extension info to content scripts on load
   const extensionInfo = await chrome.management.getSelf()
@@ -24,23 +24,28 @@
         extensionInstanceId,
       })
     } catch (e) {
-      Sentry.captureException(e)
+      // Sentry.captureException(e)
       console.log(e)
     }
   })
 
   function openModal() {
     console.log("opening modal")
+
+    chrome.permissions.request(
+      {
+        origins: ["https://*/*", "http://*/*"],
+      },
+      (granted) => {
+        if (granted) console.log("granted!")
+        else new Error("Permission request denied")
+      },
+    )
     chrome.tabs.query(
       { active: true, currentWindow: true },
       async function (tabs) {
         const activeTab = tabs[0]
-        if (
-          !activeTab.id ||
-          (activeTab.url?.includes("fatebook.io") &&
-            !activeTab.url?.includes("/extension"))
-        )
-          return
+        if (!activeTab.id) return
 
         try {
           console.log("sending open modal request")
@@ -50,7 +55,7 @@
             requestReload()
           } else {
             console.log(e.stack ? e.stack : e)
-            Sentry.captureException(e)
+            // Sentry.captureException(e)
           }
         }
       },
@@ -75,7 +80,7 @@
           })
         } catch (e) {
           console.log(e.stack ? e.stack : e)
-          Sentry.captureException(e)
+          // Sentry.captureException(e)
         }
 
         // try {

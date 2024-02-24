@@ -2,7 +2,7 @@
   "name": "Fatebook for Chrome",
   "description": "The fastest way to make and track predictions",
   "homepage_url": "https://fatebook.io/",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "manifest_version": 3,
   "action": {
     "default_title": "Click to make a prediction",
@@ -11,6 +11,11 @@
       "32": "scale32.png",
       "48": "scale48.png",
       "128": "scale128.png"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "extension@fatebook.io"
     }
   },
 
@@ -40,14 +45,12 @@
     }
   ],
 
-  "externally_connectable": {
-    "matches": ["https://*/*", "http://*/*"]
-  },
+  "externally_connectable": { "matches": ["https://*/*", "http://*/*"] },
 
   "content_scripts": [
     {
       "run_at": "document_idle",
-      "js": ["sentry-content-script.js", "after.js"],
+      "js": ["after.js"],
       "css": ["style.css"],
       "matches": ["https://*/*", "http://*/*"]
     }
@@ -56,5 +59,6 @@
     "service_worker": "background.js"
   },
   "permissions": ["tabs", "scripting"],
-  "host_permissions": ["https://*/*", "http://*/*"]
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "optional_permissions": ["https://*/*", "http://*/*"]
 }
