@@ -1,4 +1,3 @@
-console.log("after.js!")
 ;(async function () {
   // ==== Get extension info ====
   const extensionInfo = await new Promise((resolve) => {
@@ -13,18 +12,7 @@ console.log("after.js!")
       }
     })
   })
-  console.log("startup!")
 
-  // Sentry.init({
-  //   dsn: "https://032132527a4f59861f03150a5b6facfc@o4505800000471040.ingest.sentry.io/4505800011218944",
-  //   environment: extensionInfo.isDev ? "development" : "production",
-  //   integrations: [],
-  //   tracesSampleRate: 0,
-  // })
-
-  // Sentry.setTag("extension_instance", extensionInfo.extensionInstanceId)
-
-  // Sentry.wrap(() => {
   extensionInfo.isDev = false
   const FATEBOOK_HOST = extensionInfo.isDev ? "localhost:3000" : "fatebook.io"
   const FATEBOOK_URL = extensionInfo.isDev
@@ -80,7 +68,6 @@ console.log("after.js!")
   }
 
   window.addEventListener("message", (event) => {
-    // Sentry.wrap(() => {
     if (
       typeof event.data !== "object" ||
       !event.data.isFatebook ||
@@ -103,12 +90,10 @@ console.log("after.js!")
         new CustomEvent(event.data.action, { detail: event.data }),
       )
     }
-    // })
   })
 
   // ==== Listen for messages from extension background script ====
   chrome.runtime.onMessage.addListener(function (request) {
-    // Sentry.wrap(() => {
     extensionInfo?.isDev &&
       console.log(`received backend request ${request.action}`)
     if (request.action === "open_modal") {
@@ -128,7 +113,6 @@ console.log("after.js!")
     } else {
       throw new Error(`unknown action "${request.action}"`)
     }
-    // })
   })
 
   async function pingIframe(iframe) {
@@ -158,7 +142,6 @@ console.log("after.js!")
       }
     } catch (e) {
       console.log(e)
-      // Sentry.captureException(e)
     }
   }
 
@@ -445,12 +428,10 @@ console.log("after.js!")
         document.querySelector(".kix-appview-editor") || // google docs
         document.querySelector(".docs-gm") // google sheets
       if (!kixEditor) {
-        // Sentry.captureException(
         console.error(
           "Fatebook for Chrome: could not find kixEditor element in Google Doc page",
         )
         throw new Error("could not find kixEditor element in gdoc page")
-        // )
       }
 
       const reactToChange = (mutationList, observer) => {

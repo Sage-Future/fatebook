@@ -1,15 +1,5 @@
 ;(async () => {
-  // importScripts("sentry-background.js")
-
   const extensionInstanceId = uuidv4()
-
-  // Sentry.init({
-  //   dsn: "https://032132527a4f59861f03150a5b6facfc@o4505800000471040.ingest.sentry.io/4505800011218944",
-  //   tracesSampleRate: 0,
-  //   integrations: [],
-  // })
-
-  // Sentry.setTag("extension_instance", extensionInstanceId)
 
   // Provide extension info to content scripts on load
   const extensionInfo = await chrome.management.getSelf()
@@ -24,7 +14,6 @@
         extensionInstanceId,
       })
     } catch (e) {
-      // Sentry.captureException(e)
       console.log(e)
     }
   })
@@ -55,7 +44,6 @@
             requestReload()
           } else {
             console.log(e.stack ? e.stack : e)
-            // Sentry.captureException(e)
           }
         }
       },
@@ -80,7 +68,6 @@
           })
         } catch (e) {
           console.log(e.stack ? e.stack : e)
-          // Sentry.captureException(e)
         }
 
         // try {
@@ -102,7 +89,6 @@
         //   }
         // } catch (e) {
         //   console.log(e.stack ? e.stack : e)
-        //   Sentry.captureException(e)
         // }
       },
     )
