@@ -10,7 +10,7 @@ zip -r extension-chrome.zip chrome-extension
 cp chrome-extension/manifest.json tmp_manifest_backup.json
 
 # Prepare and zip the Firefox extension
-jq 'del(.externally_connectable) | .background |= {scripts: ["background.js"]} | .name |= "Fatebook for Firefox"' chrome-extension/manifest.json > chrome-extension/manifest_temp.json && mv chrome-extension/manifest_temp.json chrome-extension/manifest.json
+jq 'del(.externally_connectable) | .background |= {scripts: ["background.js"]} | .name |= "Fatebook for Firefox" | .browser_specific_settings.gecko.id = "extension@fatebook.io" | .optional_permissions += ["https://*/*", "http://*/*"]' chrome-extension/manifest.json > chrome-extension/manifest_temp.json && mv chrome-extension/manifest_temp.json chrome-extension/manifest.json
 cd chrome-extension && zip -r ../extension-firefox.zip * && cd ..
 
 # Restore the original manifest.json to clean up

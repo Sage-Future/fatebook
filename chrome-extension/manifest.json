@@ -13,12 +13,6 @@
       "128": "scale128.png"
     }
   },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "extension@fatebook.io"
-    }
-  },
-
   "icons": {
     "16": "scale16.png",
     "32": "scale32.png",
@@ -59,6 +53,5 @@
     "service_worker": "background.js"
   },
   "permissions": ["tabs", "scripting"],
-  "host_permissions": ["https://*/*", "http://*/*"],
-  "optional_permissions": ["https://*/*", "http://*/*"]
+  "host_permissions": ["https://*/*", "http://*/*"]
 }

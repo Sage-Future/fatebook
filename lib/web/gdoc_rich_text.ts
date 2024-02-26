@@ -787,15 +787,9 @@ export function makeClipboardHtmlLink({
   const pasteString = makeLinkText({ text, name, prediction })
 
   const html = `
-    <html>
-    <body>
-      <!--StartFragment-->
-      <meta charset="utf-8">
-      <b style="font-weight:normal;"><a href="${url}" style="text-decoration:none;"><span
-            style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:#d1d3d5;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">${pasteString}</span></a></b>
-      <!--EndFragment-->
-    </body>
-    </html>`
+    <meta charset='utf-8'>
+    <b style="font-weight:normal;"><a href="${url}" style="text-decoration:none;"><span
+      style="font-size:11pt;font-family:Arial,sans-serif;color:#000000;background-color:#d1d3d5;font-weight:400;font-style:normal;font-variant:normal;text-decoration:none;vertical-align:baseline;white-space:pre;white-space:pre-wrap;">${pasteString}</span></a></b>`
 
   return { "text/html": html }
 }

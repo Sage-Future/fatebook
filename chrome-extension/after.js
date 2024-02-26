@@ -13,7 +13,7 @@
     })
   })
 
-  extensionInfo.isDev = false
+  extensionInfo.isDev = true // TODO revert
   const FATEBOOK_HOST = extensionInfo.isDev ? "localhost:3000" : "fatebook.io"
   const FATEBOOK_URL = extensionInfo.isDev
     ? "https://localhost:3000/"
