@@ -44,6 +44,16 @@ export async function getStaticProps() {
           absoluteScore: true,
           createdAt: true,
           userId: true,
+          question: {
+            select: {
+              forecasts: {
+                select: {
+                  userId: true,
+                  createdAt: true,
+                },
+              },
+            },
+          },
         },
       },
       comments: {
@@ -125,7 +135,22 @@ export async function getStaticProps() {
   forecasts.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 
   const questionScores = questions.flatMap((q) => q.questionScores)
-  questionScores.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+
+  // sort questionScores by that userId's average forecast time on that question
+  questionScores.sort((a, b) => {
+    const aAvgTime = mean(
+      a.question.forecasts
+        .filter((f) => f.userId === a.userId)
+        .map((f) => f.createdAt.getTime()),
+    )
+    const bAvgTime = mean(
+      b.question.forecasts
+        .filter((f) => f.userId === b.userId)
+        .map((f) => f.createdAt.getTime()),
+    )
+    return aAvgTime - bAvgTime
+  })
+
   const questionScoresByUser = Object.values(
     questionScores.reduce(
       (acc, score) => {
@@ -137,9 +162,6 @@ export async function getStaticProps() {
       },
       {} as { [userId: string]: (typeof questionScores)[0][] },
     ),
-  )
-  Object.values(questionScoresByUser).forEach((scores) =>
-    scores.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
   )
 
   const users = await prisma.user.findMany({
