@@ -191,7 +191,7 @@ export async function getStaticProps() {
     },
   })
 
-  const accuracyN = 30
+  const accuracyN = 20
 
   const stats: Stats[] = [
     {
@@ -592,7 +592,14 @@ export default function GlobalStatsPage({
                             data={bin()
                               .thresholds(chart.thresholds)(chart.data)
                               .map((bin) => ({
-                                name: bin.x0 + "-" + bin.x1,
+                                name:
+                                  bin.x0 !== undefined && bin.x0 + 1 === bin.x1
+                                    ? bin.x0
+                                    : bin.x0 +
+                                      "-" +
+                                      (bin.x1 !== undefined
+                                        ? bin.x1 - 1
+                                        : bin.x1),
                                 value: bin.length,
                               }))}
                             margin={{
