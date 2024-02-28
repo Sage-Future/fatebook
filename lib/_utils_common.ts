@@ -340,3 +340,22 @@ export function filterToUniqueIds(arr: { id: any }[]) {
   )
   return uniqueArray
 }
+
+export function sum(arr: number[]) {
+  return arr.reduce((acc, curr) => acc + curr, 0)
+}
+
+export function mean(arr: number[]) {
+  return sum(arr) / arr.length
+}
+
+// for convenient debugging
+export function truthyLog(message: any) {
+  console.log(message)
+  return true as true
+}
+
+export function logAndReturn<T>(message: T) {
+  console.log(message)
+  return message
+}
