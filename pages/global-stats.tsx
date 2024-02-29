@@ -130,6 +130,39 @@ export async function getStaticProps() {
         }),
     )
   }
+  function activeUsersToRetention(
+    activeUsers: Record<string, Set<string>>,
+    windowSize: number,
+    prevWindowOffsetFromToday: number,
+  ) {
+    return Object.fromEntries(
+      Object.entries(activeUsers)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, users], index, arr) => {
+          const activeUsersInWindow = new Set(users)
+          for (let i = Math.max(0, index - windowSize + 1); i <= index; i++) {
+            arr[i][1].forEach((user) => activeUsersInWindow.add(user))
+          }
+
+          const activeUsersInPrevWindow = new Set<string>()
+          for (
+            let i = Math.max(0, index - windowSize - prevWindowOffsetFromToday);
+            i <= index - prevWindowOffsetFromToday;
+            i++
+          ) {
+            arr[i][1].forEach((user) => activeUsersInPrevWindow.add(user))
+          }
+
+          // current users that were previously active too
+          const retainedUsers = Array.from(activeUsersInWindow).filter((user) =>
+            activeUsersInPrevWindow.has(user),
+          )
+          const retentionRate =
+            retainedUsers.length / activeUsersInPrevWindow.size
+          return [date, retentionRate]
+        }),
+    )
+  }
 
   const forecasts = questions.flatMap((q) => q.forecasts)
   forecasts.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
@@ -221,6 +254,26 @@ export async function getStaticProps() {
           type: "line over time",
           title: "Monthly active users",
           data: activeUsersToData(getActiveUsersByDay(questions), 31),
+          hideRollingAvg: true,
+        },
+        {
+          type: "line over time",
+          title:
+            "1 day retention: What proportion of each day's active users are active the following day?",
+          data: activeUsersToRetention(getActiveUsersByDay(questions), 1, 1),
+        },
+        {
+          type: "line over time",
+          title:
+            "7 day retention: What proportion of each week's active users are active in the following week?",
+          data: activeUsersToRetention(getActiveUsersByDay(questions), 7, 7),
+          hideRollingAvg: true,
+        },
+        {
+          type: "line over time",
+          title:
+            "30 day retention: What proportion of each month's active users are active in the following month?",
+          data: activeUsersToRetention(getActiveUsersByDay(questions), 30, 30),
           hideRollingAvg: true,
         },
         graphCreatedAt("Questions created", questions),
@@ -692,7 +745,7 @@ function getDateData(data: Record<string, number>) {
     dateArray.push({
       date: getDateYYYYMMDD(new Date(dt)),
       value,
-      "Rolling average": round(rollingAverage ?? 0, 1),
+      "Rolling average": round(rollingAverage ?? 0, 2),
     })
   }
 
