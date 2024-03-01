@@ -15,6 +15,7 @@ import {
   webFeedbackUrl,
 } from "../lib/web/utils"
 import Footer from "./Footer"
+import NotificationsPopover from "./NotificationsPopover"
 
 export function Navbar({
   // eslint-disable-next-line no-unused-vars
@@ -123,11 +124,14 @@ export function Navbar({
           </label>
           <ul
             tabIndex={0}
-            className="dropdown-content z-[9999] menu p-2 shadow bg-base-100 rounded-box w-64 "
+            className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64 "
           >
             {moreMenuItems}
           </ul>
         </div>
+      </li>
+      <li className="hidden lg:block">
+        <NotificationsPopover />
       </li>
     </>
   )

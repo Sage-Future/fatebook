@@ -3,9 +3,9 @@ import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
 import { Tournaments } from "../components/Tournaments"
 import { TrackRecord } from "../components/TrackRecord"
+import { UserLists } from "../components/UserLists"
 import { WhyForecastInfo } from "../components/WhyForecastInfo"
 import { useUserId } from "../lib/web/utils"
-import { UserLists } from "../components/UserLists"
 
 export default function HomePage() {
   const { status: sessionStatus } = useSession()

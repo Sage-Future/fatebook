@@ -1,10 +1,10 @@
-import { ChartBarIcon, HomeIcon } from "@heroicons/react/24/solid"
+import { BellIcon, ChartBarIcon, HomeIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"
+import { useUserId } from "../lib/web/utils"
 import Footer from "./Footer"
 import { Navbar } from "./Navbar"
-import { useUserId } from "../lib/web/utils"
 
 export function Layout({
   children,
@@ -51,11 +51,16 @@ function BottomNav() {
   // only show when logged in
   if (!userId) return <></>
 
-  // only show on homepage and stats page
-  if (router.pathname !== "/" && router.pathname !== "/stats") return <></>
+  // only show on these pages
+  if (
+    router.pathname !== "/" &&
+    router.pathname !== "/stats" &&
+    router.pathname !== "/notifications"
+  )
+    return <></>
 
   return (
-    <div className="btm-nav z-[500] lg:hidden">
+    <div className="btm-nav ring-1 ring-neutral-100 z-[500] lg:hidden">
       {[
         {
           path: "/",
@@ -66,6 +71,11 @@ function BottomNav() {
           path: "/stats",
           title: "Stats",
           icon: <ChartBarIcon width={24} />,
+        },
+        {
+          path: "/notifications",
+          title: "Notifications",
+          icon: <BellIcon width={24} />,
         },
       ].map(({ path, icon, title }) => (
         <button

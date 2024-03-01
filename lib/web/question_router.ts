@@ -687,7 +687,7 @@ export const questionRouter = router({
           }"`,
           content: `${
             submittedForecast.user.name || "Someone"
-          } predicted on ${getMarkdownLinkQuestionTitle(q)}.`,
+          } predicted on ${getMarkdownLinkQuestionTitle(q)}`,
           tags: ["new_forecast", q.id],
           url: getQuestionUrl(q),
         })

@@ -190,21 +190,71 @@ export const appRouter = router({
         : undefined
     }),
 
-  getUserNotifications: publicProcedure.query(({ ctx }) => {
-    if (!ctx.userId) {
-      return null
-    }
+  getUserNotifications: publicProcedure
+    .input(
+      z.object({
+        cursor: z.number(),
+        limit: z.number().min(1).nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      if (!ctx.userId) {
+        return null
+      }
 
-    return prisma.notification.findMany({
-      where: {
-        userId: ctx.userId,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 20,
-    })
-  }),
+      const skip = input.cursor
+      const limit = input.limit ?? 20
+      const notifications = await prisma.notification.findMany({
+        where: {
+          userId: ctx.userId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit + 1, // fetch an extra item to check for next page
+        skip: skip,
+      })
+
+      return {
+        items: notifications,
+        nextCursor: notifications.length > limit ? skip + limit : undefined,
+      }
+    }),
+
+  markNotificationRead: publicProcedure
+    .input(
+      z.object({
+        notificationId: z.string().optional(),
+        allNotifications: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        return
+      }
+
+      if (input.allNotifications) {
+        await prisma.notification.updateMany({
+          where: {
+            userId: ctx.userId,
+            read: false,
+          },
+          data: {
+            read: true,
+          },
+        })
+      } else if (input.notificationId) {
+        await prisma.notification.update({
+          where: {
+            id: input.notificationId,
+            userId: ctx.userId,
+          },
+          data: {
+            read: true,
+          },
+        })
+      }
+    }),
 })
 
 export type AppRouter = typeof appRouter
