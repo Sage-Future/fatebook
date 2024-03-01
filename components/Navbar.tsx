@@ -27,6 +27,7 @@ export function Navbar({
   showCreateAccountButton?: boolean
   children: ReactNode
 }) {
+  const userId = useUserId()
   const exportData = api.question.exportAllQuestions.useMutation({
     onSuccess(data) {
       if (!data || data === "") {
@@ -130,9 +131,11 @@ export function Navbar({
           </ul>
         </div>
       </li>
-      <li className="hidden lg:block">
-        <NotificationsPopover />
-      </li>
+      {userId && (
+        <li className="hidden lg:block">
+          <NotificationsPopover />
+        </li>
+      )}
     </>
   )
 
