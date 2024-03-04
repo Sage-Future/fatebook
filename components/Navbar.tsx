@@ -11,6 +11,7 @@ import { api } from "../lib/web/trpc"
 import {
   downloadBlob,
   signInToFatebook,
+  useFatebookForChrome,
   useUserId,
   webFeedbackUrl,
 } from "../lib/web/utils"
@@ -38,6 +39,8 @@ export function Navbar({
     },
   })
 
+  const fatebookForChrome = useFatebookForChrome()
+
   const moreMenuItems = (
     <>
       <li>
@@ -56,7 +59,7 @@ export function Navbar({
         Integrations
       </li>
       <li>
-        <Link href="/extension">Fatebook for Chrome</Link>
+        <Link href="/extension">{fatebookForChrome}</Link>
       </li>
       <li>
         <Link href="/for-slack">Fatebook for Slack</Link>
@@ -108,7 +111,7 @@ export function Navbar({
       {/* {showForSlackButton && ( */}
       <li>
         <Link href="/extension">
-          Fatebook for Chrome <NewDot />
+          {fatebookForChrome} <NewDot />
         </Link>
       </li>
       {/* )} */}

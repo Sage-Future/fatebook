@@ -313,6 +313,8 @@
       )
     ).json()
 
+    if (!questionDetails || !questionDetails?.title) return // 404 or something else went wrong
+
     if (link.innerText === href) {
       let pasteString = `⚖ ${questionDetails?.title || href}`
       if (questionDetails.prediction)

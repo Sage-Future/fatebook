@@ -2,7 +2,7 @@ import { Question, Tournament, User, UserList } from "@prisma/client"
 import { utcToZonedTime } from "date-fns-tz"
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
-import React, { ReactNode } from "react"
+import { Fragment, ReactNode, useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { QuestionWithForecasts } from "../../prisma/additional"
 import { getQuestionUrl } from "./question_url"
@@ -231,7 +231,7 @@ export function downloadBlob(
 
 export function transitionProps() {
   return {
-    as: React.Fragment,
+    as: Fragment,
     className: "z-10",
     enter: "transition ease-out duration-100",
     enterFrom: "transform opacity-0 scale-98 translate-y-[-0.5rem]",
@@ -350,4 +350,37 @@ export function searchMatches(
   return words.every((word) =>
     question.title.toLowerCase().includes(word.toLowerCase()),
   )
+}
+
+export function useBrowser() {
+  const [browser, setBrowser] = useState<
+    "Chrome" | "Arc" | "Firefox" | "Brave" | "Edge"
+  >("Chrome")
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--arc-palette-background",
+        )
+      ) {
+        setBrowser("Arc")
+      }
+    }, 1000)
+    if (navigator.userAgent.includes("Firefox")) {
+      setBrowser("Firefox")
+    } else if (navigator.userAgent.includes("Edg/")) {
+      setBrowser("Edge")
+    }
+    if ((navigator as any).brave && (navigator as any).brave.isBrave()) {
+      setBrowser("Brave")
+    }
+  }, [setBrowser])
+
+  return browser
+}
+
+export function useFatebookForChrome() {
+  const browser = useBrowser()
+  return `Fatebook for ${browser}`
 }
