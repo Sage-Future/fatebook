@@ -470,7 +470,7 @@ export async function getStaticProps() {
       trpcState: helpers.dehydrate(),
       lastUpdated: new Date().toISOString(),
     },
-    revalidate: 86400, // 24 hours
+    revalidate: 3600,
   }
 }
 
@@ -697,7 +697,7 @@ export default function GlobalStatsPage({
               tournaments
             </li>
             <li>
-              Data is updated every 24 hours. Last updated:{" "}
+              Data last updated:{" "}
               <FormattedDate
                 className="font-semibold"
                 date={new Date(lastUpdated)}
