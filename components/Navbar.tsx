@@ -125,7 +125,10 @@ export function Navbar({
           </label>
           <ul
             tabIndex={0}
-            className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64 "
+            className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
+            onClick={() => {
+              ;(document.activeElement as HTMLElement)?.blur()
+            }}
           >
             {moreMenuItems}
           </ul>
