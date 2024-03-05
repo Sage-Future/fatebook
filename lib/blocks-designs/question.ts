@@ -167,7 +167,7 @@ function makeForecastListing(
       hideForecasts
         ? question.hideForecastsUntil
           ? `_Forecasts are hidden until ${getDateSlackFormat(
-              question.hideForecastsUntil!,
+              question.hideForecastsUntil,
               false,
               "date_short_pretty",
             )}_`
@@ -256,13 +256,13 @@ async function makeResolvedQuestionListing(
     },
   })
 
-  if (hideForecasts) {
+  if (hideForecasts && question.hideForecastsUntil) {
     return [
       {
         type: "section",
         text: markdownBlock(
           `_Forecasts and scores are hidden until ${getDateSlackFormat(
-            question.hideForecastsUntil!,
+            question.hideForecastsUntil,
             false,
             "date_short_pretty",
           )}_`,

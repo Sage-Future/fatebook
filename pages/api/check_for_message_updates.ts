@@ -311,7 +311,9 @@ async function updateQuestionsToUnhideForecasts() {
   const questionsToBeUpdated = questionsToCheck.filter(
     (question) =>
       question.questionMessages.filter(
-        (qm) => qm.updatedAt < question.hideForecastsUntil!,
+        (qm) =>
+          question.hideForecastsUntil &&
+          qm.updatedAt < question.hideForecastsUntil,
       ).length > 0,
   )
 
