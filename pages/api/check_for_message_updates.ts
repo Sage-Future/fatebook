@@ -10,6 +10,7 @@ import prisma, {
 import { buildResolveQuestionBlocks } from "../../lib/blocks-designs/resolve_question"
 import { buildStaleForecastsReminderBlock } from "../../lib/blocks-designs/stale_forecasts"
 import { buildTargetNotification } from "../../lib/blocks-designs/target_setting"
+import { sendWelcomeEmail } from "../../lib/web/drip_emails"
 import {
   fatebookEmailFooter,
   sendEmailUnbatched,
@@ -515,6 +516,22 @@ async function sendSlackstaleForecastNotification(
   )
 }
 
+async function sendWelcomeEmailToNewUsers() {
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const newUsers = await prisma.user.findMany({
+    where: {
+      createdAt: {
+        gt: twentyFourHoursAgo,
+      },
+      unsubscribedFromEmailsAt: null,
+    },
+  })
+  console.log(`Sending welcome email to ${newUsers.length} new users`)
+  for (const user of newUsers) {
+    await sendWelcomeEmail(user)
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (
     ((process.env.NODE_ENV === "development" ||
@@ -551,6 +568,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   try {
     staleForecastMessages = await messageStaleForecasts()
+  } catch (e) {
+    console.error(e)
+  }
+  try {
+    await sendWelcomeEmailToNewUsers()
   } catch (e) {
     console.error(e)
   }
