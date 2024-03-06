@@ -102,11 +102,13 @@ export async function sendEmailUnbatched({
   htmlBody,
   textBody,
   to,
+  log = true,
 }: {
   subject: string
   htmlBody: string
   textBody: string
   to: string
+  log?: boolean
 }) {
   const user = await prisma.user.findUnique({
     where: {
@@ -114,11 +116,11 @@ export async function sendEmailUnbatched({
     },
   })
   if (user?.unsubscribedFromEmailsAt) {
-    console.log(`Not sending email to ${to} because they unsubscribed`)
+    log && console.log(`Not sending email to ${to} because they unsubscribed`)
     return
   }
 
-  console.log("Sending email...")
+  log && console.log("Sending email...")
   const client = new ServerClient(postmarkApiToken)
   const response = await client.sendEmail({
     From: "reminders@fatebook.io",
@@ -131,9 +133,9 @@ export async function sendEmailUnbatched({
   })
 
   if (response.ErrorCode) {
-    console.error(`Error sending email: ${JSON.stringify(response)}`)
+    log && console.error(`Error sending email: ${JSON.stringify(response)}`)
   } else {
-    console.log(`Sent email to ${to} with subject: ${subject}`)
+    log && console.log(`Sent email to ${to} with subject: ${subject}`)
     await backendAnalyticsEvent("email_sent", { platform: "web" })
   }
 }
