@@ -14,7 +14,7 @@ export default async function logDrain(
   const ignoreIfIncludes = ["oauth_callback_error state cookie was missing"]
 
   for (const log of req.body) {
-    console.log({ log })
+    // console.log({ log })
     if (log?.message) {
       if (
         triggers.some((trigger) =>
@@ -24,7 +24,7 @@ export default async function logDrain(
           (log?.message as string).toLowerCase().includes(ignore),
         )
       ) {
-        console.log("sending email")
+        // console.log("sending email")
         await sendEmailUnbatched({
           subject: `Fatebook log drain: error`,
           htmlBody: `<p><pre>Message: ${log?.message}</pre></p>\n\n<p><pre>${JSON.stringify(
@@ -37,9 +37,10 @@ export default async function logDrain(
           log: false,
         })
       }
-    } else {
-      console.warn("no message")
     }
+    // } else {
+    // console.warn("no message")
+    // }
   }
 
   res.setHeader("x-vercel-verify", "cca3372a201087e19bcb9bf245e7dc741541e2f7")
