@@ -353,4 +353,65 @@ export const userListRouter = router({
 
       return userList.id
     }),
+
+  leave: publicProcedure
+    .input(
+      z.object({
+        listId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to leave a team",
+        })
+      }
+
+      const userList = await prisma.userList.findUnique({
+        where: {
+          id: input.listId,
+        },
+        include: {
+          users: true,
+        },
+      })
+
+      if (!userList) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Team not found" })
+      }
+
+      if (!userList.users.some((user) => user.id === ctx.userId)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You are not a member of this team",
+        })
+      }
+
+      if (userList.authorId === ctx.userId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You can't leave a team you created - delete it instead",
+        })
+      }
+
+      await prisma.userList.update({
+        where: {
+          id: input.listId,
+        },
+        data: {
+          users: {
+            disconnect: {
+              id: ctx.userId,
+            },
+          },
+        },
+      })
+
+      await backendAnalyticsEvent("leave_user_list", {
+        user: ctx.userId,
+        platform: "web",
+        listId: input.listId,
+      })
+    }),
 })

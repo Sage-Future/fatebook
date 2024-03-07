@@ -1,4 +1,9 @@
-import { CheckIcon, PencilIcon, TrashIcon } from "@heroicons/react/20/solid"
+import {
+  ArrowRightStartOnRectangleIcon,
+  CheckIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/20/solid"
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import Link from "next/link"
@@ -32,6 +37,12 @@ export function UserListDisplay({
   })
   const [isEditing, setIsEditing] = useState(false)
   const deleteList = api.userList.deleteList.useMutation({
+    async onSettled() {
+      await utils.userList.getUserLists.invalidate()
+      await utils.userList.get.invalidate()
+    },
+  })
+  const leaveList = api.userList.leave.useMutation({
     async onSettled() {
       await utils.userList.getUserLists.invalidate()
       await utils.userList.get.invalidate()
@@ -153,21 +164,38 @@ export function UserListDisplay({
                 )}
               </button>
             )}
-            <button
-              type="button"
-              className="btn btn-ghost btn-circle btn-xs disabled:bg-white"
-              onClick={(e) => {
-                e.stopPropagation()
-                e.preventDefault()
-                confirm(
-                  `Are you sure you want to delete '${userList.name}'?`,
-                ) && deleteList.mutate({ listId: userList.id })
-                onDelete && onDelete()
-              }}
-              disabled={userList.authorId !== userId || isEditing}
-            >
-              <TrashIcon className="w-4 h-4" />
-            </button>
+            {userList.authorId === userId ? (
+              <button
+                type="button"
+                className="btn btn-ghost btn-circle btn-xs disabled:bg-white"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  confirm(
+                    `Are you sure you want to delete '${userList.name}'?`,
+                  ) && deleteList.mutate({ listId: userList.id })
+                  onDelete && onDelete()
+                }}
+                disabled={userList.authorId !== userId || isEditing}
+              >
+                <TrashIcon className="w-4 h-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-ghost btn-circle btn-xs disabled:bg-white"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  confirm(
+                    `Are you sure you want to leave '${userList.name}'?`,
+                  ) && leaveList.mutate({ listId: userList.id })
+                  onDelete && onDelete()
+                }}
+              >
+                <ArrowRightStartOnRectangleIcon className="w-4 h-4" />
+              </button>
+            )}
           </div>
         )}
       </span>
