@@ -9,6 +9,7 @@ out
 *debugAdam.ts
 *debug/
 *exportContacts.ts
+.eslintcache
 
 *.code-workspace
 
