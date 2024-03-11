@@ -21,11 +21,6 @@ export default function Meta() {
             height: 686,
             alt: "",
           },
-          {
-            url: "https://fatebook.io/mclean.png",
-            width: 800,
-            height: 533,
-          },
         ],
       }}
       additionalLinkTags={[
