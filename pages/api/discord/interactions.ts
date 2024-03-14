@@ -56,8 +56,8 @@ async function createForecast(
   const title = req.body.data.options?.[0]?.value
   const resolveByStr = req.body.data.options?.[1]?.value
   const prediction = req.body.data.options?.[2]?.value as number
-
-  const youSaid = `\nYou said: /forecast ${title} ${resolveByStr} ${prediction}`
+  const shareWithLists = req.body.data.options?.[3]?.value as string[] || []
+  const youSaid = `\nYou said: /forecast ${title} ${resolveByStr} ${prediction} ${shareWithLists.join(" ")}`
 
   if (!title || !resolveByStr || prediction == undefined) {
     return sendDiscordEphemeral(
@@ -99,6 +99,7 @@ async function createForecast(
       },
       sharedPublicly: true, // so that other people in discord can see it
       unlisted: true,
+      shareWithLists: shareWithLists.join(","),
     },
     include: {
       forecasts: true,
