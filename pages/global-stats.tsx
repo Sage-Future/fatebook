@@ -1,5 +1,4 @@
 import { Resolution } from "@prisma/client"
-import { createServerSideHelpers } from "@trpc/react-query/server"
 import { bin } from "d3-array"
 import { InferGetServerSidePropsType } from "next"
 import { NextSeo } from "next-seo"
@@ -16,20 +15,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import superjson from "superjson"
 import { FormattedDate } from "../components/FormattedDate"
 import { getDateYYYYMMDD, mean, round } from "../lib/_utils_common"
 import prisma from "../lib/_utils_server"
-import { appRouter } from "../lib/web/app_router"
 import { getCsvIdPrefix, getPredictionBookIdPrefix } from "../lib/web/utils"
 
 export async function getStaticProps() {
-  const helpers = createServerSideHelpers({
-    router: appRouter,
-    ctx: { session: null, userId: undefined },
-    transformer: superjson,
-  })
-
   const questions = await prisma.question.findMany({
     select: {
       id: true,
@@ -467,7 +458,6 @@ export async function getStaticProps() {
   return {
     props: {
       stats,
-      trpcState: helpers.dehydrate(),
       lastUpdated: new Date().toISOString(),
     },
     revalidate: 3600,
