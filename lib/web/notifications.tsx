@@ -134,8 +134,15 @@ export async function sendEmailUnbatched({
       MessageStream: "outbound",
     })
   } catch (error: any) {
-    if (error.message.includes("InactiveRecipientsError")) {
-      log && console.warn(`Warning: Attempted to send to inactive recipient(s). Details: ${error.message}`)
+    if (
+      error.message.includes(
+        "You tried to send to recipient(s) that have been marked as inactive.",
+      )
+    ) {
+      log &&
+        console.warn(
+          `Warning: Attempted to send to inactive recipient(s). Continuing...`,
+        )
     } else {
       throw error
     }
