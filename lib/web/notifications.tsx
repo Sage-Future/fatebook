@@ -122,17 +122,26 @@ export async function sendEmailUnbatched({
 
   log && console.log("Sending email...")
   const client = new ServerClient(postmarkApiToken)
-  const response = await client.sendEmail({
-    From: "reminders@fatebook.io",
-    ReplyTo: "hello@sage-future.org",
-    To: to,
-    Subject: subject,
-    HtmlBody: htmlBody,
-    TextBody: textBody,
-    MessageStream: "outbound",
-  })
+  let response
+  try {
+    response = await client.sendEmail({
+      From: "reminders@fatebook.io",
+      ReplyTo: "hello@sage-future.org",
+      To: to,
+      Subject: subject,
+      HtmlBody: htmlBody,
+      TextBody: textBody,
+      MessageStream: "outbound",
+    })
+  } catch (error: any) {
+    if (error.message.includes("InactiveRecipientsError")) {
+      log && console.warn(`Warning: Attempted to send to inactive recipient(s). Details: ${error.message}`)
+    } else {
+      throw error
+    }
+  }
 
-  if (response.ErrorCode) {
+  if (response?.ErrorCode) {
     log && console.error(`Error sending email: ${JSON.stringify(response)}`)
   } else {
     log && console.log(`Sent email to ${to} with subject: ${subject}`)
