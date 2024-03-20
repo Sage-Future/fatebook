@@ -25,7 +25,7 @@ export async function questionsToCsv(
 
       return {
         "Question title": question?.title,
-        "Forecast created by": f.user.name,
+        "Forecast created by": f.user?.name,
         "Forecast (scale = 0-1)": f.forecast,
         "Forecast created at": f.createdAt,
         "Question created by": question?.user?.name,
@@ -38,11 +38,11 @@ export async function questionsToCsv(
           questionScore?.relativeScore,
         "Question notes": question?.notes,
         "Question shared with": question?.sharedWith
-          ?.map((u) => u.name)
+          ?.map((u) => u?.name)
           .join("; "),
         "Question shared publicly": question?.sharedPublicly,
         "Question comments": question?.comments
-          ?.map((c) => `${c.user.name}: ${c.comment}`)
+          ?.map((c) => `${c.user?.name}: ${c.comment}`)
           .join("; "),
       }
     }),
