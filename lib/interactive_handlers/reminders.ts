@@ -1,4 +1,5 @@
-import prisma, {
+import { slackAppId } from "../_constants"
+import {
   backendAnalyticsEvent,
   dateToDayEnum,
   getCurrentTargetProgress,
@@ -16,13 +17,13 @@ import {
   SetTargetActionParts,
   TargetTriggerActionParts,
 } from "../blocks-designs/_block_utils"
-import { slackAppId } from "../_constants"
 import {
   buildConfirmTarget,
   buildTargetAdjust,
   buildTargetNotificationText,
   buildTargetSet,
 } from "../blocks-designs/target_setting"
+import prisma from "../prisma"
 import { refreshUserAppHome } from "./app_home"
 
 export async function buttonTriggerTargetSet(

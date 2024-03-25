@@ -1,10 +1,4 @@
-import {
-  DayOfTheWeek,
-  PrismaClient,
-  SlackMessage,
-  Target,
-  TargetType,
-} from "@prisma/client"
+import { DayOfTheWeek, SlackMessage, Target, TargetType } from "@prisma/client"
 import { ModalView } from "@slack/types"
 import fetch from "node-fetch"
 import {
@@ -23,22 +17,7 @@ import { buildResolveQuestionBlocks } from "./blocks-designs/resolve_question"
 import { TEST_WORKSPACES } from "./_constants"
 import { conciseDateTime, unixTimestamp } from "./_utils_common"
 import { Blocks } from "./blocks-designs/_block_utils"
-
-// Intialise prisma, use this method to avoid multiple intialisations in `next dev`
-// Source: https://www.prisma.io/docs/guides/other/troubleshooting-orm/help-articles/nextjs-prisma-client-dev-practices#solution
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient | undefined
-}
-const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log:
-      process.env.NODE_ENV === "development"
-        ? ["info", "warn", "error"]
-        : ["warn", "error"],
-  })
-export default prisma
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
+import { prisma } from "./prisma"
 
 export type PostAnyMessageAdditionalArgs = {
   as_user?: boolean

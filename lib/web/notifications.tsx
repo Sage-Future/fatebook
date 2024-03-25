@@ -3,7 +3,8 @@ import { renderToString } from "react-dom/server"
 import ReactMarkdown from "react-markdown"
 import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
-import prisma, { backendAnalyticsEvent } from "../_utils_server"
+import { backendAnalyticsEvent } from "../_utils_server"
+import prisma from "../prisma"
 import { webFeedbackUrl } from "./utils"
 
 export async function createNotification({

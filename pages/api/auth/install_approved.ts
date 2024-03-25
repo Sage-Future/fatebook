@@ -5,10 +5,11 @@ import {
   clientSecret,
   questionWritingTipsUrl,
 } from "../../../lib/_constants"
-import prisma, {
+import {
   backendAnalyticsEvent,
   postSlackMessage,
 } from "../../../lib/_utils_server"
+import prisma from "../../../lib/prisma"
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.query?.error && req.query?.error === "access_denied") {

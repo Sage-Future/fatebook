@@ -1,7 +1,7 @@
 import { Resolution } from "@prisma/client"
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import ChartJSImage from "chart.js-image"
-import prisma from "../../lib/_utils_server"
+import prisma from "../../lib/prisma"
 import { getChartJsParams } from "../../lib/web/utils"
 
 export default async function handler(

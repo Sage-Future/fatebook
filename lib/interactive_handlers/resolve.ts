@@ -24,7 +24,7 @@ import {
   getResolutionEmoji,
   round,
 } from "../_utils_common"
-import prisma, {
+import {
   backendAnalyticsEvent,
   getDateSlackFormat,
   getTarget,
@@ -37,6 +37,7 @@ import prisma, {
   updateResolvePingQuestionMessages,
 } from "../_utils_server"
 import { buildQuestionResolvedBroadcastBlocks } from "../blocks-designs/question_resolved_broadcast"
+import prisma from "../prisma"
 import { createNotification } from "../web/notifications"
 import { getQuestionUrl } from "../web/question_url"
 import { getMarkdownLinkQuestionTitle } from "../web/utils"

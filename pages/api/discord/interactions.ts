@@ -2,10 +2,11 @@ import { User } from "@prisma/client"
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import * as chrono from "chrono-node"
 import { InteractionResponseType, InteractionType } from "discord-interactions"
-import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
+import { backendAnalyticsEvent } from "../../../lib/_utils_server"
 import { sendDiscordEphemeral } from "../../../lib/discord/utils"
-import { QuestionWithUserAndForecasts } from "../../../prisma/additional"
+import prisma from "../../../lib/prisma"
 import { getQuestionUrl } from "../../../lib/web/question_url"
+import { QuestionWithUserAndForecasts } from "../../../prisma/additional"
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log("Handling interaction")

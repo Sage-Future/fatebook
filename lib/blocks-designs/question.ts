@@ -19,10 +19,8 @@ import {
   getResolutionEmoji,
   padAndFormatScore,
 } from "../_utils_common"
-import prisma, {
-  getDateSlackFormat,
-  getUserNameOrProfileLink,
-} from "../_utils_server"
+import { getDateSlackFormat, getUserNameOrProfileLink } from "../_utils_server"
+import prisma from "../prisma"
 import {
   Blocks,
   ResolveQuestionActionParts,

@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import prisma, { backendAnalyticsEvent } from "../_utils_server"
+import { backendAnalyticsEvent } from "../_utils_server"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
+import prisma from "../prisma"
 import {
   emailNewlySharedWithUsers,
   getQuestionAssertAuthor,

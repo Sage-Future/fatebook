@@ -1,7 +1,7 @@
 import { Question } from "@prisma/client"
 import * as chrono from "chrono-node"
 import { BlockActionPayload } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
-import prisma, {
+import {
   backendAnalyticsEvent,
   callSlackApi,
   deleteMessage,
@@ -22,6 +22,7 @@ import {
 } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 import { buildEditQuestionModalView } from "../blocks-designs/question_modal"
+import prisma from "../prisma"
 import { createForecastingQuestion } from "../slash_handlers/_create_forecast"
 
 export async function showCreateQuestionModal(

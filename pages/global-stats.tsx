@@ -17,7 +17,7 @@ import {
 } from "recharts"
 import { FormattedDate } from "../components/FormattedDate"
 import { getDateYYYYMMDD, mean, round } from "../lib/_utils_common"
-import prisma from "../lib/_utils_server"
+import prisma from "../lib/prisma"
 import { getCsvIdPrefix, getPredictionBookIdPrefix } from "../lib/web/utils"
 
 export async function getStaticProps() {

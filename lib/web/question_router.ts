@@ -12,7 +12,7 @@ import {
   forecastsAreHidden,
   getDateYYYYMMDD,
 } from "../_utils_common"
-import prisma, {
+import {
   backendAnalyticsEvent,
   updateForecastQuestionMessages,
 } from "../_utils_server"
@@ -22,6 +22,7 @@ import {
   handleQuestionResolution,
   undoQuestionResolution,
 } from "../interactive_handlers/resolve"
+import prisma from "../prisma"
 import { questionsToCsv } from "./export"
 import {
   createNotification,

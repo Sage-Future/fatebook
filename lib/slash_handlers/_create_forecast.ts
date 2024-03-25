@@ -1,9 +1,7 @@
 import { Profile, User } from "@prisma/client"
-import prisma, {
-  backendAnalyticsEvent,
-  postSlackMessage,
-} from "../_utils_server"
+import { backendAnalyticsEvent, postSlackMessage } from "../_utils_server"
 import { buildQuestionBlocks } from "../blocks-designs/question"
+import prisma from "../prisma"
 
 export async function createForecastingQuestion(
   teamId: string,

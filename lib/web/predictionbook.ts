@@ -1,7 +1,7 @@
 import { Resolution } from "@prisma/client"
 import { max } from "date-fns"
-import prisma from "../_utils_server"
 import { scoreQuestion } from "../interactive_handlers/resolve"
+import prisma from "../prisma"
 import { getPredictionBookIdPrefix } from "./utils"
 
 interface PBUser {

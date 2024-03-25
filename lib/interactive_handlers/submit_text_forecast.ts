@@ -4,7 +4,7 @@ import {
   BlockActionPayloadAction,
 } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
 import { floatEquality } from "../_utils_common"
-import prisma, {
+import {
   backendAnalyticsEvent,
   getOrCreateProfile,
   postMessageToResponseUrl,
@@ -14,6 +14,7 @@ import prisma, {
 import { SubmitTextForecastActionParts } from "../blocks-designs/_block_utils"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 import { buildStaleForecastsReminderBlock } from "../blocks-designs/stale_forecasts"
+import prisma from "../prisma"
 
 export async function getLastForecast(userId: string, questionId: string) {
   const forecasts = await prisma.forecast.findMany({

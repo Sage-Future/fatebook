@@ -3,7 +3,8 @@ import { JWT } from "next-auth/jwt"
 import GoogleProvider from "next-auth/providers/google"
 
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import prisma, { backendAnalyticsEvent } from "../../../lib/_utils_server"
+import { backendAnalyticsEvent } from "../../../lib/_utils_server"
+import prisma from "../../../lib/prisma"
 
 function getCookies() {
   /* Copied from:

@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import prisma, { backendAnalyticsEvent } from "../_utils_server"
+import { backendAnalyticsEvent } from "../_utils_server"
+import prisma from "../prisma"
 import { publicProcedure, router } from "./trpc_base"
 
 export const tagsRouter = router({

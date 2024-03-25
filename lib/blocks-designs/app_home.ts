@@ -1,6 +1,12 @@
 import { QuestionScore, Target, TargetType } from "@prisma/client"
+import {
+  dayEnumToNum,
+  dayEnumToStr,
+  getCurrentTargetProgress,
+  getTarget,
+  sameDate,
+} from "../../lib/_utils_server"
 import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
-import { formatDecimalNicely, plural, populateDetails } from "../_utils_common"
 import {
   baseUrl,
   feedbackFormUrl,
@@ -10,13 +16,8 @@ import {
   slackAppId,
   targetCronTime,
 } from "../_constants"
-import prisma, {
-  dayEnumToNum,
-  dayEnumToStr,
-  getCurrentTargetProgress,
-  getTarget,
-  sameDate,
-} from "../../lib/_utils_server"
+import { formatDecimalNicely, plural, populateDetails } from "../_utils_common"
+import prisma from "../prisma"
 import {
   Blocks,
   dividerBlock,

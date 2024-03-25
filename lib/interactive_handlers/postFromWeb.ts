@@ -1,12 +1,13 @@
 import { Tournament, User, UserList } from "@prisma/client"
 import { QuestionWithTournamentsAndLists } from "../../prisma/additional"
-import prisma, {
+import {
   deleteMessage,
   getOrCreateProfile,
   postEphemeralTextMessage,
   postSlackMessage,
 } from "../_utils_server"
 import { buildQuestionBlocks } from "../blocks-designs/question"
+import prisma from "../prisma"
 import { assertHasAccess } from "../web/question_router"
 import { getQuestionIdFromUrl } from "../web/question_url"
 import { getTournamentUrl, getUserListUrl } from "../web/utils"

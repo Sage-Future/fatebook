@@ -1,6 +1,6 @@
 import { QuestionWithStandardIncludes } from "../../prisma/additional"
 import { getDateTimeYYYYMMDDHHMMSS } from "../_utils_common"
-import prisma from "../_utils_server"
+import prisma from "../prisma"
 
 export async function questionsToCsv(
   questions: QuestionWithStandardIncludes[],

@@ -1,10 +1,11 @@
-import prisma, {
+import {
   backendAnalyticsEvent,
   callSlackApi,
   getOrCreateProfile,
 } from "../_utils_server"
 import { HomeAppPageNavigationActionParts } from "../blocks-designs/_block_utils"
 import { buildHomeTabBlocks } from "../blocks-designs/app_home"
+import prisma from "../prisma"
 
 export async function refreshAppHome(event: any, teamId: string) {
   await refreshUserAppHome(event.user, teamId)

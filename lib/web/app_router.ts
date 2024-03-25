@@ -2,10 +2,11 @@ import { TRPCError } from "@trpc/server"
 import { generateOpenApiDocument } from "trpc-openapi"
 import { z } from "zod"
 import { sendEmailReadyToResolveNotification } from "../../pages/api/check_for_message_updates"
-import prisma, {
+import {
   backendAnalyticsEvent,
   getSlackPermalinkFromChannelAndTS,
 } from "../_utils_server"
+import prisma from "../prisma"
 import { importRouter } from "./import_router"
 import { questionRouter } from "./question_router"
 import { tagsRouter } from "./tags_router"

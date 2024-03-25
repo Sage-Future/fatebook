@@ -2,7 +2,7 @@ import { VercelRequest, VercelResponse } from "@vercel/node"
 
 import { Question, Target, User } from "@prisma/client"
 import { conciseDateTime } from "../../lib/_utils_common"
-import prisma, {
+import {
   getCurrentTargetProgress,
   postBlockMessage,
   updateForecastQuestionMessages,
@@ -10,6 +10,7 @@ import prisma, {
 import { buildResolveQuestionBlocks } from "../../lib/blocks-designs/resolve_question"
 import { buildStaleForecastsReminderBlock } from "../../lib/blocks-designs/stale_forecasts"
 import { buildTargetNotification } from "../../lib/blocks-designs/target_setting"
+import prisma from "../../lib/prisma"
 import { sendWelcomeEmail } from "../../lib/web/drip_emails"
 import {
   fatebookEmailFooter,
