@@ -70,6 +70,28 @@ export default function ExtensionPage() {
                   {"doesn't"} work in Google Docs on Arc.
                 </p>
               )}
+              {browser === "Brave" && (
+                <div>
+                  <h2>Final install step </h2>
+                  <p className="bg-indigo-50">
+                    {
+                      "Brave blocks the cookies that this extension uses to find out if you're logged in to Fatebook. To disable Brave's cookie blocking, you can go to "
+                    }
+                    <span className="font-semibold">
+                      brave://settings/cookies
+                    </span>
+                    {' and select "Allow third party cookies".'}
+                  </p>
+                  <p>
+                    Alternatively for a more fine-grained way, you can allow
+                    cookies on certain sites (e.g. doc.google.com) via{" "}
+                    <span className="font-semibold">
+                      brave://settings/cookies
+                    </span>
+                    , and then you can use the extension on only those websites.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
