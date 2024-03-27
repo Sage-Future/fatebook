@@ -20,7 +20,13 @@ import { getDateYYYYMMDD, mean, round } from "../lib/_utils_common"
 import prisma from "../lib/prisma"
 import { getCsvIdPrefix, getPredictionBookIdPrefix } from "../lib/web/utils"
 
+// fix for EMfile: too many open files error
+import * as fs from "fs"
+import gracefulFs from "graceful-fs"
+
 export async function getStaticProps() {
+  gracefulFs.gracefulify(fs)
+
   const questions = await prisma.question.findMany({
     select: {
       id: true,
