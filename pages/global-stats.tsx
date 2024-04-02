@@ -760,6 +760,6 @@ function graphCreatedAt(title: string, entities: { createdAt: Date }[]) {
         acc[date] = 1
       }
       return acc
-    }, {}),
+    }, {}), 
   }
 }
