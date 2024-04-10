@@ -284,3 +284,12 @@ model Notification {
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Feedback {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  type      String
+  message   String
+  email     String?
+  userId    String?
+}

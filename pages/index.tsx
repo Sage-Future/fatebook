@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react"
 import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
+import { QuickFeedback } from "../components/QuickFeedback"
 import { Tournaments } from "../components/Tournaments"
 import { TrackRecord } from "../components/TrackRecord"
 import { UserLists } from "../components/UserLists"
@@ -41,6 +42,11 @@ function Sidebar() {
       {userId && <TrackRecord trackRecordUserId={userId} />}
       {userId && <Tournaments />}
       {userId && <UserLists />}
+      <QuickFeedback
+        type="Fatebook feedback"
+        placeholder="Give feedback on Fatebook..."
+        style="textarea"
+      />
     </div>
   )
 }

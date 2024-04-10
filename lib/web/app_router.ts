@@ -7,6 +7,7 @@ import {
   getSlackPermalinkFromChannelAndTS,
 } from "../_utils_server"
 import prisma from "../prisma"
+import { feedbackRouter } from "./feedback_router"
 import { importRouter } from "./import_router"
 import { questionRouter } from "./question_router"
 import { tagsRouter } from "./tags_router"
@@ -21,6 +22,7 @@ export const appRouter = router({
   tags: tagsRouter,
   import: importRouter,
   tournament: tournamentRouter,
+  feedback: feedbackRouter,
 
   sendEmail: publicProcedure
     .input(

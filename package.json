@@ -73,6 +73,7 @@
     "recharts": "^2.12.1",
     "remark-gfm": "^3.0.1",
     "seratch-slack-types": "^0.8.0",
+    "slack-notify": "^2.0.7",
     "swagger-ui-react": "^5.11.2",
     "trpc-openapi": "^1.2.0",
     "trpc-transformer": "^2.3.2",
