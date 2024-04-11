@@ -68,7 +68,9 @@ export function Navbar({
         <Link href="/for-discord">Fatebook for Discord</Link>
       </li>
       <li>
-        <Link href="/api-setup">Create forecasts by API</Link>
+        <Link href="/api-setup">
+          Create forecasts by API <NewDot />
+        </Link>
       </li>
       <li>
         <Link href="/embed">Embed in your website</Link>
@@ -110,9 +112,7 @@ export function Navbar({
     <>
       {/* {showForSlackButton && ( */}
       <li>
-        <Link href="/extension">
-          {fatebookForChrome} <NewDot />
-        </Link>
+        <Link href="/extension">{fatebookForChrome}</Link>
       </li>
       {/* )} */}
       <li>
@@ -123,7 +123,7 @@ export function Navbar({
       <li className="hidden lg:block">
         <div className="dropdown dropdown-hover dropdown-bottom dropdown-end active:bg-neutral-200 active:text-black">
           <label className="flex gap-1" tabIndex={0}>
-            <ChevronDownIcon width={16} /> More
+            <ChevronDownIcon width={16} /> More <NewDot />
             <div className="div my-auto ml-0.5"></div>
           </label>
           <ul
