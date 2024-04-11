@@ -236,7 +236,14 @@ export const questionRouter = router({
           .optional(),
       }),
     )
-    .meta({ openapi: { method: "GET", path: "/v0/getQuestions" } })
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/v0/getQuestions",
+        description:
+          "By default, this fetches all questions that you've created, forecasted on, or are shared with you. Alternatively, if you set showAllPublic to true, it fetches all public questions from fatebook.io/public.",
+      },
+    })
     .output(
       z.object({
         items: z.array(z.any()),
@@ -429,11 +436,22 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
-        resolution: z.string(),
+        resolution: z.string({
+          description: "Resolve to YES, NO or AMBIGUOUS",
+        }),
+        apiKey: z.string().optional(),
       }),
     )
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/v0/resolveQuestion",
+        description: "Resolve the question to YES, NO or AMBIGUOUS",
+      },
+    })
+    .output(z.undefined())
     .mutation(async ({ input, ctx }) => {
-      await getQuestionAssertAuthor(ctx, input.questionId)
+      await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
       await handleQuestionResolution(
         input.questionId,
@@ -441,7 +459,7 @@ export const questionRouter = router({
       )
 
       await backendAnalyticsEvent("question_resolved", {
-        platform: "web",
+        platform: input.apiKey ? "api" : "web",
         resolution: input.resolution.toLowerCase(),
       })
     }),
@@ -467,12 +485,32 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
-        sharedPublicly: z.boolean().optional(),
-        unlisted: z.boolean().optional(),
+        sharedPublicly: z
+          .boolean({
+            description:
+              "Change whether the question is shared with anyone with the link",
+          })
+          .optional(),
+        unlisted: z
+          .boolean({
+            description:
+              "Change whether the question is unlisted (not shown on fatebook.io/public)",
+          })
+          .optional(),
+        apiKey: z.string().optional(),
       }),
     )
+    .meta({
+      openapi: {
+        method: "PATCH",
+        path: "/v0/setSharedPublicly",
+        description:
+          "Change the visibility of the question. The 'sharedPublicly' parameter sets whether the question is accessible to anyone via a direct link. The 'unlisted' parameter sets whether the question is visible on fatebook.io/public",
+      },
+    })
+    .output(z.undefined())
     .mutation(async ({ input, ctx }) => {
-      await getQuestionAssertAuthor(ctx, input.questionId)
+      await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
       await prisma.question.update({
         where: {
@@ -513,10 +551,15 @@ export const questionRouter = router({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const question = (await getQuestionAssertAuthor(ctx, input.questionId, {
-        user: true,
-        sharedWith: true,
-      })) as QuestionWithUserAndSharedWith
+      const question = (await getQuestionAssertAuthor(
+        ctx,
+        input.questionId,
+        undefined,
+        {
+          user: true,
+          sharedWith: true,
+        },
+      )) as QuestionWithUserAndSharedWith
 
       const sharedWith = Array.from(new Set(input.sharedWith))
       const newlySharedWith = sharedWith.filter(
@@ -563,10 +606,27 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
-        forecast: z.number().max(1).min(0),
+        forecast: z
+          .number({
+            description: "The forecast to add. Must be between 0 and 1.",
+          })
+          .max(1)
+          .min(0),
+        apiKey: z.string().optional(),
       }),
     )
+    .output(z.undefined())
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/v0/addForecast",
+        description:
+          "Add a forecast to the question. Forecasts are between 0 and 1.",
+      },
+    })
     .mutation(async ({ input, ctx }) => {
+      const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
+
       const question = await prisma.question.findUnique({
         where: {
           id: input.questionId,
@@ -581,10 +641,6 @@ export const questionRouter = router({
             },
           },
         },
-      })
-
-      const user = await prisma.user.findUnique({
-        where: { id: ctx.userId || "NO MATCH" },
       })
 
       assertHasAccess(ctx, question, user)
@@ -695,7 +751,7 @@ export const questionRouter = router({
       }
 
       await backendAnalyticsEvent("forecast_submitted", {
-        platform: "web",
+        platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
         question: question.id,
         forecast: input.forecast,
@@ -707,8 +763,11 @@ export const questionRouter = router({
       z.object({
         questionId: z.string(),
         comment: z.string(),
+        apiKey: z.string().optional(),
       }),
     )
+    .output(z.undefined())
+    .meta({ openapi: { method: "POST", path: "/v0/addComment" } })
     .mutation(async ({ input, ctx }) => {
       const question = await prisma.question.findUnique({
         where: {
@@ -736,9 +795,7 @@ export const questionRouter = router({
         },
       })
 
-      const user = await prisma.user.findUnique({
-        where: { id: ctx.userId || "NO MATCH" },
-      })
+      const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
       assertHasAccess(ctx, question, user)
       if (question === null) {
         throw new TRPCError({
@@ -789,8 +846,8 @@ export const questionRouter = router({
       }
 
       await backendAnalyticsEvent("comment_added", {
-        platform: "web",
-        user: ctx.userId,
+        platform: input.apiKey ? "api" : "web",
+        user: ctx.userId || user.id,
       })
     }),
 
@@ -918,15 +975,18 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
+        apiKey: z.string().optional(),
       }),
     )
+    .output(z.undefined())
+    .meta({ openapi: { method: "DELETE", path: "/v0/deleteQuestion" } })
     .mutation(async ({ input, ctx }) => {
-      await getQuestionAssertAuthor(ctx, input.questionId)
+      await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
       await deleteQuestion(input.questionId)
 
       await backendAnalyticsEvent("question_deleted", {
-        platform: "web",
+        platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
       })
     }),
@@ -937,10 +997,13 @@ export const questionRouter = router({
         questionId: z.string(),
         title: z.string().optional(),
         resolveBy: z.date().optional(),
+        apiKey: z.string().optional(),
       }),
     )
+    .output(z.undefined())
+    .meta({ openapi: { method: "PATCH", path: "/v0/editQuestion" } })
     .mutation(async ({ input, ctx }) => {
-      await getQuestionAssertAuthor(ctx, input.questionId)
+      await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
       const question = await prisma.question.update({
         where: {
@@ -976,7 +1039,7 @@ export const questionRouter = router({
       await updateForecastQuestionMessages(question, "Question edited")
 
       await backendAnalyticsEvent("question_edited", {
-        platform: "web",
+        platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
       })
     }),
@@ -1270,6 +1333,7 @@ ${fatebookEmailFooter(email)}`,
 export async function getQuestionAssertAuthor(
   ctx: { userId: string | undefined },
   questionId: string,
+  apiKey?: string,
   questionInclude?: Prisma.QuestionInclude,
 ) {
   const question = await prisma.question.findUnique({
@@ -1279,10 +1343,12 @@ export async function getQuestionAssertAuthor(
     include: questionInclude,
   })
 
+  const userId = ctx?.userId || (await getUserByApiKeyOrThrow(apiKey || "")).id
+
   if (!question) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
-  if (question.userId !== ctx.userId) {
+  if (question.userId !== userId) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Only the question's author can do that",
@@ -1377,6 +1443,34 @@ async function getUserByApiKeyOrThrow(apiKey: string) {
   }
   throw new TRPCError({
     code: "UNAUTHORIZED",
-    message: "Could not find a user with that API key",
+    message:
+      "Could not find a user with that API key. See fatebook.io/api-setup",
   })
+}
+
+async function getUserFromCtxOrApiKeyOrThrow(
+  ctx: Context,
+  apiKey: string | undefined,
+) {
+  if (ctx.userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: ctx.userId || "NO MATCH" },
+    })
+    if (!user) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Could not find a user with that ID",
+      })
+    }
+    return user
+  }
+
+  if (!apiKey) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must provide an API key. See fatebook.io/api-setup",
+    })
+  }
+
+  return await getUserByApiKeyOrThrow(apiKey)
 }

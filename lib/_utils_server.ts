@@ -622,7 +622,7 @@ export function getDateSlackFormat(
 }
 
 export interface AnalyticsEventParams {
-  platform: "slack" | "web" | "discord"
+  platform: "slack" | "web" | "discord" | "api"
   team?: string
   [key: string]: any
 }
