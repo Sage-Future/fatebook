@@ -18,10 +18,10 @@ import {
 } from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { CommentBox, DeleteCommentOverflow } from "./CommentBox"
-import { FormattedDate } from "./FormattedDate"
-import { InfoButton } from "./InfoButton"
 import { TagsSelect } from "./TagsSelect"
-import { Username } from "./Username"
+import { FormattedDate } from "./ui/FormattedDate"
+import { InfoButton } from "./ui/InfoButton"
+import { Username } from "./ui/Username"
 
 export function QuestionDetails({
   question,

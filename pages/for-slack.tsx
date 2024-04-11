@@ -10,9 +10,9 @@ import Image from "next/image"
 import { useRouter } from "next/router"
 import React from "react"
 import { AddToSlack } from "../components/AddToSlack"
-import Faqs from "../components/Faqs"
 import { Layout } from "../components/Layout"
 import { SlackCompose } from "../components/SlackCompose"
+import Faqs from "../components/ui/Faqs"
 
 export default function ForSlackPage() {
   const router = useRouter()

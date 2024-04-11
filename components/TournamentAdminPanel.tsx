@@ -6,11 +6,11 @@ import { useState } from "react"
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { FixTournamentQuestionSharing } from "./FixTournamentQuestionSharing"
-import { InfoButton } from "./InfoButton"
 import { Predict } from "./Predict"
 import { QuestionsMultiselect } from "./QuestionsMultiselect"
 import { ShareTournament } from "./ShareTournament"
-import { Username } from "./Username"
+import { InfoButton } from "./ui/InfoButton"
+import { Username } from "./ui/Username"
 
 export function TournamentAdminPanel({
   tournamentId,

@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { FormattedDate } from "../components/FormattedDate"
+import { FormattedDate } from "../components/ui/FormattedDate"
 import { getDateYYYYMMDD, mean, round } from "../lib/_utils_common"
 import prisma from "../lib/prisma"
 import { getCsvIdPrefix, getPredictionBookIdPrefix } from "../lib/web/utils"
@@ -26,7 +26,7 @@ import gracefulFs from "graceful-fs"
 
 export async function getStaticProps() {
   gracefulFs.gracefulify(fs)
- 
+
   const questions = await prisma.question.findMany({
     select: {
       id: true,
@@ -760,6 +760,6 @@ function graphCreatedAt(title: string, entities: { createdAt: Date }[]) {
         acc[date] = 1
       }
       return acc
-    }, {}), 
+    }, {}),
   }
 }

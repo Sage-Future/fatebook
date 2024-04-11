@@ -17,8 +17,8 @@ import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { CopyToClipboard } from "./CopyToClipboard"
 import { UserListDropdown } from "./UserListDropdown"
+import { CopyToClipboard } from "./ui/CopyToClipboard"
 
 export function SharePopover({
   question,

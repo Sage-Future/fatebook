@@ -10,10 +10,10 @@ import clsx from "clsx"
 import Link from "next/link"
 import { api } from "../lib/web/trpc"
 import { getTournamentUrl, getUserListUrl, useUserId } from "../lib/web/utils"
-import { CopyToClipboard } from "./CopyToClipboard"
 import { FixTournamentQuestionSharing } from "./FixTournamentQuestionSharing"
 import { SyncToSlack } from "./SyncToSlack"
 import { UserListDisplay } from "./UserListDisplay"
+import { CopyToClipboard } from "./ui/CopyToClipboard"
 export function ShareTournament({ tournamentId }: { tournamentId: string }) {
   const tournamentQ = api.tournament.get.useQuery({
     id: tournamentId,

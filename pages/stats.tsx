@@ -1,8 +1,8 @@
 import { NextSeo } from "next-seo"
-import { QuickFeedback } from "../components/QuickFeedback"
 import { Tournaments } from "../components/Tournaments"
 import { TrackRecord } from "../components/TrackRecord"
 import { UserLists } from "../components/UserLists"
+import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
 
 export default function StatsPage() {

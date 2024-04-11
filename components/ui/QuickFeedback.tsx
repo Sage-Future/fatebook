@@ -6,8 +6,8 @@ import {
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import { useState } from "react"
-import { api } from "../lib/web/trpc"
-import { useUserId } from "../lib/web/utils"
+import { api } from "../../lib/web/trpc"
+import { useUserId } from "../../lib/web/utils"
 
 export function QuickFeedback({
   type,

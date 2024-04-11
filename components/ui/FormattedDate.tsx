@@ -1,7 +1,7 @@
 import clsx from "clsx"
 import { intlFormatDistance } from "date-fns"
 import { HTMLAttributes, ReactNode } from "react"
-import { getDateYYYYMMDD } from "../lib/_utils_common"
+import { getDateYYYYMMDD } from "../../lib/_utils_common"
 import { InfoButton } from "./InfoButton"
 
 export function FormattedDate({

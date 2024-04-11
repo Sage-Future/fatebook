@@ -4,7 +4,7 @@ import { Predict } from "../../components/Predict"
 import { Questions } from "../../components/Questions"
 import { SyncToSlack } from "../../components/SyncToSlack"
 import { UserListDisplay } from "../../components/UserListDisplay"
-import { Username } from "../../components/Username"
+import { Username } from "../../components/ui/Username"
 import { api } from "../../lib/web/trpc"
 import {
   getUserListUrl,

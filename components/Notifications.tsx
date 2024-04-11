@@ -6,7 +6,7 @@ import { InView } from "react-intersection-observer"
 import { ReactMarkdown } from "react-markdown/lib/react-markdown"
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
-import { FormattedDate } from "./FormattedDate"
+import { FormattedDate } from "./ui/FormattedDate"
 
 export function Notifications() {
   const userId = useUserId()

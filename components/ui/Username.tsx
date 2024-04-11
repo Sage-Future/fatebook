@@ -2,8 +2,8 @@ import { User } from "@prisma/client"
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
-import { useIsEmbedded } from "../lib/web/embed"
-import { getUserPageUrl } from "../pages/user/[id]"
+import { useIsEmbedded } from "../../lib/web/embed"
+import { getUserPageUrl } from "../../pages/user/[id]"
 
 export function Username({
   user,

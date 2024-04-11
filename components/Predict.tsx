@@ -20,8 +20,8 @@ import { z } from "zod"
 import { getDateYYYYMMDD, tomorrowDate } from "../lib/_utils_common"
 import { api } from "../lib/web/trpc"
 import { signInToFatebook, utcDateStrToLocalDate } from "../lib/web/utils"
-import { FormattedDate } from "./FormattedDate"
-import { InfoButton } from "./InfoButton"
+import { FormattedDate } from "./ui/FormattedDate"
+import { InfoButton } from "./ui/InfoButton"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]

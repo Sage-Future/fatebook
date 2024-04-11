@@ -13,8 +13,8 @@ import { ReactMultiEmail } from "react-multi-email"
 import { api, getClientBaseUrl } from "../lib/web/trpc"
 import { getUserListUrl, useUserId } from "../lib/web/utils"
 import { UserListWithAuthorAndUsers } from "../prisma/additional"
-import { CopyToClipboard } from "./CopyToClipboard"
-import { InfoButton } from "./InfoButton"
+import { CopyToClipboard } from "./ui/CopyToClipboard"
+import { InfoButton } from "./ui/InfoButton"
 
 export function UserListDisplay({
   userList,

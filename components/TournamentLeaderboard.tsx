@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
-import { InfoButton } from "./InfoButton"
+import { InfoButton } from "./ui/InfoButton"
 
 export function TournamentLeaderboard({
   tournamentId,

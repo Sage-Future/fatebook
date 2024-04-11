@@ -11,8 +11,8 @@ import Link from "next/link"
 import { useRouter } from "next/router"
 import React from "react"
 import { DiscordCompose } from "../components/DiscordCompose"
-import Faqs from "../components/Faqs"
 import { Layout } from "../components/Layout"
+import Faqs from "../components/ui/Faqs"
 
 export default function ForDiscordPage() {
   const router = useRouter()

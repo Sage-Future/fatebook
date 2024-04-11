@@ -18,8 +18,8 @@ import {
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
-import { InfoButton } from "./InfoButton"
 import { TagsSelect } from "./TagsSelect"
+import { InfoButton } from "./ui/InfoButton"
 
 export function TrackRecord({
   trackRecordUserId,

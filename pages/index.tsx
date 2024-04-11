@@ -1,11 +1,11 @@
 import { useSession } from "next-auth/react"
 import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
-import { QuickFeedback } from "../components/QuickFeedback"
 import { Tournaments } from "../components/Tournaments"
 import { TrackRecord } from "../components/TrackRecord"
 import { UserLists } from "../components/UserLists"
 import { WhyForecastInfo } from "../components/WhyForecastInfo"
+import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
 
 export default function HomePage() {

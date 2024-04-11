@@ -12,12 +12,12 @@ import Link from "next/link"
 import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { FormattedDate } from "./FormattedDate"
 import { QuestionDetails } from "./QuestionDetails"
 import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
-import { Username } from "./Username"
+import { FormattedDate } from "./ui/FormattedDate"
+import { Username } from "./ui/Username"
 
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid"
 import toast from "react-hot-toast"
@@ -25,7 +25,7 @@ import { getDateYYYYMMDD } from "../lib/_utils_common"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
-import { InfoButton } from "./InfoButton"
+import { InfoButton } from "./ui/InfoButton"
 
 export function Question({
   question,
