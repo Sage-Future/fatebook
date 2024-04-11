@@ -9,12 +9,12 @@ import clsx from "clsx"
 import Link from "next/link"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
-import { ReactMultiEmail } from "react-multi-email"
 import { api, getClientBaseUrl } from "../lib/web/trpc"
 import { getUserListUrl, useUserId } from "../lib/web/utils"
 import { UserListWithAuthorAndUsers } from "../prisma/additional"
 import { CopyToClipboard } from "./ui/CopyToClipboard"
 import { InfoButton } from "./ui/InfoButton"
+import { MultiselectUsers } from "./ui/MultiselectEmail"
 
 export function UserListDisplay({
   userList,
@@ -204,9 +204,6 @@ export function UserListDisplay({
   )
 }
 function EmailInput({ userList }: { userList: UserListWithAuthorAndUsers }) {
-  const [emails, setEmails] = useState<string[]>(
-    userList.users.map((user) => user.email),
-  )
   const utils = api.useContext()
   const updateList = api.userList.updateList.useMutation({
     async onSuccess() {
@@ -226,41 +223,14 @@ function EmailInput({ userList }: { userList: UserListWithAuthorAndUsers }) {
           buttonLabel="Copy invite link"
         />
       </label>
-      <ReactMultiEmail
-        className={clsx(
-          "text-sm w-44 md:w-[22rem] placeholder:text-neutral-400",
-          updateList.isLoading && "opacity-50",
-        )}
-        placeholder="alice@gmail.com..."
-        delimiter=" "
-        emails={emails}
-        onChange={(emails: string[]) => {
-          setEmails(emails)
-        }}
-        onBlur={() => {
-          updateList.mutate({
-            listId: userList.id,
-            userEmails: emails,
-          })
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            updateList.mutate({
-              listId: userList.id,
-              userEmails: emails,
-            })
-          }
-        }}
-        getLabel={(email, index, removeEmail) => {
-          return (
-            <div data-tag key={index}>
-              <div data-tag-item>{email}</div>
-              <span data-tag-handle onClick={() => removeEmail(index)}>
-                ×
-              </span>
-            </div>
-          )
-        }}
+
+      <MultiselectUsers
+        users={userList.users}
+        setEmails={(emails) =>
+          updateList.mutate({ listId: userList.id, userEmails: emails })
+        }
+        isLoading={updateList.isLoading}
+        placeholder="Add a teammate by email..."
       />
 
       <div className="mt-4">

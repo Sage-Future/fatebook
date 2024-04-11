@@ -565,27 +565,25 @@ export const questionRouter = router({
       const newlySharedWith = sharedWith.filter(
         (email) => !question.sharedWith.some((u) => u.email === email),
       )
-      if (newlySharedWith.length === 0) {
-        console.log("Shared with no one new")
-        return
-      }
 
-      const existingUsers = await prisma.user.findMany({
-        where: {
-          email: {
-            in: sharedWith,
+      if (newlySharedWith.length > 0) {
+        const existingUsers = await prisma.user.findMany({
+          where: {
+            email: {
+              in: sharedWith,
+            },
           },
-        },
-      })
-
-      const nonExistingUsers = sharedWith.filter(
-        (email) => !existingUsers.some((u) => u.email === email),
-      )
-
-      if (nonExistingUsers.length > 0) {
-        await prisma.user.createMany({
-          data: nonExistingUsers.map((email) => ({ email })),
         })
+
+        const nonExistingUsers = sharedWith.filter(
+          (email) => !existingUsers.some((u) => u.email === email),
+        )
+
+        if (nonExistingUsers.length > 0) {
+          await prisma.user.createMany({
+            data: nonExistingUsers.map((email) => ({ email })),
+          })
+        }
       }
 
       await prisma.question.update({
@@ -599,8 +597,72 @@ export const questionRouter = router({
         },
       })
 
-      await emailNewlySharedWithUsers(newlySharedWith, question)
+      if (newlySharedWith.length > 0) {
+        await emailNewlySharedWithUsers(newlySharedWith, question)
+      }
     }),
+
+  getShareSuggestions: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.userId) {
+      throw new TRPCError({ code: "UNAUTHORIZED" })
+    }
+
+    // Users that the current user has shared questions with
+    const sharedWithUsers = await prisma.question
+      .findMany({
+        where: {
+          userId: ctx.userId,
+        },
+        select: {
+          sharedWith: true,
+        },
+      })
+      .then((results) => results.flatMap((result) => result.sharedWith))
+
+    // Users that have shared questions with the current user
+    const sharedByUsers = await prisma.question
+      .findMany({
+        where: {
+          sharedWith: {
+            some: {
+              id: ctx.userId,
+            },
+          },
+        },
+        select: {
+          user: true,
+        },
+      })
+      .then((results) => results.map((result) => result.user))
+
+    // Members and authors of lists containing or authored by the current user
+    const userListUsers = await prisma.userList
+      .findMany({
+        where: {
+          OR: [
+            { users: { some: { id: ctx.userId } } },
+            { authorId: ctx.userId },
+          ],
+        },
+        select: {
+          users: true,
+          author: true,
+        },
+      })
+      .then((results) =>
+        results.flatMap((result) => [...result.users, result.author]),
+      )
+
+    // Combine all lists and remove duplicates
+    const allUsers = [...sharedWithUsers, ...sharedByUsers, ...userListUsers]
+    const uniqueUsers = Array.from(
+      new Set(allUsers.map((user) => user.id)),
+    ).map((id) => {
+      return allUsers.find((user) => user.id === id)
+    })
+
+    return uniqueUsers
+  }),
 
   addForecast: publicProcedure
     .input(

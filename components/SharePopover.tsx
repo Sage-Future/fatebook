@@ -9,16 +9,16 @@ import {
 import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
-import React, { Fragment, useState } from "react"
+import React, { Fragment } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { ReactMultiEmail } from "react-multi-email"
-import "react-multi-email/dist/style.css"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { UserListDropdown } from "./UserListDropdown"
 import { CopyToClipboard } from "./ui/CopyToClipboard"
+import { MultiselectUsers } from "./ui/MultiselectEmail"
+import { Username } from "./ui/Username"
 
 export function SharePopover({
   question,
@@ -122,36 +122,38 @@ const SharePanel = React.forwardRef<
       onClick={(e) => e.stopPropagation()}
     >
       <div className="absolute z-50 mt-2 w-72 md:w-96 lg:w-[29rem] right-0 md:left-0 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-        <div className="p-4 flex flex-col gap-2">
+        <div className="p-4 flex flex-col gap-4">
           <EmailInput question={question} />
           <UserListDropdown question={question} />
-          <SharePublicly question={question} />
-          <div className="flex gap-2 items-center">
-            <input
-              id="hideForecastsUntilPredict"
-              type="checkbox"
-              className={clsx(
-                "checkbox",
-                userId !== question.userId && "cursor-not-allowed",
-              )}
-              disabled={
-                userId !== question.userId ||
-                hideForecastsUntilPredict.isLoading
-              }
-              checked={!!question.hideForecastsUntilPrediction}
-              onChange={(e) => {
-                hideForecastsUntilPredict.mutate({
-                  questionId: question.id,
-                  hideForecastsUntilPrediction: e.target.checked,
-                })
-              }}
-            />
-            <label
-              htmlFor="hideForecastsUntilPredict"
-              className="text-sm my-auto cursor-pointer"
-            >
-              {"Hide forecasts for each viewer until they've made a prediction"}
-            </label>
+          <div className="flex flex-col gap-2">
+            <SharePublicly question={question} />
+            <div className="flex gap-2 items-center">
+              <input
+                id="hideForecastsUntilPredict"
+                type="checkbox"
+                className={clsx(
+                  "checkbox",
+                  userId !== question.userId && "cursor-not-allowed",
+                )}
+                disabled={
+                  userId !== question.userId ||
+                  hideForecastsUntilPredict.isLoading
+                }
+                checked={!!question.hideForecastsUntilPrediction}
+                onChange={(e) => {
+                  hideForecastsUntilPredict.mutate({
+                    questionId: question.id,
+                    hideForecastsUntilPrediction: e.target.checked,
+                  })
+                }}
+              />
+              <label
+                htmlFor="hideForecastsUntilPredict"
+                className="text-sm my-auto cursor-pointer"
+              >
+                {"Hide forecasts for each viewer until they've made a prediction"}
+              </label>
+            </div>
           </div>
           {sharedToSlack ? (
             <div>
@@ -287,9 +289,6 @@ function SharePublicly({
 }
 
 function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
-  const [emails, setEmails] = useState<string[]>(
-    question.sharedWith.map((user) => user.email),
-  )
   const userId = useUserId()
   const utils = api.useContext()
   const setSharedWith = api.question.setSharedWith.useMutation({
@@ -303,7 +302,9 @@ function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
       return (
         <label className="text-sm">
           <span className="font-semibold">Shared with</span>{" "}
-          {question.sharedWith.map((user) => user.email).join(", ")}
+          {question.sharedWith
+            .map((user) => <Username key={user.id} user={user} />)
+            .join(", ")}
         </label>
       )
     } else {
@@ -311,43 +312,17 @@ function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
     }
   }
   return (
-    <>
+    <div className="w-full flex flex-col gap-2">
       <label className="block text-sm font-medium text-neutral-700">
         Share with
       </label>
-      <ReactMultiEmail
-        className={clsx("text-sm", setSharedWith.isLoading && "opacity-50")}
-        placeholder="alice@gmail.com bob@gmail.com"
-        delimiter=" "
-        emails={emails}
-        onChange={(emails: string[]) => {
-          setEmails(emails)
-        }}
-        onBlur={() => {
-          setSharedWith.mutate({
-            questionId: question.id,
-            sharedWith: emails,
-          })
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            setSharedWith.mutate({
-              questionId: question.id,
-              sharedWith: emails,
-            })
-          }
-        }}
-        getLabel={(email, index, removeEmail) => {
-          return (
-            <div data-tag key={index}>
-              <div data-tag-item>{email}</div>
-              <span data-tag-handle onClick={() => removeEmail(index)}>
-                ×
-              </span>
-            </div>
-          )
-        }}
+      <MultiselectUsers
+        users={question.sharedWith}
+        setEmails={(emails) =>
+          setSharedWith.mutate({ questionId: question.id, sharedWith: emails })
+        }
+        isLoading={setSharedWith.isLoading}
       />
-    </>
+    </div>
   )
 }

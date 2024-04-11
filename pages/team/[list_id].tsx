@@ -65,26 +65,31 @@ export default function ListPage() {
                 onDelete={() => void router.push("/")}
               />
               <span className="block">
-                A team created by <Username user={listQ.data.author} />
+                A team created by{" "}
+                <Username
+                  user={listQ.data.author}
+                  className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 hover:bg-neutral-100"
+                />
               </span>
               <span className="block">
                 Team members{" "}
                 {listQ.data.users.length > 0 ? (
                   listQ.data.users.map((u) => (
-                    <Username key={u.id} user={u} className="ml-2" />
+                    <Username
+                      key={u.id}
+                      user={u}
+                      className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 ml-2 hover:bg-neutral-100"
+                    />
                   ))
                 ) : (
                   <span className="italic">none</span>
                 )}
               </span>
-              <span className="block">
-                Email domains{" "}
-                {listQ.data.emailDomains.length > 0 ? (
-                  listQ.data.emailDomains.join(", ")
-                ) : (
-                  <span className="italic">none</span>
-                )}
-              </span>
+              {listQ.data.emailDomains.length > 0 && (
+                <span className="block">
+                  Email domains {listQ.data.emailDomains.join(", ")}
+                </span>
+              )}
               {userId && listQ.data.authorId === userId && (
                 <SyncToSlack
                   listType="team"
