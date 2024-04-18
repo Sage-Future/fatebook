@@ -25,7 +25,7 @@ import * as fs from "fs"
 import gracefulFs from "graceful-fs"
 
 export async function getStaticProps() {
-  gracefulFs.gracefulify(fs) 
+  gracefulFs.gracefulify(fs)
 
   const questions = await prisma.question.findMany({
     select: {
@@ -35,6 +35,7 @@ export async function getStaticProps() {
       createdAt: true,
       resolvedAt: true,
       resolved: true,
+      profileId: true,
       questionScores: {
         select: {
           relativeScore: true,
@@ -90,6 +91,7 @@ export async function getStaticProps() {
 
   function getActiveUsersByDay(qs: typeof questions) {
     let activeUserIdsByDay: Record<string, Set<string>> = {}
+
     function addActivity(userId: string, date: Date) {
       const dateString = getDateYYYYMMDD(date)
       if (!activeUserIdsByDay[dateString]) {
@@ -108,6 +110,18 @@ export async function getStaticProps() {
         addActivity(c.userId, c.createdAt)
       })
     })
+
+    const dates = Object.keys(activeUserIdsByDay).sort()
+    if (dates.length > 0) {
+      const startDate = new Date(dates[0])
+      const endDate = new Date()
+      for (let d = startDate; d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateString = getDateYYYYMMDD(d)
+        if (!activeUserIdsByDay[dateString]) {
+          activeUserIdsByDay[dateString] = new Set()
+        }
+      }
+    }
 
     return activeUserIdsByDay
   }
@@ -251,6 +265,23 @@ export async function getStaticProps() {
           type: "line over time",
           title: "Monthly active users",
           data: activeUsersToData(getActiveUsersByDay(questions), 31),
+          hideRollingAvg: true,
+        },
+        {
+          type: "line over time",
+          title: "DAUs on questions created in Slack",
+          data: activeUsersToData(
+            getActiveUsersByDay(questions.filter((q) => !!q.profileId)),
+            1,
+          ),
+        },
+        {
+          type: "line over time",
+          title: "MAUs on questions created in Slack",
+          data: activeUsersToData(
+            getActiveUsersByDay(questions.filter((q) => !!q.profileId)),
+            31,
+          ),
           hideRollingAvg: true,
         },
         {
