@@ -1,7 +1,10 @@
 import clsx from "clsx"
 import { useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
-import { getMostRecentForecastForUser } from "../lib/_utils_common"
+import {
+  displayForecast,
+  getMostRecentForecastForUser,
+} from "../lib/_utils_common"
 import { sendToHost } from "../lib/web/embed"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
@@ -31,7 +34,7 @@ export function UpdateableLatestForecast({
     : null
 
   const defaultVal = latestForecast?.forecast
-    ? (latestForecast?.forecast.toNumber() * 100).toString()
+    ? displayForecast(latestForecast, 10, false)
     : ""
   const [localForecast, setLocalForecast] = useState<string>(defaultVal)
 

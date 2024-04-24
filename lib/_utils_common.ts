@@ -116,14 +116,15 @@ export function nudgeAwayFromZeroOrOne(num: number) {
 }
 
 export function displayForecast(
-  forecast: Forecast,
+  forecast: { forecast: Decimal },
   decimalPlaces: number,
+  includePercent = true,
 ): string {
   return `${
     forecast?.forecast
       ? formatDecimalNicely(forecast.forecast.toNumber() * 100, decimalPlaces)
       : "?"
-  }%`
+  }${includePercent ? "%" : ""}`
 }
 
 export function formatScoreNicely(
