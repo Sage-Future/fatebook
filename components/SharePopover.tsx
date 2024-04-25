@@ -151,7 +151,9 @@ const SharePanel = React.forwardRef<
                 htmlFor="hideForecastsUntilPredict"
                 className="text-sm my-auto cursor-pointer"
               >
-                {"Hide forecasts for each viewer until they've made a prediction"}
+                {
+                  "Hide forecasts for each viewer until they've made a prediction"
+                }
               </label>
             </div>
           </div>
@@ -301,10 +303,14 @@ function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
     if (question.sharedWith.length > 0) {
       return (
         <label className="text-sm">
-          <span className="font-semibold">Shared with</span>{" "}
-          {question.sharedWith
-            .map((user) => <Username key={user.id} user={user} />)
-            .join(", ")}
+          <span className="font-semibold">Shared with:</span>{" "}
+          {question.sharedWith.map((user) => (
+            <Username
+              key={user.id}
+              user={user}
+              className="mr-2 leading-relaxed"
+            />
+          ))}
         </label>
       )
     } else {

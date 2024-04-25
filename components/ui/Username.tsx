@@ -16,9 +16,14 @@ export function Username({
 
   return (
     <Link
-      href={getUserPageUrl(user)}
+      href={user.name ? getUserPageUrl(user) : "#"}
       onClick={(e) => e.stopPropagation()}
-      className="no-underline hover:underline"
+      className={clsx(
+        "no-underline ",
+        user.name
+          ? "cursor-pointer hover:underline"
+          : "cursor-default font-normal italic",
+      )}
       target={embedded ? "_blank" : undefined}
     >
       <span className={clsx(className)}>
@@ -26,10 +31,10 @@ export function Username({
           src={user?.image || "/default_avatar.png"}
           width={20}
           height={20}
-          className="inline m-0 mr-2 rounded-full select-none aspect-square"
+          className="inline m-0 mr-1.5 rounded-full select-none aspect-square"
           alt=""
         />
-        <span>{user?.name || "Unknown user"}</span>
+        <span>{user?.name || "Invited user"}</span>
       </span>
     </Link>
   )
