@@ -164,12 +164,12 @@ export function Navbar({
               <ScaleIcon className="w-6 h-6 text-indigo-600" />
               Fatebook
             </Link>
-            {/* {userId && (
+            {userId && (
               <SpecialButton
-                url="/extension"
-                label={<span className="">{"Get the"}</span>}
+                url="https://sage-future.org/jobs"
+                label={<span className="">{"We're hiring!"}</span>}
               />
-            )} */}
+            )}
           </div>
           <div className="flex-none hidden lg:block">
             <ul className="menu menu-horizontal">{menuItems}</ul>
