@@ -65,16 +65,17 @@ export function getGeometricCommunityForecast(
     question.forecasts,
     date,
   ).map(([, forecast]) => nudgeAwayFromZeroOrOne(forecast.forecast.toNumber()))
-  // sum each forecast
+
+  // geometric mean of n elements is prod(N)^(1/n)
   const productOfForecasts: number = uptoDateForecasts.reduce(
-    (acc, forecast) => acc * (forecast / (1 - forecast)),
+    (acc, forecast) => acc * forecast,
     1,
   )
-  const geoMeanOfOdds = Math.pow(
+
+  return Math.pow(
     productOfForecasts,
     1 / uptoDateForecasts.length,
   )
-  return geoMeanOfOdds / (1 + geoMeanOfOdds)
 }
 
 export function getCommunityForecast(
