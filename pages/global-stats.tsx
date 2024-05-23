@@ -26,7 +26,7 @@ import gracefulFs from "graceful-fs"
 
 export async function getStaticProps() {
   gracefulFs.gracefulify(fs)
-
+ 
   const questions = await prisma.question.findMany({
     select: {
       id: true,
