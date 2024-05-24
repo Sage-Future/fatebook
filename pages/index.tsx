@@ -42,11 +42,11 @@ function Sidebar() {
       {userId && <TrackRecord trackRecordUserId={userId} />}
       {userId && <Tournaments />}
       {userId && <UserLists />}
-      <QuickFeedback
+      {userId && <QuickFeedback
         type="Fatebook feedback"
         placeholder="Give feedback on Fatebook..."
         style="textarea"
-      />
+      />}
     </div>
   )
 }
