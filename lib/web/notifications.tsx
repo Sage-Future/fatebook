@@ -129,7 +129,8 @@ export async function sendEmailUnbatched({
       From: "reminders@fatebook.io",
       ReplyTo: "hello@sage-future.org",
       To: to,
-      Subject: subject,
+      Subject:
+        subject.length >= 1999 ? `${subject.slice(0, 1995)}...` : subject,
       HtmlBody: htmlBody,
       TextBody: textBody,
       MessageStream: "outbound",
