@@ -63,13 +63,8 @@ createuser fatebook
 createdb fatebook_development --owner fatebook
 ```
 
-1. In `.env` add the following lines:
-   ```bash
-   DATABASE_URL='postgresql://fatebook:postgres@localhost:5432/fatebook_development'
-   DATABASE_DIRECT_URL='postgresql://fatebook:postgres@localhost:5432/fatebook_development'
-   ```
-2. Run `npm install` to install dependencies.
-3. Run `npm run vercel-build` to set up the Fatebook schema.
+1. Run `npm install` to install dependencies.
+2. Run `npm run vercel-build` to set up the Fatebook schema.
 
 ### Start the server
 
