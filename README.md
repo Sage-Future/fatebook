@@ -44,10 +44,13 @@ brew install postgresql@15
 # Or download and install from https://www.postgresql.org/download
 # If you do this, follow the instructions there for starting the database.
 
-# If you're using Bash rather than Z shell, substitute `~/.bash_profile` for
-# `~/.zshrc` in the following commands.
-echo 'export PATH="/usr/local/opt/postgresql@15/bin:$PATH"' >> ~/.zshrc
+# Follow the instructions that the installer provides on how to add postgresql@15 to your PATH.
+# For example, on some systems it will tell you to do this:
+echo 'export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"' >> ~/.zshrc
 . ~/.zshrc
+
+# If you're using Bash rather than Z shell, substitute `~/.bash_profile` for
+# `~/.zshrc` in the previous commands.
 
 # Start postgres
 LC_ALL="C" /opt/homebrew/opt/postgresql@15/bin/postgres -D /opt/homebrew/var/postgresql@15
