@@ -3,7 +3,6 @@ import { NextResponse } from "next/server"
 import { signingSecret } from "./lib/_constants"
 import { validateSlackRequest } from "./lib/_validate"
 import { verifyDiscordRequest } from "./lib/discord/utils"
-import { parse } from "url"
 
 const redirectUrl: string = "/api/success_response"
 const dateInvalidRedirectUrl: string = "/api/failed_validation"
@@ -48,7 +47,7 @@ export default async function middleware(
 
   if (req.url.includes("for-slack")) {
     if (!req.url.includes("fatebook.io") && req.url.includes("installedTo")) {
-      const parsedUrl = parse(req.url)
+      const parsedUrl = new URL(req.url)
       return NextResponse.redirect(
         new URL(`https://fatebook.io${parsedUrl.pathname}${parsedUrl.search}`),
       )
@@ -59,7 +58,7 @@ export default async function middleware(
 
   if (req.url.includes("api/discord/")) {
     console.log("Validating Discord request: ", bufferBody)
-    const isValid = verifyDiscordRequest(req, bufferBody)
+    const isValid = await verifyDiscordRequest(req, bufferBody)
     if (!isValid) {
       console.log("Validation failed")
       return NextResponse.redirect(new URL(slackInvalidRedirectUrl, req.url)) // todo make a discord invalid redirect

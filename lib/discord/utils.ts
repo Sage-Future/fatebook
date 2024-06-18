@@ -2,7 +2,7 @@ import { VercelResponse } from "@vercel/node"
 import { verifyKey } from "discord-interactions"
 import { NextRequest } from "next/server"
 
-export function verifyDiscordRequest(req: NextRequest, buf: ArrayBuffer) {
+export async function verifyDiscordRequest(req: NextRequest, buf: ArrayBuffer) {
   const signature = req.headers.get("X-Signature-Ed25519")
   const timestamp = req.headers.get("X-Signature-Timestamp")
 
@@ -15,7 +15,7 @@ export function verifyDiscordRequest(req: NextRequest, buf: ArrayBuffer) {
     throw new Error("Missing DISCORD_PUBLIC_KEY")
   }
 
-  const isValidRequest = verifyKey(
+  const isValidRequest = await verifyKey(
     buf,
     signature,
     timestamp,

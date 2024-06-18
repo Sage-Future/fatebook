@@ -14,7 +14,7 @@ import {
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import { useState } from "react"
-import { ReactMarkdown } from "react-markdown/lib/react-markdown"
+import ReactMarkdown from "react-markdown"
 import { generateRandomId } from "../lib/_utils_common"
 
 export function TabbedQuestionSuggestions({

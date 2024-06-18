@@ -1,5 +1,5 @@
 import { Question, Tournament, User, UserList } from "@prisma/client"
-import { utcToZonedTime } from "date-fns-tz"
+import { toZonedTime } from "date-fns-tz"
 import isWebview from "is-ua-webview"
 import { signIn, useSession } from "next-auth/react"
 import { Fragment, ReactNode, useEffect, useState } from "react"
@@ -258,7 +258,7 @@ export function hashString(str: string) {
 
 export function utcDateStrToLocalDate(utcDateStr: string) {
   const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  const localDate = utcToZonedTime(utcDateStr, localTimezone)
+  const localDate = toZonedTime(utcDateStr, localTimezone)
 
   return localDate
 }

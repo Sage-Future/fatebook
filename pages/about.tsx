@@ -1,6 +1,6 @@
 import { NextSeo } from "next-seo"
 import Image from "next/image"
-import { ReactMarkdown } from "react-markdown/lib/react-markdown"
+import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { WhyForecastInfo } from "../components/WhyForecastInfo"
 import { webFeedbackUrl } from "../lib/web/utils"

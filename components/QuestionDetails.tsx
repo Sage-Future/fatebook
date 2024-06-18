@@ -1,6 +1,6 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid"
 import { useRouter } from "next/router"
-import { Fragment, ReactNode, useState } from "react"
+import { Fragment, LegacyRef, ReactNode, forwardRef, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { toast } from "react-hot-toast"
 import {
@@ -23,13 +23,15 @@ import { FormattedDate } from "./ui/FormattedDate"
 import { InfoButton } from "./ui/InfoButton"
 import { Username } from "./ui/Username"
 
-export function QuestionDetails({
-  question,
-  hideOthersForecastsIfSharedWithUser,
-}: {
+interface QuestionDetailsProps {
   question: QuestionWithStandardIncludes
   hideOthersForecastsIfSharedWithUser?: boolean
-}) {
+}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const QuestionDetails = forwardRef(function QuestionDetails(
+  { question, hideOthersForecastsIfSharedWithUser }: QuestionDetailsProps,
+  ref: LegacyRef<HTMLDivElement>,
+) {
   const userId = useUserId()
   const hideOthersForecasts =
     hideOthersForecastsIfSharedWithUser &&
@@ -52,6 +54,7 @@ export function QuestionDetails({
     <div
       className="bg-neutral-100 border-[1px] px-8 py-4 text-sm flex flex-col gap-4 rounded-b-md shadow-sm group-hover:shadow-md"
       onClick={(e) => e.stopPropagation()}
+      ref={ref}
     >
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         {!userId && (
@@ -105,7 +108,7 @@ export function QuestionDetails({
       </ErrorBoundary>
     </div>
   )
-}
+})
 
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()

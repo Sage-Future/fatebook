@@ -578,41 +578,18 @@ export function buildPredictOptions(
   question: Question,
   reminderBlockForecastIds: number[] = [],
 ): InputBlock | ActionsBlock {
-  const useFreeTextInput = true
-
-  const quickPredictOptions = [10, 30, 50, 70, 90]
-
-  if (useFreeTextInput) {
-    return {
-      dispatch_action: true,
-      type: "input",
-      element: {
-        type: "plain_text_input",
-        placeholder: textBlock("XX%"),
-        action_id: toActionId({
-          action: "submitTextForecast",
-          questionId: question.id,
-          reminderBlockForecastIds,
-        }),
-      },
-      label: textBlock("Make a prediction"),
-    }
-  } else {
-    return {
-      type: "actions",
-      elements: [
-        ...quickPredictOptions.map((option) => ({
-          type: "button",
-          text: textBlock(`${option}%`),
-          style: "primary",
-          value: "click_me_123",
-        })),
-        {
-          type: "button",
-          text: textBlock("...."),
-          value: "click_me_123",
-        },
-      ],
-    }
+  return {
+    dispatch_action: true,
+    type: "input",
+    element: {
+      type: "plain_text_input",
+      placeholder: textBlock("XX%"),
+      action_id: toActionId({
+        action: "submitTextForecast",
+        questionId: question.id,
+        reminderBlockForecastIds,
+      }),
+    },
+    label: textBlock("Make a prediction"),
   }
 }

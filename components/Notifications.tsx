@@ -3,7 +3,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { LoaderIcon } from "react-hot-toast"
 import { InView } from "react-intersection-observer"
-import { ReactMarkdown } from "react-markdown/lib/react-markdown"
+import ReactMarkdown from "react-markdown"
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { FormattedDate } from "./ui/FormattedDate"
@@ -51,7 +51,7 @@ export function Notifications() {
         }
         return (
           notification && (
-            <Link href={notification.url || "#"}>
+            <Link href={notification.url || "#"} key={notification.id}>
               <div
                 key={notification.id}
                 className={clsx(

@@ -1,15 +1,15 @@
+import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
+import { maxDecimalPlacesForecastForecastListing } from "../_constants"
 import {
   Blocks,
   buildForecastQuestionText,
   buildPredictOptions,
+  dividerBlock,
   historyAndFeedbackFooter,
+  markdownBlock,
   textBlock,
   toActionId,
 } from "./_block_utils"
-import { markdownBlock } from "./_block_utils"
-import { ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts } from "../../prisma/additional"
-import { maxDecimalPlacesForecastForecastListing } from "../_constants"
-import { dividerBlock } from "./_block_utils"
 
 export async function buildStaleForecastsReminderBlock(
   forecasts: ForecastWithQuestionWithQMessagesAndRMessagesAndForecasts[],
@@ -54,6 +54,7 @@ async function buildListForecastsBlock(
 ) {
   let blocks: Blocks = []
   for (const forecast of forecasts) {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     blocks = blocks.concat([
       {
         type: "section",
