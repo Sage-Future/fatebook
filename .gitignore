@@ -20,3 +20,6 @@ localhost.pem
 
 # Sentry Auth Token
 .sentryclirc
+
+.env*.local
+.idea
