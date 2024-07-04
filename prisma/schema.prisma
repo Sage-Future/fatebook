@@ -9,6 +9,12 @@ datasource db {
   directUrl = env("DATABASE_DIRECT_URL")
 }
 
+enum QuestionType {
+  BINARY
+  MULTIPLE_CHOICE
+  QUANTITY
+}
+
 model Workspace {
   teamId    String   @id @unique
   teamName  String
@@ -17,16 +23,19 @@ model Workspace {
 }
 
 model Forecast {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
+  id         Int             @id @default(autoincrement())
+  createdAt  DateTime        @default(now())
   comment    String?
   forecast   Decimal
   profileId  Int?
   questionId String
+  optionId   String?
+  option     QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  value      Float?
   userId     String
-  profile    Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile    Profile?        @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
+  question   Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model QuestionScore {
@@ -42,16 +51,31 @@ model QuestionScore {
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model QuestionOption {
+  id              String            @id @default(cuid())
+  questionId      String
+  text            String
+  value           Float?
+  question        Question          @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  forecasts       Forecast[]
+  ResolutionValue ResolutionValue[]
+}
+
 model Question {
   id                           String                   @id @default(cuid())
   createdAt                    DateTime                 @default(now())
   comment                      String? // todo remove, unused
   profileId                    Int?
   title                        String                   @db.Text
+  type                         QuestionType             @default(BINARY)
+  options                      QuestionOption[]
+  minValue                     Float?
+  maxValue                     Float?
   resolveBy                    DateTime
   resolved                     Boolean                  @default(false)
   pingedForResolution          Boolean                  @default(false)
   resolution                   Resolution?
+  resolutionValue              ResolutionValue?
   resolvedAt                   DateTime?
   notes                        String?
   hideForecastsUntil           DateTime?
@@ -207,6 +231,15 @@ enum Resolution {
   YES
   NO
   AMBIGUOUS
+}
+
+model ResolutionValue {
+  id         String          @id @default(cuid())
+  questionId String          @unique
+  question   Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId   String?
+  option     QuestionOption? @relation(fields: [optionId], references: [id])
+  value      Float?
 }
 
 // OAuth account, e.g. google - used by next-auth for web
