@@ -20,13 +20,35 @@ import { z } from "zod"
 import { getDateYYYYMMDD, tomorrowDate } from "../lib/_utils_common"
 import { api } from "../lib/web/trpc"
 import { signInToFatebook, utcDateStrToLocalDate } from "../lib/web/utils"
-import { FormattedDate } from "./ui/FormattedDate"
-import { InfoButton } from "./ui/InfoButton"
 import { fatebookUrl } from "../lib/_constants"
+import BinaryQuestion from "./questions/question-types/BinaryQuestion"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
 >
+
+interface QuestionDefaults {
+  title?: string
+  tournamentId?: string
+  resolveBy?: Date
+  shareWithListIds?: string[]
+  sharePublicly?: boolean
+  unlisted?: boolean
+}
+
+interface PredictProps {
+  questionDefaults?: QuestionDefaults
+  textAreaRef?: React.RefObject<HTMLTextAreaElement>
+  onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
+  embedded?: boolean
+  resetTrigger?: boolean
+  setResetTrigger?: (arg: boolean) => void
+  resolveByButtons?: { date: Date; label: string }[]
+  showQuestionSuggestionsButton?: boolean
+  placeholder?: string
+  small?: boolean
+  smartSetDates?: boolean
+}
 
 export function Predict({
   questionDefaults,
@@ -40,26 +62,7 @@ export function Predict({
   placeholder,
   small,
   smartSetDates = true,
-}: {
-  questionDefaults?: {
-    title?: string
-    tournamentId?: string
-    resolveBy?: Date
-    shareWithListIds?: string[]
-    sharePublicly?: boolean
-    unlisted?: boolean
-  }
-  textAreaRef?: React.RefObject<HTMLTextAreaElement>
-  onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
-  embedded?: boolean
-  resetTrigger?: boolean
-  setResetTrigger?: (arg: boolean) => void
-  resolveByButtons?: { date: Date; label: string }[]
-  showQuestionSuggestionsButton?: boolean
-  placeholder?: string
-  small?: boolean
-  smartSetDates?: boolean
-}) {
+}: PredictProps) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
 
@@ -87,7 +90,6 @@ export function Predict({
     "resolveBy",
     getDateYYYYMMDD(questionDefaults?.resolveBy || tomorrowDate()),
   )
-  const predictionPercentage = watch("predictionPercentage")
 
   const session = useSession()
   const userId = session.data?.user.id
@@ -241,18 +243,6 @@ export function Predict({
     }
   }
 
-  const onDateKeydown = (e: KeyboardEvent) => {
-    onEnterSubmit(e)
-    if (e.key === "Tab") {
-      e.preventDefault()
-      if (e.shiftKey) {
-        textAreaRef!.current?.focus()
-      } else {
-        predictionInputRefMine.current?.focus()
-      }
-    }
-  }
-
   useEffect(() => {
     setFocus("question")
     if (
@@ -267,12 +257,6 @@ export function Predict({
   }, [setFocus])
 
   const [highlightResolveBy, setHighlightResolveBy] = useState(false)
-
-  const { ref: predictionInputRef, ...predictionPercentageRegister } = register(
-    "predictionPercentage",
-    { valueAsNumber: true },
-  )
-  const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
   const [showSuggestions, setShowSuggestions] = useState(false)
 
@@ -391,193 +375,23 @@ export function Predict({
             </div>
           )}
 
-          <div className="flex flex-row gap-8 flex-wrap justify-between">
-            <div className="flex flex-row gap-2">
-              <div className="flex flex-col">
-                <label
-                  className={clsx("flex", small && "text-sm")}
-                  htmlFor="resolveBy"
-                >
-                  Resolve by
-                  <InfoButton
-                    className="ml-1 tooltip-right"
-                    tooltip="When should I remind you to resolve this question?"
-                  />
-                </label>
-                <div className="flex flex-wrap gap-1">
-                  <div className="flex flex-col">
-                    <input
-                      className={clsx(
-                        "border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
-                        small ? "text-sm" : "text-md",
-                        errors.resolveBy && "border-red-500",
-                        highlightResolveBy &&
-                          "shadow-[0_0_50px_-1px_rgba(0,0,0,1)] shadow-indigo-700 duration-100",
-                      )}
-                      type="date"
-                      defaultValue={getDateYYYYMMDD(
-                        new Date(questionDefaults?.resolveBy || tomorrowDate()),
-                      )}
-                      onKeyDown={onDateKeydown}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      {...register("resolveBy", { required: true })}
-                    />
-                    <span className="italic text-neutral-400 text-sm p-1">
-                      {!resolveByButtons && (
-                        <FormattedDate
-                          date={utcDateStrToLocalDate(resolveByUTCStr)}
-                          alwaysUseDistance={true}
-                          capitalise={true}
-                          currentDateShowToday={true}
-                          includeTime={false}
-                        />
-                      )}
-                      {resolveByButtons && (
-                        <div className="mt-2 flex flex-wrap gap-0.5 shrink justify-between">
-                          {resolveByButtons.map(({ date, label }) => (
-                            <button
-                              key={label}
-                              className={clsx(
-                                "btn btn-xs grow-0",
-                                getDateYYYYMMDD(date) ===
-                                  getDateYYYYMMDD(
-                                    utcDateStrToLocalDate(resolveByUTCStr),
-                                  ) || "btn-ghost",
-                              )}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                setValue("resolveBy", getDateYYYYMMDD(date))
-                              }}
-                            >
-                              {label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="min-w-fit">
-                <label
-                  className={clsx("flex", small && "text-sm")}
-                  htmlFor="resolveBy"
-                >
-                  Make a prediction
-                  <InfoButton
-                    className="ml-1 tooltip-left"
-                    tooltip="How likely do you think the answer is to be YES?"
-                  />
-                </label>
-                <div
-                  className={clsx(
-                    "text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:border-indigo-700 relative",
-                    small ? "text-sm" : "text-md",
-                    errors.predictionPercentage && "border-red-500",
-                  )}
-                >
-                  <div
-                    className={clsx(
-                      "h-full bg-indigo-700 absolute -m-2 rounded-l pointer-events-none opacity-20 bg-gradient-to-br from-indigo-400 to-indigo-600 transition-all",
-                      predictionPercentage >= 100 && "rounded-r",
-                    )}
-                    style={{
-                      width: `${Math.min(
-                        Math.max(predictionPercentage || 0, 0),
-                        100,
-                      )}%`,
-                    }}
-                  />
-                  <input
-                    className={clsx(
-                      "resize-none text-right w-7 flex-grow outline-none bg-transparent z-10 font-bold placeholder:font-normal placeholder:text-neutral-400",
-                      small ? "text-md p-px" : "text-xl",
-                    )}
-                    autoComplete="off"
-                    type="number"
-                    inputMode="decimal"
-                    pattern="[0-9[.]*"
-                    placeholder="XX"
-                    onKeyDown={onEnterSubmit}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    {...predictionPercentageRegister}
-                    ref={(e) => {
-                      predictionInputRef(e)
-                      predictionInputRefMine.current = e
-                    }}
-                  />
-                  <span
-                    onClick={() => {
-                      ;(predictionInputRefMine.current as any)?.focus()
-                    }}
-                    className={clsx(
-                      "ml-px z-10 text-md font-bold select-none cursor-text",
-                      !predictionPercentage && "text-neutral-400",
-                    )}
-                  >
-                    %
-                  </span>
-                </div>
-              </div>
-
-              {embedded && (
-                <div className="flex items-center">
-                  <label
-                    htmlFor="sharePublicly"
-                    className="text-sm max-w-[8rem] ml-2"
-                  >
-                    Share with anyone with the link?
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="sharePublicly"
-                    defaultChecked={
-                      typeof window !== "undefined" &&
-                      window.localStorage.getItem("lastSharedPubliclyState") ===
-                        "true"
-                    }
-                    className="ml-2 checkbox check"
-                    onClick={(e) => {
-                      // NB: only works per-site, but better than nothing
-                      localStorage.setItem(
-                        "lastSharedPubliclyState",
-                        e.currentTarget.checked ? "true" : "false",
-                      )
-                    }}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    {...register("sharePublicly")}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="self-center">
-              <button
-                onClick={(e) => {
-                  e.preventDefault()
-                  void handleSubmit(onSubmit, () => {
-                    // on invalid:
-                    if (!userId) {
-                      if (embedded) {
-                        window.open("https://fatebook.io", "_blank")?.focus()
-                      } else {
-                        void signInToFatebook()
-                      }
-                    }
-                  })()
-                }}
-                className="btn btn-primary btn-lg hover:scale-105"
-                disabled={
-                  !!userId && Object.values(errors).some((err) => !!err)
-                }
-              >
-                {userId || session.status === "loading"
-                  ? "Predict"
-                  : "Sign up to predict"}
-              </button>
-            </div>
-          </div>
+          <BinaryQuestion
+            small={small}
+            resolveByButtons={resolveByButtons}
+            questionDefaults={questionDefaults}
+            embedded={embedded}
+            userId={userId}
+            onSubmit={onSubmit}
+            signInToFatebook={signInToFatebook}
+            session={session}
+            register={register}
+            setValue={setValue}
+            errors={errors}
+            watch={watch}
+            handleSubmit={handleSubmit}
+            textAreaRef={textAreaRef}
+            highlightResolveBy={highlightResolveBy}
+          ></BinaryQuestion>
         </form>
       </ErrorBoundary>
     </div>
