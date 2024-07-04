@@ -22,6 +22,7 @@ import { api } from "../lib/web/trpc"
 import { signInToFatebook, utcDateStrToLocalDate } from "../lib/web/utils"
 import { FormattedDate } from "./ui/FormattedDate"
 import { InfoButton } from "./ui/InfoButton"
+import { fatebookUrl } from "../lib/_constants"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
@@ -120,7 +121,7 @@ export function Predict({
             SuperJSON.stringify(data),
           )
           if (embedded) {
-            window.open("https://fatebook.io", "_blank")?.focus()
+            window.open(fatebookUrl, "_blank")?.focus()
           } else {
             void signInToFatebook()
           }
