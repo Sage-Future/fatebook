@@ -298,6 +298,24 @@ export function Predict({
     }
   }
 
+  const binaryQuestionProps = {
+    small,
+    resolveByButtons,
+    questionDefaults,
+    embedded,
+    userId,
+    onSubmit,
+    signInToFatebook,
+    session,
+    register,
+    setValue,
+    errors,
+    watch,
+    handleSubmit,
+    textAreaRef,
+    highlightResolveBy,
+  }
+
   return (
     <div className="w-full">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -368,30 +386,13 @@ export function Predict({
               />
             </Transition>
           </div>
-
           {tagsPreview?.length > 0 && (
             <div className="italic text-neutral-400 text-sm p-1 mb-2">
               Tagging this question: {tagsPreview.join(", ")}
             </div>
           )}
 
-          <BinaryQuestion
-            small={small}
-            resolveByButtons={resolveByButtons}
-            questionDefaults={questionDefaults}
-            embedded={embedded}
-            userId={userId}
-            onSubmit={onSubmit}
-            signInToFatebook={signInToFatebook}
-            session={session}
-            register={register}
-            setValue={setValue}
-            errors={errors}
-            watch={watch}
-            handleSubmit={handleSubmit}
-            textAreaRef={textAreaRef}
-            highlightResolveBy={highlightResolveBy}
-          ></BinaryQuestion>
+          <BinaryQuestion {...binaryQuestionProps} />
         </form>
       </ErrorBoundary>
     </div>
