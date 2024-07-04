@@ -16,7 +16,7 @@ import {
   YAxis,
 } from "recharts"
 import { FormattedDate } from "../components/ui/FormattedDate"
-import { getDateYYYYMMDD, mean, round } from "../lib/_utils_common"
+import { getDateYYYYMMDD, mean, round, truthyLog } from "../lib/_utils_common"
 import prisma from "../lib/prisma"
 import { getCsvIdPrefix, getPredictionBookIdPrefix } from "../lib/web/utils"
 
@@ -26,7 +26,7 @@ import gracefulFs from "graceful-fs"
 
 export async function getStaticProps() {
   gracefulFs.gracefulify(fs)
- 
+
   const questions = await prisma.question.findMany({
     select: {
       id: true,
@@ -384,6 +384,32 @@ export async function getStaticProps() {
           data: questions.map((question) => question.forecasts.length),
           thresholds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 50, 100],
         },
+        {
+          type: "histogram",
+          title: "Comments created per user",
+          data: Object.values(
+            questions
+              .flatMap((q) => q.comments)
+              .reduce(
+                (acc, c) => {
+                  if (acc[c.userId]) {
+                    acc[c.userId]++
+                  } else {
+                    acc[c.userId] = 1
+                  }
+                  return acc
+                },
+                users.reduce(
+                  (acc, user) => ({ ...acc, [user.id]: 0 }),
+                  {},
+                ) as Record<string, number>,
+              ),
+          ),
+          thresholds: [
+            0, 1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80,
+            85, 90, 95, 100,
+          ],
+        },
       ],
     },
     {
@@ -434,6 +460,18 @@ export async function getStaticProps() {
           questionScoresByUser.filter(
             (userScores) => userScores.length > accuracyN * 2,
           ).length,
+        "Avg Brier for all resolved questions": round(
+          mean(questionScores.map((score) => score.absoluteScore.toNumber())),
+          2,
+        ),
+        "Avg relative Brier for all resolved questions": round(
+          mean(
+            questionScores
+              .filter((score) => score.relativeScore !== null)
+              .map((score) => score.relativeScore!.toNumber()),
+          ),
+          2,
+        ),
       },
       chartData: [
         {
@@ -488,6 +526,14 @@ export async function getStaticProps() {
               hideRollingAvg: true,
             },
           ],
+        },
+        {
+          type: "histogram",
+          title: "User Brier scores",
+          data: questionScoresByUser.map((userScores) =>
+            mean(userScores.map((score) => score.absoluteScore.toNumber())),
+          ),
+          thresholds: [0, 0.2, 0.4, 0.6, 0.8, 1],
         },
       ],
     },
@@ -671,17 +717,21 @@ export default function GlobalStatsPage({
                           <BarChart
                             data={bin()
                               .thresholds(chart.thresholds)(chart.data)
-                              .map((bin) => ({
-                                name:
-                                  bin.x0 !== undefined && bin.x0 + 1 === bin.x1
-                                    ? bin.x0
-                                    : bin.x0 +
-                                      "-" +
-                                      (bin.x1 !== undefined
-                                        ? bin.x1 - 1
-                                        : bin.x1),
-                                value: bin.length,
-                              }))}
+                              .map(
+                                (bin) =>
+                                  truthyLog(bin) && {
+                                    name:
+                                      bin.x0 !== undefined &&
+                                      bin.x0 + 1 === bin.x1
+                                        ? bin.x0
+                                        : bin.x0 +
+                                          "-" +
+                                          (bin.x1 !== undefined && bin.x1 > 1
+                                            ? bin.x1 - 1
+                                            : bin.x1),
+                                    value: bin.length,
+                                  },
+                              )}
                             margin={{
                               top: 5,
                               right: 30,
