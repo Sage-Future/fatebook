@@ -4,7 +4,7 @@ import {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form"
-import React from "react"
+import { MutableRefObject } from "react"
 
 // eslint-disable-next-line no-unused-vars
 interface QuestionTypeProps<
@@ -30,6 +30,6 @@ interface QuestionTypeProps<
   errors: FieldErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
-  textAreaRef?: React.RefObject<HTMLTextAreaElement>
+  textAreaRef?: MutableRefObject<HTMLTextAreaElement>
   highlightResolveBy: boolean
 }

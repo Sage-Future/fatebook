@@ -3,12 +3,7 @@ import { InfoButton } from "../ui/InfoButton"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
 import { FormattedDate } from "../ui/FormattedDate"
 import { utcDateStrToLocalDate } from "../../lib/web/utils"
-import React, {
-  KeyboardEvent,
-  MutableRefObject,
-  useEffect,
-  useRef,
-} from "react"
+import { KeyboardEvent, MutableRefObject, useEffect, useRef } from "react"
 import {
   FieldErrors,
   UseFormHandleSubmit,
@@ -35,9 +30,9 @@ interface ResolveByProps<
   errors: FieldErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
-  textAreaRef?: React.RefObject<HTMLTextAreaElement>
+  textAreaRef?: MutableRefObject<HTMLTextAreaElement>
+  predictionInputRefMine?: MutableRefObject<HTMLInputElement | null>
   highlightResolveBy: boolean
-  predictionInputRefMine: MutableRefObject<HTMLInputElement | null>
 }
 
 export function ResolveBy({
@@ -51,8 +46,8 @@ export function ResolveBy({
   watch,
   handleSubmit,
   textAreaRef,
-  highlightResolveBy,
   predictionInputRefMine,
+  highlightResolveBy,
 }: ResolveByProps) {
   const resolveByUTCStr = watch("resolveBy")
 
@@ -72,7 +67,7 @@ export function ResolveBy({
       if (e.shiftKey) {
         textAreaRef!.current?.focus()
       } else {
-        predictionInputRefMine.current?.focus()
+        predictionInputRefMine!.current?.focus()
       }
     }
   }
