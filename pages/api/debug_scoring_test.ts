@@ -1,4 +1,10 @@
-import { Forecast, Prisma, Question, Resolution } from "@prisma/client"
+import {
+  Forecast,
+  Prisma,
+  Question,
+  QuestionType,
+  Resolution,
+} from "@prisma/client"
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import { relativeBrierScoring } from "../../lib/_scoring"
 import { floatEquality } from "../../lib/_utils_common"
@@ -24,6 +30,7 @@ function createForecast(
     questionId: questionid,
     createdAt: addDays(startDate, dateOffset),
     comment: "test",
+    optionId: null,
   }
 
   return forecast
@@ -70,6 +77,7 @@ function getQuestion(days: number): Question {
     hideForecastsUntilPrediction: null,
     sharedPublicly: false,
     unlisted: false,
+    type: QuestionType.BINARY,
   }
 }
 
