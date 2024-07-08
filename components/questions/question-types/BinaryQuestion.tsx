@@ -1,10 +1,10 @@
-import { KeyboardEvent, useEffect, useRef } from "react"
+import { KeyboardEvent, useRef } from "react"
 import clsx from "clsx"
-import { FormattedDate } from "../../ui/FormattedDate"
 import { InfoButton } from "../../ui/InfoButton"
-import { getDateYYYYMMDD, tomorrowDate } from "../../../lib/_utils_common"
-import { utcDateStrToLocalDate } from "../../../lib/web/utils"
 import { QuestionTypeProps } from "./question-types"
+import { ResolveBy } from "../ResolveBy"
+import { EmbeddedOptions } from "../EmbeddedOptions"
+import { PredictButton } from "../PredictButton"
 
 interface BinaryQuestionProps extends QuestionTypeProps {}
 
@@ -25,7 +25,7 @@ export function BinaryQuestion({
   highlightResolveBy,
 }: BinaryQuestionProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
-  const resolveByUTCStr = watch("resolveBy")
+
   const predictionPercentage = watch("predictionPercentage")
 
   const predictionPercentageRegister = register("predictionPercentage", {
@@ -41,107 +41,33 @@ export function BinaryQuestion({
     }
   }
 
-  const onDateKeydown = (e: KeyboardEvent) => {
-    onEnterSubmit(e)
-    if (e.key === "Tab") {
-      e.preventDefault()
-      if (e.shiftKey) {
-        textAreaRef!.current?.focus()
-      } else {
-        predictionInputRefMine.current?.focus()
-      }
-    }
+  const resolveByProps = {
+    small,
+    resolveByButtons,
+    questionDefaults,
+    onSubmit,
+    register,
+    setValue,
+    errors,
+    watch,
+    handleSubmit,
+    textAreaRef,
+    highlightResolveBy,
+    predictionInputRefMine,
   }
 
-  const resolveByInputRef = useRef<HTMLInputElement | null>(null)
-
-  useEffect(() => {
-    if (resolveByInputRef.current) {
-      if (highlightResolveBy) {
-        resolveByInputRef.current.classList.add(
-          "shadow-[0_0_50px_-1px_rgba(0,0,0,1)]",
-          "shadow-indigo-700",
-          "duration-100",
-        )
-      } else {
-        resolveByInputRef.current.classList.remove(
-          "shadow-[0_0_50px_-1px_rgba(0,0,0,1)]",
-          "shadow-indigo-700",
-          "duration-100",
-        )
-      }
-    }
-  }, [highlightResolveBy])
+  const predictButtonProps = {
+    userId,
+    onSubmit,
+    session,
+    errors,
+    handleSubmit,
+  }
 
   return (
     <div className="flex flex-row gap-8 flex-wrap justify-between">
       <div className="flex flex-row gap-2">
-        <div className="flex flex-col">
-          <label
-            className={clsx("flex", small && "text-sm")}
-            htmlFor="resolveBy"
-          >
-            Resolve by
-            <InfoButton
-              className="ml-1 tooltip-right"
-              tooltip="When should I remind you to resolve this question?"
-            />
-          </label>
-          <div className="flex flex-wrap gap-1">
-            <div className="flex flex-col">
-              <input
-                className={clsx(
-                  "border-2 border-neutral-300 rounded-md p-2 resize-none focus:outline-indigo-700 transition-shadow duration-1000",
-                  small ? "text-sm" : "text-md",
-                  errors.resolveBy && "border-red-500",
-                )}
-                type="date"
-                defaultValue={getDateYYYYMMDD(
-                  new Date(questionDefaults?.resolveBy || tomorrowDate()),
-                )}
-                onKeyDown={onDateKeydown}
-                onMouseDown={(e) => e.stopPropagation()}
-                ref={(e) => {
-                  resolveByInputRef.current = e
-                  register("resolveBy", { required: true }).ref(e)
-                }}
-              />
-              <span className="italic text-neutral-400 text-sm p-1">
-                {!resolveByButtons && (
-                  <FormattedDate
-                    date={utcDateStrToLocalDate(resolveByUTCStr)}
-                    alwaysUseDistance={true}
-                    capitalise={true}
-                    currentDateShowToday={true}
-                    includeTime={false}
-                  />
-                )}
-                {resolveByButtons && (
-                  <div className="mt-2 flex flex-wrap gap-0.5 shrink justify-between">
-                    {resolveByButtons.map(({ date, label }) => (
-                      <button
-                        key={label}
-                        className={clsx(
-                          "btn btn-xs grow-0",
-                          getDateYYYYMMDD(date) ===
-                            getDateYYYYMMDD(
-                              utcDateStrToLocalDate(resolveByUTCStr),
-                            ) || "btn-ghost",
-                        )}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          setValue("resolveBy", getDateYYYYMMDD(date))
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </span>
-            </div>
-          </div>
-        </div>
+        <ResolveBy {...resolveByProps}></ResolveBy>
 
         <div className="min-w-fit">
           <label
@@ -203,49 +129,11 @@ export function BinaryQuestion({
           </div>
         </div>
 
-        {embedded && (
-          <div className="flex items-center">
-            <label
-              htmlFor="sharePublicly"
-              className="text-sm max-w-[8rem] ml-2"
-            >
-              Share with anyone with the link?
-            </label>
-            <input
-              type="checkbox"
-              id="sharePublicly"
-              defaultChecked={
-                typeof window !== "undefined" &&
-                window.localStorage.getItem("lastSharedPubliclyState") ===
-                  "true"
-              }
-              className="ml-2 checkbox check"
-              onClick={(e) => {
-                localStorage.setItem(
-                  "lastSharedPubliclyState",
-                  e.currentTarget.checked ? "true" : "false",
-                )
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-              {...register("sharePublicly")}
-            />
-          </div>
-        )}
+        {embedded && <EmbeddedOptions register={register} />}
       </div>
 
       <div className="self-center">
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-            void handleSubmit(onSubmit)(e)
-          }}
-          className="btn btn-primary btn-lg hover:scale-105"
-          disabled={!!userId && Object.values(errors).some((err) => !!err)}
-        >
-          {userId || session.status === "loading"
-            ? "Predict"
-            : "Sign up to predict"}
-        </button>
+        <PredictButton {...predictButtonProps} />
       </div>
     </div>
   )
