@@ -12,7 +12,12 @@ import React, {
   useState,
 } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { SubmitHandler, useForm } from "react-hook-form"
+import {
+  SubmitHandler,
+  useForm,
+  UseFormReturn,
+  useWatch,
+} from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
 import TextareaAutosize from "react-textarea-autosize"
 import SuperJSON from "trpc-transformer"
@@ -23,10 +28,72 @@ import { signInToFatebook, utcDateStrToLocalDate } from "../lib/web/utils"
 import { fatebookUrl } from "../lib/_constants"
 import BinaryQuestion from "./questions/question-types/BinaryQuestion"
 import { QuestionSuggestions } from "./questions/QuestionSuggestions"
+import { QuestionType } from "@prisma/client"
+import MultiChoiceQuestion from "./questions/question-types/MultiChoiceQuestion"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
 >
+
+const optionSchema = z.object({
+  text: z.string().min(1, "Option text is required"),
+  forecast: z.preprocess(
+    (val) => (typeof val === "string" ? parseFloat(val) : val),
+    z.number().min(0).max(100, "Forecast must be between 0 and 100"),
+  ),
+})
+
+// const multiChoicePredictFormSchema = z.object({
+//   question: z.string().min(1, "Question is required"),
+//   resolveBy: z.string(),
+//   options: z
+//     .array(optionSchema)
+//     .min(2, "At least two options are required")
+//     .max(10, "Maximum 10 options allowed")
+//     .refine(
+//       (options) => {
+//         console.log("Number of options:", options.length)
+//         console.log("Raw options data:", JSON.stringify(options, null, 2))
+//
+//         let totalForecast = 0
+//         options.forEach((option, index) => {
+//           const forecast = isNaN(option.forecast)
+//             ? 0
+//             : Number(option.forecast)
+//           console.log(`Option ${index + 1}:`, JSON.stringify(option))
+//           console.log(`Option ${index + 1} forecast (processed):`, forecast)
+//           totalForecast += forecast
+//         })
+//         console.log(`Total forecast sum: ${totalForecast}`)
+//         console.log(`Difference from 100: ${Math.abs(totalForecast - 100)}`)
+//         return Math.abs(totalForecast - 100) < 0.01
+//       },
+//       {
+//         message: "The sum of all forecasts must equal 100%",
+//       },
+//     ),
+//   sharePublicly: z.boolean().optional(),
+// })
+
+// Create a unified schema
+// const unifiedPredictFormSchema = z.union([
+//   binaryPredictFormSchema,
+//   multiChoicePredictFormSchema,
+// ])
+
+const unifiedPredictFormSchema = z.object({
+  question: z.string().min(1, "Question is required"),
+  resolveBy: z.string(),
+  options: z
+    .array(optionSchema)
+    .min(2, "At least two options are required")
+    .max(10, "Maximum 10 options allowed")
+    .optional(),
+  predictionPercentage: z.number().min(0).max(100).or(z.nan()).optional(),
+  sharePublicly: z.boolean().optional(),
+})
+
+export type PredictFormType = z.infer<typeof unifiedPredictFormSchema>
 
 interface QuestionDefaults {
   title?: string
@@ -64,28 +131,96 @@ export function Predict({
   small,
   smartSetDates = true,
 }: PredictProps) {
+  // TODO: implement a component to choose this
+  let questionType: QuestionType
+  // eslint-disable-next-line no-constant-condition
+  if (2 === 2) {
+    questionType = QuestionType.MULTIPLE_CHOICE
+  } else {
+    questionType = QuestionType.BINARY
+  }
+
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
 
-  const predictFormSchema = z.object({
-    question: z.string().min(1),
-    resolveBy: z.string(),
-    predictionPercentage: z.number().min(0).max(100).or(z.nan()),
-    sharePublicly: z.boolean().optional(),
-  })
+  // const binaryPredictFormSchema = z.object({
+  //   question: z.string().min(1),
+  //   resolveBy: z.string(),
+  //   predictionPercentage: z.number().min(0).max(100).or(z.nan()),
+  //   sharePublicly: z.boolean().optional(),
+  // })
+
+  // TODO: move this somewhere else
+  function usePredictForm(
+    questionType: QuestionType,
+  ): UseFormReturn<PredictFormType> & {
+    setQuestionType: (type: QuestionType) => void
+  } {
+    const form = useForm<PredictFormType>({
+      mode: "all",
+      resolver: zodResolver(unifiedPredictFormSchema),
+    })
+
+    // console.log(form.getValues("options"))
+
+    const setQuestionType = useCallback(
+      (newType: QuestionType) => {
+        const currentValues = form.getValues()
+        if (newType === QuestionType.MULTIPLE_CHOICE) {
+          form.reset(
+            {
+              ...currentValues,
+              options: currentValues.options?.length
+                ? currentValues.options
+                : [
+                    { text: "", forecast: NaN },
+                    { text: "", forecast: NaN },
+                    { text: "", forecast: NaN },
+                    { text: "", forecast: NaN },
+                  ],
+              predictionPercentage: undefined,
+            },
+            { keepDefaultValues: true },
+          )
+        } else {
+          form.reset(
+            {
+              ...currentValues,
+              predictionPercentage: currentValues.predictionPercentage ?? NaN,
+              options: undefined,
+            },
+            { keepDefaultValues: true },
+          )
+        }
+      },
+      [form],
+    )
+
+    useEffect(() => {
+      setQuestionType(questionType)
+    }, [questionType, setQuestionType])
+
+    return { ...form, setQuestionType }
+  }
 
   const {
     register,
     handleSubmit,
-    setFocus,
-    reset,
-    formState: { dirtyFields, errors },
-    watch,
     setValue,
-  } = useForm<z.infer<typeof predictFormSchema>>({
-    mode: "all",
-    resolver: zodResolver(predictFormSchema),
-  })
+    watch,
+    reset,
+    setFocus,
+    formState: { dirtyFields, errors },
+  } = usePredictForm(questionType)
+
+  // const optWatch = watch("options")
+  //
+  // useEffect(() => {
+  //   if (optWatch) {
+  //     console.log("Options:", optWatch)
+  //   }
+  // }, [optWatch])
+
   const question = watch("question")
   const resolveByUTCStr = watch(
     "resolveBy",
@@ -113,51 +248,53 @@ export function Predict({
   })
 
   const [tagsPreview, setTagsPreview] = useState<string[]>([])
-  const onSubmit: SubmitHandler<z.infer<typeof predictFormSchema>> =
-    useCallback(
-      (data, e) => {
-        e?.preventDefault() // don't reload the page
+  const onSubmit: SubmitHandler<PredictFormType> = useCallback(
+    (data, e) => {
+      console.log(data)
+      e?.preventDefault() // don't reload the page
 
-        if (!userId) {
-          localStorage.setItem(
-            "cached_question_content",
-            SuperJSON.stringify(data),
-          )
-          if (embedded) {
-            window.open(fatebookUrl, "_blank")?.focus()
-          } else {
-            void signInToFatebook()
-          }
-          return
+      if (!userId) {
+        localStorage.setItem(
+          "cached_question_content",
+          SuperJSON.stringify(data),
+        )
+        if (embedded) {
+          window.open(fatebookUrl, "_blank")?.focus()
+        } else {
+          void signInToFatebook()
         }
+        return
+      }
 
-        if (Object.values(errors).some((err) => !!err)) return
+      if (Object.values(errors).some((err) => !!err)) return
 
-        const questionWithoutTags = data.question.replace(/#\w+/g, "").trim()
+      const questionWithoutTags = data.question.replace(/#\w+/g, "").trim()
+      const isMultiChoice = "options" in data && data.options
+
+      const createQuestionData = {
+        title: questionWithoutTags || data.question,
+        resolveBy: utcDateStrToLocalDate(data.resolveBy),
+        tags: tagsPreview,
+        unlisted: data.sharePublicly || questionDefaults?.unlisted || undefined,
+        sharedPublicly:
+          data.sharePublicly || questionDefaults?.sharePublicly || undefined,
+        shareWithListIds: questionDefaults?.shareWithListIds,
+        tournamentId: questionDefaults?.tournamentId,
+      }
+
+      if (isMultiChoice) {
+        console.log(data.options)
         createQuestion.mutate(
           {
-            title: questionWithoutTags || data.question,
-            resolveBy: utcDateStrToLocalDate(data.resolveBy),
-            prediction:
-              data.predictionPercentage &&
-              typeof data.predictionPercentage === "number" &&
-              !isNaN(data.predictionPercentage)
-                ? data.predictionPercentage / 100
-                : undefined,
-            tags: tagsPreview,
-
-            unlisted:
-              data.sharePublicly || questionDefaults?.unlisted || undefined,
-            sharedPublicly:
-              data.sharePublicly ||
-              questionDefaults?.sharePublicly ||
-              undefined,
-            shareWithListIds: questionDefaults?.shareWithListIds,
-            tournamentId: questionDefaults?.tournamentId,
+            ...createQuestionData,
+            options: data.options!.map((option) => ({
+              text: option.text,
+              prediction: option.forecast / 100,
+            })),
           },
           {
             onError(error, variables, context) {
-              console.error("error creating question: ", {
+              console.error("error creating multi-choice question: ", {
                 error,
                 variables,
                 context,
@@ -170,27 +307,53 @@ export function Predict({
             },
           },
         )
+      } else {
+        createQuestion.mutate(
+          {
+            ...createQuestionData,
+            prediction:
+              data.predictionPercentage &&
+              typeof data.predictionPercentage === "number" &&
+              !isNaN(data.predictionPercentage)
+                ? data.predictionPercentage / 100
+                : undefined,
+          },
+          {
+            onError(error, variables, context) {
+              console.error("error creating binary question: ", {
+                error,
+                variables,
+                context,
+              })
+            },
+            onSuccess(result) {
+              if (onQuestionCreate && result) {
+                onQuestionCreate(result)
+              }
+            },
+          },
+        )
+      }
 
-        setTagsPreview([])
-
-        reset()
-        textAreaRef?.current?.focus()
-      },
-      [
-        createQuestion,
-        embedded,
-        errors,
-        onQuestionCreate,
-        questionDefaults?.sharePublicly,
-        questionDefaults?.shareWithListIds,
-        questionDefaults?.tournamentId,
-        questionDefaults?.unlisted,
-        reset,
-        tagsPreview,
-        textAreaRef,
-        userId,
-      ],
-    )
+      setTagsPreview([])
+      reset()
+      textAreaRef?.current?.focus()
+    },
+    [
+      createQuestion,
+      embedded,
+      errors,
+      onQuestionCreate,
+      questionDefaults?.sharePublicly,
+      questionDefaults?.shareWithListIds,
+      questionDefaults?.tournamentId,
+      questionDefaults?.unlisted,
+      reset,
+      tagsPreview,
+      textAreaRef,
+      userId,
+    ],
+  )
 
   useEffect(() => {
     if (resetTrigger) {
@@ -299,7 +462,26 @@ export function Predict({
     }
   }
 
+  // TODO: maybe just question props?
   const binaryQuestionProps = {
+    small,
+    resolveByButtons,
+    questionDefaults,
+    embedded,
+    userId,
+    onSubmit,
+    signInToFatebook,
+    session,
+    register,
+    setValue,
+    errors,
+    watch,
+    handleSubmit,
+    textAreaRef,
+    highlightResolveBy,
+  }
+
+  const multiChoiceQuestionProps = {
     small,
     resolveByButtons,
     questionDefaults,
@@ -393,7 +575,16 @@ export function Predict({
             </div>
           )}
 
-          <BinaryQuestion {...binaryQuestionProps} />
+          {(() => {
+            switch (questionType) {
+              case QuestionType.BINARY:
+                return <BinaryQuestion {...binaryQuestionProps} />
+              case QuestionType.MULTIPLE_CHOICE:
+                return <MultiChoiceQuestion {...multiChoiceQuestionProps} />
+              default:
+                return <BinaryQuestion {...binaryQuestionProps} />
+            }
+          })()}
         </form>
       </ErrorBoundary>
     </div>

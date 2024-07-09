@@ -4,7 +4,8 @@ import {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form"
-import { MutableRefObject } from "react"
+import React from "react"
+import { PredictFormType } from "../../Predict"
 
 // eslint-disable-next-line no-unused-vars
 interface QuestionTypeProps<
@@ -25,11 +26,11 @@ interface QuestionTypeProps<
   onSubmit: (data: any) => void
   signInToFatebook: () => Promise<void>
   session: { status: string }
-  register: UseFormRegister<any>
+  register: UseFormRegister<PredictFormType>
   setValue: UseFormSetValue<any>
   errors: FieldErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
-  textAreaRef?: MutableRefObject<HTMLTextAreaElement>
+  textAreaRef?: React.RefObject<HTMLTextAreaElement>
   highlightResolveBy: boolean
 }

@@ -4,6 +4,7 @@ import {
   PingSlackMessage,
   Profile,
   Question,
+  QuestionOption,
   QuestionScore,
   QuestionSlackMessage,
   ResolutionSlackMessage,
@@ -34,6 +35,7 @@ export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfile
   }
 
 export type QuestionWithUserAndForecastsWithUser = Question & {
+  options?: (QuestionOption & { forecasts: ForecastWithUserWithProfiles[] })[]
   forecasts: (Forecast & { user: User })[]
   user: User
 }

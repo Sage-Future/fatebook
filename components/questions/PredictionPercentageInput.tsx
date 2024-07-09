@@ -6,6 +6,7 @@ import {
 import { KeyboardEvent, useRef } from "react"
 import clsx from "clsx"
 import { InfoButton } from "../ui/InfoButton"
+import { PredictFormType } from "../Predict"
 
 // TODO: refactor these interfaces so they have core shared fields (like errors) and then extend them
 interface PredictionPercentageInputProps<
@@ -13,13 +14,18 @@ interface PredictionPercentageInputProps<
 > {
   small?: boolean
   errors: FieldErrors<any>
-  register: UseFormRegister<any>
+  register: UseFormRegister<PredictFormType>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
-  setPredictionInputRef: (node: HTMLInputElement | null) => void
+  optionId: number
+  setPredictionInputRef: (
+    optionId: string,
+    node: HTMLInputElement | null,
+  ) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PredictionPercentageInput({
   small,
   errors,
@@ -27,16 +33,30 @@ export function PredictionPercentageInput({
   watch,
   handleSubmit,
   onSubmit,
-  setPredictionInputRef,
+  optionId,
+  // setPredictionInputRef,
 }: PredictionPercentageInputProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
-  const predictionPercentage = watch("predictionPercentage")
+  // console.log(register)
 
-  const predictionPercentageRegister = register("predictionPercentage", {
-    required: true,
-    valueAsNumber: true,
-  })
+  // const setRef = useCallback(
+  //   (node: HTMLInputElement | null) => {
+  //     predictionInputRefMine.current = node
+  //     setPredictionInputRef(optionId, node)
+  //   },
+  //   [optionId, setPredictionInputRef],
+  // )
+
+  const predictionPercentage = watch(`options.${optionId}.forecast`)
+
+  const predictionPercentageRegister = register(
+    `options.${optionId}.forecast`,
+    {
+      required: true,
+      valueAsNumber: true,
+    },
+  )
 
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -45,6 +65,11 @@ export function PredictionPercentageInput({
       return true
     }
   }
+
+  // const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const newValue = e.target.value
+  //   console.log(newValue) // Log the new value
+  // }
 
   return (
     <div className="min-w-fit">
@@ -84,10 +109,8 @@ export function PredictionPercentageInput({
           onKeyDown={onEnterSubmit}
           onMouseDown={(e) => e.stopPropagation()}
           {...predictionPercentageRegister}
-          ref={(e) => {
-            predictionPercentageRegister.ref(e)
-            setPredictionInputRef(e)
-          }}
+          // ref={setRef}
+          // onChange={handlePercentageChange}
         />
         <span
           onClick={() => predictionInputRefMine.current?.focus()}

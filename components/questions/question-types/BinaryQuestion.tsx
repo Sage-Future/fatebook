@@ -25,9 +25,12 @@ export function BinaryQuestion({
 }: BinaryQuestionProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
-  const setPredictionInputRef = useCallback((node: HTMLInputElement | null) => {
-    predictionInputRefMine.current = node
-  }, [])
+  const setPredictionInputRef = useCallback(
+    (optionId: string, node: HTMLInputElement | null) => {
+      predictionInputRefMine.current = node
+    },
+    [],
+  )
 
   const resolveByProps = {
     small,
@@ -67,7 +70,10 @@ export function BinaryQuestion({
       <div className="flex flex-row gap-2">
         <ResolveBy {...resolveByProps} />
 
-        <PredictionPercentageInput {...predictionPercentageInputProps} />
+        <PredictionPercentageInput
+          {...predictionPercentageInputProps}
+          optionId={"0"}
+        />
 
         {embedded && <EmbeddedOptions register={register} />}
       </div>

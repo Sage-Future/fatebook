@@ -1,9 +1,14 @@
 import clsx from "clsx"
 import { InfoButton } from "../ui/InfoButton"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
-import { FormattedDate } from "../ui/FormattedDate"
+// import { FormattedDate } from "../ui/FormattedDate"
 import { utcDateStrToLocalDate } from "../../lib/web/utils"
-import { KeyboardEvent, MutableRefObject, useEffect, useRef } from "react"
+import React, {
+  KeyboardEvent,
+  MutableRefObject,
+  useEffect,
+  useRef,
+} from "react"
 import {
   FieldErrors,
   UseFormHandleSubmit,
@@ -30,7 +35,7 @@ interface ResolveByProps<
   errors: FieldErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
-  textAreaRef?: MutableRefObject<HTMLTextAreaElement>
+  textAreaRef?: React.RefObject<HTMLTextAreaElement>
   predictionInputRefMine?: MutableRefObject<HTMLInputElement | null>
   highlightResolveBy: boolean
 }
@@ -121,15 +126,15 @@ export function ResolveBy({
             }}
           />
           <span className="italic text-neutral-400 text-sm p-1">
-            {!resolveByButtons && (
-              <FormattedDate
-                date={utcDateStrToLocalDate(resolveByUTCStr)}
-                alwaysUseDistance={true}
-                capitalise={true}
-                currentDateShowToday={true}
-                includeTime={false}
-              />
-            )}
+            {/*{!resolveByButtons && (*/}
+            {/*  <FormattedDate*/}
+            {/*    date={utcDateStrToLocalDate(resolveByUTCStr)}*/}
+            {/*    alwaysUseDistance={true}*/}
+            {/*    capitalise={true}*/}
+            {/*    currentDateShowToday={true}*/}
+            {/*    includeTime={false}*/}
+            {/*  />*/}
+            {/*)}*/}
             {resolveByButtons && (
               <div className="mt-2 flex flex-wrap gap-0.5 shrink justify-between">
                 {resolveByButtons.map(({ date, label }) => (

@@ -112,22 +112,46 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
 
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()
+  console.log(question.options)
+
+  const forecastEvents: { timestamp: Date; el: ReactNode }[] =
+    question.type === "MULTIPLE_CHOICE"
+      ? question
+          .options!.map((o) =>
+            o.forecasts.map((f) => ({
+              timestamp: f.createdAt || new Date(),
+              el: (
+                <Fragment key={f.id}>
+                  <Username user={f.user} className="font-semibold" />
+                  <span className="font-bold">{o.text}</span>
+                  <span className="font-bold text-lg text-indigo-800">
+                    {displayForecast(f, 2)}
+                  </span>
+                  <div className="text-neutral-400">
+                    <FormattedDate date={f.createdAt || new Date()} />
+                  </div>
+                </Fragment>
+              ),
+            })),
+          )
+          .flat()
+      : question.forecasts.map((f) => ({
+          timestamp: f.createdAt,
+          el: (
+            <Fragment key={f.id}>
+              <Username user={f.user} className="font-semibold" />
+              <span className="font-bold text-lg text-indigo-80">
+                {displayForecast(f, 2)}
+              </span>
+              <div className="text-neutral-400">
+                <FormattedDate date={f.createdAt} />
+              </div>
+            </Fragment>
+          ),
+        }))
 
   let events: { timestamp: Date; el: ReactNode }[] = [
-    question.forecasts.map((f) => ({
-      timestamp: f.createdAt,
-      el: (
-        <Fragment key={f.id}>
-          <Username user={f.user} className="font-semibold" />
-          <span className="font-bold text-lg text-indigo-800">
-            {displayForecast(f, 2)}
-          </span>
-          <div className="text-neutral-400">
-            <FormattedDate date={f.createdAt} />
-          </div>
-        </Fragment>
-      ),
-    })),
+    forecastEvents,
     question.comments &&
       question.comments.map((c) => ({
         timestamp: c.createdAt,
@@ -200,7 +224,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
+      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
         {events.length ? (
           events
             .sort(

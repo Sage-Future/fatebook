@@ -17,6 +17,7 @@ export function PredictButton({
   errors,
   handleSubmit,
 }: PredictButtonsProps) {
+  // console.log(errors)
   return (
     <button
       onClick={(e) => {

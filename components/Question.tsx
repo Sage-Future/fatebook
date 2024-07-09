@@ -21,7 +21,11 @@ import { Username } from "./ui/Username"
 
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid"
 import toast from "react-hot-toast"
-import { getDateYYYYMMDD } from "../lib/_utils_common"
+import {
+  displayForecast,
+  getDateYYYYMMDD,
+  getMostRecentForecastForUser,
+} from "../lib/_utils_common"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
@@ -42,6 +46,7 @@ export function Question({
   embedded?: boolean
   className?: string
 }) {
+  console.log(question)
   const [manuallyExpanded, setManuallyExpanded] =
     useState<boolean>(!!startExpanded)
 
@@ -114,12 +119,36 @@ export function Question({
                   )}
                 </Link>
               </span>
-              <UpdateableLatestForecast
-                question={question}
-                autoFocus={alwaysExpand}
-                embedded={embedded}
-              />
+              {question.type === "BINARY" && (
+                <UpdateableLatestForecast
+                  question={question}
+                  autoFocus={alwaysExpand}
+                  embedded={embedded}
+                />
+              )}
             </span>
+            <div className="contents">
+              {question.type === "MULTIPLE_CHOICE" && (
+                <>
+                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
+                    <span>{`${question.options![0].text}`}</span>
+                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![0], userId!)!, 10, true)}`}</span>
+                  </div>
+                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
+                    <span>{`${question.options![1].text}`}</span>
+                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![1], userId!)!, 10, true)}`}</span>
+                  </div>
+                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
+                    <span>{`${question.options![2].text}`}</span>
+                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![2], userId!)!, 10, true)}`}</span>
+                  </div>
+                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
+                    <span>{`${question.options![3].text}`}</span>
+                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![3], userId!)!, 10, true)}`}</span>
+                  </div>
+                </>
+              )}
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <span className="text-sm my-auto" key={`${question.id}author`}>
                 <Username user={question.user} />

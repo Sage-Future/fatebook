@@ -1,13 +1,18 @@
 import { Menu, Transition } from "@headlessui/react"
 import { ChevronDownIcon } from "@heroicons/react/20/solid"
-import { Question, Resolution } from "@prisma/client"
 import clsx from "clsx"
 import { Fragment } from "react"
-import { toSentenceCase } from "../lib/_utils_common"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
+import { BinaryResolutionOptions } from "./questions/question-types/BinaryResolutionOptions"
+import { MultiChoiceResolutionOptions } from "./questions/question-types/MultiChoiceResolutionOptions"
+import { QuestionWithStandardIncludes } from "../prisma/additional"
 
-export function ResolveButton({ question }: { question: Question }) {
+export function ResolveButton({
+  question,
+}: {
+  question: QuestionWithStandardIncludes
+}) {
   const userId = useUserId()
   const utils = api.useContext()
   const resolveQuestion = api.question.resolveQuestion.useMutation({
@@ -96,44 +101,17 @@ export function ResolveButton({ question }: { question: Question }) {
                     </button>
                   )}
                 </Menu.Item>
-              ) : (
-                (["YES", "NO", "AMBIGUOUS"] as Resolution[]).map(
-                  (resolution: Resolution) => (
-                    <Menu.Item key={resolution}>
-                      {({ active }) => (
-                        <button
-                          className={clsx(
-                            active
-                              ? "bg-indigo-500 text-white"
-                              : "bg-white text-neutral-900",
-                            `group flex w-full items-center rounded-md px-2 py-2 text-sm`,
-                          )}
-                          onClick={() => {
-                            resolveQuestion.mutate({
-                              questionId: question.id,
-                              resolution,
-                            })
-                          }}
-                        >
-                          <div
-                            className={clsx(
-                              "h-3 w-3 mr-2 rounded-md",
-                              resolution === "YES"
-                                ? "bg-green-500"
-                                : resolution === "NO"
-                                  ? "bg-red-500"
-                                  : resolution === "AMBIGUOUS"
-                                    ? "bg-blue-500"
-                                    : "bg-neutral-200",
-                            )}
-                          />
-                          {toSentenceCase(resolution.toLowerCase())}
-                        </button>
-                      )}
-                    </Menu.Item>
-                  ),
-                )
-              )}
+              ) : question.type === "BINARY" ? (
+                <BinaryResolutionOptions
+                  question={question}
+                  resolveQuestion={resolveQuestion}
+                />
+              ) : question.type === "MULTIPLE_CHOICE" ? (
+                <MultiChoiceResolutionOptions
+                  question={question}
+                  resolveQuestion={resolveQuestion}
+                />
+              ) : null}
             </div>
           </Menu.Items>
         </Transition>

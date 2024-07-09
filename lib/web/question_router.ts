@@ -1,4 +1,4 @@
-import { Prisma, Resolution, Tag, User } from "@prisma/client"
+import { Prisma, Resolution, User, QuestionType, Tag } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -37,11 +37,21 @@ import {
   getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
+import { Decimal } from "@prisma/client/runtime/library"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
     include: {
       user: true,
+    },
+  },
+  options: {
+    include: {
+      forecasts: {
+        include: {
+          user: true,
+        },
+      },
     },
   },
   user: true,
@@ -136,6 +146,15 @@ export const questionRouter = router({
           forecasts: {
             include: {
               user: true,
+            },
+          },
+          options: {
+            include: {
+              forecasts: {
+                include: {
+                  user: true,
+                },
+              },
             },
           },
           user: true,
@@ -345,6 +364,14 @@ export const questionRouter = router({
         sharedPublicly: z.boolean().optional(),
         tournamentId: z.string().optional(),
         shareWithListIds: z.array(z.string()).optional(),
+        options: z
+          .array(
+            z.object({
+              text: z.string(),
+              prediction: z.number().min(0).max(1),
+            }),
+          )
+          .optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -364,55 +391,97 @@ export const questionRouter = router({
         })
       }
 
+      const isMultiChoice = input.options && input.options.length > 0
+
+      const questionData = {
+        title: input.title,
+        resolveBy: input.resolveBy,
+        user: { connect: { id: ctx.userId } }, // Changed from userId to user connect
+        type: isMultiChoice
+          ? QuestionType.MULTIPLE_CHOICE
+          : QuestionType.BINARY,
+        unlisted: input.unlisted,
+        sharedPublicly: input.sharedPublicly,
+        tags:
+          input.tags && input.tags.length > 0
+            ? {
+                connectOrCreate: input.tags.map((tag) => ({
+                  where: {
+                    id:
+                      tags.find((t) => t.name === tag)?.id ||
+                      "no tag with this id exists",
+                  },
+                  create: {
+                    name: tag,
+                    userId: ctx.userId as string,
+                  },
+                })),
+              }
+            : undefined,
+        tournaments: input.tournamentId
+          ? {
+              connect: {
+                id: input.tournamentId,
+              },
+            }
+          : undefined,
+        sharedWithLists: input.shareWithListIds
+          ? {
+              connect: input.shareWithListIds.map((id) => ({ id })),
+            }
+          : undefined,
+      }
+
+      const createData = isMultiChoice
+        ? {
+            ...questionData,
+            options: {
+              create: input.options!.map((option) => ({
+                text: option.text,
+                user: { connect: { id: ctx.userId } },
+              })),
+            },
+          }
+        : questionData // For binary questions, we don't need to create options
+
       const question = await prisma.question.create({
-        data: {
-          title: input.title,
-          resolveBy: input.resolveBy,
-          userId: ctx.userId,
-          unlisted: input.unlisted,
-          sharedPublicly: input.sharedPublicly,
-          forecasts: input.prediction
-            ? {
-                create: {
-                  userId: ctx.userId,
-                  forecast: input.prediction,
-                },
-              }
-            : undefined,
-          tags:
-            input.tags && input.tags.length > 0
-              ? {
-                  connectOrCreate: input.tags.map((tag) => ({
-                    where: {
-                      id:
-                        tags.find((t) => t.name === tag)?.id ||
-                        "no tag with this id exists",
-                    },
-                    create: {
-                      name: tag,
-                      userId: ctx.userId as string,
-                    },
-                  })),
-                }
-              : undefined,
-          tournaments: input.tournamentId
-            ? {
-                connect: {
-                  id: input.tournamentId,
-                },
-              }
-            : undefined,
-          sharedWithLists: input.shareWithListIds
-            ? {
-                connect: input.shareWithListIds.map((id) => ({ id })),
-              }
-            : undefined,
-        },
+        data: createData,
         include: {
           tournaments: true,
           sharedWithLists: true,
+          options: true,
+          tags: true,
         },
       })
+
+      if (isMultiChoice && question.options) {
+        await Promise.all(
+          input.options!.map((option) =>
+            prisma.forecast.create({
+              data: {
+                question: { connect: { id: question.id } },
+                user: { connect: { id: ctx.userId } },
+                forecast: new Decimal(option.prediction), // Convert to Decimal
+                option: {
+                  connect: {
+                    id: question.options.find((o) => o.text === option.text)
+                      ?.id,
+                  },
+                },
+              },
+            }),
+          ),
+        )
+      } else if (!isMultiChoice && input.prediction) {
+        // Create forecast for binary question
+        await prisma.forecast.create({
+          data: {
+            question: { connect: { id: question.id } },
+            user: { connect: { id: ctx.userId } },
+            forecast: new Decimal(input.prediction), // Convert to Decimal
+          },
+        })
+      }
 
       await backendAnalyticsEvent("question_created", {
         platform: "web",
@@ -1472,6 +1541,7 @@ export function scrubHiddenForecastsFromQuestion<
               user: null,
               profileId: null,
               profile: null,
+              options: null,
             }
           : {}),
       }
