@@ -72,7 +72,8 @@ export function BinaryQuestion({
 
         <PredictionPercentageInput
           {...predictionPercentageInputProps}
-          optionId={"0"}
+          x
+          optionId={0}
         />
 
         {embedded && <EmbeddedOptions register={register} />}

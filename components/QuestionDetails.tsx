@@ -122,7 +122,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               timestamp: f.createdAt || new Date(),
               el: (
                 <Fragment key={f.id}>
-                  <Username user={f.user} className="font-semibold" />
+                  <Username user={question.user} className="font-semibold" />
                   <span className="font-bold">{o.text}</span>
                   <span className="font-bold text-lg text-indigo-800">
                     {displayForecast(f, 2)}

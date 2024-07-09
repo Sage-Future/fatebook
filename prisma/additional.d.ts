@@ -40,6 +40,11 @@ export type QuestionWithUserAndForecastsWithUser = Question & {
   user: User
 }
 
+export type QuestionWithOptionsAndUser = Question & {
+  options: (QuestionOption & { forecasts: Forecast[] })[]
+  user: User
+}
+
 export type QuestionWithUserAndForecastsAndUsersAndAuthorAndSlackMessages =
   Question & {
     forecasts: ForecastWithProfileAndUser[]
@@ -138,6 +143,7 @@ export type QuestionWithQMessagesAndRMessagesAndForecasts =
 
 export type QuestionWithStandardIncludes =
   QuestionWithUserAndForecastsWithUser & {
+    options?: (QuestionOption & { forecasts: Forecast[] })[] // TODO: each forecast needs to have a full user
     sharedWith: User[]
     sharedWithLists: UserListWithAuthorAndUsers[]
     questionMessages: QuestionSlackMessageWithMessage[]

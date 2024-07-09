@@ -1,11 +1,9 @@
 import { QuestionTypeProps } from "./question-types"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { ResolveBy } from "../ResolveBy"
 import { EmbeddedOptions } from "../EmbeddedOptions"
 import { PredictButton } from "../PredictButton"
 import { QuestionOption } from "../QuestionOption"
-import { useWatch } from "react-hook-form"
-
 interface MultiChoiceQuestionProps extends QuestionTypeProps {}
 
 export function MultiChoiceQuestion({

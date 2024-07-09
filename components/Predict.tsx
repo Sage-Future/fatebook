@@ -12,12 +12,7 @@ import React, {
   useState,
 } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import {
-  SubmitHandler,
-  useForm,
-  UseFormReturn,
-  useWatch,
-} from "react-hook-form"
+import { SubmitHandler, useForm, UseFormReturn } from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
 import TextareaAutosize from "react-textarea-autosize"
 import SuperJSON from "trpc-transformer"
