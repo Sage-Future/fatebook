@@ -72,7 +72,6 @@ export function BinaryQuestion({
 
         <PredictionPercentageInput
           {...predictionPercentageInputProps}
-          x
           optionId={0}
         />
 

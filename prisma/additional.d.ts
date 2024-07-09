@@ -143,7 +143,7 @@ export type QuestionWithQMessagesAndRMessagesAndForecasts =
 
 export type QuestionWithStandardIncludes =
   QuestionWithUserAndForecastsWithUser & {
-    options?: (QuestionOption & { forecasts: Forecast[] })[] // TODO: each forecast needs to have a full user
+    // options?: (QuestionOption & { forecasts: Forecast[] })[]
     sharedWith: User[]
     sharedWithLists: UserListWithAuthorAndUsers[]
     questionMessages: QuestionSlackMessageWithMessage[]
