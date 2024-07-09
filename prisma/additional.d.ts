@@ -35,7 +35,7 @@ export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfile
   }
 
 export type QuestionWithUserAndForecastsWithUser = Question & {
-  options?: (QuestionOption & { forecasts: ForecastWithUserWithProfiles[] })[]
+  // options?: (QuestionOption & { forecasts: ForecastWithUserWithProfiles[] })[]
   forecasts: (Forecast & { user: User })[]
   user: User
 }
