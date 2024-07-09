@@ -1,4 +1,3 @@
-import React from "react"
 import { QuestionType } from "@prisma/client"
 
 interface QuestionTypeSelectProps {
