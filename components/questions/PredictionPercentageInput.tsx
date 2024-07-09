@@ -7,6 +7,7 @@ import { KeyboardEvent, useRef } from "react"
 import clsx from "clsx"
 import { InfoButton } from "../ui/InfoButton"
 import { PredictFormType } from "../Predict"
+import { QuestionType } from "@prisma/client"
 
 // TODO: refactor these interfaces so they have core shared fields (like errors) and then extend them
 interface PredictionPercentageInputProps<
@@ -19,10 +20,11 @@ interface PredictionPercentageInputProps<
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
   optionId: number
-  setPredictionInputRef: (
-    optionId: string,
-    node: HTMLInputElement | null,
-  ) => void
+  questionType: QuestionType
+  // setPredictionInputRef: (
+  //   optionId: string,
+  //   node: HTMLInputElement | null,
+  // ) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -34,6 +36,7 @@ export function PredictionPercentageInput({
   handleSubmit,
   onSubmit,
   optionId,
+  questionType,
   // setPredictionInputRef,
 }: PredictionPercentageInputProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
@@ -48,15 +51,21 @@ export function PredictionPercentageInput({
   //   [optionId, setPredictionInputRef],
   // )
 
-  const predictionPercentage = watch(`options.${optionId}.forecast`)
+  const predictionPercentage =
+    questionType === QuestionType.MULTIPLE_CHOICE
+      ? watch(`options.${optionId}.forecast`)
+      : watch("predictionPercentage")
 
-  const predictionPercentageRegister = register(
-    `options.${optionId}.forecast`,
-    {
-      required: true,
-      valueAsNumber: true,
-    },
-  )
+  const predictionPercentageRegister =
+    questionType === QuestionType.MULTIPLE_CHOICE
+      ? register(`options.${optionId}.forecast`, {
+          required: true,
+          valueAsNumber: true,
+        })
+      : register(`predictionPercentage`, {
+          required: true,
+          valueAsNumber: true,
+        })
 
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {

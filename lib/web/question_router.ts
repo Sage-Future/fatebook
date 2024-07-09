@@ -1,4 +1,4 @@
-import { Prisma, Resolution, User, QuestionType, Tag } from "@prisma/client"
+import { Prisma, User, QuestionType, Tag } from "@prisma/client"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -506,7 +506,7 @@ export const questionRouter = router({
       z.object({
         questionId: z.string(),
         resolution: z.string({
-          description: "Resolve to YES, NO or AMBIGUOUS",
+          description: "Resolve to YES, NO or AMBIGUOUS", // TODO: update this
         }),
         apiKey: z.string().optional(),
       }),
@@ -515,7 +515,7 @@ export const questionRouter = router({
       openapi: {
         method: "POST",
         path: "/v0/resolveQuestion",
-        description: "Resolve the question to YES, NO or AMBIGUOUS",
+        description: "Resolve the question to YES, NO or AMBIGUOUS", // TODO update this
       },
     })
     .output(z.undefined())
@@ -524,7 +524,7 @@ export const questionRouter = router({
 
       await handleQuestionResolution(
         input.questionId,
-        input.resolution as Resolution,
+        input.resolution as string,
       )
 
       await backendAnalyticsEvent("question_resolved", {

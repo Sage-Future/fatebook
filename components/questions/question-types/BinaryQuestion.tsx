@@ -4,6 +4,7 @@ import { EmbeddedOptions } from "../EmbeddedOptions"
 import { PredictButton } from "../PredictButton"
 import { PredictionPercentageInput } from "../PredictionPercentageInput"
 import { useCallback, useRef } from "react"
+import { QuestionType } from "@prisma/client"
 
 interface BinaryQuestionProps extends QuestionTypeProps {}
 
@@ -72,7 +73,8 @@ export function BinaryQuestion({
 
         <PredictionPercentageInput
           {...predictionPercentageInputProps}
-          optionId={0}
+          optionId={0} // TODO: could just make this field optional and decide based on whether or not its set, rather than have the extra QuestionType field
+          questionType={QuestionType.BINARY}
         />
 
         {embedded && <EmbeddedOptions register={register} />}

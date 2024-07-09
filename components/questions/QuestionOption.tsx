@@ -6,6 +6,7 @@ import {
 import { PredictionPercentageInput } from "./PredictionPercentageInput"
 import { OptionTextInput } from "./OptionTextInput"
 import { PredictFormType } from "../Predict"
+import { QuestionType } from "@prisma/client"
 
 interface QuestionOptionProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -17,6 +18,7 @@ interface QuestionOptionProps<
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
   optionId: number
+  questionType: QuestionType
   setPredictionInputRef: (
     optionId: string,
     node: HTMLInputElement | null,
@@ -32,6 +34,7 @@ export function QuestionOption({
   handleSubmit,
   onSubmit,
   optionId,
+  questionType,
   setPredictionInputRef,
 }: QuestionOptionProps) {
   const optionTextInputProps = {
@@ -54,7 +57,8 @@ export function QuestionOption({
     handleSubmit,
     onSubmit,
     optionId,
-    setPredictionInputRef,
+    questionType,
+    // setPredictionInputRef,
   }
 
   return (

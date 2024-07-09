@@ -99,6 +99,97 @@ async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   })
 }
 
+async function dbResolveQuestionOption(questionId: string, resolution: string) {
+  console.log(`dbResolveQuestionOption ${questionId} - ${resolution}`)
+
+  // Fetch the question with its options
+  const question = await prisma.question.findUnique({
+    where: {
+      id: questionId,
+    },
+    include: {
+      options: true,
+    },
+  })
+
+  if (!question) {
+    throw new Error(`Question with id ${questionId} not found`)
+  }
+
+  // Prepare the updates for the options
+  const updatedOptions = question.options.map((option) => {
+    console.log(`text ${option.text} | resolution: ${resolution}`)
+    console.log(option.text === resolution)
+    return {
+      where: { id: option.id },
+      data: {
+        resolution: option.text === resolution ? Resolution.YES : Resolution.NO,
+        resolvedAt: new Date(),
+      },
+    }
+  })
+
+  // Apply the updates to the options
+  for (const update of updatedOptions) {
+    await prisma.questionOption.update(update)
+  }
+
+  // Update the question's resolution and other fields
+  return prisma.question.update({
+    where: {
+      id: questionId,
+    },
+    data: {
+      resolved: true,
+      resolution: Resolution.YES,
+      resolvedAt: new Date(),
+    },
+    include: {
+      user: {
+        include: {
+          profiles: true,
+        },
+      },
+      forecasts: {
+        include: {
+          user: {
+            include: {
+              profiles: true,
+            },
+          },
+        },
+      },
+      comments: {
+        include: {
+          user: true,
+        },
+      },
+      sharedWith: true,
+      sharedWithLists: {
+        include: {
+          users: true,
+        },
+      },
+      questionMessages: {
+        include: {
+          message: true,
+        },
+      },
+      resolutionMessages: {
+        include: {
+          message: true,
+        },
+      },
+      pingResolveMessages: {
+        include: {
+          message: true,
+        },
+      },
+      questionScores: true,
+    },
+  })
+}
+
 export async function scoreForecasts(
   scoreArray: ScoreCollection,
   question: QuestionWithScores,
@@ -312,10 +403,21 @@ async function replaceQuestionResolveMessages(
 
 export async function handleQuestionResolution(
   questionId: string,
-  resolution: Resolution,
+  resolution: string,
 ) {
   console.log(`    handleQuestionResolution: ${questionId} ${resolution}`)
-  const question = await dbResolveQuestion(questionId, resolution)
+  let resolutionValue: Resolution
+  let multiChoice: boolean
+
+  if (resolution in Resolution) {
+    resolutionValue = resolution as Resolution
+    multiChoice = false
+  } else {
+    resolutionValue = Resolution.YES
+    multiChoice = true
+  }
+
+  const question = await dbResolveQuestion(questionId, resolutionValue)
   console.log(
     `    handledUpdateQuestionResolution: ${questionId} ${resolution}`,
   )
@@ -323,9 +425,15 @@ export async function handleQuestionResolution(
   // update ping and question message first for responsiveness
   await updateResolvePingQuestionMessages(question, "Question resolved!")
 
-  let scores = await scoreQuestion(resolution, question)
+  if (!multiChoice) {
+    let scores = await scoreQuestion(resolution as Resolution, question)
+    await messageUsers(scores, question)
+  } else {
+    await dbResolveQuestionOption(questionId, resolution)
+  }
+
   await updateForecastQuestionMessages(question, "Question resolved!")
-  await messageUsers(scores, question)
+
   await sendResolutionBroadcast(question)
 
   const q = question

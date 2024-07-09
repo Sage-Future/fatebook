@@ -25,6 +25,7 @@ import BinaryQuestion from "./questions/question-types/BinaryQuestion"
 import { QuestionSuggestions } from "./questions/QuestionSuggestions"
 import { QuestionType } from "@prisma/client"
 import MultiChoiceQuestion from "./questions/question-types/MultiChoiceQuestion"
+import { QuestionTypeSelect } from "./questions/QuestionTypeSelect"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
@@ -127,13 +128,17 @@ export function Predict({
   smartSetDates = true,
 }: PredictProps) {
   // TODO: implement a component to choose this
-  let questionType: QuestionType
-  // eslint-disable-next-line no-constant-condition
-  if (2 === 2) {
-    questionType = QuestionType.MULTIPLE_CHOICE
-  } else {
-    questionType = QuestionType.BINARY
-  }
+  // let questionType: QuestionType
+  // // eslint-disable-next-line no-constant-condition
+  // if (2 === 2) {
+  //   questionType = QuestionType.MULTIPLE_CHOICE
+  // } else {
+  //   questionType = QuestionType.BINARY
+  // }
+
+  const [questionType, setQuestionType] = useState<QuestionType>(
+    QuestionType.BINARY,
+  )
 
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
@@ -569,6 +574,11 @@ export function Predict({
               Tagging this question: {tagsPreview.join(", ")}
             </div>
           )}
+
+          <QuestionTypeSelect
+            questionType={questionType}
+            setQuestionType={setQuestionType}
+          />
 
           {(() => {
             switch (questionType) {

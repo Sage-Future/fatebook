@@ -7,6 +7,7 @@ import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { BinaryResolutionOptions } from "./questions/question-types/BinaryResolutionOptions"
 import { MultiChoiceResolutionOptions } from "./questions/question-types/MultiChoiceResolutionOptions"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
+import { Resolution } from "@prisma/client"
 
 export function ResolveButton({
   question,
@@ -29,7 +30,27 @@ export function ResolveButton({
       await utils.question.getBucketedForecasts.invalidate()
     },
   })
-  const resolution = question.resolution
+  const resolution: string | null = getResolution(question)
+
+  function getResolution(
+    question: QuestionWithStandardIncludes,
+  ): string | null {
+    if (!question.resolved) {
+      return null
+    }
+    if (question.options && question.options.length > 0) {
+      for (const option of question.options) {
+        if (option.resolution === Resolution.YES) {
+          return option.text
+        }
+        return Resolution.YES
+      }
+    } else {
+      return question.resolution
+    }
+
+    return null
+  }
 
   if (question.userId !== userId && !resolution) {
     return <span></span>

@@ -4,6 +4,7 @@ import { ResolveBy } from "../ResolveBy"
 import { EmbeddedOptions } from "../EmbeddedOptions"
 import { PredictButton } from "../PredictButton"
 import { QuestionOption } from "../QuestionOption"
+import { QuestionType } from "@prisma/client"
 interface MultiChoiceQuestionProps extends QuestionTypeProps {}
 
 export function MultiChoiceQuestion({
@@ -95,7 +96,11 @@ export function MultiChoiceQuestion({
     <div className="flex flex-row gap-8 flex-wrap justify-between">
       <div className="flex flex-col gap-4">
         {options.map(({ id, props }) => (
-          <QuestionOption key={id} {...props} />
+          <QuestionOption
+            key={id}
+            {...props}
+            questionType={QuestionType.MULTIPLE_CHOICE}
+          />
         ))}
 
         {embedded && <EmbeddedOptions register={register} />}

@@ -112,7 +112,7 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
 
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()
-  console.log(question.options)
+  // console.log(question.options)
 
   const forecastEvents: { timestamp: Date; el: ReactNode }[] =
     question.type === "MULTIPLE_CHOICE"

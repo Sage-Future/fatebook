@@ -46,7 +46,7 @@ export function Question({
   embedded?: boolean
   className?: string
 }) {
-  console.log(question)
+  // console.log(question)
   const [manuallyExpanded, setManuallyExpanded] =
     useState<boolean>(!!startExpanded)
 

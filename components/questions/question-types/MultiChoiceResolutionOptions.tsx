@@ -27,7 +27,7 @@ export function MultiChoiceResolutionOptions({
           onClick={() => {
             resolveQuestion.mutate({
               questionId: question.id,
-              option,
+              resolution: option,
             })
           }}
         >
