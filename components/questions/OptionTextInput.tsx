@@ -13,13 +13,8 @@ interface OptionTextInputProps<
   onSubmit: (data: any) => void
   small?: boolean
   errors: Record<string, any>
-  // setPredictionInputRef: (
-  //   optionId: string,
-  //   node: HTMLInputElement | null,
-  // ) => void
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function OptionTextInput({
   optionId,
   register,
@@ -27,19 +22,8 @@ export function OptionTextInput({
   onSubmit,
   small = false,
   errors,
-  // setPredictionInputRef,
 }: OptionTextInputProps) {
   const fieldName = `options.${optionId}.text`
-
-  // const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
-
-  // const setRef = useCallback(
-  //   (node: HTMLInputElement | null) => {
-  //     predictionInputRefMine.current = node
-  //     setPredictionInputRef(optionId, node)
-  //   },
-  //   [optionId, setPredictionInputRef],
-  // )
 
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -52,7 +36,7 @@ export function OptionTextInput({
   return (
     <div className="min-w-fit">
       <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
-        {`Option ${optionId}`}
+        {`Option ${optionId + 1}`}
         <InfoButton
           className="ml-1 tooltip-left"
           tooltip="What possible outcomes are there?"
@@ -70,7 +54,7 @@ export function OptionTextInput({
             : "border-gray-300 focus:border-blue-500",
         )}
         type="text"
-        placeholder={`Option ${optionId}`}
+        placeholder={`Option ${optionId + 1}`}
         onKeyDown={onEnterSubmit}
         // ref={setRef}
       />

@@ -22,7 +22,7 @@ export function QuestionTypeSelect({
           setQuestionType(QuestionType.BINARY)
         }}
       >
-        Binary
+        Yes or No
       </button>
       <button
         className={`px-4 py-2 rounded ${

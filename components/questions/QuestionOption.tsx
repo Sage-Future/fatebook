@@ -23,6 +23,8 @@ interface QuestionOptionProps<
     optionId: string,
     node: HTMLInputElement | null,
   ) => void
+  onRemove: () => void
+  canRemove: boolean
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -36,6 +38,8 @@ export function QuestionOption({
   optionId,
   questionType,
   setPredictionInputRef,
+  onRemove,
+  canRemove,
 }: QuestionOptionProps) {
   const optionTextInputProps = {
     optionId,
@@ -65,6 +69,15 @@ export function QuestionOption({
     <div className="flex flex-row justify-between items-center gap-2">
       <OptionTextInput {...optionTextInputProps} />
       <PredictionPercentageInput {...predictionPercentageInputProps} />
+      {canRemove && (
+        <button
+          onClick={onRemove}
+          className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          type="button"
+        >
+          Remove
+        </button>
+      )}
     </div>
   )
 }
