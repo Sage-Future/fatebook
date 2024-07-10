@@ -22,10 +22,10 @@ import { api } from "../lib/web/trpc"
 import { signInToFatebook, utcDateStrToLocalDate } from "../lib/web/utils"
 import { fatebookUrl } from "../lib/_constants"
 import BinaryQuestion from "./questions/question-types/BinaryQuestion"
-import { QuestionSuggestions } from "./questions/QuestionSuggestions"
 import { QuestionType } from "@prisma/client"
 import MultiChoiceQuestion from "./questions/question-types/MultiChoiceQuestion"
 import { QuestionTypeSelect } from "./questions/QuestionTypeSelect"
+import QuestionSuggestions from "./questions/QuestionSuggestions"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
@@ -557,16 +557,19 @@ export function Predict({
               leaveFrom="transform opacity-100 scale-100 translate-y-0 "
               leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
             >
-              <QuestionSuggestions
-                chooseSuggestion={(suggestion) => {
-                  setValue("question", suggestion, {
-                    shouldTouch: true,
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  })
-                  smartUpdateResolveBy(suggestion)
-                }}
-              />
+              {(ref) => (
+                <QuestionSuggestions
+                  ref={ref as React.Ref<HTMLDivElement>}
+                  chooseSuggestion={(suggestion) => {
+                    setValue("question", suggestion, {
+                      shouldTouch: true,
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                    smartUpdateResolveBy(suggestion)
+                  }}
+                />
+              )}
             </Transition>
           </div>
           {tagsPreview?.length > 0 && (

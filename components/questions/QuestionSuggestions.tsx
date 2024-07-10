@@ -1,10 +1,14 @@
-import { useState } from "react"
+import { ForwardedRef, forwardRef, useState } from "react"
 
-export function QuestionSuggestions({
-  chooseSuggestion,
-}: {
+interface QuestionSuggestionsProps {
   chooseSuggestion: (suggestion: string) => void
-}) {
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const QuestionSuggestions = forwardRef<
+  HTMLDivElement,
+  QuestionSuggestionsProps
+>(({ chooseSuggestion }, ref: ForwardedRef<HTMLDivElement>) => {
   const suggestions = [
     "Will GPT-5 be released before Jan 2025?",
     "Will I write a blog post this week?",
@@ -31,7 +35,10 @@ export function QuestionSuggestions({
   const [showAll, setShowAll] = useState(false)
 
   return (
-    <div className="w-full bg-white shadow-inner rounded-b-md px-6 pt-4 pb-6 mb-6 flex flex-col items-start gap-2 z-10">
+    <div
+      ref={ref}
+      className="w-full bg-white shadow-inner rounded-b-md px-6 pt-4 pb-6 mb-6 flex flex-col items-start gap-2 z-10"
+    >
       <h4 className="select-none pl-4">{"Here are a few ideas..."}</h4>
       {suggestions.slice(0, showAll ? undefined : 8).map((suggestion) => (
         <button
@@ -61,4 +68,8 @@ export function QuestionSuggestions({
       )}
     </div>
   )
-}
+})
+
+QuestionSuggestions.displayName = "QuestionSuggestions"
+
+export default QuestionSuggestions
