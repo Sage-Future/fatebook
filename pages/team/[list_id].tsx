@@ -97,7 +97,7 @@ export default function ListPage() {
                   entity={listQ.data}
                 />
               )}
-              <h3>Share new questions with this list</h3>
+              <h3>Share new questions with this team</h3>
               <Predict
                 questionDefaults={{
                   shareWithListIds: [listId],
