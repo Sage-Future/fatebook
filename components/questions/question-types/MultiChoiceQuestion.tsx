@@ -28,8 +28,9 @@ export function MultiChoiceQuestion({
   >({})
 
   // console.log(register)
+  const MIN_OPTIONS = 2
   const MAX_OPTIONS = 10
-  // const [numberOfOptions, setNumberOfOptions] = useState(2)
+  const [numberOfOptions, setNumberOfOptions] = useState(2)
 
   const setPredictionInputRef = useCallback(
     (id: string, node: HTMLInputElement | null) => {
@@ -92,13 +93,14 @@ export function MultiChoiceQuestion({
 
   const addOption = useCallback(() => {
     if (options.length < MAX_OPTIONS) {
+      setNumberOfOptions((prev) => prev + 1)
       setOptions((prev) => [
         ...prev,
         {
-          id: prev.length,
+          id: numberOfOptions,
           props: {
             ...questionOptionProps,
-            optionId: prev.length,
+            optionId: numberOfOptions,
             setPredictionInputRef,
           },
         },
@@ -119,7 +121,7 @@ export function MultiChoiceQuestion({
             {...props}
             questionType={QuestionType.MULTIPLE_CHOICE}
             onRemove={() => removeOption(id)}
-            canRemove={options.length > 2}
+            canRemove={options.length > MIN_OPTIONS}
           />
         ))}
 
