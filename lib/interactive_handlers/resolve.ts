@@ -1,17 +1,20 @@
 import {
+  Forecast,
   Question,
   QuestionScore,
+  QuestionType,
   Resolution,
   SlackMessage,
 } from "@prisma/client"
 import { BlockActionPayload } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
 import {
   QuestionWithAuthorAndQuestionMessages,
+  QuestionWithForecastsAndOptionsAndScores,
   QuestionWithForecastsAndScores,
   QuestionWithQuestionMessagesAndForecastWithUserWithProfiles,
   QuestionWithScores,
 } from "../../prisma/additional"
-import { ScoreCollection, ScoreTuple, relativeBrierScoring } from "../_scoring"
+import { relativeBrierScoring, ScoreCollection, ScoreTuple } from "../_scoring"
 import {
   ResolveQuestionActionParts,
   UndoResolveActionParts,
@@ -41,6 +44,7 @@ import prisma from "../prisma"
 import { createNotification } from "../web/notifications"
 import { getQuestionUrl } from "../web/question_url"
 import { getMarkdownLinkQuestionTitle } from "../web/utils"
+import { Decimal } from "@prisma/client/runtime/library"
 
 async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -66,6 +70,11 @@ async function dbResolveQuestion(questionid: string, resolution: Resolution) {
               profiles: true,
             },
           },
+        },
+      },
+      options: {
+        include: {
+          forecasts: true,
         },
       },
       comments: {
@@ -404,17 +413,15 @@ async function replaceQuestionResolveMessages(
 export async function handleQuestionResolution(
   questionId: string,
   resolution: string,
+  questionType: QuestionType,
 ) {
   console.log(`    handleQuestionResolution: ${questionId} ${resolution}`)
   let resolutionValue: Resolution
-  let multiChoice: boolean
 
   if (resolution in Resolution) {
     resolutionValue = resolution as Resolution
-    multiChoice = false
   } else {
     resolutionValue = Resolution.YES
-    multiChoice = true
   }
 
   const question = await dbResolveQuestion(questionId, resolutionValue)
@@ -425,12 +432,16 @@ export async function handleQuestionResolution(
   // update ping and question message first for responsiveness
   await updateResolvePingQuestionMessages(question, "Question resolved!")
 
-  if (!multiChoice) {
-    let scores = await scoreQuestion(resolution as Resolution, question)
-    await messageUsers(scores, question)
+  let scores: ScoreCollection
+
+  if (questionType === QuestionType.BINARY) {
+    scores = await scoreQuestion(resolution as Resolution, question)
   } else {
+    scores = await scoreQuestionOptions(resolution, question)
     await dbResolveQuestionOption(questionId, resolution)
   }
+
+  await messageUsers(scores, question)
 
   await updateForecastQuestionMessages(question, "Question resolved!")
 
@@ -470,6 +481,134 @@ export async function scoreQuestion(
   if (resolution != Resolution.AMBIGUOUS) {
     console.log("Question is unambig")
     scores = relativeBrierScoring(question.forecasts, question)
+    await scoreForecasts(scores, question)
+  } else {
+    let uniqueIds = Array.from(new Set(question.forecasts.map((f) => f.userId)))
+    scores = uniqueIds
+      .map((id) => {
+        return {
+          [id]: {
+            absoluteBrierScore: 0,
+            relativeBrierScore: 0,
+            rank: 0,
+          } as ScoreTuple,
+        }
+      })
+      .reduce((a, b) => Object.assign(a, b), {})
+  }
+  return scores
+}
+
+function generateImplicitForecasts(
+  question: QuestionWithForecastsAndOptionsAndScores,
+): Forecast[] {
+  // pull out all users
+  // for each user, go through their forecasts and generate the implict ones
+  // append all of them
+  const implicitForecasts: Forecast[] = []
+
+  const uniqueUserIds = Array.from(
+    new Set(question.forecasts.map((f) => f.userId)),
+  )
+
+  uniqueUserIds.forEach((userId) => {
+    implicitForecasts.push(
+      ...generateImplicitForecastsForUser(question, userId),
+    )
+  })
+
+  return implicitForecasts
+}
+
+function generateImplicitForecastsForUser(
+  question: QuestionWithForecastsAndOptionsAndScores,
+  userId: string,
+): Forecast[] {
+  // Get all forecasts for this user
+  const userForecasts: Forecast[] = question.forecasts.filter(
+    (f) => f.userId === userId,
+  )
+  const groupedForecasts = Object.groupBy(userForecasts, (forecast) =>
+    forecast.createdAt.getTime().toString(),
+  )
+  const implicitUserForecasts: Forecast[] = []
+
+  const scores: { [key: string]: Decimal } = {}
+
+  question.options.forEach((option) => {
+    scores[option.id] = new Decimal(0)
+  })
+
+  Object.keys(groupedForecasts).forEach((date) => {
+    const forecastsForDate = groupedForecasts[date]
+    console.log(`Processing forecasts for date: ${date}`)
+    forecastsForDate!.forEach((forecast) => {
+      // Perform operations on each forecast in the group
+      if (forecast.optionId) {
+        scores[forecast.optionId] = forecast.forecast
+      } else {
+        throw Error("OptionId is null for forecast")
+      }
+    })
+
+    // Generate implicit forecast for each date
+    const impliedForecast = new Decimal(
+      Math.max(
+        0,
+        1 -
+          Object.values(scores).reduce(
+            (sum, forecast) => sum + forecast.toNumber(),
+            0,
+          ),
+      ),
+    )
+    implicitUserForecasts.push({
+      id: Math.random(),
+      createdAt: new Date(Number(date)),
+      forecast: impliedForecast,
+      userId: userId,
+      questionId: question.id,
+      optionId: null,
+      comment: null,
+      profileId: userForecasts[0].profileId,
+    })
+  })
+  return implicitUserForecasts
+}
+
+export async function scoreQuestionOptions(
+  resolution: string,
+  question: QuestionWithForecastsAndOptionsAndScores,
+) {
+  // send only the relevant forecast to the scoring function
+  let scores: ScoreCollection = {}
+  if (resolution != Resolution.AMBIGUOUS) {
+    console.log("Question is unambig")
+
+    if (resolution == "OTHER") {
+      console.log("Question resolving to OTHER")
+
+      const implicitForecasts = generateImplicitForecasts(question)
+
+      // console.log({ implicitForecasts })
+      scores = relativeBrierScoring(implicitForecasts, question)
+      // console.log({ scores })
+    } else {
+      // Find the option that resolved to YES, and then resolve it as a binary question
+      const resolvedOption = question.options.find(
+        (option) => option.text === resolution,
+      )
+
+      if (!resolvedOption) {
+        throw Error(
+          "scoreQuestionOptions: resolution not found in question options",
+        )
+      }
+
+      scores = relativeBrierScoring(resolvedOption?.forecasts, resolvedOption)
+    }
+
+    // scores = relativeBrierScoring(question.forecasts, question)
     await scoreForecasts(scores, question)
   } else {
     let uniqueIds = Array.from(new Set(question.forecasts.map((f) => f.userId)))
@@ -557,13 +696,25 @@ export async function resolve(
   // TODO:NEAT replace yes/no/ambiguous with enum (with check for resolution template)
   switch (answer) {
     case "yes":
-      await handleQuestionResolution(questionId, Resolution.YES)
+      await handleQuestionResolution(
+        questionId,
+        Resolution.YES,
+        QuestionType.BINARY,
+      )
       break
     case "no":
-      await handleQuestionResolution(questionId, Resolution.NO)
+      await handleQuestionResolution(
+        questionId,
+        Resolution.NO,
+        QuestionType.BINARY,
+      )
       break
     case "ambiguous":
-      await handleQuestionResolution(questionId, Resolution.AMBIGUOUS)
+      await handleQuestionResolution(
+        questionId,
+        Resolution.AMBIGUOUS,
+        QuestionType.BINARY,
+      )
       break
     default:
       console.error("Unhandled resolution: ", answer)

@@ -508,6 +508,7 @@ export const questionRouter = router({
         resolution: z.string({
           description: "Resolve to YES, NO or AMBIGUOUS", // TODO: update this
         }),
+        questionType: z.string(),
         apiKey: z.string().optional(),
       }),
     )
@@ -525,6 +526,7 @@ export const questionRouter = router({
       await handleQuestionResolution(
         input.questionId,
         input.resolution as string,
+        input.questionType as QuestionType,
       )
 
       await backendAnalyticsEvent("question_resolved", {

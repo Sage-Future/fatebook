@@ -1,4 +1,4 @@
-import { Question, Resolution } from "@prisma/client"
+import { Question, QuestionType, Resolution } from "@prisma/client"
 import { Menu } from "@headlessui/react"
 import clsx from "clsx"
 import { toSentenceCase } from "../../../lib/_utils_common"
@@ -26,6 +26,7 @@ export function BinaryResolutionOptions({
               resolveQuestion.mutate({
                 questionId: question.id,
                 resolution,
+                questionType: QuestionType.BINARY,
               })
             }}
           >

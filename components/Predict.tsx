@@ -48,20 +48,13 @@ const optionSchema = z.object({
 //     .max(10, "Maximum 10 options allowed")
 //     .refine(
 //       (options) => {
-//         console.log("Number of options:", options.length)
-//         console.log("Raw options data:", JSON.stringify(options, null, 2))
-//
 //         let totalForecast = 0
 //         options.forEach((option, index) => {
 //           const forecast = isNaN(option.forecast)
 //             ? 0
 //             : Number(option.forecast)
-//           console.log(`Option ${index + 1}:`, JSON.stringify(option))
-//           console.log(`Option ${index + 1} forecast (processed):`, forecast)
 //           totalForecast += forecast
 //         })
-//         console.log(`Total forecast sum: ${totalForecast}`)
-//         console.log(`Difference from 100: ${Math.abs(totalForecast - 100)}`)
 //         return Math.abs(totalForecast - 100) < 0.01
 //       },
 //       {

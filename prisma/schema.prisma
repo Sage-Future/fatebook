@@ -57,7 +57,7 @@ model QuestionOption {
   question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   forecasts  Forecast[]
   resolution Resolution?
-  createdAt  DateTime?   @default(now())
+  createdAt  DateTime   @default(now())
   user       User        @relation("author", fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   resolvedAt DateTime?

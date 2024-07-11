@@ -3,6 +3,7 @@ import clsx from "clsx"
 import { toSentenceCase } from "../../../lib/_utils_common"
 import { UseTRPCMutationResult } from "@trpc/react-query/shared"
 import { QuestionWithStandardIncludes } from "../../../prisma/additional"
+import { QuestionType } from "@prisma/client"
 
 interface MultiChoiceResolutionOptionsProps {
   question: QuestionWithStandardIncludes
@@ -28,6 +29,7 @@ export function MultiChoiceResolutionOptions({
             resolveQuestion.mutate({
               questionId: question.id,
               resolution: option,
+              questionType: QuestionType.MULTIPLE_CHOICE,
             })
           }}
         >
