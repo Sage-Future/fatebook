@@ -9,6 +9,8 @@ import { sendToHost } from "../lib/web/embed"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
+import { Forecast, QuestionOption } from "@prisma/client"
+import { Decimal } from "@prisma/client/runtime/library"
 
 function closeLinkPopup() {
   sendToHost("close_link_popup")
@@ -22,16 +24,29 @@ export function UpdateableLatestForecast({
   question,
   autoFocus,
   embedded,
+  option,
 }: {
   question: QuestionWithStandardIncludes
   autoFocus?: boolean
   embedded?: boolean
+  option?: QuestionOption & { forecasts: Forecast[] } // TODO: fix this type
 }) {
   const userId = useUserId()
 
-  const latestForecast = userId
-    ? getMostRecentForecastForUser(question, userId)
-    : null
+  let latestForecast: {
+    forecast: Decimal
+    createdAt: Date
+    userId: string
+  } | null
+
+  if (userId) {
+    latestForecast = getMostRecentForecastForUser(
+      option ? option : question,
+      userId,
+    )
+  } else {
+    latestForecast = null
+  }
 
   const defaultVal = latestForecast?.forecast
     ? displayForecast(latestForecast, 10, false)
@@ -66,6 +81,7 @@ export function UpdateableLatestForecast({
       addForecast.mutate({
         questionId: question.id,
         forecast: newForecast,
+        optionId: option?.id ?? undefined,
       })
     }
   }

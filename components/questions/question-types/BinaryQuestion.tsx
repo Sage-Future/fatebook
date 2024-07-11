@@ -73,7 +73,6 @@ export function BinaryQuestion({
 
         <PredictionPercentageInput
           {...predictionPercentageInputProps}
-          optionId={0} // TODO: could just make this field optional and decide based on whether or not its set, rather than have the extra QuestionType field
           questionType={QuestionType.BINARY}
         />
 

@@ -1,4 +1,4 @@
-import { Resolution } from "@prisma/client"
+import { QuestionType, Resolution } from "@prisma/client"
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import ChartJSImage from "chart.js-image"
 import prisma from "../../lib/prisma"
@@ -43,6 +43,11 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
         {
           resolution: {
             in: [Resolution.YES, Resolution.NO],
+          },
+        },
+        {
+          type: {
+            in: [QuestionType.BINARY], // TODO: add MCQs to calibration at some point
           },
         },
         {

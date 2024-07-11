@@ -21,15 +21,12 @@ import { Username } from "./ui/Username"
 
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid"
 import toast from "react-hot-toast"
-import {
-  displayForecast,
-  getDateYYYYMMDD,
-  getMostRecentForecastForUser,
-} from "../lib/_utils_common"
+import { getDateYYYYMMDD } from "../lib/_utils_common"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { InfoButton } from "./ui/InfoButton"
+import { QuestionDetailsOption } from "./questions/QuestionDetailsOptions"
 
 export function Question({
   question,
@@ -130,22 +127,15 @@ export function Question({
             <div className="contents">
               {question.type === "MULTIPLE_CHOICE" && (
                 <>
-                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
-                    <span>{`${question.options![0].text}`}</span>
-                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![0], userId!)!, 10, true)}`}</span>
-                  </div>
-                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
-                    <span>{`${question.options![1].text}`}</span>
-                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![1], userId!)!, 10, true)}`}</span>
-                  </div>
-                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
-                    <span>{`${question.options![2].text}`}</span>
-                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![2], userId!)!, 10, true)}`}</span>
-                  </div>
-                  <div className="col-span-2 flex gap-4 mb-1 justify-between">
-                    <span>{`${question.options![3].text}`}</span>
-                    <span>{`${displayForecast(getMostRecentForecastForUser(question.options![3], userId!)!, 10, true)}`}</span>
-                  </div>
+                  {question.options!.map((option, index) => (
+                    <QuestionDetailsOption
+                      key={index}
+                      option={option}
+                      question={question}
+                      autoFocus={alwaysExpand}
+                      embedded={embedded}
+                    />
+                  ))}
                 </>
               )}
             </div>

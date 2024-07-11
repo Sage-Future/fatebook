@@ -77,6 +77,19 @@ const unifiedPredictFormSchema = z.object({
     .array(optionSchema)
     .min(2, "At least two options are required")
     .max(10, "Maximum 10 options allowed")
+    .refine(
+      (options) => {
+        let totalForecast = 0
+        options.forEach((option) => {
+          const forecast = isNaN(option.forecast) ? 0 : Number(option.forecast)
+          totalForecast += forecast
+        })
+        return totalForecast <= 100
+      },
+      {
+        message: "The sum of all forecasts cannot exceed 100%",
+      },
+    )
     .optional(),
   predictionPercentage: z.number().min(0).max(100).or(z.nan()).optional(),
   sharePublicly: z.boolean().optional(),
@@ -120,28 +133,12 @@ export function Predict({
   small,
   smartSetDates = true,
 }: PredictProps) {
-  // TODO: implement a component to choose this
-  // let questionType: QuestionType
-  // // eslint-disable-next-line no-constant-condition
-  // if (2 === 2) {
-  //   questionType = QuestionType.MULTIPLE_CHOICE
-  // } else {
-  //   questionType = QuestionType.BINARY
-  // }
-
   const [questionType, setQuestionType] = useState<QuestionType>(
     QuestionType.BINARY,
   )
 
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
-
-  // const binaryPredictFormSchema = z.object({
-  //   question: z.string().min(1),
-  //   resolveBy: z.string(),
-  //   predictionPercentage: z.number().min(0).max(100).or(z.nan()),
-  //   sharePublicly: z.boolean().optional(),
-  // })
 
   // TODO: move this somewhere else
   function usePredictForm(
@@ -154,8 +151,6 @@ export function Predict({
       resolver: zodResolver(unifiedPredictFormSchema),
     })
 
-    // console.log(form.getValues("options"))
-
     const setQuestionType = useCallback(
       (newType: QuestionType) => {
         const currentValues = form.getValues()
@@ -166,8 +161,6 @@ export function Predict({
               options: currentValues.options?.length
                 ? currentValues.options
                 : [
-                    { text: "", forecast: NaN },
-                    { text: "", forecast: NaN },
                     { text: "", forecast: NaN },
                     { text: "", forecast: NaN },
                   ],
@@ -205,14 +198,6 @@ export function Predict({
     setFocus,
     formState: { dirtyFields, errors },
   } = usePredictForm(questionType)
-
-  // const optWatch = watch("options")
-  //
-  // useEffect(() => {
-  //   if (optWatch) {
-  //     console.log("Options:", optWatch)
-  //   }
-  // }, [optWatch])
 
   const question = watch("question")
   const resolveByUTCStr = watch(

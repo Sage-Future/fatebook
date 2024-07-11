@@ -19,15 +19,10 @@ interface PredictionPercentageInputProps<
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
-  optionId: number
+  optionId?: number
   questionType: QuestionType
-  // setPredictionInputRef: (
-  //   optionId: string,
-  //   node: HTMLInputElement | null,
-  // ) => void
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function PredictionPercentageInput({
   small,
   errors,
@@ -37,28 +32,17 @@ export function PredictionPercentageInput({
   onSubmit,
   optionId,
   questionType,
-  // setPredictionInputRef,
 }: PredictionPercentageInputProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
-  // console.log(register)
-
-  // const setRef = useCallback(
-  //   (node: HTMLInputElement | null) => {
-  //     predictionInputRefMine.current = node
-  //     setPredictionInputRef(optionId, node)
-  //   },
-  //   [optionId, setPredictionInputRef],
-  // )
-
   const predictionPercentage =
     questionType === QuestionType.MULTIPLE_CHOICE
-      ? watch(`options.${optionId}.forecast`)
+      ? watch(`options.${optionId!}.forecast`)
       : watch("predictionPercentage")
 
   const predictionPercentageRegister =
     questionType === QuestionType.MULTIPLE_CHOICE
-      ? register(`options.${optionId}.forecast`, {
+      ? register(`options.${optionId!}.forecast`, {
           required: true,
           valueAsNumber: true,
         })
@@ -74,11 +58,6 @@ export function PredictionPercentageInput({
       return true
     }
   }
-
-  // const handlePercentageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const newValue = e.target.value
-  //   console.log(newValue) // Log the new value
-  // }
 
   return (
     <div className="min-w-fit">
@@ -118,8 +97,6 @@ export function PredictionPercentageInput({
           onKeyDown={onEnterSubmit}
           onMouseDown={(e) => e.stopPropagation()}
           {...predictionPercentageRegister}
-          // ref={setRef}
-          // onChange={handlePercentageChange}
         />
         <span
           onClick={() => predictionInputRefMine.current?.focus()}

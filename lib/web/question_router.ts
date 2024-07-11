@@ -745,6 +745,7 @@ export const questionRouter = router({
           })
           .max(1)
           .min(0),
+        optionId: z.string().optional(),
         apiKey: z.string().optional(),
       }),
     )
@@ -816,7 +817,14 @@ export const questionRouter = router({
               id: input.questionId,
             },
           },
-          forecast: input.forecast,
+          // If an optionId is set, the forecast goes on that option
+          // Else it goes on the question itself
+          ...(input.optionId
+            ? {
+                option: { connect: { id: input.optionId } },
+                forecast: input.forecast,
+              }
+            : { forecast: input.forecast }),
         },
         include: {
           user: true,

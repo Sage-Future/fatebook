@@ -143,6 +143,13 @@ async function dbResolveQuestionOption(questionId: string, resolution: string) {
     await prisma.questionOption.update(update)
   }
 
+  let resolutionValue: Resolution
+  if (Object.values(Resolution).includes(resolution as Resolution)) {
+    resolutionValue = resolution as Resolution
+  } else {
+    resolutionValue = Resolution.YES
+  }
+
   // Update the question's resolution and other fields
   return prisma.question.update({
     where: {
@@ -150,7 +157,7 @@ async function dbResolveQuestionOption(questionId: string, resolution: string) {
     },
     data: {
       resolved: true,
-      resolution: Resolution.YES,
+      resolution: resolutionValue,
       resolvedAt: new Date(),
     },
     include: {
@@ -418,11 +425,13 @@ export async function handleQuestionResolution(
   console.log(`    handleQuestionResolution: ${questionId} ${resolution}`)
   let resolutionValue: Resolution
 
-  if (resolution in Resolution) {
+  if (Object.values(Resolution).includes(resolution as Resolution)) {
     resolutionValue = resolution as Resolution
   } else {
     resolutionValue = Resolution.YES
   }
+
+  console.log(`resolutionValue: ${resolutionValue}`)
 
   const question = await dbResolveQuestion(questionId, resolutionValue)
   console.log(

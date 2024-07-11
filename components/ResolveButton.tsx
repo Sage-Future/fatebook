@@ -43,13 +43,13 @@ export function ResolveButton({
         if (option.resolution === Resolution.YES) {
           return option.text
         }
-        return Resolution.YES
       }
+      return question.resolution === Resolution.AMBIGUOUS
+        ? Resolution.AMBIGUOUS
+        : "Other"
     } else {
       return question.resolution
     }
-
-    return null
   }
 
   if (question.userId !== userId && !resolution) {
