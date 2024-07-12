@@ -506,7 +506,8 @@ export const questionRouter = router({
       z.object({
         questionId: z.string(),
         resolution: z.string({
-          description: "Resolve to YES, NO or AMBIGUOUS", // TODO: update this
+          description:
+            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
         }),
         questionType: z.string(),
         apiKey: z.string().optional(),
@@ -516,7 +517,8 @@ export const questionRouter = router({
       openapi: {
         method: "POST",
         path: "/v0/resolveQuestion",
-        description: "Resolve the question to YES, NO or AMBIGUOUS", // TODO update this
+        description:
+          "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
       },
     })
     .output(z.undefined())

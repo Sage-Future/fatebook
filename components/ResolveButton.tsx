@@ -63,15 +63,18 @@ export function ResolveButton({
           <Menu.Button
             className={clsx(
               "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 disabled:opacity-70",
+              // TODO: clean this up
               resolution === "YES"
                 ? "bg-green-500 text-white"
-                : resolution === "NO"
+                : resolution === "NO" || resolution === "Other"
                   ? "bg-red-500 text-white"
                   : resolution === "AMBIGUOUS"
                     ? "bg-blue-500 text-white"
-                    : question.resolveBy < new Date()
-                      ? "bg-neutral-200 text-neutral-700 ring-2 ring-inset ring-indigo-200 ring-opacity-70 hover:ring-opacity-100"
-                      : "bg-neutral-200 text-neutral-700",
+                    : resolution // Has resolved to an MCQ option
+                      ? "bg-green-500 text-white"
+                      : question.resolveBy < new Date()
+                        ? "bg-neutral-200 text-neutral-700 ring-2 ring-inset ring-indigo-200 ring-opacity-70 hover:ring-opacity-100"
+                        : "bg-neutral-200 text-neutral-700",
             )}
             disabled={
               resolveQuestion.isLoading ||

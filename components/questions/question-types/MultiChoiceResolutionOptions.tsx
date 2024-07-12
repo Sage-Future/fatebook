@@ -38,11 +38,11 @@ export function MultiChoiceResolutionOptions({
               "h-3 w-3 mr-2 rounded-md",
               option === "YES"
                 ? "bg-green-500"
-                : option === "NO"
+                : option === "NO" || option === "OTHER"
                   ? "bg-red-500"
                   : option === "AMBIGUOUS"
                     ? "bg-blue-500"
-                    : "bg-neutral-200",
+                    : "bg-green-500", // is an MCQ option
             )}
           />
           {toSentenceCase(option.toLowerCase())}

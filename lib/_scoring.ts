@@ -31,8 +31,6 @@ export type DayAvgForecast = {
 }
 
 // TODO: this is way too long, refactor it
-// Create a function that can generate the implicit other forecasts for each user
-// And then feed it to this
 export function relativeBrierScoring(
   forecasts: Forecast[],
   question: Question | QuestionOption,

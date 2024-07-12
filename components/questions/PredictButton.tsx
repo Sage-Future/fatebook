@@ -27,14 +27,12 @@ export function PredictButton({
   const [showErrors, setShowErrors] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
 
-  console.log(errors)
   // Gather all errors into a single message
   useEffect(() => {
     const newErrorMessage = Object.values(errors)
       .map((err) => err?.root?.message)
       .join(", ")
     setErrorMessage(newErrorMessage)
-    console.log(newErrorMessage)
   }, [errors])
 
   return (

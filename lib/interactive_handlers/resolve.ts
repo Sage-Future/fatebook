@@ -446,8 +446,8 @@ export async function handleQuestionResolution(
   if (questionType === QuestionType.BINARY) {
     scores = await scoreQuestion(resolution as Resolution, question)
   } else {
-    scores = await scoreQuestionOptions(resolution, question)
     await dbResolveQuestionOption(questionId, resolution)
+    scores = await scoreQuestionOptions(resolution, question)
   }
 
   await messageUsers(scores, question)
@@ -599,9 +599,7 @@ export async function scoreQuestionOptions(
 
       const implicitForecasts = generateImplicitForecasts(question)
 
-      // console.log({ implicitForecasts })
       scores = relativeBrierScoring(implicitForecasts, question)
-      // console.log({ scores })
     } else {
       // Find the option that resolved to YES, and then resolve it as a binary question
       const resolvedOption = question.options.find(
