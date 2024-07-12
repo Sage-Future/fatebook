@@ -1,4 +1,8 @@
-import { FieldErrors, UseFormHandleSubmit } from "react-hook-form"
+import {
+  FieldErrors,
+  UseFormClearErrors,
+  UseFormHandleSubmit,
+} from "react-hook-form"
 import { useEffect, useState } from "react"
 
 interface PredictButtonsProps<
@@ -9,6 +13,7 @@ interface PredictButtonsProps<
   session: { status: string }
   errors: FieldErrors<any>
   handleSubmit: UseFormHandleSubmit<TFormValues>
+  clearErrors: UseFormClearErrors<TFormValues>
 }
 
 export function PredictButton({
@@ -17,6 +22,7 @@ export function PredictButton({
   session,
   errors,
   handleSubmit,
+  clearErrors,
 }: PredictButtonsProps) {
   const [showErrors, setShowErrors] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
@@ -38,6 +44,11 @@ export function PredictButton({
           e.preventDefault()
           void handleSubmit(onSubmit)(e)
           setShowErrors(true)
+          // This is absolutely disgusting and you should change it
+          setTimeout(() => {
+            clearErrors()
+            setShowErrors(false)
+          }, 2000)
         }}
         className="btn btn-primary btn-lg hover:scale-105"
         disabled={!!userId && Object.values(errors).some((err) => !!err)}

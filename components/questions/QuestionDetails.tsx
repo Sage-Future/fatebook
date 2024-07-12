@@ -9,19 +9,19 @@ import {
   formatDecimalNicely,
   getCommunityForecast,
   getDateYYYYMMDD,
-} from "../lib/_utils_common"
-import { api } from "../lib/web/trpc"
+} from "../../lib/_utils_common"
+import { api } from "../../lib/web/trpc"
 import {
   invalidateQuestion,
   signInToFatebook,
   useUserId,
-} from "../lib/web/utils"
-import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { CommentBox, DeleteCommentOverflow } from "./CommentBox"
-import { TagsSelect } from "./TagsSelect"
-import { FormattedDate } from "./ui/FormattedDate"
-import { InfoButton } from "./ui/InfoButton"
-import { Username } from "./ui/Username"
+} from "../../lib/web/utils"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import { CommentBox, DeleteCommentOverflow } from "../CommentBox"
+import { TagsSelect } from "../TagsSelect"
+import { FormattedDate } from "../ui/FormattedDate"
+import { InfoButton } from "../ui/InfoButton"
+import { Username } from "../ui/Username"
 
 interface QuestionDetailsProps {
   question: QuestionWithStandardIncludes
@@ -122,13 +122,15 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               timestamp: f.createdAt || new Date(),
               el: (
                 <Fragment key={f.id}>
-                  <Username user={question.user} className="font-semibold" />
-                  <span className="font-bold">{o.text}</span>
-                  <span className="font-bold text-lg text-indigo-800">
-                    {displayForecast(f, 2)}
-                  </span>
-                  <div className="text-neutral-400">
-                    <FormattedDate date={f.createdAt || new Date()} />
+                  <div className="flex w-full child-flex-grow">
+                    <Username user={question.user} className="font-semibold" />
+                    <span className="font-bold">{o.text}</span>
+                    <span className="font-bold text-lg text-indigo-800">
+                      {displayForecast(f, 2)}
+                    </span>
+                    <div className="text-neutral-400">
+                      <FormattedDate date={f.createdAt || new Date()} />
+                    </div>
                   </div>
                 </Fragment>
               ),
@@ -139,12 +141,14 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
           timestamp: f.createdAt,
           el: (
             <Fragment key={f.id}>
-              <Username user={f.user} className="font-semibold" />
-              <span className="font-bold text-lg text-indigo-80">
-                {displayForecast(f, 2)}
-              </span>
-              <div className="text-neutral-400">
-                <FormattedDate date={f.createdAt} />
+              <div className="flex w-full child-flex-grow">
+                <Username user={f.user} className="font-semibold" />
+                <span className="font-bold text-lg text-indigo-80">
+                  {displayForecast(f, 2)}
+                </span>
+                <div className="text-neutral-400">
+                  <FormattedDate date={f.createdAt} />
+                </div>
               </div>
             </Fragment>
           ),
@@ -157,17 +161,19 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
         timestamp: c.createdAt,
         el: (
           <Fragment key={c.id}>
-            <span>
-              <Username user={c.user} className="font-semibold" />
-            </span>
-            <span />
-            <span className="text-neutral-400 inline-flex justify-between w-full">
-              <FormattedDate date={c.createdAt} className="my-auto" />
-              <DeleteCommentOverflow question={question} comment={c} />
-            </span>
-            <span className="md:pl-7 col-span-3 -mt-1 break-words overflow-x-auto whitespace-pre-line">
-              {c.comment}
-            </span>
+            <div className="flex w-full child-flex-grow">
+              <span>
+                <Username user={c.user} className="font-semibold" />
+              </span>
+              <span />
+              <span className="text-neutral-400 inline-flex justify-between w-full">
+                <FormattedDate date={c.createdAt} className="my-auto" />
+                <DeleteCommentOverflow question={question} comment={c} />
+              </span>
+              <span className="md:pl-7 col-span-3 -mt-1 break-words overflow-x-auto whitespace-pre-line">
+                {c.comment}
+              </span>
+            </div>
           </Fragment>
         ),
       })),
@@ -178,16 +184,21 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               timestamp: question.createdAt,
               el: (
                 <Fragment key={`${question.id} note`}>
-                  <span>
-                    <Username user={question.user} className="font-semibold" />
-                  </span>
-                  <span />
-                  <span className="text-neutral-400">
-                    <FormattedDate date={question.createdAt} />
-                  </span>
-                  <span className="md:pl-7 col-span-3 -mt-1">
-                    {question.notes}
-                  </span>
+                  <div className="flex w-full child-flex-grow">
+                    <span>
+                      <Username
+                        user={question.user}
+                        className="font-semibold"
+                      />
+                    </span>
+                    <span />
+                    <span className="text-neutral-400">
+                      <FormattedDate date={question.createdAt} />
+                    </span>
+                    <span className="md:pl-7 col-span-3 -mt-1">
+                      {question.notes}
+                    </span>
+                  </div>
                 </Fragment>
               ),
             },
@@ -201,13 +212,15 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               timestamp: question.resolvedAt,
               el: (
                 <Fragment key={`${question.id} resolution`}>
-                  <Username user={question.user} className="font-semibold" />
-                  <span className="italic text-indigo-800">
-                    Resolved {question.resolution}
-                  </span>
-                  <span className="text-neutral-400">
-                    <FormattedDate date={question.resolvedAt} />
-                  </span>
+                  <div className="flex w-full child-flex-grow">
+                    <Username user={question.user} className="font-semibold" />
+                    <span className="italic text-indigo-800">
+                      Resolved {question.resolution}
+                    </span>
+                    <span className="text-neutral-400">
+                      <FormattedDate date={question.resolvedAt} />
+                    </span>
+                  </div>
                 </Fragment>
               ),
             },
@@ -224,7 +237,8 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
+      {/*<div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">*/}
+      <div className="flex flex-col">
         {events.length ? (
           events
             .sort(

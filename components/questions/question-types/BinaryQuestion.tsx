@@ -23,6 +23,7 @@ export function BinaryQuestion({
   handleSubmit,
   textAreaRef,
   highlightResolveBy,
+  clearErrors,
 }: BinaryQuestionProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
@@ -52,6 +53,7 @@ export function BinaryQuestion({
     userId,
     onSubmit,
     session,
+    clearErrors,
     errors,
     handleSubmit,
   }

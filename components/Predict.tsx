@@ -193,6 +193,7 @@ export function Predict({
     register,
     handleSubmit,
     setValue,
+    clearErrors,
     watch,
     reset,
     setFocus,
@@ -457,6 +458,7 @@ export function Predict({
     handleSubmit,
     textAreaRef,
     highlightResolveBy,
+    clearErrors,
   }
 
   const multiChoiceQuestionProps = {
@@ -475,6 +477,7 @@ export function Predict({
     handleSubmit,
     textAreaRef,
     highlightResolveBy,
+    clearErrors,
   }
 
   return (

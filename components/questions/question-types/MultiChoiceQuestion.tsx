@@ -22,6 +22,7 @@ export function MultiChoiceQuestion({
   handleSubmit,
   textAreaRef,
   highlightResolveBy,
+  clearErrors,
 }: MultiChoiceQuestionProps) {
   const [predictionInputRefs, setPredictionInputRefs] = useState<
     Record<string, HTMLInputElement | null>
@@ -61,6 +62,7 @@ export function MultiChoiceQuestion({
     onSubmit,
     session,
     errors,
+    clearErrors,
     handleSubmit,
   }
 
