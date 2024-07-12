@@ -59,6 +59,16 @@ const unifiedPredictFormSchema = z.object({
         message: "The sum of all forecasts cannot exceed 100%",
       },
     )
+    .refine(
+      (options) => {
+        const texts = options.map((option) => option.text)
+        const uniqueTexts = new Set(texts)
+        return uniqueTexts.size === texts.length
+      },
+      {
+        message: "Each option text must be unique",
+      },
+    )
     .optional(),
   predictionPercentage: z.number().min(0).max(100).or(z.nan()).optional(),
   sharePublicly: z.boolean().optional(),
@@ -198,7 +208,6 @@ export function Predict({
   const [tagsPreview, setTagsPreview] = useState<string[]>([])
   const onSubmit: SubmitHandler<PredictFormType> = useCallback(
     (data, e) => {
-      console.log(data)
       e?.preventDefault() // don't reload the page
 
       if (!userId) {
@@ -231,7 +240,6 @@ export function Predict({
       }
 
       if (isMultiChoice) {
-        console.log(data.options)
         createQuestion.mutate(
           {
             ...createQuestionData,
@@ -410,7 +418,6 @@ export function Predict({
     }
   }
 
-  // TODO: maybe just question props?
   const binaryQuestionProps = {
     small,
     resolveByButtons,

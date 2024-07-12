@@ -47,7 +47,7 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
         },
         {
           type: {
-            in: [QuestionType.BINARY], // TODO: add MCQs to calibration at some point
+            in: [QuestionType.BINARY], // TODO: add MCQs to calibration
           },
         },
         {

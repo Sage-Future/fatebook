@@ -1,20 +1,9 @@
 import clsx from "clsx"
 import { InfoButton } from "../ui/InfoButton"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
-// import { FormattedDate } from "../ui/FormattedDate"
 import { utcDateStrToLocalDate } from "../../lib/web/utils"
-import React, {
-  KeyboardEvent,
-  MutableRefObject,
-  useEffect,
-  useRef,
-} from "react"
-import {
-  FieldErrors,
-  UseFormHandleSubmit,
-  UseFormRegister,
-  UseFormSetValue,
-} from "react-hook-form"
+import { useEffect, useRef } from "react"
+import { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form"
 import { FormattedDate } from "../ui/FormattedDate"
 
 interface ResolveByProps<
@@ -30,14 +19,10 @@ interface ResolveByProps<
     sharePublicly?: boolean
     unlisted?: boolean
   }
-  onSubmit: (data: any) => void
   register: UseFormRegister<any>
-  setValue: UseFormSetValue<any>
+  setValue: UseFormSetValue<TFormValues>
   errors: FieldErrors<any>
   watch: (name: string) => any
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  textAreaRef?: React.RefObject<HTMLTextAreaElement>
-  predictionInputRefMine?: MutableRefObject<HTMLInputElement | null>
   highlightResolveBy: boolean
 }
 
@@ -45,38 +30,13 @@ export function ResolveBy({
   small,
   resolveByButtons,
   questionDefaults,
-  onSubmit,
   register,
   setValue,
   errors,
   watch,
-  handleSubmit,
-  textAreaRef,
-  predictionInputRefMine,
   highlightResolveBy,
 }: ResolveByProps) {
   const resolveByUTCStr = watch("resolveBy")
-
-  // TODO: refactor these two into a shared location
-  const onEnterSubmit = (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
-      void handleSubmit(onSubmit)()
-      e.preventDefault()
-      return true
-    }
-  }
-
-  const onDateKeydown = (e: KeyboardEvent) => {
-    onEnterSubmit(e)
-    if (e.key === "Tab") {
-      e.preventDefault()
-      if (e.shiftKey) {
-        textAreaRef!.current?.focus()
-      } else {
-        predictionInputRefMine!.current?.focus()
-      }
-    }
-  }
 
   const resolveByInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -99,7 +59,7 @@ export function ResolveBy({
   }, [highlightResolveBy])
 
   return (
-    <div className="flex flex-col">
+    <div className="grid grid-cols-1-3-1">
       <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
         Resolve by
         <InfoButton
@@ -119,7 +79,8 @@ export function ResolveBy({
             defaultValue={getDateYYYYMMDD(
               new Date(questionDefaults?.resolveBy || tomorrowDate()),
             )}
-            onKeyDown={onDateKeydown}
+            // IMO the default functionality is better here, but can discuss
+            // onKeyDown={onDateKeydown}
             onMouseDown={(e) => e.stopPropagation()}
             ref={(e) => {
               resolveByInputRef.current = e

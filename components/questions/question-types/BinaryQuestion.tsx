@@ -21,7 +21,6 @@ export function BinaryQuestion({
   errors,
   watch,
   handleSubmit,
-  textAreaRef,
   highlightResolveBy,
   clearErrors,
 }: BinaryQuestionProps) {
@@ -44,7 +43,6 @@ export function BinaryQuestion({
     errors,
     watch,
     handleSubmit,
-    textAreaRef,
     predictionInputRefMine,
     highlightResolveBy,
   }

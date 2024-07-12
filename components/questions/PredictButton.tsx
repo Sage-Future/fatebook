@@ -33,12 +33,10 @@ export function PredictButton({
       .map((err) => err?.root?.message)
       .join(", ")
     setErrorMessage(newErrorMessage)
-  }, [errors])
+  }, [errors, showErrors])
 
   return (
-    <div
-      className={`flex flex-col h-full items-start ${showErrors ? "" : "justify-center"}`}
-    >
+    <div className="grid grid-cols-1-3-1">
       <div>
         {showErrors && errorMessage && (
           <span className="text-red-500 text-sm mt-2">{errorMessage}</span>

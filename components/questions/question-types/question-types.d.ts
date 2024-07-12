@@ -5,7 +5,6 @@ import {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form"
-import React from "react"
 import { PredictFormType } from "../../Predict"
 
 // eslint-disable-next-line no-unused-vars
@@ -33,6 +32,5 @@ interface QuestionTypeProps<
   clearErrors: UseFormClearErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
-  textAreaRef?: React.RefObject<HTMLTextAreaElement>
   highlightResolveBy: boolean
 }

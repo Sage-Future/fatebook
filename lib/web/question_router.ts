@@ -155,6 +155,7 @@ export const questionRouter = router({
                   user: true,
                 },
               },
+              user: true,
             },
           },
           user: true,

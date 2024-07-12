@@ -1,9 +1,11 @@
-import { Forecast, QuestionOption } from "@prisma/client"
-import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import {
+  QuestionOptionWithForecasts,
+  QuestionWithStandardIncludes,
+} from "../../prisma/additional"
 import { UpdateableLatestForecast } from "../UpdateableLatestForecast"
 
 interface QuestionDetailsOptionsProps {
-  option: QuestionOption & { forecasts: Forecast[] } // TODO: fix this type
+  option: QuestionOptionWithForecasts
   question: QuestionWithStandardIncludes
   autoFocus?: boolean
   embedded?: boolean

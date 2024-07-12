@@ -20,40 +20,21 @@ export function MultiChoiceQuestion({
   errors,
   watch,
   handleSubmit,
-  textAreaRef,
   highlightResolveBy,
   clearErrors,
 }: MultiChoiceQuestionProps) {
-  const [predictionInputRefs, setPredictionInputRefs] = useState<
-    Record<string, HTMLInputElement | null>
-  >({})
-
   const MIN_OPTIONS = 2
   const MAX_OPTIONS = 10
   const [numberOfOptions, setNumberOfOptions] = useState(2)
-
-  const setPredictionInputRef = useCallback(
-    (id: string, node: HTMLInputElement | null) => {
-      setPredictionInputRefs((prev) => {
-        if (prev[id] === node) return prev // Prevent unnecessary updates
-        return { ...prev, [id]: node }
-      })
-    },
-    [],
-  )
 
   const resolveByProps = {
     small,
     resolveByButtons,
     questionDefaults,
-    onSubmit,
     register,
     setValue,
     errors,
     watch,
-    handleSubmit,
-    textAreaRef,
-    predictionInputRefs, // not sure if this will work or needs reverting
     highlightResolveBy,
   }
 
@@ -81,7 +62,6 @@ export function MultiChoiceQuestion({
       props: {
         ...questionOptionProps,
         optionId: i,
-        setPredictionInputRef,
       },
     })),
   )
@@ -96,19 +76,11 @@ export function MultiChoiceQuestion({
           props: {
             ...questionOptionProps,
             optionId: numberOfOptions,
-            setPredictionInputRef,
           },
         },
       ])
     }
-  }, [
-    numberOfOptions,
-    options.length,
-    questionOptionProps,
-    setPredictionInputRef,
-  ])
-
-  console.log(errors)
+  }, [numberOfOptions, options.length, questionOptionProps])
 
   const removeOption = useCallback((idToRemove: number) => {
     setOptions((prev) => prev.filter((option) => option.id !== idToRemove))

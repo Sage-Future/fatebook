@@ -7,7 +7,7 @@ import { QuestionType } from "@prisma/client"
 
 interface MultiChoiceResolutionOptionsProps {
   question: QuestionWithStandardIncludes
-  resolveQuestion: UseTRPCMutationResult<any, any, any, any> // TODO: probably not this
+  resolveQuestion: UseTRPCMutationResult<any, any, any, any> // This is lazy, should be more specific
 }
 
 export function MultiChoiceResolutionOptions({

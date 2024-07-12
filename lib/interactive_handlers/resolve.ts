@@ -147,7 +147,7 @@ async function dbResolveQuestionOption(questionId: string, resolution: string) {
   if (Object.values(Resolution).includes(resolution as Resolution)) {
     resolutionValue = resolution as Resolution
   } else {
-    resolutionValue = Resolution.YES
+    resolutionValue = resolution === "OTHER" ? Resolution.NO : Resolution.YES
   }
 
   // Update the question's resolution and other fields
@@ -173,6 +173,11 @@ async function dbResolveQuestionOption(questionId: string, resolution: string) {
               profiles: true,
             },
           },
+        },
+      },
+      options: {
+        include: {
+          forecasts: true,
         },
       },
       comments: {
@@ -446,8 +451,8 @@ export async function handleQuestionResolution(
   if (questionType === QuestionType.BINARY) {
     scores = await scoreQuestion(resolution as Resolution, question)
   } else {
-    await dbResolveQuestionOption(questionId, resolution)
-    scores = await scoreQuestionOptions(resolution, question)
+    const result = await dbResolveQuestionOption(questionId, resolution)
+    scores = await scoreQuestionOptions(resolution, result)
   }
 
   await messageUsers(scores, question)
@@ -605,6 +610,7 @@ export async function scoreQuestionOptions(
       const resolvedOption = question.options.find(
         (option) => option.text === resolution,
       )
+      console.log({ resolvedOption })
 
       if (!resolvedOption) {
         throw Error(

@@ -19,10 +19,6 @@ interface QuestionOptionProps<
   onSubmit: (data: any) => void
   optionId: number
   questionType: QuestionType
-  setPredictionInputRef: (
-    optionId: string,
-    node: HTMLInputElement | null,
-  ) => void
   onRemove: () => void
   canRemove: boolean
 }
@@ -36,7 +32,6 @@ export function QuestionOption({
   onSubmit,
   optionId,
   questionType,
-  setPredictionInputRef,
   onRemove,
   canRemove,
 }: QuestionOptionProps) {
@@ -47,7 +42,6 @@ export function QuestionOption({
     errors,
     handleSubmit,
     onSubmit,
-    setPredictionInputRef,
   }
 
   const predictionPercentageInputProps = {

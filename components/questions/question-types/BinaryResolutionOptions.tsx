@@ -6,7 +6,7 @@ import { UseTRPCMutationResult } from "@trpc/react-query/shared"
 
 interface BinaryResolutionOptionsProps {
   question: Question
-  resolveQuestion: UseTRPCMutationResult<any, any, any, any> // TODO: probably not this
+  resolveQuestion: UseTRPCMutationResult<any, any, any, any> // This is lazy, should be more specific
 }
 
 export function BinaryResolutionOptions({
