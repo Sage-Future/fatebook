@@ -229,7 +229,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
+      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-visible showScrollbar">
         {events.length ? (
           events
             .sort(
@@ -260,6 +260,7 @@ function EditQuestionOverflow({
 }: {
   question: QuestionWithStandardIncludes
 }) {
+  const [isVisible, setIsVisible] = useState(false)
   const utils = api.useContext()
   const router = useRouter()
 
@@ -277,78 +278,84 @@ function EditQuestionOverflow({
 
   return (
     <div className="dropdown dropdown-end not-prose">
-      <label tabIndex={0} className="btn btn-xs btn-ghost">
+      <label
+        tabIndex={0}
+        className="btn btn-xs btn-ghost"
+        onClick={() => setIsVisible(!isVisible)}
+      >
         <EllipsisVerticalIcon height={15} />
       </label>
-      <ul
-        tabIndex={0}
-        className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
-      >
-        <li>
-          <a
-            onClick={() => {
-              const newTitle = prompt(
-                "Edit the title of your question:",
-                question.title,
-              )
-              if (newTitle && newTitle !== question.title) {
-                editQuestion.mutate({
-                  questionId: question.id,
-                  title: newTitle,
-                })
-              }
-            }}
-          >
-            Edit question
-          </a>
-        </li>
-        <li>
-          <a
-            onClick={() => {
-              const newDateStr = prompt(
-                "Edit the resolution date of your question (YYYY-MM-DD):",
-                getDateYYYYMMDD(question.resolveBy),
-              )
-              const newDate = newDateStr ? new Date(newDateStr) : undefined
-              if (newDate && !isNaN(newDate.getTime())) {
-                editQuestion.mutate({
-                  questionId: question.id,
-                  resolveBy: newDate,
-                })
-              } else {
-                toast.error(
-                  "The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2024-09-30",
-                  {
-                    duration: 8000,
-                  },
+      {isVisible && (
+        <ul
+          tabIndex={0}
+          className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
+        >
+          <li>
+            <a
+              onClick={() => {
+                const newTitle = prompt(
+                  "Edit the title of your question:",
+                  question.title,
                 )
-              }
-            }}
-          >
-            Edit resolve by date
-          </a>
-        </li>
-        <li>
-          <a
-            onClick={() => {
-              if (
-                confirm(
-                  "Are you sure you want to delete this question? This cannot be undone",
-                )
-              ) {
-                deleteQuestion.mutate({
-                  questionId: question.id,
-                })
-                if (router.asPath.startsWith("/q/")) {
-                  void router.push("/")
+                if (newTitle && newTitle !== question.title) {
+                  editQuestion.mutate({
+                    questionId: question.id,
+                    title: newTitle,
+                  })
                 }
-              }
-            }}
-          >
-            Delete question
-          </a>
-        </li>
-      </ul>
+              }}
+            >
+              Edit question
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => {
+                const newDateStr = prompt(
+                  "Edit the resolution date of your question (YYYY-MM-DD):",
+                  getDateYYYYMMDD(question.resolveBy),
+                )
+                const newDate = newDateStr ? new Date(newDateStr) : undefined
+                if (newDate && !isNaN(newDate.getTime())) {
+                  editQuestion.mutate({
+                    questionId: question.id,
+                    resolveBy: newDate,
+                  })
+                } else {
+                  toast.error(
+                    "The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2024-09-30",
+                    {
+                      duration: 8000,
+                    },
+                  )
+                }
+              }}
+            >
+              Edit resolve by date
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => {
+                if (
+                  confirm(
+                    "Are you sure you want to delete this question? This cannot be undone",
+                  )
+                ) {
+                  deleteQuestion.mutate({
+                    questionId: question.id,
+                  })
+                  if (router.asPath.startsWith("/q/")) {
+                    void router.push("/")
+                  }
+                }
+              }}
+            >
+              Delete question
+            </a>
+          </li>
+        </ul>
+      )}
     </div>
   )
 }

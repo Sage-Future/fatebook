@@ -97,6 +97,7 @@ export function DeleteCommentOverflow({
   question: QuestionWithStandardIncludes
   comment: CommentWithUser
 }) {
+  const [isVisible, setIsVisible] = useState(false)
   const userId = useUserId()
 
   const utils = api.useContext()
@@ -107,30 +108,36 @@ export function DeleteCommentOverflow({
   })
 
   if (userId !== comment.userId) {
-    return <></>
+    return null
   }
 
   return (
     <div className="dropdown dropdown-end not-prose max-h-4">
-      <label tabIndex={0} className="btn btn-xs btn-ghost pl-2">
+      <label
+        tabIndex={0}
+        className="btn btn-xs btn-ghost pl-2"
+        onClick={() => setIsVisible(!isVisible)}
+      >
         <EllipsisVerticalIcon height={15} />
       </label>
-      <ul
-        tabIndex={0}
-        className="dropdown-content text-black z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
-      >
-        <li>
-          <a
-            onClick={() => {
-              deleteComment.mutate({
-                commentId: comment.id,
-              })
-            }}
-          >
-            Delete comment
-          </a>
-        </li>
-      </ul>
+      {isVisible && (
+        <ul
+          tabIndex={0}
+          className="dropdown-content text-black z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
+        >
+          <li>
+            <a
+              onClick={() => {
+                deleteComment.mutate({
+                  commentId: comment.id,
+                })
+              }}
+            >
+              Delete comment
+            </a>
+          </li>
+        </ul>
+      )}
     </div>
   )
 }
