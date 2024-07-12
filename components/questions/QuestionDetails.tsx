@@ -112,7 +112,6 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
 
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()
-  // console.log(question.options)
 
   const forecastEvents: { timestamp: Date; el: ReactNode }[] =
     question.type === "MULTIPLE_CHOICE"
@@ -237,7 +236,6 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      {/*<div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">*/}
       <div className="flex flex-col">
         {events.length ? (
           events

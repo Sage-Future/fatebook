@@ -30,7 +30,7 @@ interface QuestionTypeProps<
   register: UseFormRegister<PredictFormType>
   setValue: UseFormSetValue<any>
   errors: FieldErrors<any>
-  clearErrors: UseFormClearErrors<TFormValues>
+  clearErrors: UseFormClearErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
   textAreaRef?: React.RefObject<HTMLTextAreaElement>

@@ -39,37 +39,6 @@ const optionSchema = z.object({
   ),
 })
 
-// const multiChoicePredictFormSchema = z.object({
-//   question: z.string().min(1, "Question is required"),
-//   resolveBy: z.string(),
-//   options: z
-//     .array(optionSchema)
-//     .min(2, "At least two options are required")
-//     .max(10, "Maximum 10 options allowed")
-//     .refine(
-//       (options) => {
-//         let totalForecast = 0
-//         options.forEach((option, index) => {
-//           const forecast = isNaN(option.forecast)
-//             ? 0
-//             : Number(option.forecast)
-//           totalForecast += forecast
-//         })
-//         return Math.abs(totalForecast - 100) < 0.01
-//       },
-//       {
-//         message: "The sum of all forecasts must equal 100%",
-//       },
-//     ),
-//   sharePublicly: z.boolean().optional(),
-// })
-
-// Create a unified schema
-// const unifiedPredictFormSchema = z.union([
-//   binaryPredictFormSchema,
-//   multiChoicePredictFormSchema,
-// ])
-
 const unifiedPredictFormSchema = z.object({
   question: z.string().min(1, "Question is required"),
   resolveBy: z.string(),

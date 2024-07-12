@@ -13,7 +13,7 @@ interface PredictButtonsProps<
   session: { status: string }
   errors: FieldErrors<any>
   handleSubmit: UseFormHandleSubmit<TFormValues>
-  clearErrors: UseFormClearErrors<TFormValues>
+  clearErrors: UseFormClearErrors<any>
 }
 
 export function PredictButton({
