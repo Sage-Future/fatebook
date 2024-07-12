@@ -27,7 +27,6 @@ interface QuestionOptionProps<
   canRemove: boolean
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export function QuestionOption({
   small,
   errors,
@@ -51,8 +50,6 @@ export function QuestionOption({
     setPredictionInputRef,
   }
 
-  // console.log(register)
-
   const predictionPercentageInputProps = {
     small,
     errors,
@@ -62,7 +59,6 @@ export function QuestionOption({
     onSubmit,
     optionId,
     questionType,
-    // setPredictionInputRef,
   }
 
   return (
@@ -72,7 +68,7 @@ export function QuestionOption({
       {canRemove && (
         <button
           onClick={onRemove}
-          className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          className="btn h-12 px-2 py-1 bg-red-500 text-white hover:bg-red-600 transition-colors self-end hover:scale-105 text-lg font-normal"
           type="button"
         >
           Remove

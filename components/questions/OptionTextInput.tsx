@@ -34,8 +34,11 @@ export function OptionTextInput({
   }
 
   return (
-    <div className="min-w-fit">
-      <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
+    <div className="">
+      <label
+        className={clsx("flex", small && "text-sm")}
+        htmlFor={`options.${optionId}.text`}
+      >
         {`Option ${optionId + 1}`}
         <InfoButton
           className="ml-1 tooltip-left"
@@ -47,7 +50,7 @@ export function OptionTextInput({
           required: "Option text is required",
         })}
         className={clsx(
-          "w-full px-3 py-2 text-gray-700 rounded-lg focus:outline-none border-2 border-neutral-300",
+          "w-full px-3 py-2 text-gray-700 rounded-lg focus:outline-none border-2 border-neutral-300 h-12",
           small ? "text-sm" : "text-base",
           errors[fieldName]
             ? "border-red-500"

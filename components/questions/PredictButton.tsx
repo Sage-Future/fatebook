@@ -38,7 +38,14 @@ export function PredictButton({
   }, [errors])
 
   return (
-    <div>
+    <div
+      className={`flex flex-col h-full items-start ${showErrors ? "" : "justify-center"}`}
+    >
+      <div>
+        {showErrors && errorMessage && (
+          <span className="text-red-500 text-sm mt-2">{errorMessage}</span>
+        )}
+      </div>
       <button
         onClick={(e) => {
           e.preventDefault()
@@ -50,16 +57,13 @@ export function PredictButton({
             setShowErrors(false)
           }, 2000)
         }}
-        className="btn btn-primary btn-lg hover:scale-105"
+        className="btn btn-primary btn-lg hover:scale-105 h-12"
         disabled={!!userId && Object.values(errors).some((err) => !!err)}
       >
         {userId || session.status === "loading"
           ? "Predict"
           : "Sign up to predict"}
       </button>
-      {showErrors && errorMessage && (
-        <span className="text-red-500 text-sm mt-2">{errorMessage}</span>
-      )}
     </div>
   )
 }

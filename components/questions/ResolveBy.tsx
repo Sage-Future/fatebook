@@ -15,6 +15,7 @@ import {
   UseFormRegister,
   UseFormSetValue,
 } from "react-hook-form"
+import { FormattedDate } from "../ui/FormattedDate"
 
 interface ResolveByProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -126,15 +127,15 @@ export function ResolveBy({
             }}
           />
           <span className="italic text-neutral-400 text-sm p-1">
-            {/*{!resolveByButtons && (*/}
-            {/*  <FormattedDate*/}
-            {/*    date={utcDateStrToLocalDate(resolveByUTCStr)}*/}
-            {/*    alwaysUseDistance={true}*/}
-            {/*    capitalise={true}*/}
-            {/*    currentDateShowToday={true}*/}
-            {/*    includeTime={false}*/}
-            {/*  />*/}
-            {/*)}*/}
+            {!resolveByButtons && (
+              <FormattedDate
+                date={utcDateStrToLocalDate(resolveByUTCStr)}
+                alwaysUseDistance={true}
+                capitalise={true}
+                currentDateShowToday={true}
+                includeTime={false}
+              />
+            )}
             {resolveByButtons && (
               <div className="mt-2 flex flex-wrap gap-0.5 shrink justify-between">
                 {resolveByButtons.map(({ date, label }) => (
