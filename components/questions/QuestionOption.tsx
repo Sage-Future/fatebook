@@ -70,15 +70,25 @@ export function QuestionOption({
   }
 
   const handleRemove = () => {
+    // Get the current options
+    const currentOptions = watch("options") as PredictFormOptionType[]
+
+    // Remove the option at the specified index
+    const newOptions = currentOptions.filter((_, index) => index !== optionId)
+
+    // Update the entire options array
+    setValue("options", newOptions)
+
+    // Unregister the removed fields
     unregister(`options.${optionId}.text`)
     unregister(`options.${optionId}.forecast`)
 
-    setValue(`options`, (oldOptions: PredictFormOptionType[]) =>
-      oldOptions?.filter((_, index) => index !== optionId),
-    )
+    // Clear errors for the removed option and any subsequent options
+    for (let i = optionId; i < currentOptions.length; i++) {
+      clearErrors(`options.${i}`)
+    }
 
-    clearErrors(`options.${optionId}`)
-
+    // Call the original onRemove function
     onRemove()
   }
 
