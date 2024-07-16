@@ -5,11 +5,10 @@ import { EmbeddedOptions } from "../EmbeddedOptions"
 import { PredictButton } from "../PredictButton"
 import { QuestionOption } from "../QuestionOption"
 import { QuestionType } from "@prisma/client"
-import { UseFormClearErrors, UseFormUnregister } from "react-hook-form"
+import { UseFormUnregister } from "react-hook-form"
 import { PredictFormType } from "../../Predict"
 interface MultiChoiceQuestionProps extends QuestionTypeProps {
   unregister: UseFormUnregister<PredictFormType>
-  clearErrors: UseFormClearErrors<any>
 }
 
 export function MultiChoiceQuestion({

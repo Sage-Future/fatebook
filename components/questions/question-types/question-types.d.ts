@@ -4,7 +4,6 @@ import {
   UseFormHandleSubmit,
   UseFormRegister,
   UseFormSetValue,
-  UseFormUnregister,
 } from "react-hook-form"
 import { PredictFormType } from "../../Predict"
 
@@ -32,5 +31,6 @@ interface QuestionTypeProps<
   errors: FieldErrors<any>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
+  clearErrors: UseFormClearErrors<any>
   highlightResolveBy: boolean
 }
