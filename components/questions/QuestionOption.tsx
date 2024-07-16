@@ -22,6 +22,7 @@ interface QuestionOptionProps<
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
   optionId: number
+  index: number
   questionType: QuestionType
   onRemove: () => void
   canRemove: boolean
@@ -38,6 +39,7 @@ export function QuestionOption({
   handleSubmit,
   onSubmit,
   optionId,
+  index,
   questionType,
   onRemove,
   canRemove,
@@ -46,6 +48,7 @@ export function QuestionOption({
 }: QuestionOptionProps) {
   const optionTextInputProps = {
     optionId,
+    index,
     register,
     unregister,
     small,

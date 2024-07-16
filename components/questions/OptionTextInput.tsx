@@ -1,9 +1,5 @@
 import { KeyboardEvent } from "react"
-import {
-  UseFormHandleSubmit,
-  UseFormRegister,
-  UseFormUnregister,
-} from "react-hook-form"
+import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
 import clsx from "clsx"
 import { InfoButton } from "../ui/InfoButton"
 import { PredictFormType } from "../Predict"
@@ -12,8 +8,8 @@ interface OptionTextInputProps<
   TFormValues extends Record<string, any> = Record<string, any>,
 > {
   optionId: number
+  index: number
   register: UseFormRegister<PredictFormType>
-  unregister: UseFormUnregister<PredictFormType>
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
   small?: boolean
@@ -22,8 +18,8 @@ interface OptionTextInputProps<
 
 export function OptionTextInput({
   optionId,
+  index,
   register,
-  unregister,
   handleSubmit,
   onSubmit,
   small = false,
@@ -45,7 +41,7 @@ export function OptionTextInput({
         className={clsx("flex", small && "text-sm")}
         htmlFor={`options.${optionId}.text`}
       >
-        {`Option ${optionId + 1}`}
+        {`Option ${index + 1}`}
         <InfoButton
           className="ml-1 tooltip-left"
           tooltip="What possible outcomes are there?"
@@ -63,9 +59,8 @@ export function OptionTextInput({
             : "border-gray-300 focus:border-blue-500",
         )}
         type="text"
-        placeholder={`Option ${optionId + 1}`}
+        placeholder={`Option ${index + 1}`}
         onKeyDown={onEnterSubmit}
-        // ref={setRef}
       />
       {errors[fieldName] && (
         <p className="mt-1 text-xs text-red-500">{errors[fieldName].message}</p>

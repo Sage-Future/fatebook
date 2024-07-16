@@ -98,10 +98,11 @@ export function MultiChoiceQuestion({
   return (
     <div className="flex flex-row gap-8 flex-wrap justify-between">
       <div className="flex flex-col gap-4">
-        {options.map(({ id, props }) => (
+        {options.map(({ id, props }, index) => (
           <QuestionOption
             key={id}
             {...props}
+            index={index}
             questionType={QuestionType.MULTIPLE_CHOICE}
             onRemove={() => removeOption(id)}
             canRemove={options.length > MIN_OPTIONS}
