@@ -1,5 +1,9 @@
 import { KeyboardEvent } from "react"
-import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
+import {
+  UseFormHandleSubmit,
+  UseFormRegister,
+  UseFormUnregister,
+} from "react-hook-form"
 import clsx from "clsx"
 import { InfoButton } from "../ui/InfoButton"
 import { PredictFormType } from "../Predict"
@@ -9,6 +13,7 @@ interface OptionTextInputProps<
 > {
   optionId: number
   register: UseFormRegister<PredictFormType>
+  unregister: UseFormUnregister<PredictFormType>
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
   small?: boolean
@@ -18,6 +23,7 @@ interface OptionTextInputProps<
 export function OptionTextInput({
   optionId,
   register,
+  unregister,
   handleSubmit,
   onSubmit,
   small = false,

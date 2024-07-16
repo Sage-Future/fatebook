@@ -5,7 +5,12 @@ import { EmbeddedOptions } from "../EmbeddedOptions"
 import { PredictButton } from "../PredictButton"
 import { QuestionOption } from "../QuestionOption"
 import { QuestionType } from "@prisma/client"
-interface MultiChoiceQuestionProps extends QuestionTypeProps {}
+import { UseFormClearErrors, UseFormUnregister } from "react-hook-form"
+import { PredictFormType } from "../../Predict"
+interface MultiChoiceQuestionProps extends QuestionTypeProps {
+  unregister: UseFormUnregister<PredictFormType>
+  clearErrors: UseFormClearErrors<any>
+}
 
 export function MultiChoiceQuestion({
   small,
@@ -16,6 +21,7 @@ export function MultiChoiceQuestion({
   onSubmit,
   session,
   register,
+  unregister,
   setValue,
   errors,
   watch,
@@ -51,9 +57,12 @@ export function MultiChoiceQuestion({
     small,
     errors,
     register,
+    unregister,
     watch,
     handleSubmit,
     onSubmit,
+    setValue,
+    clearErrors,
   }
 
   const [options, setOptions] = useState(() =>

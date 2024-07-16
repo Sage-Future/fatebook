@@ -74,6 +74,7 @@ const unifiedPredictFormSchema = z.object({
   sharePublicly: z.boolean().optional(),
 })
 
+export type PredictFormOptionType = z.infer<typeof optionSchema>
 export type PredictFormType = z.infer<typeof unifiedPredictFormSchema>
 
 interface QuestionDefaults {
@@ -170,6 +171,7 @@ export function Predict({
 
   const {
     register,
+    unregister,
     handleSubmit,
     setValue,
     clearErrors,
@@ -447,6 +449,7 @@ export function Predict({
     signInToFatebook,
     session,
     register,
+    unregister,
     setValue,
     errors,
     watch,

@@ -1,11 +1,14 @@
 import {
   FieldErrors,
+  UseFormClearErrors,
   UseFormHandleSubmit,
   UseFormRegister,
+  UseFormSetValue,
+  UseFormUnregister,
 } from "react-hook-form"
 import { PredictionPercentageInput } from "./PredictionPercentageInput"
 import { OptionTextInput } from "./OptionTextInput"
-import { PredictFormType } from "../Predict"
+import { PredictFormOptionType, PredictFormType } from "../Predict"
 import { QuestionType } from "@prisma/client"
 
 interface QuestionOptionProps<
@@ -14,6 +17,7 @@ interface QuestionOptionProps<
   small?: boolean
   errors: FieldErrors<any>
   register: UseFormRegister<PredictFormType>
+  unregister: UseFormUnregister<PredictFormType>
   watch: (name: string) => any
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
@@ -21,12 +25,15 @@ interface QuestionOptionProps<
   questionType: QuestionType
   onRemove: () => void
   canRemove: boolean
+  setValue: UseFormSetValue<any>
+  clearErrors: UseFormClearErrors<any>
 }
 
 export function QuestionOption({
   small,
   errors,
   register,
+  unregister,
   watch,
   handleSubmit,
   onSubmit,
@@ -34,10 +41,13 @@ export function QuestionOption({
   questionType,
   onRemove,
   canRemove,
+  setValue,
+  clearErrors,
 }: QuestionOptionProps) {
   const optionTextInputProps = {
     optionId,
     register,
+    unregister,
     small,
     errors,
     handleSubmit,
@@ -48,11 +58,25 @@ export function QuestionOption({
     small,
     errors,
     register,
+    unregister,
     watch,
     handleSubmit,
     onSubmit,
     optionId,
     questionType,
+  }
+
+  const handleRemove = () => {
+    unregister(`options.${optionId}.text`)
+    unregister(`options.${optionId}.forecast`)
+
+    setValue(`options`, (oldOptions: PredictFormOptionType[]) =>
+      oldOptions?.filter((_, index) => index !== optionId),
+    )
+
+    clearErrors(`options.${optionId}`)
+
+    onRemove()
   }
 
   return (
@@ -61,7 +85,7 @@ export function QuestionOption({
       <PredictionPercentageInput {...predictionPercentageInputProps} />
       {canRemove && (
         <button
-          onClick={onRemove}
+          onClick={handleRemove}
           className="btn h-12 px-2 py-1 bg-red-500 text-white hover:bg-red-600 transition-colors self-end hover:scale-105 text-lg font-normal"
           type="button"
         >
