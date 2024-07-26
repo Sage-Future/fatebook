@@ -10,6 +10,7 @@ import { PredictionPercentageInput } from "./PredictionPercentageInput"
 import { OptionTextInput } from "./OptionTextInput"
 import { PredictFormOptionType, PredictFormType } from "../Predict"
 import { QuestionType } from "@prisma/client"
+import { XMarkIcon } from "@heroicons/react/20/solid"
 
 interface QuestionOptionProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -66,6 +67,7 @@ export function QuestionOption({
     handleSubmit,
     onSubmit,
     optionId,
+    index,
     questionType,
   }
 
@@ -99,10 +101,10 @@ export function QuestionOption({
       {canRemove && (
         <button
           onClick={handleRemove}
-          className="btn h-12 px-2 py-1 bg-red-500 text-white hover:bg-red-600 transition-colors self-end hover:scale-105 text-lg font-normal"
+          className={`text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full ${index === 0 ? "mt-7" : ""}`}
           type="button"
         >
-          Remove
+          <XMarkIcon className="h-8 w-8" />
         </button>
       )}
     </div>

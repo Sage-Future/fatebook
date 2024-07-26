@@ -10,12 +10,12 @@ export function QuestionTypeSelect({
   setQuestionType,
 }: QuestionTypeSelectProps) {
   return (
-    <div className="flex space-x-4 mb-4">
+    <div className="flex gap-1 mb-4">
       <button
-        className={`px-4 py-2 rounded ${
+        className={`btn  ${
           questionType === QuestionType.BINARY
-            ? "bg-indigo-500 text-white"
-            : "bg-gray-200 text-gray-700"
+            ? "btn-primary"
+            : "text-neutral-500"
         }`}
         onClick={(e) => {
           e.preventDefault()
@@ -25,10 +25,10 @@ export function QuestionTypeSelect({
         Yes or No
       </button>
       <button
-        className={`px-4 py-2 rounded ${
+        className={`btn ${
           questionType === QuestionType.MULTIPLE_CHOICE
-            ? "bg-indigo-500 text-white"
-            : "bg-gray-200 text-gray-700"
+            ? "btn-primary"
+            : " text-neutral-500"
         }`}
         onClick={(e) => {
           e.preventDefault()

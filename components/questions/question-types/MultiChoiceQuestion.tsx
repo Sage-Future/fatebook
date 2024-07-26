@@ -7,6 +7,7 @@ import { QuestionOption } from "../QuestionOption"
 import { QuestionType } from "@prisma/client"
 import { UseFormUnregister } from "react-hook-form"
 import { PredictFormType } from "../../Predict"
+import { PlusIcon } from "@heroicons/react/20/solid"
 interface MultiChoiceQuestionProps extends QuestionTypeProps {
   unregister: UseFormUnregister<PredictFormType>
 }
@@ -109,15 +110,22 @@ export function MultiChoiceQuestion({
         ))}
 
         {options.length < MAX_OPTIONS && (
-          <button
-            onClick={(e) => {
-              e.preventDefault()
-              addOption()
-            }}
-            className="px-4 py-2 bg-blue-500 text-white btn hover:bg-blue-600 transition-colors hover:scale-105 h-12 text-lg font-normal"
-          >
-            Add Option
-          </button>
+          <div className="flex flex-row justify-between items-center gap-2">
+            <div className="flex-grow">
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  addOption()
+                }}
+                className="btn bg-neutral-200 bg-opacity-80 flex items-center justify-center px-4 py-2 text-neutral-500 border rounded-md hover:bg-opacity-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                <PlusIcon className="w-5 h-5 mr-2" />
+                <span>Add Option</span>
+              </button>
+            </div>
+            <div className=""></div>
+            <div className=""></div>
+          </div>
         )}
 
         {embedded && <EmbeddedOptions register={register} />}

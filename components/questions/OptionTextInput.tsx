@@ -1,7 +1,6 @@
 import { KeyboardEvent } from "react"
 import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
 import clsx from "clsx"
-import { InfoButton } from "../ui/InfoButton"
 import { PredictFormType } from "../Predict"
 
 interface OptionTextInputProps<
@@ -37,16 +36,18 @@ export function OptionTextInput({
 
   return (
     <div className="">
-      <label
-        className={clsx("flex", small && "text-sm")}
-        htmlFor={`options.${optionId}.text`}
-      >
-        {`Option ${index + 1}`}
-        <InfoButton
-          className="ml-1 tooltip-left"
-          tooltip="What possible outcomes are there?"
-        />
-      </label>
+      {index == 0 && (
+        <label
+          className={clsx("flex", small && "text-sm")}
+          htmlFor={`options.${optionId}.text`}
+        >
+          Answers
+          {/*<InfoButton*/}
+          {/*  className="ml-1 tooltip-left"*/}
+          {/*  tooltip="What possible outcomes are there?"*/}
+          {/*/>*/}
+        </label>
+      )}
       <input
         {...register(`options.${optionId}.text`, {
           required: "Option text is required",
@@ -56,7 +57,7 @@ export function OptionTextInput({
           small ? "text-sm" : "text-base",
           errors[fieldName]
             ? "border-red-500"
-            : "border-gray-300 focus:border-blue-500",
+            : "border-gray-300 focus-within:border-indigo-700",
         )}
         type="text"
         placeholder={`Option ${index + 1}`}

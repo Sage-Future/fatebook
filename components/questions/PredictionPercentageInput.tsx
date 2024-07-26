@@ -5,9 +5,9 @@ import {
 } from "react-hook-form"
 import { KeyboardEvent, useRef } from "react"
 import clsx from "clsx"
-import { InfoButton } from "../ui/InfoButton"
 import { PredictFormType } from "../Predict"
 import { QuestionType } from "@prisma/client"
+import { InfoButton } from "../ui/InfoButton"
 
 // TODO: refactor these interfaces so they have core shared fields (like errors) and then extend them
 interface PredictionPercentageInputProps<
@@ -20,6 +20,7 @@ interface PredictionPercentageInputProps<
   handleSubmit: UseFormHandleSubmit<TFormValues>
   onSubmit: (data: any) => void
   optionId?: number
+  index?: number
   questionType: QuestionType
 }
 
@@ -31,6 +32,7 @@ export function PredictionPercentageInput({
   handleSubmit,
   onSubmit,
   optionId,
+  index,
   questionType,
 }: PredictionPercentageInputProps) {
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
@@ -61,16 +63,20 @@ export function PredictionPercentageInput({
 
   return (
     <div className="min-w-fit">
-      <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
-        Make a prediction
-        <InfoButton
-          className="ml-1 tooltip-left"
-          tooltip="How likely do you think the answer is to be YES?"
-        />
-      </label>
+      {(questionType == QuestionType.BINARY || index == 0) && (
+        <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
+          Make a prediction
+          {questionType === QuestionType.BINARY && (
+            <InfoButton
+              className="ml-1 tooltip-left"
+              tooltip="How likely do you think the answer is to be YES?"
+            />
+          )}
+        </label>
+      )}
       <div
         className={clsx(
-          "text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:border-indigo-700 relative",
+          "text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:border-indigo-700 relative min-w-40",
           small ? "text-sm" : "text-md",
           errors.predictionPercentage && "border-red-500",
         )}
