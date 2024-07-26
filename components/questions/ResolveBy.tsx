@@ -38,6 +38,7 @@ export function ResolveBy({
 }: ResolveByProps) {
   const resolveByUTCStr = watch("resolveBy")
 
+  const resolveByRegister = register("resolveBy", { required: true })
   const resolveByInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -82,9 +83,10 @@ export function ResolveBy({
             // IMO the default functionality is better here, but can discuss
             // onKeyDown={onDateKeydown}
             onMouseDown={(e) => e.stopPropagation()}
+            {...resolveByRegister}
             ref={(e) => {
               resolveByInputRef.current = e
-              register("resolveBy", { required: true }).ref(e)
+              resolveByRegister.ref(e)
             }}
           />
           <span className="italic text-neutral-400 text-sm p-1">

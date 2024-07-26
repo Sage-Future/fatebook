@@ -6,6 +6,7 @@ import { backendAnalyticsEvent } from "../../../lib/_utils_server"
 import { sendDiscordEphemeral } from "../../../lib/discord/utils"
 import prisma from "../../../lib/prisma"
 import { getQuestionUrl } from "../../../lib/web/question_url"
+import { truncateString } from "../../../lib/web/utils"
 import { QuestionWithUserAndForecasts } from "../../../prisma/additional"
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -151,10 +152,12 @@ function postQuestionMessage(
       embeds: [
         {
           type: "rich",
-          title: question.title,
-          description:
+          title: truncateString(question.title, 255),
+          description: truncateString(
             (`${authorDiscordName}` || question.user.name) +
-            ` predicted ${authorForecastPercent}%`,
+              ` predicted ${authorForecastPercent}%`,
+            4095,
+          ),
           color: 0x4f46e5,
           timestamp: question.resolveBy.toISOString(),
           footer: {
