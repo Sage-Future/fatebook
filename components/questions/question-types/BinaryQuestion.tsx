@@ -101,13 +101,7 @@ export function BinaryQuestion({
                 )}
                 onKeyDown={onDateKeydown}
                 onMouseDown={(e) => e.stopPropagation()}
-                onChange={(e) => {
-                  setValue("resolveBy", e.currentTarget.value)
-                }}
-                ref={(e) => {
-                  resolveByInputRef.current = e
-                  register("resolveBy", { required: true }).ref(e)
-                }}
+                {...register("resolveBy", { required: true })}
               />
               <span className="italic text-neutral-400 text-sm p-1">
                 {!resolveByButtons && (
