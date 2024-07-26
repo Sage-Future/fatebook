@@ -1,9 +1,9 @@
-import { KeyboardEvent, useEffect, useRef } from "react"
 import clsx from "clsx"
-import { FormattedDate } from "../../ui/FormattedDate"
-import { InfoButton } from "../../ui/InfoButton"
+import { KeyboardEvent, useEffect, useRef } from "react"
 import { getDateYYYYMMDD, tomorrowDate } from "../../../lib/_utils_common"
 import { utcDateStrToLocalDate } from "../../../lib/web/utils"
+import { FormattedDate } from "../../ui/FormattedDate"
+import { InfoButton } from "../../ui/InfoButton"
 import { QuestionTypeProps } from "./question-types"
 
 interface BinaryQuestionProps extends QuestionTypeProps {}
@@ -53,6 +53,7 @@ export function BinaryQuestion({
     }
   }
 
+  const resolveByRegister = register("resolveBy", { required: true })
   const resolveByInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -101,7 +102,11 @@ export function BinaryQuestion({
                 )}
                 onKeyDown={onDateKeydown}
                 onMouseDown={(e) => e.stopPropagation()}
-                {...register("resolveBy", { required: true })}
+                {...resolveByRegister}
+                ref={(e) => {
+                  resolveByInputRef.current = e
+                  resolveByRegister.ref(e)
+                }}
               />
               <span className="italic text-neutral-400 text-sm p-1">
                 {!resolveByButtons && (
