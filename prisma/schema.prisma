@@ -94,6 +94,7 @@ model Question {
   comments                     Comment[]
   tags                         Tag[]
   tournaments                  Tournament[]
+  exclusiveAnswers             Boolean?                  @default(true)
 }
 
 model Tag {

@@ -8,6 +8,7 @@ import { QuestionType } from "@prisma/client"
 import { UseFormUnregister } from "react-hook-form"
 import { PredictFormType } from "../../Predict"
 import { PlusIcon } from "@heroicons/react/20/solid"
+import { GenericCheckbox } from "../GenericCheckbox"
 interface MultiChoiceQuestionProps extends QuestionTypeProps {
   unregister: UseFormUnregister<PredictFormType>
 }
@@ -66,6 +67,16 @@ export function MultiChoiceQuestion({
     clearErrors,
   }
 
+  const nonExclusiveCheckboxProps = {
+    register,
+    handleSubmit,
+    onSubmit,
+    name: "nonExclusive" as keyof PredictFormType,
+    label: "Allow resolution to multiple answers?",
+    helpText:
+      "If selected, you may choose to resolve any number of answers to 'YES'. Otherwise, you will have to choose a single answer. In both cases, an 'OTHER' option will be added by default.",
+  }
+
   const addOption = useCallback(() => {
     if (optionIds.length < MAX_OPTIONS) {
       setOptionIds((prev) => [...prev, nextId])
@@ -78,7 +89,8 @@ export function MultiChoiceQuestion({
   }, [])
 
   return (
-    <div className="flex flex-row gap-8 flex-wrap justify-between">
+    <div className="flex flex-row gap-4 flex-wrap justify-between">
+      <GenericCheckbox {...nonExclusiveCheckboxProps} />
       <div className="flex flex-col gap-4">
         {optionIds.map((id, index) => (
           <QuestionOption

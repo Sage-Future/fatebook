@@ -3,6 +3,7 @@ import {
   QuestionWithStandardIncludes,
 } from "../../prisma/additional"
 import { UpdateableLatestForecast } from "../UpdateableLatestForecast"
+import { ResolveButton } from "../ResolveButton"
 
 interface QuestionDetailsOptionsProps {
   option: QuestionOptionWithForecasts
@@ -26,6 +27,9 @@ export function QuestionDetailsOption({
         embedded={embedded}
         option={option}
       />
+      {!question.exclusiveAnswers && (
+        <ResolveButton question={question} optionId={option.id} />
+      )}
     </div>
   )
 }

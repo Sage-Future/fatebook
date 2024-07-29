@@ -78,6 +78,7 @@ function getQuestion(days: number): Question {
     sharedPublicly: false,
     unlisted: false,
     type: QuestionType.BINARY,
+    exclusiveAnswers: true,
   }
 }
 

@@ -43,7 +43,6 @@ export function Question({
   embedded?: boolean
   className?: string
 }) {
-  // console.log(question)
   const [manuallyExpanded, setManuallyExpanded] =
     useState<boolean>(!!startExpanded)
 
@@ -225,7 +224,9 @@ export function Question({
                   <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
                 </button>
               )}
-              <ResolveButton question={question} />
+              {question.exclusiveAnswers && (
+                <ResolveButton question={question} />
+              )}
               <ActivityNumbers
                 question={question}
                 alwaysExpand={alwaysExpand}

@@ -19,7 +19,9 @@ import {
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import {
+  handleQuestionOptionResolution,
   handleQuestionResolution,
+  undoQuestionOptionResolution,
   undoQuestionResolution,
 } from "../interactive_handlers/resolve"
 import prisma from "../prisma"
@@ -365,11 +367,12 @@ export const questionRouter = router({
         sharedPublicly: z.boolean().optional(),
         tournamentId: z.string().optional(),
         shareWithListIds: z.array(z.string()).optional(),
+        exclusiveAnswers: z.boolean().optional(),
         options: z
           .array(
             z.object({
               text: z.string(),
-              prediction: z.number().min(0).max(1),
+              prediction: z.number().min(0).max(1).optional(),
             }),
           )
           .optional(),
@@ -403,6 +406,7 @@ export const questionRouter = router({
           : QuestionType.BINARY,
         unlisted: input.unlisted,
         sharedPublicly: input.sharedPublicly,
+        exclusiveAnswers: input.exclusiveAnswers,
         tags:
           input.tags && input.tags.length > 0
             ? {
@@ -457,21 +461,23 @@ export const questionRouter = router({
 
       if (isMultiChoice && question.options) {
         await Promise.all(
-          input.options!.map((option) =>
-            prisma.forecast.create({
-              data: {
-                question: { connect: { id: question.id } },
-                user: { connect: { id: ctx.userId } },
-                forecast: new Decimal(option.prediction), // Convert to Decimal
-                option: {
-                  connect: {
-                    id: question.options.find((o) => o.text === option.text)
-                      ?.id,
+          input.options!.map((option) => {
+            if (option.prediction !== undefined) {
+              return prisma.forecast.create({
+                data: {
+                  question: { connect: { id: question.id } },
+                  user: { connect: { id: ctx.userId } },
+                  forecast: new Decimal(option.prediction),
+                  option: {
+                    connect: {
+                      id: question.options.find((o) => o.text === option.text)
+                        ?.id,
+                    },
                   },
                 },
-              },
-            }),
-          ),
+              })
+            }
+          }),
         )
       } else if (!isMultiChoice && input.prediction) {
         // Create forecast for binary question
@@ -479,7 +485,7 @@ export const questionRouter = router({
           data: {
             question: { connect: { id: question.id } },
             user: { connect: { id: ctx.userId } },
-            forecast: new Decimal(input.prediction), // Convert to Decimal
+            forecast: new Decimal(input.prediction),
           },
         })
       }
@@ -489,6 +495,7 @@ export const questionRouter = router({
         user: ctx.userId,
       })
 
+      // TODO: how do we want to handle analytics for MCQ forecasts?
       if (input.prediction) {
         await backendAnalyticsEvent("forecast_submitted", {
           platform: "web",
@@ -512,6 +519,7 @@ export const questionRouter = router({
         }),
         questionType: z.string(),
         apiKey: z.string().optional(),
+        optionId: z.string().optional(),
       }),
     )
     .meta({
@@ -526,11 +534,17 @@ export const questionRouter = router({
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
-      await handleQuestionResolution(
-        input.questionId,
-        input.resolution as string,
-        input.questionType as QuestionType,
-      )
+      input.optionId
+        ? await handleQuestionOptionResolution(
+            input.questionId,
+            input.resolution,
+            input.optionId,
+          )
+        : await handleQuestionResolution(
+            input.questionId,
+            input.resolution as string,
+            input.questionType as QuestionType,
+          )
 
       await backendAnalyticsEvent("question_resolved", {
         platform: input.apiKey ? "api" : "web",
@@ -542,11 +556,15 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
+        optionId: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
+      if (input.optionId) {
+        await undoQuestionOptionResolution(input.optionId)
+      }
       await undoQuestionResolution(input.questionId)
 
       await backendAnalyticsEvent("question_resolution_undone", {

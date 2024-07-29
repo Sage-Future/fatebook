@@ -11,8 +11,10 @@ import { Resolution } from "@prisma/client"
 
 export function ResolveButton({
   question,
+  optionId,
 }: {
   question: QuestionWithStandardIncludes
+  optionId?: string
 }) {
   const userId = useUserId()
   const utils = api.useContext()
@@ -35,9 +37,18 @@ export function ResolveButton({
   function getResolution(
     question: QuestionWithStandardIncludes,
   ): string | null {
+    if (question.options && optionId) {
+      for (const option of question.options) {
+        if (option.id === optionId && option.resolution) {
+          return option.resolution
+        }
+      }
+      return null
+    }
     if (!question.resolved) {
       return null
     }
+    // TODO: how will this work for non-exclusive answers?
     if (question.options && question.options.length > 0) {
       for (const option of question.options) {
         if (option.resolution === Resolution.YES) {
@@ -105,7 +116,7 @@ export function ResolveButton({
         >
           <Menu.Items className="absolute z-40 right-0 mt-2 w-40 origin-top-right divide-y divide-neutral-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="px-1 py-1 " onClick={(e) => e.stopPropagation()}>
-              {question.resolution ? (
+              {question.resolution || resolution ? (
                 <Menu.Item key={resolution}>
                   {({ active }) => (
                     <button
@@ -118,6 +129,7 @@ export function ResolveButton({
                       onClick={() => {
                         undoResolution.mutate({
                           questionId: question.id,
+                          optionId,
                         })
                       }}
                     >
@@ -125,10 +137,11 @@ export function ResolveButton({
                     </button>
                   )}
                 </Menu.Item>
-              ) : question.type === "BINARY" ? (
+              ) : question.type === "BINARY" || !question.exclusiveAnswers ? (
                 <BinaryResolutionOptions
                   question={question}
                   resolveQuestion={resolveQuestion}
+                  optionId={optionId}
                 />
               ) : question.type === "MULTIPLE_CHOICE" ? (
                 <MultiChoiceResolutionOptions

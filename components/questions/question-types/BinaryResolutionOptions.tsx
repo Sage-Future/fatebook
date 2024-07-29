@@ -7,11 +7,13 @@ import { UseTRPCMutationResult } from "@trpc/react-query/shared"
 interface BinaryResolutionOptionsProps {
   question: Question
   resolveQuestion: UseTRPCMutationResult<any, any, any, any> // This is lazy, should be more specific
+  optionId?: string
 }
 
 export function BinaryResolutionOptions({
   question,
   resolveQuestion,
+  optionId,
 }: BinaryResolutionOptionsProps) {
   return (["YES", "NO", "AMBIGUOUS"] as Resolution[]).map(
     (resolution: Resolution) => (
@@ -27,6 +29,7 @@ export function BinaryResolutionOptions({
                 questionId: question.id,
                 resolution,
                 questionType: QuestionType.BINARY,
+                optionId,
               })
             }}
           >

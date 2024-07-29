@@ -48,6 +48,7 @@ import { Decimal } from "@prisma/client/runtime/library"
 
 async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
+  // TODO: what do we want to do about non-exclusive MCQs here? Presumably only mark as resolved once all options are resolved?
   return await prisma.question.update({
     where: {
       id: questionid,
@@ -108,7 +109,29 @@ async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   })
 }
 
-async function dbResolveQuestionOption(questionId: string, resolution: string) {
+function dbresolveNonExclusiveQuestionOption(
+  questionId: string,
+  resolution: Resolution,
+  optionId: string,
+) {
+  console.log(
+    `dbresolveNonExclusiveQuestionOption ${questionId} - ${resolution}`,
+  )
+  return prisma.questionOption.update({
+    where: {
+      id: optionId,
+    },
+    data: {
+      resolution: resolution,
+      resolvedAt: new Date(),
+    },
+  })
+}
+
+async function dbResolveExclusiveQuestionOption(
+  questionId: string,
+  resolution: string,
+) {
   console.log(`dbResolveQuestionOption ${questionId} - ${resolution}`)
 
   // Fetch the question with its options
@@ -422,6 +445,19 @@ async function replaceQuestionResolveMessages(
   })
 }
 
+export async function handleQuestionOptionResolution(
+  questionId: string,
+  resolution: string,
+  optionId: string,
+) {
+  console.log("await dbresolveNonExclusiveQuestionOption")
+  await dbresolveNonExclusiveQuestionOption(
+    questionId,
+    resolution as Resolution,
+    optionId,
+  )
+}
+
 export async function handleQuestionResolution(
   questionId: string,
   resolution: string,
@@ -430,9 +466,11 @@ export async function handleQuestionResolution(
   console.log(`    handleQuestionResolution: ${questionId} ${resolution}`)
   let resolutionValue: Resolution
 
+  // If the resolution value matches one of the values for binary resolutions, resolve it as such
   if (Object.values(Resolution).includes(resolution as Resolution)) {
     resolutionValue = resolution as Resolution
   } else {
+    // else assume it is a multiple choice question and set the resolution for the parent question to YES
     resolutionValue = Resolution.YES
   }
 
@@ -451,7 +489,10 @@ export async function handleQuestionResolution(
   if (questionType === QuestionType.BINARY) {
     scores = await scoreQuestion(resolution as Resolution, question)
   } else {
-    const result = await dbResolveQuestionOption(questionId, resolution)
+    const result = await dbResolveExclusiveQuestionOption(
+      questionId,
+      resolution,
+    )
     scores = await scoreQuestionOptions(resolution, result)
   }
 
@@ -804,6 +845,21 @@ export async function slackUserCanUndoResolution(
   }
 
   return true
+}
+
+export async function undoQuestionOptionResolution(optionId: string) {
+  // TODO: this function needs to do more than just update the DB
+  await prisma.$transaction([
+    prisma.questionOption.update({
+      where: {
+        id: optionId,
+      },
+      data: {
+        resolution: null,
+        resolvedAt: null,
+      },
+    }),
+  ])
 }
 
 export async function undoQuestionResolution(questionId: string) {

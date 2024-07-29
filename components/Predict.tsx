@@ -33,46 +33,57 @@ type CreateQuestionMutationOutput = NonNullable<
 
 const optionSchema = z.object({
   text: z.string().min(1, "Option text is required"),
-  forecast: z.preprocess(
-    (val) => (typeof val === "string" ? parseFloat(val) : val),
-    z.number().min(0).max(100, "Forecast must be between 0 and 100"),
-  ),
-})
-
-const unifiedPredictFormSchema = z.object({
-  question: z.string().min(1, "Question is required"),
-  resolveBy: z.string(),
-  options: z
-    .array(optionSchema)
-    .min(2, "At least two options are required")
-    .max(10, "Maximum 10 options allowed")
-    .refine(
-      (options) => {
-        let totalForecast = 0
-        options.forEach((option) => {
-          const forecast = isNaN(option.forecast) ? 0 : Number(option.forecast)
-          totalForecast += forecast
-        })
-        return totalForecast <= 100
-      },
-      {
-        message: "The sum of all forecasts cannot exceed 100%",
-      },
-    )
-    .refine(
-      (options) => {
-        const texts = options.map((option) => option.text)
-        const uniqueTexts = new Set(texts)
-        return uniqueTexts.size === texts.length
-      },
-      {
-        message: "Each option text must be unique",
-      },
+  forecast: z
+    .preprocess(
+      (val) => (typeof val === "string" ? parseFloat(val) : val),
+      z.number().min(0).max(100, "Forecast must be between 0 and 100"), // doesn't validate properly as this gets passed through as a NaN
     )
     .optional(),
-  predictionPercentage: z.number().min(0).max(100).or(z.nan()).optional(),
-  sharePublicly: z.boolean().optional(),
 })
+
+const unifiedPredictFormSchema = z
+  .object({
+    question: z.string().min(1, "Question is required"),
+    resolveBy: z.string(),
+    options: z
+      .array(optionSchema)
+      .min(2, "At least two options are required")
+      .max(10, "Maximum 10 options allowed")
+      .refine(
+        (options) => {
+          const texts = options.map((option) => option.text)
+          const uniqueTexts = new Set(texts)
+          return uniqueTexts.size === texts.length
+        },
+        {
+          message: "Each option text must be unique",
+        },
+      )
+      .optional(),
+    nonExclusive: z.boolean().optional(),
+    predictionPercentage: z.number().min(0).max(100).or(z.nan()).optional(),
+    sharePublicly: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.options && data.options.length > 0) {
+      let totalForecast = 0
+      data.options.forEach((option) => {
+        const forecast =
+          option.forecast && isFinite(option.forecast)
+            ? Number(option.forecast)
+            : 0
+        totalForecast += forecast
+      })
+      if (!data.nonExclusive && totalForecast > 100) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "For exclusive questions, the sum of all forecasts must less than 100%",
+          path: ["options"],
+        })
+      }
+    }
+  })
 
 export type PredictFormOptionType = z.infer<typeof optionSchema>
 export type PredictFormType = z.infer<typeof unifiedPredictFormSchema>
@@ -235,6 +246,7 @@ export function Predict({
         resolveBy: utcDateStrToLocalDate(data.resolveBy),
         tags: tagsPreview,
         unlisted: data.sharePublicly || questionDefaults?.unlisted || undefined,
+        exclusiveAnswers: !data.nonExclusive,
         sharedPublicly:
           data.sharePublicly || questionDefaults?.sharePublicly || undefined,
         shareWithListIds: questionDefaults?.shareWithListIds,
@@ -247,7 +259,7 @@ export function Predict({
             ...createQuestionData,
             options: data.options!.map((option) => ({
               text: option.text,
-              prediction: option.forecast / 100,
+              prediction: option.forecast ? option.forecast / 100 : undefined,
             })),
           },
           {
