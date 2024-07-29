@@ -31,7 +31,8 @@ export function MultiChoiceQuestion({
 }: MultiChoiceQuestionProps) {
   const MIN_OPTIONS = 2
   const MAX_OPTIONS = 10
-  const [numberOfOptions, setNumberOfOptions] = useState(2)
+  const [optionIds, setOptionIds] = useState(() => [0, 1])
+  const [nextId, setNextId] = useState(2)
 
   const resolveByProps = {
     small,
@@ -65,51 +66,33 @@ export function MultiChoiceQuestion({
     clearErrors,
   }
 
-  const [options, setOptions] = useState(() =>
-    Array.from({ length: 2 }, (_, i) => ({
-      id: i,
-      props: {
-        ...questionOptionProps,
-        optionId: i,
-      },
-    })),
-  )
-
   const addOption = useCallback(() => {
-    if (options.length < MAX_OPTIONS) {
-      setNumberOfOptions((prev) => prev + 1)
-      setOptions((prev) => [
-        ...prev,
-        {
-          id: numberOfOptions,
-          props: {
-            ...questionOptionProps,
-            optionId: numberOfOptions,
-          },
-        },
-      ])
+    if (optionIds.length < MAX_OPTIONS) {
+      setOptionIds((prev) => [...prev, nextId])
+      setNextId((prev) => prev + 1)
     }
-  }, [numberOfOptions, options.length, questionOptionProps])
+  }, [optionIds.length, nextId])
 
   const removeOption = useCallback((idToRemove: number) => {
-    setOptions((prev) => prev.filter((option) => option.id !== idToRemove))
+    setOptionIds((prev) => prev.filter((id) => id !== idToRemove))
   }, [])
 
   return (
     <div className="flex flex-row gap-8 flex-wrap justify-between">
       <div className="flex flex-col gap-4">
-        {options.map(({ id, props }, index) => (
+        {optionIds.map((id, index) => (
           <QuestionOption
             key={id}
-            {...props}
+            optionId={id}
+            {...questionOptionProps}
             index={index}
             questionType={QuestionType.MULTIPLE_CHOICE}
             onRemove={() => removeOption(id)}
-            canRemove={options.length > MIN_OPTIONS}
+            canRemove={optionIds.length > MIN_OPTIONS}
           />
         ))}
 
-        {options.length < MAX_OPTIONS && (
+        {optionIds.length < MAX_OPTIONS && (
           <div className="flex flex-row justify-between items-center gap-2">
             <div className="flex-grow">
               <button
