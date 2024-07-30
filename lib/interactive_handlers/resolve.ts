@@ -109,7 +109,7 @@ async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   })
 }
 
-function dbresolveNonExclusiveQuestionOption(
+function dbResolveNonExclusiveQuestionOption(
   questionId: string,
   resolution: Resolution,
   optionId: string,
@@ -451,7 +451,7 @@ export async function handleQuestionOptionResolution(
   optionId: string,
 ) {
   console.log("await dbresolveNonExclusiveQuestionOption")
-  await dbresolveNonExclusiveQuestionOption(
+  await dbResolveNonExclusiveQuestionOption(
     questionId,
     resolution as Resolution,
     optionId,

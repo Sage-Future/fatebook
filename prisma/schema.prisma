@@ -38,29 +38,32 @@ model Forecast {
 }
 
 model QuestionScore {
-  id                  Int      @id @default(autoincrement())
-  createdAt           DateTime @default(now())
+  id                  Int             @id @default(autoincrement())
+  createdAt           DateTime        @default(now())
   relativeScore       Decimal?
   questionId          String
-  userQuestionComboId String   @unique
+  userQuestionComboId String          @unique
   absoluteScore       Decimal
   rank                Int
   userId              String
-  question            Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question            Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  QuestionOption      QuestionOption? @relation(fields: [questionOptionId], references: [id])
+  questionOptionId    String?
 }
 
 model QuestionOption {
-  id         String      @id @default(cuid())
-  questionId String
-  text       String
-  question   Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  forecasts  Forecast[]
-  resolution Resolution?
-  createdAt  DateTime   @default(now())
-  user       User        @relation("author", fields: [userId], references: [id], onDelete: Cascade)
-  userId     String
-  resolvedAt DateTime?
+  id             String          @id @default(cuid())
+  questionId     String
+  text           String
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  forecasts      Forecast[]
+  resolution     Resolution?
+  createdAt      DateTime        @default(now())
+  user           User            @relation("author", fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  resolvedAt     DateTime?
+  questionScores QuestionScore[]
 }
 
 model Question {
@@ -94,7 +97,7 @@ model Question {
   comments                     Comment[]
   tags                         Tag[]
   tournaments                  Tournament[]
-  exclusiveAnswers             Boolean?                  @default(true)
+  exclusiveAnswers             Boolean?                 @default(true)
 }
 
 model Tag {
