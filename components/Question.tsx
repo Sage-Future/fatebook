@@ -55,6 +55,18 @@ export function Question({
   const userId = useUserId()
   const editable = question.userId === userId
 
+  let cumulativeForecast = undefined
+  if (question.type === "MULTIPLE_CHOICE") {
+    cumulativeForecast = question.options?.reduce((acc, option) => {
+      return (
+        acc +
+        option.forecasts
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+          .forecast.toNumber()
+      )
+    }, 0)
+  }
+
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <motion.div
@@ -133,6 +145,7 @@ export function Question({
                       question={question}
                       autoFocus={alwaysExpand}
                       embedded={embedded}
+                      cumulativeForecast={cumulativeForecast}
                     />
                   ))}
                 </>

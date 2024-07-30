@@ -10,6 +10,7 @@ interface QuestionDetailsOptionsProps {
   question: QuestionWithStandardIncludes
   autoFocus?: boolean
   embedded?: boolean
+  cumulativeForecast?: number
 }
 
 export function QuestionDetailsOption({
@@ -17,6 +18,7 @@ export function QuestionDetailsOption({
   question,
   autoFocus,
   embedded,
+  cumulativeForecast,
 }: QuestionDetailsOptionsProps) {
   return (
     <div className="col-span-2 flex gap-4 mb-1 justify-between">
@@ -26,6 +28,7 @@ export function QuestionDetailsOption({
         autoFocus={autoFocus}
         embedded={embedded}
         option={option}
+        cumulativeForecast={cumulativeForecast}
       />
       {!question.exclusiveAnswers && (
         <ResolveButton question={question} optionId={option.id} />
