@@ -19,7 +19,6 @@ import {
 import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import {
-  handleQuestionOptionResolution,
   handleQuestionResolution,
   undoQuestionOptionResolution,
   undoQuestionResolution,
@@ -534,17 +533,12 @@ export const questionRouter = router({
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
-      input.optionId
-        ? await handleQuestionOptionResolution(
-            input.questionId,
-            input.resolution,
-            input.optionId,
-          )
-        : await handleQuestionResolution(
-            input.questionId,
-            input.resolution as string,
-            input.questionType as QuestionType,
-          )
+      await handleQuestionResolution(
+        input.questionId,
+        input.resolution as string,
+        input.questionType as QuestionType,
+        input.optionId,
+      )
 
       await backendAnalyticsEvent("question_resolved", {
         platform: input.apiKey ? "api" : "web",

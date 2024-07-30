@@ -1,5 +1,4 @@
 import {
-  Forecast,
   Question,
   QuestionScore,
   QuestionType,
@@ -8,8 +7,9 @@ import {
 } from "@prisma/client"
 import { BlockActionPayload } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
 import {
+  QuestionOptionWithForecasts,
   QuestionWithAuthorAndQuestionMessages,
-  QuestionWithForecastsAndOptionsAndScores,
+  QuestionWithForecastsAndOptions,
   QuestionWithForecastsAndScores,
   QuestionWithQuestionMessagesAndForecastWithUserWithProfiles,
   QuestionWithScores,
@@ -44,7 +44,6 @@ import prisma from "../prisma"
 import { createNotification } from "../web/notifications"
 import { getQuestionUrl } from "../web/question_url"
 import { getMarkdownLinkQuestionTitle } from "../web/utils"
-import { Decimal } from "@prisma/client/runtime/library"
 
 async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -109,7 +108,7 @@ async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   })
 }
 
-function dbResolveNonExclusiveQuestionOption(
+async function dbResolveNonExclusiveQuestionOption(
   questionId: string,
   resolution: Resolution,
   optionId: string,
@@ -117,13 +116,76 @@ function dbResolveNonExclusiveQuestionOption(
   console.log(
     `dbresolveNonExclusiveQuestionOption ${questionId} - ${resolution}`,
   )
-  return prisma.questionOption.update({
+  await prisma.questionOption.update({
     where: {
       id: optionId,
     },
     data: {
       resolution: resolution,
       resolvedAt: new Date(),
+    },
+  })
+
+  return prisma.question.update({
+    where: {
+      id: questionId,
+    },
+    data: {
+      // We don't set 'resolved' to true here because it's non-exclusive
+      // and other options might still be unresolved
+      // resolved: true,
+      // We don't update the question's overall resolution for non-exclusive questions
+      // resolution: resolution,
+      // We don't update resolvedAt for the question itself in non-exclusive case
+      // resolvedAt: new Date(),
+    },
+    include: {
+      user: {
+        include: {
+          profiles: true,
+        },
+      },
+      forecasts: {
+        include: {
+          user: {
+            include: {
+              profiles: true,
+            },
+          },
+        },
+      },
+      options: {
+        include: {
+          forecasts: true,
+        },
+      },
+      comments: {
+        include: {
+          user: true,
+        },
+      },
+      sharedWith: true,
+      sharedWithLists: {
+        include: {
+          users: true,
+        },
+      },
+      questionMessages: {
+        include: {
+          message: true,
+        },
+      },
+      resolutionMessages: {
+        include: {
+          message: true,
+        },
+      },
+      pingResolveMessages: {
+        include: {
+          message: true,
+        },
+      },
+      questionScores: true,
     },
   })
 }
@@ -234,6 +296,61 @@ async function dbResolveExclusiveQuestionOption(
   })
 }
 
+export async function scoreOptionForecasts(
+  scoreArray: ScoreCollection,
+  question: Question,
+  option: QuestionOptionWithForecasts,
+) {
+  console.log(`updating questionScores for option id: ${option.id}`)
+
+  // in case the question was previously resolved, delete all questionScores
+  // this should only happen if the user pressed resolve yes and no in rapid succession
+  // there's potential for nasty race conditions if this goes wrong...
+  if (option.questionScores) {
+    console.warn(
+      "Warning: questionScores already existed for question being resolved. Deleting all previous questionScores.",
+      { dscores: option.questionScores },
+    )
+    await prisma.questionScore.deleteMany({
+      where: {
+        questionOptionId: option.id,
+      },
+    })
+  }
+
+  let updateArray: any[] = []
+  for (const id in scoreArray) {
+    const relativeScore = scoreArray[id].relativeBrierScore
+    const absoluteScore = scoreArray[id].absoluteBrierScore
+    const rank = scoreArray[id].rank
+    let userQuestionComboId = `${id}-${option.id}`
+    updateArray.push(
+      prisma.questionScore.upsert({
+        where: {
+          userQuestionComboId: userQuestionComboId,
+        },
+        update: {
+          relativeScore: relativeScore,
+          absoluteScore: absoluteScore,
+          rank: rank,
+        },
+        create: {
+          userQuestionComboId: userQuestionComboId,
+          userId: id,
+          questionId: question.id,
+          questionOptionId: option.id,
+          relativeScore: relativeScore,
+          absoluteScore: absoluteScore,
+          rank: rank,
+        },
+      }),
+    )
+    console.log(`  user id: ${id} with relative score ${relativeScore}`)
+  }
+  await prisma.$transaction(updateArray)
+}
+
+// TODO: update this to handle either questions or questionOptions
 export async function scoreForecasts(
   scoreArray: ScoreCollection,
   question: QuestionWithScores,
@@ -445,24 +562,38 @@ async function replaceQuestionResolveMessages(
   })
 }
 
-export async function handleQuestionOptionResolution(
-  questionId: string,
-  resolution: string,
-  optionId: string,
-) {
-  console.log("await dbresolveNonExclusiveQuestionOption")
-  await dbResolveNonExclusiveQuestionOption(
-    questionId,
-    resolution as Resolution,
-    optionId,
-  )
-}
-
 export async function handleQuestionResolution(
   questionId: string,
   resolution: string,
   questionType: QuestionType,
+  optionId?: string,
 ) {
+  let scores: ScoreCollection
+
+  // If an optionId is provided, it's a non-exclusive MCQ, so only resolve that option
+  if (optionId) {
+    const result = await dbResolveNonExclusiveQuestionOption(
+      questionId,
+      resolution as Resolution,
+      optionId,
+    )
+
+    // check if all options are resolved
+    // if so, resolve the question
+    const questionOptions = await prisma.questionOption.findMany({
+      where: {
+        questionId: questionId,
+      },
+    })
+    const unresolvedOptions = questionOptions.filter(
+      (option) => option.resolution === null,
+    )
+    if (unresolvedOptions.length === 0) {
+      scores = await scoreQuestionOptions(resolution, result, false)
+    } else {
+      return
+    }
+  }
   console.log(`    handleQuestionResolution: ${questionId} ${resolution}`)
   let resolutionValue: Resolution
 
@@ -484,18 +615,19 @@ export async function handleQuestionResolution(
   // update ping and question message first for responsiveness
   await updateResolvePingQuestionMessages(question, "Question resolved!")
 
-  let scores: ScoreCollection
-
-  if (questionType === QuestionType.BINARY) {
-    scores = await scoreQuestion(resolution as Resolution, question)
-  } else {
-    const result = await dbResolveExclusiveQuestionOption(
-      questionId,
-      resolution,
-    )
-    scores = await scoreQuestionOptions(resolution, result)
+  if (!optionId) {
+    if (questionType === QuestionType.BINARY) {
+      scores = await scoreQuestion(resolution as Resolution, question)
+    } else {
+      const result = await dbResolveExclusiveQuestionOption(
+        questionId,
+        resolution,
+      )
+      scores = await scoreQuestionOptions(resolution, result, true)
+    }
   }
 
+  // @ts-ignore
   await messageUsers(scores, question)
 
   await updateForecastQuestionMessages(question, "Question resolved!")
@@ -554,130 +686,88 @@ export async function scoreQuestion(
   return scores
 }
 
-function generateImplicitForecasts(
-  question: QuestionWithForecastsAndOptionsAndScores,
-): Forecast[] {
-  // pull out all users
-  // for each user, go through their forecasts and generate the implict ones
-  // append all of them
-  const implicitForecasts: Forecast[] = []
-
-  const uniqueUserIds = Array.from(
-    new Set(question.forecasts.map((f) => f.userId)),
-  )
-
-  uniqueUserIds.forEach((userId) => {
-    implicitForecasts.push(
-      ...generateImplicitForecastsForUser(question, userId),
-    )
-  })
-
-  return implicitForecasts
-}
-
-function generateImplicitForecastsForUser(
-  question: QuestionWithForecastsAndOptionsAndScores,
-  userId: string,
-): Forecast[] {
-  // Get all forecasts for this user
-  const userForecasts: Forecast[] = question.forecasts.filter(
-    (f) => f.userId === userId,
-  )
-  const groupedForecasts = Object.groupBy(userForecasts, (forecast) =>
-    forecast.createdAt.getTime().toString(),
-  )
-  const implicitUserForecasts: Forecast[] = []
-
-  const scores: { [key: string]: Decimal } = {}
-
-  question.options.forEach((option) => {
-    scores[option.id] = new Decimal(0)
-  })
-
-  Object.keys(groupedForecasts).forEach((date) => {
-    const forecastsForDate = groupedForecasts[date]
-    console.log(`Processing forecasts for date: ${date}`)
-    forecastsForDate!.forEach((forecast) => {
-      // Perform operations on each forecast in the group
-      if (forecast.optionId) {
-        scores[forecast.optionId] = forecast.forecast
-      } else {
-        throw Error("OptionId is null for forecast")
-      }
-    })
-
-    // Generate implicit forecast for each date
-    const impliedForecast = new Decimal(
-      Math.max(
-        0,
-        1 -
-          Object.values(scores).reduce(
-            (sum, forecast) => sum + forecast.toNumber(),
-            0,
-          ),
-      ),
-    )
-    implicitUserForecasts.push({
-      id: Math.random(),
-      createdAt: new Date(Number(date)),
-      forecast: impliedForecast,
-      userId: userId,
-      questionId: question.id,
-      optionId: null,
-      comment: null,
-      profileId: userForecasts[0].profileId,
-    })
-  })
-  return implicitUserForecasts
-}
-
 export async function scoreQuestionOptions(
   resolution: string,
-  question: QuestionWithForecastsAndOptionsAndScores,
-) {
-  // send only the relevant forecast to the scoring function
+  question: QuestionWithForecastsAndOptions,
+  exclusive: boolean,
+): Promise<ScoreCollection> {
   let scores: ScoreCollection = {}
-  if (resolution != Resolution.AMBIGUOUS) {
-    console.log("Question is unambig")
 
-    if (resolution == "OTHER") {
-      console.log("Question resolving to OTHER")
+  if (resolution !== Resolution.AMBIGUOUS) {
+    console.log("Question is unambiguous")
 
-      const implicitForecasts = generateImplicitForecasts(question)
+    // Create a map to store cumulative scores and count of scores for each user
+    const userScores: {
+      [userId: string]: ScoreTuple & { count: number }
+    } = {}
 
-      scores = relativeBrierScoring(implicitForecasts, question)
-    } else {
-      // Find the option that resolved to YES, and then resolve it as a binary question
-      const resolvedOption = question.options.find(
-        (option) => option.text === resolution,
-      )
-      console.log({ resolvedOption })
+    for (const option of question.options) {
+      const tempScores = relativeBrierScoring(option.forecasts, option)
+      await scoreOptionForecasts(tempScores, question, option)
 
-      if (!resolvedOption) {
-        throw Error(
-          "scoreQuestionOptions: resolution not found in question options",
-        )
-      }
-
-      scores = relativeBrierScoring(resolvedOption?.forecasts, resolvedOption)
-    }
-
-    // scores = relativeBrierScoring(question.forecasts, question)
-    await scoreForecasts(scores, question)
-  } else {
-    let uniqueIds = Array.from(new Set(question.forecasts.map((f) => f.userId)))
-    scores = uniqueIds
-      .map((id) => {
-        return {
-          [id]: {
+      // Sum up scores for each user across all options
+      for (const [userId, score] of Object.entries(tempScores)) {
+        if (!userScores[userId]) {
+          userScores[userId] = {
             absoluteBrierScore: 0,
             relativeBrierScore: 0,
             rank: 0,
-          } as ScoreTuple,
+            count: 0,
+          }
         }
-      })
-      .reduce((a, b) => Object.assign(a, b), {})
+        userScores[userId].absoluteBrierScore += score.absoluteBrierScore
+        if (score.relativeBrierScore !== undefined) {
+          userScores[userId].relativeBrierScore =
+            (userScores[userId].relativeBrierScore || 0) +
+            score.relativeBrierScore
+        }
+        userScores[userId].count++
+      }
+    }
+
+    // Calculate final scores based on exclusive parameter
+    for (const [userId, score] of Object.entries(userScores)) {
+      if (!exclusive) {
+        // Calculate average if not exclusive
+        score.absoluteBrierScore /= score.count
+        if (score.relativeBrierScore !== undefined) {
+          score.relativeBrierScore /= score.count
+        }
+      }
+      // Remove the count property as it's not part of the ScoreTuple type
+      // eslint-disable-next-line no-unused-vars
+      const { count, ...finalScore } = score
+      scores[userId] = finalScore
+    }
+
+    // Calculate ranks based on relative Brier scores
+    const sortedUsers = Object.entries(scores).sort(
+      ([, a], [, b]) =>
+        (a.relativeBrierScore || 0) - (b.relativeBrierScore || 0),
+    )
+
+    sortedUsers.forEach(([userId, score], index) => {
+      scores[userId] = {
+        ...score,
+        rank: index + 1,
+      }
+    })
+
+    // TODO: Mark the overall question as resolved here
+  } else {
+    let uniqueIds = Array.from(new Set(question.forecasts.map((f) => f.userId)))
+    scores = Object.fromEntries(
+      uniqueIds.map((id) => [
+        id,
+        {
+          absoluteBrierScore: 0,
+          relativeBrierScore: 0,
+          rank: 0,
+        } as ScoreTuple,
+      ]),
+    )
   }
+
   return scores
 }
 
@@ -857,6 +947,11 @@ export async function undoQuestionOptionResolution(optionId: string) {
       data: {
         resolution: null,
         resolvedAt: null,
+      },
+    }),
+    prisma.questionScore.deleteMany({
+      where: {
+        questionOptionId: optionId,
       },
     }),
   ])
