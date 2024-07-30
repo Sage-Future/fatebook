@@ -7,9 +7,9 @@ import {
 } from "@prisma/client"
 import { BlockActionPayload } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
 import {
-  QuestionOptionWithForecasts,
+  QuestionOptionWithForecastsAndScores,
   QuestionWithAuthorAndQuestionMessages,
-  QuestionWithForecastsAndOptions,
+  QuestionWithForecastsAndOptionsAndScores,
   QuestionWithForecastsAndScores,
   QuestionWithQuestionMessagesAndForecastWithUserWithProfiles,
   QuestionWithScores,
@@ -130,15 +130,7 @@ async function dbResolveNonExclusiveQuestionOption(
     where: {
       id: questionId,
     },
-    data: {
-      // We don't set 'resolved' to true here because it's non-exclusive
-      // and other options might still be unresolved
-      // resolved: true,
-      // We don't update the question's overall resolution for non-exclusive questions
-      // resolution: resolution,
-      // We don't update resolvedAt for the question itself in non-exclusive case
-      // resolvedAt: new Date(),
-    },
+    data: {},
     include: {
       user: {
         include: {
@@ -157,6 +149,7 @@ async function dbResolveNonExclusiveQuestionOption(
       options: {
         include: {
           forecasts: true,
+          questionScores: true,
         },
       },
       comments: {
@@ -263,6 +256,7 @@ async function dbResolveExclusiveQuestionOption(
       options: {
         include: {
           forecasts: true,
+          questionScores: true,
         },
       },
       comments: {
@@ -299,7 +293,7 @@ async function dbResolveExclusiveQuestionOption(
 export async function scoreOptionForecasts(
   scoreArray: ScoreCollection,
   question: Question,
-  option: QuestionOptionWithForecasts,
+  option: QuestionOptionWithForecastsAndScores,
 ) {
   console.log(`updating questionScores for option id: ${option.id}`)
 
@@ -688,7 +682,7 @@ export async function scoreQuestion(
 
 export async function scoreQuestionOptions(
   resolution: string,
-  question: QuestionWithForecastsAndOptions,
+  question: QuestionWithForecastsAndOptionsAndScores,
   exclusive: boolean,
 ): Promise<ScoreCollection> {
   let scores: ScoreCollection = {}
