@@ -141,7 +141,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
             <Fragment key={f.id}>
               <Username user={f.user} className="font-semibold" />
               <span />
-              <span className="font-bold text-lg text-indigo-80">
+              <span className="font-bold text-lg text-indigo-800">
                 {displayForecast(f, 2)}
               </span>
               <div className="text-neutral-400">
