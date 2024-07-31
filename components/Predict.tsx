@@ -546,6 +546,7 @@ export function Predict({
                     })
                     smartUpdateResolveBy(suggestion)
                   }}
+                  questionType={questionType}
                 />
               )}
             </Transition>
