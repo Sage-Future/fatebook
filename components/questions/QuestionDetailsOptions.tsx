@@ -23,16 +23,18 @@ export function QuestionDetailsOption({
   return (
     <div className="col-span-2 flex gap-4 mb-1 justify-between">
       <span>{option.text}</span>
-      <UpdateableLatestForecast
-        question={question}
-        autoFocus={autoFocus}
-        embedded={embedded}
-        option={option}
-        cumulativeForecast={cumulativeForecast}
-      />
-      {!question.exclusiveAnswers && (
-        <ResolveButton question={question} optionId={option.id} />
-      )}
+      <div className={"flex align-middle"}>
+        <UpdateableLatestForecast
+          question={question}
+          autoFocus={autoFocus}
+          embedded={embedded}
+          option={option}
+          cumulativeForecast={cumulativeForecast}
+        />
+        {!question.exclusiveAnswers && (
+          <ResolveButton question={question} optionId={option.id} />
+        )}
+      </div>
     </div>
   )
 }

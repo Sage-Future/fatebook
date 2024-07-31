@@ -57,14 +57,18 @@ export function Question({
 
   let cumulativeForecast = undefined
   if (question.type === "MULTIPLE_CHOICE") {
-    cumulativeForecast = question.options?.reduce((acc, option) => {
-      return (
-        acc +
-        option.forecasts
-          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
-          .forecast.toNumber()
-      )
-    }, 0)
+    cumulativeForecast =
+      question.options?.reduce((acc, option) => {
+        const latestForecast = option.forecasts.sort(
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+        )[0]
+
+        if (latestForecast && latestForecast.forecast) {
+          return acc + latestForecast.forecast.toNumber()
+        }
+
+        return acc // If there's no forecast or it's undefined, just return the accumulator
+      }, 0) ?? 0 // Use nullish coalescing operator to default to 0 if reduce returns undefined
   }
 
   return (

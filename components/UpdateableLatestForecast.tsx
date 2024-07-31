@@ -121,7 +121,7 @@ export function UpdateableLatestForecast({
   const localForecastFloat = parseFloat(localForecast)
 
   return (
-    <div className={"relative"}>
+    <>
       <span
         className={clsx(
           "mr-1.5 font-bold text-2xl h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative",
@@ -197,6 +197,6 @@ export function UpdateableLatestForecast({
           {errorMessage}
         </div>
       )}
-    </div>
+    </>
   )
 }
