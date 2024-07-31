@@ -484,7 +484,9 @@ export function Predict({
                   small ? "text-md py-2 pl-4 pr-16" : "text-xl py-4 pl-4 pr-16",
                 )}
                 placeholder={
-                  placeholder || "Will I finish my project by Friday?"
+                  placeholder || questionType === QuestionType.MULTIPLE_CHOICE
+                    ? "What day will my project be done by?"
+                    : "Will I finish my project by Friday?"
                 }
                 maxRows={15}
                 onChange={(e) => {
