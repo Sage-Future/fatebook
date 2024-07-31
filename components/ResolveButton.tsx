@@ -68,12 +68,16 @@ export function ResolveButton({
   }
 
   return (
-    <div className="text-right">
-      <Menu as="div" className="inline-block text-left relative w-full">
-        <div className="w-full">
+    <div
+      className={`text-right ${question.exclusiveAnswers === true ? "" : "h-full"}`}
+    >
+      <Menu as="div" className="inline-block text-left relative w-full h-full">
+        <div
+          className={`w-full ${question.exclusiveAnswers === true ? "" : "h-full"}`}
+        >
           <Menu.Button
             className={clsx(
-              "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 disabled:opacity-70",
+              "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 disabled:opacity-70 h-full items-center",
               // TODO: clean this up
               resolution === "YES"
                 ? "bg-green-500 text-white"

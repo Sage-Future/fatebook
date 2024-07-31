@@ -21,9 +21,9 @@ export function QuestionDetailsOption({
   cumulativeForecast,
 }: QuestionDetailsOptionsProps) {
   return (
-    <div className="col-span-2 flex gap-4 mb-1 justify-between">
+    <div className="contents">
       <span>{option.text}</span>
-      <div className={"flex align-middle"}>
+      <div className={"contents"}>
         <UpdateableLatestForecast
           question={question}
           autoFocus={autoFocus}
@@ -31,7 +31,9 @@ export function QuestionDetailsOption({
           option={option}
           cumulativeForecast={cumulativeForecast}
         />
-        {!question.exclusiveAnswers && (
+        {question.exclusiveAnswers ? (
+          <div></div>
+        ) : (
           <ResolveButton question={question} optionId={option.id} />
         )}
       </div>

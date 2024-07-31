@@ -109,10 +109,10 @@ export function Question({
           }}
         >
           <div
-            className="grid grid-cols-1 p-4 gap-1 relative"
+            className="grid grid-cols-[1fr_min-content_min-content] p-4 gap-2 relative"
             key={question.id}
           >
-            <span className="col-span-2 flex gap-4 mb-1 justify-between">
+            <span className="col-span-3 flex gap-4 mb-1 justify-between">
               <span
                 className={"font-semibold overflow-auto break-words"}
                 key={`${question.id}title`}
@@ -139,23 +139,21 @@ export function Question({
                 />
               )}
             </span>
-            <div className="contents">
-              {question.type === "MULTIPLE_CHOICE" && (
-                <>
-                  {question.options!.map((option, index) => (
-                    <QuestionDetailsOption
-                      key={index}
-                      option={option}
-                      question={question}
-                      autoFocus={alwaysExpand}
-                      embedded={embedded}
-                      cumulativeForecast={cumulativeForecast}
-                    />
-                  ))}
-                </>
-              )}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {question.type === "MULTIPLE_CHOICE" && (
+              <div className="contents">
+                {question.options!.map((option, index) => (
+                  <QuestionDetailsOption
+                    key={index}
+                    option={option}
+                    question={question}
+                    autoFocus={alwaysExpand}
+                    embedded={embedded}
+                    cumulativeForecast={cumulativeForecast}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 col-span-3">
               <span className="text-sm my-auto" key={`${question.id}author`}>
                 <Username user={question.user} />
               </span>
@@ -291,7 +289,7 @@ export function ActivityNumbers({
 
   return (
     <div
-      className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center"
+      className={`${question.exclusiveAnswers ? "col-span-full" : ""} flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center`}
       onClick={() => setManuallyExpanded(!manuallyExpanded)}
     >
       <InfoButton
