@@ -2,6 +2,7 @@ import { KeyboardEvent } from "react"
 import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
 import clsx from "clsx"
 import { PredictFormType } from "../Predict"
+import { InfoButton } from "../ui/InfoButton"
 
 interface OptionTextInputProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -42,10 +43,10 @@ export function OptionTextInput({
           htmlFor={`options.${optionId}.text`}
         >
           Answers
-          {/*<InfoButton*/}
-          {/*  className="ml-1 tooltip-left"*/}
-          {/*  tooltip="What possible outcomes are there?"*/}
-          {/*/>*/}
+          <InfoButton
+            className="ml-1 tooltip-left"
+            tooltip="What possible outcomes are there?"
+          />
         </label>
       )}
       <input

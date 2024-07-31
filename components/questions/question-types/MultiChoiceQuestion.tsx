@@ -89,9 +89,9 @@ export function MultiChoiceQuestion({
   }, [])
 
   return (
-    <div className="flex flex-row gap-4 flex-wrap justify-between">
+    <div className="flex flex-row gap-3 flex-wrap justify-between">
       <GenericCheckbox {...nonExclusiveCheckboxProps} />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         {optionIds.map((id, index) => (
           <QuestionOption
             key={id}

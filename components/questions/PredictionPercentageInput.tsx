@@ -53,6 +53,11 @@ export function PredictionPercentageInput({
           valueAsNumber: true,
         })
 
+  const tooltip =
+    questionType === QuestionType.BINARY
+      ? "How likely do you think the answer is to be YES?"
+      : "How likely do you think this answer is to be correct?"
+
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       void handleSubmit(onSubmit)()
@@ -66,12 +71,7 @@ export function PredictionPercentageInput({
       {(questionType == QuestionType.BINARY || index == 0) && (
         <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
           Make a prediction
-          {questionType === QuestionType.BINARY && (
-            <InfoButton
-              className="ml-1 tooltip-left"
-              tooltip="How likely do you think the answer is to be YES?"
-            />
-          )}
+          <InfoButton className="ml-1 tooltip-left" tooltip={tooltip} />
         </label>
       )}
       <div

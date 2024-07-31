@@ -10,7 +10,7 @@ export function QuestionTypeSelect({
   setQuestionType,
 }: QuestionTypeSelectProps) {
   return (
-    <div className="flex gap-1 mb-4">
+    <div className="flex gap-1 mb-3">
       <button
         className={`btn  ${
           questionType === QuestionType.BINARY
