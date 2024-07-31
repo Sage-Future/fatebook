@@ -22,7 +22,7 @@ export function QuestionTypeSelect({
           setQuestionType(QuestionType.BINARY)
         }}
       >
-        Yes or No
+        Yes or no
       </button>
       <button
         className={`btn ${
@@ -35,7 +35,7 @@ export function QuestionTypeSelect({
           setQuestionType(QuestionType.MULTIPLE_CHOICE)
         }}
       >
-        Multiple Choice
+        Multiple choice
       </button>
     </div>
   )
