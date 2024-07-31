@@ -74,6 +74,43 @@ createdb fatebook_development --owner fatebook
 1. Run `npm run dev`.
 2. Go to https://localhost:3000. You should be able to sign in and create predictions.
 
+### Developing the Fatebook browser extension
+
+Fatebook has a Chrome and Firefox [extension](https://fatebook.io/extension). The source is in [/chrome-extension](https://github.com/Sage-Future/fatebook/tree/main/chrome-extension)
+
+To test changes to the Chrome extension:
+1. Follow the general Fatebook dev setup steps above
+2. In `after.js`, make sure `extensionInfo.isDev = true`
+3. `npm run dev`, and check that your dev server is running at https://localhost:3000
+4. Go to `chrome://extensions`
+5. Disable the prod Fatebook extension, if you have it installed
+6. "Load unpacked", and select the chrome-extension directory
+7. In `chrome://extensions/shortcuts`, set the shortcut for "Make a new prediction" to Cmd-Shift-F, if it's not already set
+8. Before committing, make sure `extensionInfo.isDev = false` in `after.js`
+
+If you make a change to the contents of a file in `chrome-extension`, to see the changes in your browser you'll need to reload the extension:
+1. Go to `chrome://extensions`
+2. Click the refresh button next to the unpacked version of Fatebook for Chrome
+3. Refresh any tabs where you want to test the extension
+
+Changes to Fatebook itself (e.g. changes to `/pages/embed/q/[id].tsx`) will be reflected without needing to reload the extension.
+
+<details>
+  <summary>Deploying updates to the Chrome extension</summary>
+
+Contributors - a maintainer will test and deploy your changes.
+
+Instructions for maintainers:
+
+1. Test changes locally in Chrome and Firefox
+2. Set `extensionInfo.isDev = false` in `after.js`
+3. Deploy any changes to fatebook.io, and test your local unpacked extension with the prod environment
+4. Increment the `version` field in `manifest.json`
+5. Run `npm run zip`
+6. Upload the Chrome extension to the webstore and the Firefox version to Mozilla addons. Approval normally takes <24 hours
+
+</details>
+
 ### Addendum
 
 If you want to make or test changes to the Slack integration, you'll need to set up a Slack app. This is more involved - [get in touch](https://github.com/Sage-Future/fatebook/issues) and we'll help you get up and running.
