@@ -87,7 +87,7 @@ export function QuestionOption({
       {canRemove && (
         <button
           onClick={handleRemove}
-          className={`text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 rounded-full ${index === 0 ? "mt-7" : ""}`}
+          className={`text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors duration-200 rounded-full ${index === 0 ? "mt-7" : ""}`}
           type="button"
         >
           <XMarkIcon className="h-8 w-8" />
