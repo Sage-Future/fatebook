@@ -85,7 +85,6 @@ const unifiedPredictFormSchema = z
     }
   })
 
-export type PredictFormOptionType = z.infer<typeof optionSchema>
 export type PredictFormType = z.infer<typeof unifiedPredictFormSchema>
 
 interface QuestionDefaults {
@@ -343,10 +342,23 @@ export function Predict({
       // User was not logged in when they tried to create a question, repopulate the form
       const cachedQuestion = SuperJSON.parse(cachedQuestionContent) as any
       cachedQuestion.question && setValue("question", cachedQuestion.question)
-      cachedQuestion.predictionPercentage &&
-        cachedQuestion.predictionPercentage !== "NaN" &&
-        !isNaN(cachedQuestion.predictionPercentage) &&
-        setValue("predictionPercentage", cachedQuestion.predictionPercentage)
+      if (cachedQuestion.options) {
+        const options = cachedQuestion.options.map((option: any) => {
+          return {
+            text: option.text ?? "",
+            forecast: option.forecast ?? NaN,
+          }
+        })
+        setValue("options", options)
+        setQuestionType(QuestionType.MULTIPLE_CHOICE)
+      } else {
+        cachedQuestion.predictionPercentage &&
+          cachedQuestion.predictionPercentage !== "NaN" &&
+          isFinite(cachedQuestion.predictionPercentage) &&
+          setValue("predictionPercentage", cachedQuestion.predictionPercentage)
+        setQuestionType(QuestionType.BINARY)
+      }
+
       if (cachedQuestion.resolveBy) {
         try {
           // @ts-ignore - type definition is wrong (Date not string)
