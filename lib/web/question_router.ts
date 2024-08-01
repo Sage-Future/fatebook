@@ -558,8 +558,9 @@ export const questionRouter = router({
 
       if (input.optionId) {
         await undoQuestionOptionResolution(input.optionId)
+      } else {
+        await undoQuestionResolution(input.questionId)
       }
-      await undoQuestionResolution(input.questionId)
 
       await backendAnalyticsEvent("question_resolution_undone", {
         platform: "web",

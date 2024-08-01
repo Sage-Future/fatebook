@@ -133,7 +133,9 @@ export function ResolveButton({
                       onClick={() => {
                         undoResolution.mutate({
                           questionId: question.id,
-                          optionId,
+                          optionId: question.exclusiveAnswers
+                            ? undefined
+                            : optionId,
                         })
                       }}
                     >
