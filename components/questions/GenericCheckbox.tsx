@@ -1,7 +1,7 @@
 import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
 import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
-import { KeyboardEvent } from "react"
+import { ChangeEvent, KeyboardEvent } from "react"
 
 interface GenericCheckboxProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -13,6 +13,8 @@ interface GenericCheckboxProps<
   onSubmit: (data: any) => void
   helpText?: string
   className?: string
+  defaultChecked?: boolean
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
 // TODO: maybe move this to `ui` directory
@@ -24,6 +26,8 @@ export function GenericCheckbox({
   onSubmit,
   helpText,
   className,
+  defaultChecked,
+  onChange,
 }: GenericCheckboxProps) {
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -39,7 +43,9 @@ export function GenericCheckbox({
         type="checkbox"
         onKeyDown={onEnterSubmit}
         id={name}
+        defaultChecked={defaultChecked}
         {...register(name)}
+        onChange={onChange}
         className="checkbox accent-indigo-500 checked:bg-indigo-500 checked:"
       />
       <label htmlFor={name} className="ml-2 block text-gray-900">

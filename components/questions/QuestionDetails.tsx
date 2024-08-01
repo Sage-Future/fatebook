@@ -121,8 +121,8 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               timestamp: f.createdAt || new Date(),
               el: (
                 <Fragment key={f.id}>
-                  <Username user={question.user} className="font-semibold" />
-                  <span className="font-bold">{o.text}</span>
+                  <Username user={f.user} className="font-semibold" />
+                  <span className="font-bold overflow-x-auto">{o.text}</span>
                   <span className="font-bold text-lg text-indigo-800">
                     {displayForecast(f, 2)}
                   </span>
@@ -206,7 +206,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                 <Fragment key={`${question.id} resolution`}>
                   <Username user={question.user} className="font-semibold" />
                   <span />
-                  <span className="italic text-indigo-800">
+                  <span className="italic text-indigo-800 overflow-x-auto">
                     Resolved {question.resolution}
                   </span>
                   <span className="text-neutral-400">
@@ -229,7 +229,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                   <Username user={question.user} className="font-semibold" />
                 </span>
                 <span />
-                <span className="italic text-indigo-800">
+                <span className="italic text-indigo-800 overflow-x-auto">
                   Resolved option &ldquo;{option.text}&ldquo; as{" "}
                   {option.resolution ? "correct" : "incorrect"}
                 </span>
@@ -244,13 +244,14 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
 
   const numForecasters = new Set(question.forecasts.map((f) => f.userId)).size
   const communityAverage =
+    question.type === "BINARY" &&
     !forecastsAreHidden(question, userId) &&
     numForecasters > 1 &&
     getCommunityForecast(question, new Date())
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
+      <div className="grid grid-cols-[minmax(80px,_auto)_minmax(0,_300px)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
         {events.length ? (
           events
             .sort(

@@ -78,7 +78,13 @@ export function BinaryQuestion({
           questionType={QuestionType.BINARY}
         />
 
-        {embedded && <EmbeddedOptions register={register} />}
+        {embedded && (
+          <EmbeddedOptions
+            register={register}
+            handleSubmit={handleSubmit}
+            onSubmit={onSubmit}
+          />
+        )}
       </div>
 
       <div className="self-center">

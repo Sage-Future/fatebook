@@ -54,17 +54,6 @@ export function PredictButton({
         ...Object.values(errors.options).map((err) => err?.text?.message),
       )
     }
-    console.log(
-      errorMessages
-        .filter((item) => item !== undefined && item !== null) // Strict check for undefined and null
-        .map((item) => {
-          try {
-            return String(item).trim() // Use String() for safer type conversion
-          } catch {
-            return "" // Return empty string if conversion fails
-          }
-        }),
-    )
 
     // Formats error message - removes duplicates, trims whitespace, and lowercases
     const newErrorMessage = Array.from(

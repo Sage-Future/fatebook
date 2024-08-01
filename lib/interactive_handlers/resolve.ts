@@ -47,7 +47,6 @@ import { getMarkdownLinkQuestionTitle } from "../web/utils"
 
 async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
-  // TODO: what do we want to do about non-exclusive MCQs here? Presumably only mark as resolved once all options are resolved?
   return await prisma.question.update({
     where: {
       id: questionid,

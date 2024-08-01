@@ -1,32 +1,46 @@
-import { UseFormRegister } from "react-hook-form"
+import React from "react"
+import { UseFormRegister, UseFormHandleSubmit } from "react-hook-form"
+import { GenericCheckbox } from "./GenericCheckbox"
+import { PredictFormType } from "../Predict"
 
-interface EmbeddedOptionsProps {
-  register: UseFormRegister<any>
+interface EmbeddedOptionsProps<
+  TFormValues extends Record<string, any> = Record<string, any>,
+> {
+  register: UseFormRegister<PredictFormType>
+  handleSubmit: UseFormHandleSubmit<TFormValues>
+  onSubmit: (data: any) => void
 }
 
-export function EmbeddedOptions({ register }: EmbeddedOptionsProps) {
+export function EmbeddedOptions({
+  register,
+  handleSubmit,
+  onSubmit,
+}: EmbeddedOptionsProps) {
+  const [isChecked, setIsChecked] = React.useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.localStorage.getItem("lastSharedPubliclyState") === "true",
+  )
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newCheckedState = e.target.checked
+    setIsChecked(newCheckedState)
+    localStorage.setItem(
+      "lastSharedPubliclyState",
+      newCheckedState ? "true" : "false",
+    )
+  }
+
   return (
-    <div className="flex items-center">
-      <label htmlFor="sharePublicly" className="text-sm max-w-[8rem] ml-2">
-        Share with anyone with the link?
-      </label>
-      <input
-        type="checkbox"
-        id="sharePublicly"
-        defaultChecked={
-          typeof window !== "undefined" &&
-          window.localStorage.getItem("lastSharedPubliclyState") === "true"
-        }
-        className="ml-2 checkbox check"
-        onClick={(e) => {
-          localStorage.setItem(
-            "lastSharedPubliclyState",
-            e.currentTarget.checked ? "true" : "false",
-          )
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        {...register("sharePublicly")}
-      />
-    </div>
+    <GenericCheckbox
+      register={register}
+      name="sharePublicly"
+      label="Share with anyone with the link?"
+      handleSubmit={handleSubmit}
+      onSubmit={onSubmit}
+      helpText="If checked, anyone with the link can view this prediction."
+      defaultChecked={isChecked}
+      onChange={handleChange}
+    />
   )
 }

@@ -31,7 +31,7 @@ interface QuestionTypeProps<
   register: UseFormRegister<PredictFormType>
   setValue: UseFormSetValue<any>
   errors: FieldErrors<any>
-  watch: UseFormWatch<TFormValues>
+  watch: UseFormWatch<PredictFormType>
   handleSubmit: UseFormHandleSubmit<TFormValues>
   clearErrors: UseFormClearErrors<any>
   highlightResolveBy: boolean

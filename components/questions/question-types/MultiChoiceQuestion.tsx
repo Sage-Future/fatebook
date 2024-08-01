@@ -92,8 +92,19 @@ export function MultiChoiceQuestion({
   }, [])
 
   return (
-    <div className="flex flex-row gap-3 flex-wrap justify-between">
+    <div
+      className={`flex gap-3 flex-wrap justify-between ${embedded ? "flex-col" : "flex-row"}`}
+    >
       <GenericCheckbox {...nonExclusiveCheckboxProps} />
+
+      {embedded && (
+        <EmbeddedOptions
+          register={register}
+          handleSubmit={handleSubmit}
+          onSubmit={onSubmit}
+        />
+      )}
+
       <div className="flex flex-col gap-2">
         {optionIds.map((id, index) => (
           <QuestionOption
@@ -125,8 +136,6 @@ export function MultiChoiceQuestion({
             <div className=""></div>
           </div>
         )}
-
-        {embedded && <EmbeddedOptions register={register} />}
       </div>
 
       <div className="flex flex-row justify-between items-center gap-2">

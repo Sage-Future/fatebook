@@ -23,7 +23,7 @@ export function MultiChoiceResolutionOptions({
         <button
           className={clsx(
             active ? "bg-indigo-500 text-white" : "bg-white text-neutral-900",
-            `group flex w-full items-center rounded-md px-2 py-2 text-sm`,
+            `group flex w-full items-center rounded-md px-2 py-2 text-sm overflow-x-auto`,
           )}
           onClick={() => {
             resolveQuestion.mutate({

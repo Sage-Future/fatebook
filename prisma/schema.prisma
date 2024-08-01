@@ -42,7 +42,7 @@ model QuestionScore {
   createdAt           DateTime        @default(now())
   relativeScore       Decimal?
   questionId          String
-  userQuestionComboId String          @unique
+  userQuestionComboId String          @unique // on questions, this is userid + questionid, on options this is userid + optionid
   absoluteScore       Decimal
   rank                Int
   userId              String

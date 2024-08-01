@@ -9,10 +9,24 @@ export function Username({
   user,
   className,
 }: {
-  user: User
+  user: User | null
   className?: string
 }) {
   const embedded = useIsEmbedded()
+  if (!user) {
+    return (
+      <span className={clsx(className)}>
+        <Image
+          src={"/default_avatar.png"}
+          width={20}
+          height={20}
+          className="inline m-0 mr-1.5 rounded-full select-none aspect-square"
+          alt=""
+        />
+        <span>{"Invited user"}</span>
+      </span>
+    )
+  }
 
   return (
     <Link
