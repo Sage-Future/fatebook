@@ -168,7 +168,7 @@ export function Question({
                 ))}
               </div>
             )}
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-2 col-span-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 col-span-3">
               <span className="text-sm my-auto" key={`${question.id}author`}>
                 <Username user={question.user} />
               </span>

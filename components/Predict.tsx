@@ -41,14 +41,16 @@ const optionSchema = z.object({
         .min(0, "Predictions must be greater than or equal to 0")
         .max(100, "Predictions must be less than or equal to 100%")
         .or(z.nan())
-        .optional(), // doesn't validate properly as this gets passed through as a NaN
+        .optional(),
     )
     .optional(),
 })
 
 const unifiedPredictFormSchema = z
   .object({
-    question: z.string().min(1, "Question is required"),
+    question: z
+      .string({ required_error: "Question is required" })
+      .min(1, "Question is required"),
     resolveBy: z.string(),
     options: z
       .array(optionSchema)
@@ -192,6 +194,7 @@ export function Predict({
     watch,
     reset,
     setFocus,
+    control,
     formState: { dirtyFields, errors },
   } = usePredictForm(questionType)
 
@@ -465,6 +468,7 @@ export function Predict({
     textAreaRef,
     highlightResolveBy,
     clearErrors,
+    control,
   }
 
   const multiChoiceQuestionProps = {
@@ -485,6 +489,7 @@ export function Predict({
     textAreaRef,
     highlightResolveBy,
     clearErrors,
+    control,
   }
 
   return (

@@ -1,9 +1,11 @@
 import {
+  Control,
   FieldErrors,
   UseFormClearErrors,
   UseFormHandleSubmit,
   UseFormRegister,
   UseFormSetValue,
+  UseFormWatch,
 } from "react-hook-form"
 import { PredictFormType } from "../../Predict"
 
@@ -29,8 +31,9 @@ interface QuestionTypeProps<
   register: UseFormRegister<PredictFormType>
   setValue: UseFormSetValue<any>
   errors: FieldErrors<any>
-  watch: (name: string) => any
+  watch: UseFormWatch<TFormValues>
   handleSubmit: UseFormHandleSubmit<TFormValues>
   clearErrors: UseFormClearErrors<any>
   highlightResolveBy: boolean
+  control: Control<PredictFormType>
 }

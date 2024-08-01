@@ -1,9 +1,12 @@
 import {
+  Control,
   FieldErrors,
   UseFormClearErrors,
   UseFormHandleSubmit,
+  useWatch,
 } from "react-hook-form"
 import { useEffect, useState } from "react"
+import { PredictFormType } from "../Predict"
 
 interface PredictButtonsProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -14,6 +17,7 @@ interface PredictButtonsProps<
   errors: FieldErrors<any>
   handleSubmit: UseFormHandleSubmit<TFormValues>
   clearErrors: UseFormClearErrors<any>
+  control: Control<PredictFormType>
 }
 
 export function PredictButton({
@@ -23,15 +27,65 @@ export function PredictButton({
   errors,
   handleSubmit,
   clearErrors,
+  control,
 }: PredictButtonsProps) {
   const [showErrors, setShowErrors] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [formState, setFormState] = useState({})
+
+  // Watch for changes in the form
+  const watchedFields = useWatch({ control })
+
+  useEffect(() => {
+    if (JSON.stringify(watchedFields) !== JSON.stringify(formState)) {
+      setShowErrors(false)
+      clearErrors()
+      setFormState(watchedFields)
+    }
+  }, [watchedFields, formState, clearErrors])
+
   // Gather all errors into a single message
   useEffect(() => {
-    const newErrorMessage = Object.values(errors)
-      .map((err) => err?.root?.message)
-      .join(", ")
-    setErrorMessage(newErrorMessage)
+    const errorMessages = Object.values(errors).map((err) => err?.root?.message)
+    errorMessages.push(...Object.values(errors).map((err) => err?.message))
+
+    if (errors.options) {
+      errorMessages.push(
+        ...Object.values(errors.options).map((err) => err?.text?.message),
+      )
+    }
+    console.log(
+      errorMessages
+        .filter((item) => item !== undefined && item !== null) // Strict check for undefined and null
+        .map((item) => {
+          try {
+            return String(item).trim() // Use String() for safer type conversion
+          } catch {
+            return "" // Return empty string if conversion fails
+          }
+        }),
+    )
+
+    // Formats error message - removes duplicates, trims whitespace, and lowercases
+    const newErrorMessage = Array.from(
+      new Set(
+        errorMessages
+          .filter((item) => item !== undefined && item !== null)
+          .map((item) => {
+            try {
+              return String(item).trim().toLowerCase()
+            } catch {
+              return ""
+            }
+          })
+          .filter((str) => str.length > 0),
+      ),
+    ).join(", ")
+
+    setErrorMessage(
+      newErrorMessage.charAt(0).toUpperCase() +
+        newErrorMessage.slice(1).toLowerCase(),
+    )
   }, [errors, showErrors])
 
   return (
@@ -46,13 +100,8 @@ export function PredictButton({
           e.preventDefault()
           void handleSubmit(onSubmit)(e)
           setShowErrors(true)
-          // This is absolutely disgusting and you should change it
-          setTimeout(() => {
-            clearErrors()
-            setShowErrors(false)
-          }, 2000)
         }}
-        className="btn btn-primary btn-lg hover:scale-105 h-12"
+        className="btn btn-primary btn-lg hover:scale-105 h-12 max-w-28"
         disabled={!!userId && Object.values(errors).some((err) => !!err)}
       >
         {userId || session.status === "loading"

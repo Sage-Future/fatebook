@@ -29,6 +29,7 @@ export function MultiChoiceQuestion({
   handleSubmit,
   highlightResolveBy,
   clearErrors,
+  control,
 }: MultiChoiceQuestionProps) {
   const MIN_OPTIONS = 2
   const MAX_OPTIONS = 10
@@ -53,6 +54,8 @@ export function MultiChoiceQuestion({
     errors,
     clearErrors,
     handleSubmit,
+    watch,
+    control,
   }
 
   const questionOptionProps = {
