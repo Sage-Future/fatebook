@@ -130,23 +130,31 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
     )
 
   const mcqForecasts = questions
-    .filter((q) => q.type === QuestionType.MULTIPLE_CHOICE)
+    .filter(
+      (q) =>
+        q.type === QuestionType.MULTIPLE_CHOICE &&
+        (!q.resolution || q.resolution != Resolution.AMBIGUOUS), // Exclude ambiguous questions
+    )
     .flatMap((q) =>
-      q.options.flatMap((option) =>
-        option.forecasts
-          // don't include forecasts made <1 minute before another forecast on same option by same user
-          .filter(
-            (f) =>
-              !option.forecasts.some((f2) => {
-                const timeDiff = f2.createdAt.getTime() - f.createdAt.getTime()
-                return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
-              }),
-          )
-          .map((f) => ({
-            forecast: f.forecast.toNumber(),
-            resolution: option.resolution,
-          })),
-      ),
+      q.options
+        // Only include options that have resolutions
+        .filter((option) => option.resolvedAt)
+        .flatMap((option) =>
+          option.forecasts
+            // don't include forecasts made <1 minute before another forecast on same option by same user
+            .filter(
+              (f) =>
+                !option.forecasts.some((f2) => {
+                  const timeDiff =
+                    f2.createdAt.getTime() - f.createdAt.getTime()
+                  return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
+                }),
+            )
+            .map((f) => ({
+              forecast: f.forecast.toNumber(),
+              resolution: option.resolution,
+            })),
+        ),
     )
 
   forecasts.push(...mcqForecasts)
