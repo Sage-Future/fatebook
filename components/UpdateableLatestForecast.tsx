@@ -37,8 +37,6 @@ export function UpdateableLatestForecast({
   const hasResolution =
     (option && option.resolution !== null) || question.resolution !== null
 
-  console.log(`question ${question.title} has resolution ${hasResolution}`)
-
   let latestForecast: {
     forecast: Decimal
     createdAt: Date

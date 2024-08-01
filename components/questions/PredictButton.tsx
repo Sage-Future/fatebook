@@ -25,8 +25,7 @@ export function PredictButton({
   clearErrors,
 }: PredictButtonsProps) {
   const [showErrors, setShowErrors] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   // Gather all errors into a single message
   useEffect(() => {
     const newErrorMessage = Object.values(errors)

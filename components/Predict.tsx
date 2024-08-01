@@ -36,7 +36,12 @@ const optionSchema = z.object({
   forecast: z
     .preprocess(
       (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z.number().min(0).max(100, "Forecast must be between 0 and 100"), // doesn't validate properly as this gets passed through as a NaN
+      z
+        .number()
+        .min(0, "Predictions must be greater than or equal to 0")
+        .max(100, "Predictions must be less than or equal to 100%")
+        .or(z.nan())
+        .optional(), // doesn't validate properly as this gets passed through as a NaN
     )
     .optional(),
 })
@@ -47,8 +52,8 @@ const unifiedPredictFormSchema = z
     resolveBy: z.string(),
     options: z
       .array(optionSchema)
-      .min(2, "At least two options are required")
-      .max(10, "Maximum 10 options allowed")
+      .min(2, "At least two answers are required")
+      .max(100, "Maximum 100 options allowed")
       .refine(
         (options) => {
           const texts = options.map((option) => option.text)
@@ -56,7 +61,7 @@ const unifiedPredictFormSchema = z
           return uniqueTexts.size === texts.length
         },
         {
-          message: "Each option text must be unique",
+          message: "All answers must be unique",
         },
       )
       .optional(),
@@ -77,8 +82,7 @@ const unifiedPredictFormSchema = z
       if (!data.nonExclusive && totalForecast > 100) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message:
-            "For exclusive questions, the sum of all forecasts must less than 100%",
+          message: `For exclusive questions, the sum of all forecasts not exceed 100%, current sum is ${totalForecast}%`,
           path: ["options"],
         })
       }
