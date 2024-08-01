@@ -112,7 +112,6 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
 
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()
-  // console.log(question.options)
 
   const forecastEvents: { timestamp: Date; el: ReactNode }[] =
     question.type === "MULTIPLE_CHOICE"
@@ -199,7 +198,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
         : []),
     ],
     [
-      ...(question.resolvedAt
+      ...(question.resolvedAt && question.type === "BINARY"
         ? [
             {
               timestamp: question.resolvedAt,
@@ -219,6 +218,28 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
           ]
         : []),
     ],
+    ...(question.options
+      ? question.options
+          .filter((option) => option.resolvedAt)
+          .map((option) => ({
+            timestamp: option.resolvedAt!,
+            el: (
+              <Fragment key={`${question.id}-${option.id}-resolution`}>
+                <span>
+                  <Username user={question.user} className="font-semibold" />
+                </span>
+                <span />
+                <span className="italic text-indigo-800">
+                  Resolved option &ldquo;{option.text}&ldquo; as{" "}
+                  {option.resolution ? "correct" : "incorrect"}
+                </span>
+                <span className="text-neutral-400">
+                  <FormattedDate date={option.resolvedAt!} />
+                </span>
+              </Fragment>
+            ),
+          }))
+      : []),
   ].flat()
 
   const numForecasters = new Set(question.forecasts.map((f) => f.userId)).size

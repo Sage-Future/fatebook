@@ -22,7 +22,7 @@ export function QuestionDetailsOption({
 }: QuestionDetailsOptionsProps) {
   return (
     <div className="contents">
-      <span>{option.text}</span>
+      <span className={"max-w-[500px] overflow-x-auto"}>{option.text}</span>
       <div className={"contents"}>
         <UpdateableLatestForecast
           question={question}
