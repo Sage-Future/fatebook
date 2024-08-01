@@ -950,7 +950,10 @@ export async function undoQuestionOptionResolution(optionId: string) {
   ])
 }
 
-export async function undoQuestionResolution(questionId: string) {
+export async function undoQuestionResolution(
+  questionId: string,
+  exclusiveAnswers: boolean = false,
+) {
   await prisma.$transaction(async (tx) => {
     // Update the question
     await tx.question.update({
@@ -964,16 +967,18 @@ export async function undoQuestionResolution(questionId: string) {
       },
     })
 
-    // Update all options associated with the question
-    await tx.questionOption.updateMany({
-      where: {
-        questionId: questionId,
-      },
-      data: {
-        resolution: null,
-        resolvedAt: null,
-      },
-    })
+    if (exclusiveAnswers) {
+      // Update all options associated with the question
+      await tx.questionOption.updateMany({
+        where: {
+          questionId: questionId,
+        },
+        data: {
+          resolution: null,
+          resolvedAt: null,
+        },
+      })
+    }
 
     // Delete question scores
     await tx.questionScore.deleteMany({
