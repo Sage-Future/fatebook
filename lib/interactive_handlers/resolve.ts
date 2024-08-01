@@ -952,8 +952,9 @@ export async function undoQuestionOptionResolution(optionId: string) {
 }
 
 export async function undoQuestionResolution(questionId: string) {
-  await prisma.$transaction([
-    prisma.question.update({
+  await prisma.$transaction(async (tx) => {
+    // Update the question
+    await tx.question.update({
       where: {
         id: questionId,
       },
@@ -962,13 +963,26 @@ export async function undoQuestionResolution(questionId: string) {
         resolvedAt: null,
         resolved: false,
       },
-    }),
-    prisma.questionScore.deleteMany({
+    })
+
+    // Update all options associated with the question
+    await tx.questionOption.updateMany({
       where: {
         questionId: questionId,
       },
-    }),
-  ])
+      data: {
+        resolution: null,
+        resolvedAt: null,
+      },
+    })
+
+    // Delete question scores
+    await tx.questionScore.deleteMany({
+      where: {
+        questionId: questionId,
+      },
+    })
+  })
 
   const questionUpdated = await prisma.question.findUnique({
     where: {
