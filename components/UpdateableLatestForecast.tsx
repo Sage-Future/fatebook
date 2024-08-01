@@ -34,6 +34,10 @@ export function UpdateableLatestForecast({
   cumulativeForecast?: number
 }) {
   const userId = useUserId()
+  const hasResolution =
+    (option && option.resolution !== null) || question.resolution !== null
+
+  console.log(`question ${question.title} has resolution ${hasResolution}`)
 
   let latestForecast: {
     forecast: Decimal
@@ -116,7 +120,7 @@ export function UpdateableLatestForecast({
   }
   const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
 
-  if (question.resolution !== null && !latestForecast) return <span></span>
+  if (hasResolution && !latestForecast) return <span></span>
 
   const localForecastFloat = parseFloat(localForecast)
 
@@ -126,9 +130,7 @@ export function UpdateableLatestForecast({
         className={clsx(
           "mr-1.5 font-bold text-2xl h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative flex",
           addForecast.isLoading && "opacity-50",
-          question.resolution === null
-            ? "text-indigo-800 ring-2"
-            : "text-neutral-600 ring-0",
+          hasResolution ? "text-neutral-600 ring-0" : "text-indigo-800 ring-2",
         )}
         onClick={(e) => {
           ;(inputRef.current as any)?.focus()
@@ -137,14 +139,14 @@ export function UpdateableLatestForecast({
           }
         }}
       >
-        {(question.resolution === null || latestForecast) && (
+        {(!hasResolution || latestForecast) && (
           <>
             <div
               className={clsx(
                 "h-full bg-indigo-700 absolute rounded-l pointer-events-none opacity-20 bg-gradient-to-br transition-all -mx-1 -my-0.5",
                 localForecastFloat >= 100 && "rounded-r",
-                question.resolution === null && "from-indigo-400 to-indigo-600",
-                question.resolution !== null && "hidden",
+                !hasResolution && "from-indigo-400 to-indigo-600",
+                hasResolution && "hidden",
               )}
               style={{
                 width: `${Math.min(Math.max(localForecastFloat || 0, 0), 100)}%`,
@@ -184,9 +186,7 @@ export function UpdateableLatestForecast({
                 }
               }}
               onBlur={(e) => updateOrReset(e.currentTarget.value)}
-              disabled={
-                question.resolution !== null || addForecast.isLoading || !userId
-              }
+              disabled={hasResolution || addForecast.isLoading || !userId}
             />
             <span className={"text-left"}>{"%"}</span>
           </>

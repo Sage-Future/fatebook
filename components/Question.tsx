@@ -9,7 +9,7 @@ import {
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
 import { QuestionDetails } from "./questions/QuestionDetails"
@@ -70,6 +70,21 @@ export function Question({
         return acc // If there's no forecast or it's undefined, just return the accumulator
       }, 0) ?? 0 // Use nullish coalescing operator to default to 0 if reduce returns undefined
   }
+
+  const sortedOptions = useMemo(() => {
+    if (question.type !== "MULTIPLE_CHOICE") {
+      return []
+    }
+    return [...question.options!].sort((a, b) => {
+      const aForecast = a.forecasts.find((f) => f.userId === userId)
+      const bForecast = b.forecasts.find((f) => f.userId === userId)
+
+      const aValue = aForecast ? aForecast.forecast.toNumber() : 0
+      const bValue = bForecast ? bForecast.forecast.toNumber() : 0
+
+      return bValue - aValue
+    })
+  }, [question.options, userId])
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -141,7 +156,7 @@ export function Question({
             </span>
             {question.type === "MULTIPLE_CHOICE" && (
               <div className="contents">
-                {question.options!.map((option, index) => (
+                {sortedOptions.map((option, index) => (
                   <QuestionDetailsOption
                     key={index}
                     option={option}
