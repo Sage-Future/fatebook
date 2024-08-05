@@ -443,6 +443,8 @@ export const userListRouter = router({
         )}|${
           list.name
         }>*. New forecasting questions shared with that team will no longer be posted here.`,
+        unfurl_links: false,
+        unfurl_media: false,
       })
 
       await prisma.userList.update({
