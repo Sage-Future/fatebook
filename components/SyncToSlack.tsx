@@ -2,6 +2,7 @@ import { XMarkIcon } from "@heroicons/react/24/solid"
 import Image from "next/image"
 import Link from "next/link"
 import React from "react"
+import { api } from "../lib/web/trpc"
 
 export function SyncToSlack({
   url,
@@ -24,6 +25,7 @@ export function SyncToSlack({
   }
 
   const isSynced = entity.syncToSlackTeamId && entity.syncToSlackChannelId
+  const stopSyncing = api.userList.removeSyncToSlack.useMutation()
 
   if (isSynced) {
     return (
@@ -38,6 +40,12 @@ export function SyncToSlack({
           />
           Questions in this {listType} are synced to your Slack channel.
         </span>
+        <button
+          className="btn btn-xs ml-2"
+          onClick={() => stopSyncing.mutate({ listId: entity.id })}
+        >
+          Stop syncing
+        </button>
       </div>
     )
   }

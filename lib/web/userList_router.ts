@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { backendAnalyticsEvent } from "../_utils_server"
+import { backendAnalyticsEvent, postSlackMessage } from "../_utils_server"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import prisma from "../prisma"
 import {
@@ -8,7 +8,7 @@ import {
   getQuestionAssertAuthor,
 } from "./question_router"
 import { publicProcedure, router } from "./trpc_base"
-import { matchesAnEmailDomain } from "./utils"
+import { getUserListUrl, matchesAnEmailDomain } from "./utils"
 
 export const userListRouter = router({
   getUserLists: publicProcedure.query(async ({ ctx }) => {
@@ -66,8 +66,8 @@ export const userListRouter = router({
         !ctx.userId ||
         (userList.authorId !== ctx.userId &&
           !userList.users.find((u) => u.id === ctx.userId) &&
-          !userList.emailDomains?.some(
-            (domain) => user?.email.endsWith(domain),
+          !userList.emailDomains?.some((domain) =>
+            user?.email.endsWith(domain),
           ))
       ) {
         throw new TRPCError({
@@ -413,6 +413,41 @@ export const userListRouter = router({
         user: ctx.userId,
         platform: "web",
         listId: input.listId,
+      })
+    }),
+
+  removeSyncToSlack: publicProcedure
+    .input(z.object({ listId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const list = await prisma.userList.findUnique({
+        where: {
+          id: input.listId,
+        },
+        include: {
+          author: true,
+        },
+      })
+      if (!list || list.authorId !== ctx.userId) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "" })
+      }
+
+      if (!list.syncToSlackTeamId || !list.syncToSlackChannelId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "" })
+      }
+
+      await postSlackMessage(list.syncToSlackTeamId, {
+        channel: list.syncToSlackChannelId,
+        text: `${list.author.name || "Someone"} has stopped syncing their Fatebook team to this channel: *<${getUserListUrl(
+          list,
+          false,
+        )}|${
+          list.name
+        }>*. New forecasting questions shared with that team will no longer be posted here.`,
+      })
+
+      await prisma.userList.update({
+        where: { id: input.listId },
+        data: { syncToSlackTeamId: null, syncToSlackChannelId: null },
       })
     }),
 })
