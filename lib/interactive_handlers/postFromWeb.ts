@@ -225,6 +225,8 @@ export async function postFromWeb(
         )}|${
           userList.name
         }>*. Forecasting questions shared with that team will be posted here.`,
+        unfurl_links: false,
+        unfurl_media: false,
       },
       slackUserId,
     )
