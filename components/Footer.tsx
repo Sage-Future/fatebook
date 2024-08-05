@@ -9,25 +9,19 @@ export default function Footer({
     <footer className="bg-white border-t border-neutral-200 ">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
         {SocialIcons(showReportProblem)}
-        <div className="mt-4 text-center md:mt-0 md:order-1 md:ml-8 md:text-left">
+        <div className="mt-8  text-center md:mt-0 md:order-1 md:ml-8 md:text-left">
           <Link
             href="https://sage-future.org"
-            className="no-underline text-base text-neutral-500 hover:underline"
+            className="no-underline text-base text-neutral-400 hover:underline"
             target="_blank"
           >
             Sage Future Inc
           </Link>
-          <p className="text-neutral-400 my-1 text-sm max-sm:text-xs">
-            <Link
-              className="mr-4"
-              href="https://www.every.org/sage-future?utm_campaign=donate-link&method=card%2Cbank%2Cpaypal%2Cpay%2Cvenmo%2Cstocks%2Cdaf%2Ccrypto#/donate"
-            >
-              Donate
-            </Link>{" "}
+          <p className="text-neutral-300 my-1">
             <Link className="mr-4" href="/privacy">
-              Privacy
+              Privacy Policy
             </Link>{" "}
-            <Link href="/terms">Terms</Link>
+            <Link href="/terms">Terms of Use</Link>
           </p>
         </div>
       </div>
