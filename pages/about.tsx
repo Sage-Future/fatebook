@@ -8,7 +8,7 @@ import { webFeedbackUrl } from "../lib/web/utils"
 const about = String.raw`
 Fatebook aims to be the fastest way to make and track your predictions.
 
-Fatebook was made by [Sage](https://sage-future.org).
+Fatebook was made by [Sage](https://sage-future.org), a 501(c)(3) charity building tools to make sense of the future. You can [donate](https://www.every.org/sage-future?utm_campaign=donate-link&method=card%2Cbank%2Cpaypal%2Cpay%2Cvenmo%2Cstocks%2Cdaf%2Ccrypto#/donate) to support our work.
 
 Want something changed or added? Send us feedback on [Discord](https://discord.gg/mt9YVB8VDE), to [hello@sage-future.org](mailto:hello@sage-future.org), or in this [form](${webFeedbackUrl}).
 
