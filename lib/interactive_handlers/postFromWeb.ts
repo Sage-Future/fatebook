@@ -219,12 +219,12 @@ export async function postFromWeb(
       teamId,
       {
         channel: channelId,
-        text: `<@${slackUserId}> has started synced their list to this channel: *<${getUserListUrl(
+        text: `<@${slackUserId}> has started synced their Fatebook team to this channel: *<${getUserListUrl(
           userList,
           false,
         )}|${
           userList.name
-        }>*. Forecasting questions shared with that list will be posted here.`,
+        }>*. Forecasting questions shared with that team will be posted here.`,
       },
       slackUserId,
     )
@@ -246,7 +246,7 @@ export async function postFromWeb(
       teamId,
       channelId,
       slackUserId,
-      "We couldn't find a question, tournament or list at that URL.",
+      "We couldn't find a question, tournament or team at that URL.",
     )
   }
 }
