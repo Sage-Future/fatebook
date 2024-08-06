@@ -1,14 +1,18 @@
 import clsx from "clsx"
 import { useEffect, useRef } from "react"
-import { FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
 import { utcDateStrToLocalDate } from "../../lib/web/utils"
+import { PredictFormType } from "../Predict"
 import { FormattedDate } from "../ui/FormattedDate"
 import { InfoButton } from "../ui/InfoButton"
 
-interface ResolveByProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
+export function ResolveBy({
+  small,
+  resolveByButtons,
+  questionDefaults,
+  highlightResolveBy,
+}: {
   small?: boolean
   resolveByButtons?: { date: Date; label: string }[]
   questionDefaults?: {
@@ -19,23 +23,15 @@ interface ResolveByProps<
     sharePublicly?: boolean
     unlisted?: boolean
   }
-  register: UseFormRegister<any>
-  setValue: UseFormSetValue<TFormValues>
-  errors: FieldErrors<any>
-  watch: (name: string) => any
   highlightResolveBy: boolean
-}
+}) {
+  const {
+    register,
+    setValue,
+    formState: { errors },
+    watch,
+  } = useFormContext<PredictFormType>()
 
-export function ResolveBy({
-  small,
-  resolveByButtons,
-  questionDefaults,
-  register,
-  setValue,
-  errors,
-  watch,
-  highlightResolveBy,
-}: ResolveByProps) {
   const resolveByUTCStr = watch("resolveBy")
 
   const resolveByRegister = register("resolveBy", { required: true })

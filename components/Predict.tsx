@@ -13,7 +13,12 @@ import React, {
   useState,
 } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { SubmitHandler, UseFormReturn, useForm } from "react-hook-form"
+import {
+  FormProvider,
+  SubmitHandler,
+  UseFormReturn,
+  useForm,
+} from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
 import TextareaAutosize from "react-textarea-autosize"
 import SuperJSON from "trpc-transformer"
@@ -185,18 +190,16 @@ export function Predict({
     return { ...form, setQuestionType }
   }
 
+  const methods = usePredictForm(questionType) // for useFormContext
   const {
     register,
-    unregister,
     handleSubmit,
     setValue,
-    clearErrors,
     watch,
     reset,
     setFocus,
-    control,
     formState: { dirtyFields, errors },
-  } = usePredictForm(questionType)
+  } = methods
 
   const question = watch("question")
   const resolveByUTCStr = watch(
@@ -438,7 +441,6 @@ export function Predict({
     ref: formRef,
     ...registerQuestion
   } = register("question", { required: true })
-  const mergedTextAreaRef = mergeRefs([textAreaRef, formRef])
 
   function getTags(question: string) {
     const tags = question.match(/#\w+/g)
@@ -451,151 +453,136 @@ export function Predict({
     }
   }
 
-  const binaryQuestionProps = {
-    small,
-    resolveByButtons,
-    questionDefaults,
-    embedded,
-    userId,
-    onSubmit,
-    signInToFatebook,
-    session,
-    register,
-    setValue,
-    errors,
-    watch,
-    handleSubmit,
-    textAreaRef,
-    highlightResolveBy,
-    clearErrors,
-    control,
-  }
-
-  const multiChoiceQuestionProps = {
-    small,
-    resolveByButtons,
-    questionDefaults,
-    embedded,
-    userId,
-    onSubmit,
-    signInToFatebook,
-    session,
-    register,
-    unregister,
-    setValue,
-    errors,
-    watch,
-    handleSubmit,
-    textAreaRef,
-    highlightResolveBy,
-    clearErrors,
-    control,
-  }
-
   return (
     <div className="w-full">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
-        <form onSubmit={void handleSubmit(onSubmit)}>
-          <div className="w-full ">
-            <div className="relative">
-              <TextareaAutosize
-                className={clsx(
-                  "w-full border-2 border-neutral-300 rounded-md resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
-                  "focus:outline-indigo-700 placeholder:text-neutral-400",
-                  small ? "text-md py-2 pl-4 pr-16" : "text-xl py-4 pl-4 pr-16",
-                )}
-                placeholder={
-                  placeholder || questionType === QuestionType.MULTIPLE_CHOICE
-                    ? "What day will my project be done by?"
-                    : "Will I finish my project by Friday?"
-                }
-                maxRows={15}
-                onChange={(e) => {
-                  smartUpdateResolveBy(e.currentTarget.value)
-                  updateTagsPreview(e.currentTarget.value)
-                  void onChangeQuestion(e)
-                }}
-                onKeyDown={(e) => {
-                  if (onEnterSubmit(e)) return
-                  // current value doesn't include the key just pressed! So
-                  if (e.key.length === 1) {
-                    smartUpdateResolveBy(e.currentTarget.value + e.key)
-                  }
-                }}
-                ref={mergedTextAreaRef}
-                defaultValue={questionDefaults?.title}
-                onMouseDown={(e) => e.stopPropagation()}
-                {...registerQuestion}
-              />
-
-              {showQuestionSuggestionsButton && (
-                <button
-                  tabIndex={-1}
+        <FormProvider {...methods}>
+          <form onSubmit={void handleSubmit(onSubmit)}>
+            <div className="w-full ">
+              <div className="relative">
+                <TextareaAutosize
                   className={clsx(
-                    "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-calc-50-minus-05rem hover:opacity-100 !-translate-y-1/2",
-                    showSuggestions ? "btn-active" : "btn-ghost",
-                    !!question && !showSuggestions
-                      ? "opacity-20"
-                      : "opacity-80",
-                    small && "btn-xs px-5",
+                    "w-full border-2 border-neutral-300 rounded-md resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
+                    "focus:outline-indigo-700 placeholder:text-neutral-400",
+                    small
+                      ? "text-md py-2 pl-4 pr-16"
+                      : "text-xl py-4 pl-4 pr-16",
                   )}
-                  onClick={(e) => {
-                    setShowSuggestions(!showSuggestions)
-                    e.preventDefault()
+                  placeholder={
+                    placeholder || questionType === QuestionType.MULTIPLE_CHOICE
+                      ? "What day will my project be done by?"
+                      : "Will I finish my project by Friday?"
+                  }
+                  maxRows={15}
+                  onChange={(e) => {
+                    smartUpdateResolveBy(e.currentTarget.value)
+                    updateTagsPreview(e.currentTarget.value)
+                    void onChangeQuestion(e)
                   }}
-                >
-                  <LightBulbIcon height={16} width={16} className="shrink-0" />
-                </button>
-              )}
-            </div>
-
-            <Transition
-              show={showSuggestions}
-              enter="transition ease-out duration-100"
-              enterFrom="transform opacity-0 scale-98 translate-y-[-0.5rem]"
-              enterTo="transform opacity-100 scale-100 translate-y-0"
-              leave="transition ease-in duration-75"
-              leaveFrom="transform opacity-100 scale-100 translate-y-0 "
-              leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
-            >
-              {(ref) => (
-                <QuestionSuggestions
-                  ref={ref as React.Ref<HTMLDivElement>}
-                  chooseSuggestion={(suggestion) => {
-                    setValue("question", suggestion, {
-                      shouldTouch: true,
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                    smartUpdateResolveBy(suggestion)
+                  onKeyDown={(e) => {
+                    if (onEnterSubmit(e)) return
+                    // current value doesn't include the key just pressed! So
+                    if (e.key.length === 1) {
+                      smartUpdateResolveBy(e.currentTarget.value + e.key)
+                    }
                   }}
-                  questionType={questionType}
+                  defaultValue={questionDefaults?.title}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  {...registerQuestion}
+                  ref={mergeRefs([textAreaRef, formRef])}
                 />
-              )}
-            </Transition>
-          </div>
-          {tagsPreview?.length > 0 && (
-            <div className="italic text-neutral-400 text-sm p-1 mb-2">
-              Tagging this question: {tagsPreview.join(", ")}
+
+                {showQuestionSuggestionsButton && (
+                  <button
+                    tabIndex={-1}
+                    className={clsx(
+                      "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-calc-50-minus-05rem hover:opacity-100 !-translate-y-1/2",
+                      showSuggestions ? "btn-active" : "btn-ghost",
+                      !!question && !showSuggestions
+                        ? "opacity-20"
+                        : "opacity-80",
+                      small && "btn-xs px-5",
+                    )}
+                    onClick={(e) => {
+                      setShowSuggestions(!showSuggestions)
+                      e.preventDefault()
+                    }}
+                  >
+                    <LightBulbIcon
+                      height={16}
+                      width={16}
+                      className="shrink-0"
+                    />
+                  </button>
+                )}
+              </div>
+
+              <Transition
+                show={showSuggestions}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-98 translate-y-[-0.5rem]"
+                enterTo="transform opacity-100 scale-100 translate-y-0"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100 translate-y-0 "
+                leaveTo="transform opacity-0 scale-98 translate-y-[-0.5rem]"
+              >
+                {(ref) => (
+                  <QuestionSuggestions
+                    ref={ref as React.Ref<HTMLDivElement>}
+                    chooseSuggestion={(suggestion) => {
+                      setValue("question", suggestion, {
+                        shouldTouch: true,
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                      smartUpdateResolveBy(suggestion)
+                    }}
+                    questionType={questionType}
+                  />
+                )}
+              </Transition>
             </div>
-          )}
+            {tagsPreview?.length > 0 && (
+              <div className="italic text-neutral-400 text-sm p-1 mb-2">
+                Tagging this question: {tagsPreview.join(", ")}
+              </div>
+            )}
 
-          <QuestionTypeSelect
-            questionType={questionType}
-            setQuestionType={setQuestionType}
-          />
+            <QuestionTypeSelect
+              questionType={questionType}
+              setQuestionType={setQuestionType}
+            />
 
-          {(() => {
-            switch (questionType) {
-              case QuestionType.BINARY:
-                return <BinaryQuestion {...binaryQuestionProps} />
-              case QuestionType.MULTIPLE_CHOICE:
-                return <MultiChoiceQuestion {...multiChoiceQuestionProps} />
-              default:
-                return <BinaryQuestion {...binaryQuestionProps} />
-            }
-          })()}
-        </form>
+            {(() => {
+              switch (questionType) {
+                case QuestionType.BINARY:
+                  return (
+                    <BinaryQuestion
+                      small={small}
+                      resolveByButtons={resolveByButtons}
+                      questionDefaults={questionDefaults}
+                      embedded={embedded}
+                      highlightResolveBy={highlightResolveBy}
+                      onSubmit={onSubmit}
+                    />
+                  )
+                case QuestionType.MULTIPLE_CHOICE:
+                  return (
+                    <MultiChoiceQuestion
+                      small={small}
+                      resolveByButtons={resolveByButtons}
+                      questionDefaults={questionDefaults}
+                      embedded={embedded}
+                      highlightResolveBy={highlightResolveBy}
+                      onSubmit={onSubmit}
+                    />
+                  )
+                default:
+                  return <span>Something went wrong</span>
+              }
+            })()}
+          </form>
+        </FormProvider>
       </ErrorBoundary>
     </div>
   )

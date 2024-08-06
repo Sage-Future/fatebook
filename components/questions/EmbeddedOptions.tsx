@@ -1,21 +1,11 @@
 import React from "react"
-import { UseFormRegister, UseFormHandleSubmit } from "react-hook-form"
 import { GenericCheckbox } from "./GenericCheckbox"
-import { PredictFormType } from "../Predict"
-
-interface EmbeddedOptionsProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
-  register: UseFormRegister<PredictFormType>
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  onSubmit: (data: any) => void
-}
 
 export function EmbeddedOptions({
-  register,
-  handleSubmit,
   onSubmit,
-}: EmbeddedOptionsProps) {
+}: {
+  onSubmit: (data: any) => void
+}) {
   const [isChecked, setIsChecked] = React.useState(
     () =>
       typeof window !== "undefined" &&
@@ -33,10 +23,8 @@ export function EmbeddedOptions({
 
   return (
     <GenericCheckbox
-      register={register}
       name="sharePublicly"
       label="Share with anyone with the link?"
-      handleSubmit={handleSubmit}
       onSubmit={onSubmit}
       helpText="If checked, anyone with the link can view this prediction."
       defaultChecked={isChecked}

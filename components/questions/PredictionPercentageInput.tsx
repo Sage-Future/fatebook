@@ -1,40 +1,31 @@
 import { QuestionType } from "@prisma/client"
 import clsx from "clsx"
 import { KeyboardEvent, useRef } from "react"
-import {
-  FieldErrors,
-  UseFormHandleSubmit,
-  UseFormRegister,
-} from "react-hook-form"
+import { useFormContext } from "react-hook-form"
+import { mergeRefs } from "react-merge-refs"
 import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
 
-// TODO: refactor these interfaces so they have core shared fields (like errors) and then extend them
-interface PredictionPercentageInputProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
-  small?: boolean
-  errors: FieldErrors<any>
-  register: UseFormRegister<PredictFormType>
-  watch: (name: string) => any
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  onSubmit: (data: any) => void
-  optionId?: number
-  index?: number
-  questionType: QuestionType
-}
-
 export function PredictionPercentageInput({
   small,
-  errors,
-  register,
-  watch,
-  handleSubmit,
-  onSubmit,
   optionId,
   index,
   questionType,
-}: PredictionPercentageInputProps) {
+  onSubmit,
+}: {
+  small?: boolean
+  optionId?: number
+  index?: number
+  questionType: QuestionType
+  onSubmit: (data: any) => void
+}) {
+  const {
+    formState: { errors },
+    register,
+    watch,
+    handleSubmit,
+  } = useFormContext<PredictFormType>()
+
   const predictionInputRefMine = useRef<HTMLInputElement | null>(null)
 
   const predictionPercentage =
@@ -84,7 +75,7 @@ export function PredictionPercentageInput({
         <div
           className={clsx(
             "h-full bg-indigo-700 absolute -m-2 rounded-l pointer-events-none opacity-20 bg-gradient-to-br from-indigo-400 to-indigo-600 transition-all",
-            predictionPercentage >= 100 && "rounded-r",
+            predictionPercentage && predictionPercentage >= 100 && "rounded-r",
           )}
           style={{
             width: `${Math.min(Math.max(predictionPercentage || 0, 0), 100)}%`,
@@ -103,6 +94,10 @@ export function PredictionPercentageInput({
           onKeyDown={onEnterSubmit}
           onMouseDown={(e) => e.stopPropagation()}
           {...predictionPercentageRegister}
+          ref={mergeRefs([
+            predictionInputRefMine,
+            predictionPercentageRegister.ref,
+          ])}
         />
         <span
           onClick={() => predictionInputRefMine.current?.focus()}

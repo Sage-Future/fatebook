@@ -1,37 +1,31 @@
 import clsx from "clsx"
 import { ChangeEvent, KeyboardEvent } from "react"
-import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
 
-interface GenericCheckboxProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
-  register: UseFormRegister<PredictFormType>
-  name: keyof PredictFormType
-  label: string
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  onSubmit: (data: any) => void
-  helpText?: string
-  className?: string
-  defaultChecked?: boolean
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
-  labelClassName?: string
-}
-
 // TODO: maybe move this to `ui` directory
 export function GenericCheckbox({
-  register,
   name,
   label,
-  handleSubmit,
   onSubmit,
   helpText,
   className,
   defaultChecked,
   onChange,
   labelClassName,
-}: GenericCheckboxProps) {
+}: {
+  name: keyof PredictFormType
+  label: string
+  onSubmit: (data: any) => void
+  helpText?: string
+  className?: string
+  defaultChecked?: boolean
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  labelClassName?: string
+}) {
+  const { register, handleSubmit } = useFormContext<PredictFormType>()
+
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
       void handleSubmit(onSubmit)()

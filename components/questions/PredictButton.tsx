@@ -1,37 +1,23 @@
-import {
-  Control,
-  FieldErrors,
-  UseFormClearErrors,
-  UseFormHandleSubmit,
-  useWatch,
-} from "react-hook-form"
+import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
+import { useFormContext, useWatch } from "react-hook-form"
+import { useUserId } from "../../lib/web/utils"
 import { PredictFormType } from "../Predict"
 
-interface PredictButtonsProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
-  userId?: string
-  onSubmit: (data: any) => void
-  session: { status: string }
-  errors: FieldErrors<any>
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  clearErrors: UseFormClearErrors<any>
-  control: Control<PredictFormType>
-}
-
-export function PredictButton({
-  userId,
-  onSubmit,
-  session,
-  errors,
-  handleSubmit,
-  clearErrors,
-  control,
-}: PredictButtonsProps) {
+export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
   const [showErrors, setShowErrors] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [formState, setFormState] = useState({})
+
+  const {
+    formState: { errors },
+    clearErrors,
+    control,
+    handleSubmit,
+  } = useFormContext<PredictFormType>()
+
+  const session = useSession()
+  const userId = useUserId()
 
   // Watch for changes in the form
   const watchedFields = useWatch({ control })
@@ -51,7 +37,7 @@ export function PredictButton({
 
     if (errors.options) {
       errorMessages.push(
-        ...Object.values(errors.options).map((err) => err?.text?.message),
+        ...Object.values(errors.options).map((err) => err?.toString()),
       )
     }
 

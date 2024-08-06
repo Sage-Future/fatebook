@@ -1,31 +1,27 @@
 import clsx from "clsx"
 import { KeyboardEvent } from "react"
-import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
 
-interface OptionTextInputProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
+interface OptionTextInputProps {
   optionId: number
   index: number
-  register: UseFormRegister<PredictFormType>
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  onSubmit: (data: any) => void
   small?: boolean
-  errors: Record<string, any>
+  onSubmit: (data: any) => void
 }
 
 export function OptionTextInput({
   optionId,
   index,
-  register,
-  handleSubmit,
-  onSubmit,
   small = false,
-  errors,
+  onSubmit,
 }: OptionTextInputProps) {
-  const fieldName = `options.${optionId}.text`
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useFormContext<PredictFormType>()
 
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -56,7 +52,7 @@ export function OptionTextInput({
         className={clsx(
           "w-full px-3 py-2 text-neutral-700 rounded-lg focus:outline-none border-2 border-neutral-300 h-12",
           small ? "text-sm" : "text-base",
-          errors[fieldName]
+          errors.options?.[optionId]?.text
             ? "border-red-500"
             : "border-neutral-300 focus-within:border-indigo-700",
         )}
@@ -64,8 +60,10 @@ export function OptionTextInput({
         placeholder={`Option ${index + 1}`}
         onKeyDown={onEnterSubmit}
       />
-      {errors[fieldName] && (
-        <p className="mt-1 text-xs text-red-500">{errors[fieldName].message}</p>
+      {errors.options?.[optionId]?.text && (
+        <p className="mt-1 text-xs text-red-500">
+          {errors.options?.[optionId]?.text?.message}
+        </p>
       )}
     </div>
   )

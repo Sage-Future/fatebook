@@ -2,72 +2,43 @@ import { Transition } from "@headlessui/react"
 import { XMarkIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
 import clsx from "clsx"
-import {
-  FieldErrors,
-  UseFormClearErrors,
-  UseFormHandleSubmit,
-  UseFormRegister,
-  UseFormUnregister,
-} from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import { PredictFormType } from "../Predict"
 import { OptionTextInput } from "./OptionTextInput"
 import { PredictionPercentageInput } from "./PredictionPercentageInput"
 
-interface QuestionOptionProps<
-  TFormValues extends Record<string, any> = Record<string, any>,
-> {
-  small?: boolean
-  errors: FieldErrors<PredictFormType>
-  register: UseFormRegister<PredictFormType>
-  unregister: UseFormUnregister<PredictFormType>
-  watch: (name: string) => any
-  handleSubmit: UseFormHandleSubmit<TFormValues>
-  onSubmit: (data: any) => void
-  optionId: number
-  index: number
-  questionType: QuestionType
-  onRemove: () => void
-  canRemove: boolean
-  clearErrors: UseFormClearErrors<any>
-}
-
 export function QuestionOption({
   small,
-  errors,
-  register,
-  unregister,
-  watch,
-  handleSubmit,
-  onSubmit,
   optionId,
   index,
   questionType,
   onRemove,
   canRemove,
-  clearErrors,
-}: QuestionOptionProps) {
+  onSubmit,
+}: {
+  small?: boolean
+  optionId: number
+  index: number
+  questionType: QuestionType
+  onRemove: () => void
+  canRemove: boolean
+  onSubmit: (data: any) => void
+}) {
+  const { unregister, clearErrors } = useFormContext<PredictFormType>()
+
   const optionTextInputProps = {
     optionId,
     index,
-    register,
-    unregister,
     small,
-    errors,
-    handleSubmit,
     onSubmit,
   }
 
   const predictionPercentageInputProps = {
     small,
-    errors,
-    register,
-    unregister,
-    watch,
-    handleSubmit,
-    onSubmit,
     optionId,
     index,
     questionType,
+    onSubmit,
   }
 
   const handleRemove = () => {
