@@ -103,7 +103,7 @@ export function TrackRecord({
             <CalibrationChart tags={tags} userId={trackRecordUserId} />
 
             {isThisUser && (
-              <div className="text-sm flex gap-2 text-gray-500 text-center mx-auto">
+              <div className="text-sm flex gap-2 text-neutral-500 text-center mx-auto">
                 <Link
                   className=""
                   href="https://quantifiedintuitions.org/calibration"

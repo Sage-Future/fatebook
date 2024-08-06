@@ -1,6 +1,6 @@
+import clsx from "clsx"
 import { KeyboardEvent } from "react"
 import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
-import clsx from "clsx"
 import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
 
@@ -36,13 +36,13 @@ export function OptionTextInput({
   }
 
   return (
-    <div className="">
+    <div className="w-44">
       {index == 0 && (
         <label
           className={clsx("flex", small && "text-sm")}
           htmlFor={`options.${optionId}.text`}
         >
-          Answers
+          Options
           <InfoButton
             className="ml-1 tooltip-left"
             tooltip="What possible outcomes are there?"
@@ -54,11 +54,11 @@ export function OptionTextInput({
           required: "Option text is required",
         })}
         className={clsx(
-          "w-full px-3 py-2 text-gray-700 rounded-lg focus:outline-none border-2 border-neutral-300 h-12",
+          "w-full px-3 py-2 text-neutral-700 rounded-lg focus:outline-none border-2 border-neutral-300 h-12",
           small ? "text-sm" : "text-base",
           errors[fieldName]
             ? "border-red-500"
-            : "border-gray-300 focus-within:border-indigo-700",
+            : "border-neutral-300 focus-within:border-indigo-700",
         )}
         type="text"
         placeholder={`Option ${index + 1}`}

@@ -1,4 +1,5 @@
 import { QuestionType } from "@prisma/client"
+import clsx from "clsx"
 
 interface QuestionTypeSelectProps {
   questionType: QuestionType
@@ -10,13 +11,14 @@ export function QuestionTypeSelect({
   setQuestionType,
 }: QuestionTypeSelectProps) {
   return (
-    <div className="flex gap-1 mb-3">
+    <div className="flex gap-2 mb-3">
       <button
-        className={`btn  ${
+        className={clsx(
+          "btn",
           questionType === QuestionType.BINARY
             ? "btn-primary"
-            : "text-neutral-500"
-        }`}
+            : "text-neutral-500",
+        )}
         onClick={(e) => {
           e.preventDefault()
           setQuestionType(QuestionType.BINARY)
@@ -25,11 +27,12 @@ export function QuestionTypeSelect({
         Yes or no
       </button>
       <button
-        className={`btn ${
+        className={clsx(
+          "btn",
           questionType === QuestionType.MULTIPLE_CHOICE
             ? "btn-primary"
-            : " text-neutral-500"
-        }`}
+            : "text-neutral-500",
+        )}
         onClick={(e) => {
           e.preventDefault()
           setQuestionType(QuestionType.MULTIPLE_CHOICE)

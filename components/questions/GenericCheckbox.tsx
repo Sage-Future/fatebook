@@ -1,7 +1,8 @@
+import clsx from "clsx"
+import { ChangeEvent, KeyboardEvent } from "react"
 import { UseFormHandleSubmit, UseFormRegister } from "react-hook-form"
 import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
-import { ChangeEvent, KeyboardEvent } from "react"
 
 interface GenericCheckboxProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -15,6 +16,7 @@ interface GenericCheckboxProps<
   className?: string
   defaultChecked?: boolean
   onChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  labelClassName?: string
 }
 
 // TODO: maybe move this to `ui` directory
@@ -28,6 +30,7 @@ export function GenericCheckbox({
   className,
   defaultChecked,
   onChange,
+  labelClassName,
 }: GenericCheckboxProps) {
   const onEnterSubmit = (e: KeyboardEvent) => {
     if (e.key === "Enter") {
@@ -46,14 +49,20 @@ export function GenericCheckbox({
         defaultChecked={defaultChecked}
         {...register(name)}
         onChange={onChange}
-        className="checkbox accent-indigo-500 checked:bg-indigo-500 checked:"
+        className="checkbox accent-indigo-500 checked:bg-indigo-500"
       />
-      <label htmlFor={name} className="ml-2 block text-gray-900">
+      <label
+        htmlFor={name}
+        className={clsx("ml-2 block text-neutral-900", labelClassName)}
+      >
         {label}
-        {helpText && (
-          <InfoButton className="ml-1 tooltip-right" tooltip={helpText} />
-        )}
       </label>
+      {helpText && (
+        <InfoButton
+          className="ml-1 tooltip-right flex items-center"
+          tooltip={helpText}
+        />
+      )}
     </div>
   )
 }

@@ -1,3 +1,7 @@
+import { Transition } from "@headlessui/react"
+import { XMarkIcon } from "@heroicons/react/20/solid"
+import { QuestionType } from "@prisma/client"
+import clsx from "clsx"
 import {
   FieldErrors,
   UseFormClearErrors,
@@ -5,11 +9,9 @@ import {
   UseFormRegister,
   UseFormUnregister,
 } from "react-hook-form"
-import { PredictionPercentageInput } from "./PredictionPercentageInput"
-import { OptionTextInput } from "./OptionTextInput"
 import { PredictFormType } from "../Predict"
-import { QuestionType } from "@prisma/client"
-import { XMarkIcon } from "@heroicons/react/20/solid"
+import { OptionTextInput } from "./OptionTextInput"
+import { PredictionPercentageInput } from "./PredictionPercentageInput"
 
 interface QuestionOptionProps<
   TFormValues extends Record<string, any> = Record<string, any>,
@@ -83,16 +85,29 @@ export function QuestionOption({
   return (
     <div className="flex flex-row justify-between items-center gap-2">
       <OptionTextInput {...optionTextInputProps} />
-      <PredictionPercentageInput {...predictionPercentageInputProps} />
-      {canRemove && (
+      <span className="grow">
+        <PredictionPercentageInput {...predictionPercentageInputProps} />
+      </span>
+      <Transition
+        show={canRemove}
+        enter="transition-opacity duration-100"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity duration-100"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
         <button
           onClick={handleRemove}
-          className={`text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors duration-200 rounded-full ${index === 0 ? "mt-7" : ""}`}
+          className={clsx(
+            "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors duration-200 rounded-full",
+            index === 0 && "mt-7",
+          )}
           type="button"
         >
-          <XMarkIcon className="h-8 w-8" />
+          <XMarkIcon className="h-8 w-8 p-0.5" />
         </button>
-      )}
+      </Transition>
     </div>
   )
 }

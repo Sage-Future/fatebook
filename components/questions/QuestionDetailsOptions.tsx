@@ -2,8 +2,8 @@ import {
   QuestionOptionWithForecasts,
   QuestionWithStandardIncludes,
 } from "../../prisma/additional"
-import { UpdateableLatestForecast } from "../UpdateableLatestForecast"
 import { ResolveButton } from "../ResolveButton"
+import { UpdateableLatestForecast } from "../UpdateableLatestForecast"
 
 interface QuestionDetailsOptionsProps {
   option: QuestionOptionWithForecasts
@@ -32,7 +32,7 @@ export function QuestionDetailsOption({
           cumulativeForecast={cumulativeForecast}
         />
         {question.exclusiveAnswers ? (
-          <div></div>
+          <div />
         ) : (
           <ResolveButton question={question} optionId={option.id} />
         )}

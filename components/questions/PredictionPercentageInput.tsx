@@ -1,12 +1,12 @@
+import { QuestionType } from "@prisma/client"
+import clsx from "clsx"
+import { KeyboardEvent, useRef } from "react"
 import {
   FieldErrors,
   UseFormHandleSubmit,
   UseFormRegister,
 } from "react-hook-form"
-import { KeyboardEvent, useRef } from "react"
-import clsx from "clsx"
 import { PredictFormType } from "../Predict"
-import { QuestionType } from "@prisma/client"
 import { InfoButton } from "../ui/InfoButton"
 
 // TODO: refactor these interfaces so they have core shared fields (like errors) and then extend them
@@ -69,7 +69,7 @@ export function PredictionPercentageInput({
   return (
     <div className="min-w-fit">
       {(questionType == QuestionType.BINARY || index == 0) && (
-        <label className={clsx("flex", small && "text-sm")} htmlFor="resolveBy">
+        <label className={clsx("flex", small && "text-sm")}>
           Make a prediction
           <InfoButton className="ml-1 tooltip-left" tooltip={tooltip} />
         </label>

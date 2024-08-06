@@ -396,60 +396,54 @@ export const questionRouter = router({
 
       const isMultiChoice = input.options && input.options.length > 0
 
-      const questionData = {
-        title: input.title,
-        resolveBy: input.resolveBy,
-        user: { connect: { id: ctx.userId } }, // Changed from userId to user connect
-        type: isMultiChoice
-          ? QuestionType.MULTIPLE_CHOICE
-          : QuestionType.BINARY,
-        unlisted: input.unlisted,
-        sharedPublicly: input.sharedPublicly,
-        exclusiveAnswers: input.exclusiveAnswers,
-        tags:
-          input.tags && input.tags.length > 0
+      const question = await prisma.question.create({
+        data: {
+          title: input.title,
+          resolveBy: input.resolveBy,
+          user: { connect: { id: ctx.userId } }, // Changed from userId to user connect
+          type: isMultiChoice
+            ? QuestionType.MULTIPLE_CHOICE
+            : QuestionType.BINARY,
+          unlisted: input.unlisted,
+          sharedPublicly: input.sharedPublicly,
+          exclusiveAnswers: input.exclusiveAnswers,
+          tags:
+            input.tags && input.tags.length > 0
+              ? {
+                  connectOrCreate: input.tags.map((tag) => ({
+                    where: {
+                      id:
+                        tags.find((t) => t.name === tag)?.id ||
+                        "no tag with this id exists",
+                    },
+                    create: {
+                      name: tag,
+                      userId: ctx.userId as string,
+                    },
+                  })),
+                }
+              : undefined,
+          tournaments: input.tournamentId
             ? {
-                connectOrCreate: input.tags.map((tag) => ({
-                  where: {
-                    id:
-                      tags.find((t) => t.name === tag)?.id ||
-                      "no tag with this id exists",
-                  },
-                  create: {
-                    name: tag,
-                    userId: ctx.userId as string,
-                  },
+                connect: {
+                  id: input.tournamentId,
+                },
+              }
+            : undefined,
+          sharedWithLists: input.shareWithListIds
+            ? {
+                connect: input.shareWithListIds.map((id) => ({ id })),
+              }
+            : undefined,
+          options: isMultiChoice
+            ? {
+                create: input.options!.map((option) => ({
+                  text: option.text,
+                  user: { connect: { id: ctx.userId } },
                 })),
               }
             : undefined,
-        tournaments: input.tournamentId
-          ? {
-              connect: {
-                id: input.tournamentId,
-              },
-            }
-          : undefined,
-        sharedWithLists: input.shareWithListIds
-          ? {
-              connect: input.shareWithListIds.map((id) => ({ id })),
-            }
-          : undefined,
-      }
-
-      const createData = isMultiChoice
-        ? {
-            ...questionData,
-            options: {
-              create: input.options!.map((option) => ({
-                text: option.text,
-                user: { connect: { id: ctx.userId } },
-              })),
-            },
-          }
-        : questionData // For binary questions, we don't need to create options
-
-      const question = await prisma.question.create({
-        data: createData,
+        },
         include: {
           tournaments: true,
           sharedWithLists: true,
