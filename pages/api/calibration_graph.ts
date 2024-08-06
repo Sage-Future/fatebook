@@ -87,6 +87,11 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
     },
     include: {
       options: {
+        where: {
+          resolution: {
+            in: [Resolution.YES, Resolution.NO],
+          },
+        },
         include: {
           forecasts: {
             where: {

@@ -1,4 +1,5 @@
-import { Prisma, User, QuestionType, Tag } from "@prisma/client"
+import { Prisma, QuestionType, Tag, User } from "@prisma/client"
+import { Decimal } from "@prisma/client/runtime/library"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -38,7 +39,6 @@ import {
   getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
-import { Decimal } from "@prisma/client/runtime/library"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -551,7 +551,6 @@ export const questionRouter = router({
       z.object({
         questionId: z.string(),
         optionId: z.string().optional(),
-        exclusiveAnswers: z.boolean().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
