@@ -1,14 +1,14 @@
-import { QuestionTypeProps } from "./question-types"
-import { useCallback, useState } from "react"
-import { ResolveBy } from "../ResolveBy"
-import { EmbeddedOptions } from "../EmbeddedOptions"
-import { PredictButton } from "../PredictButton"
-import { QuestionOption } from "../QuestionOption"
+import { PlusIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
+import { useCallback, useState } from "react"
 import { UseFormUnregister } from "react-hook-form"
 import { PredictFormType } from "../../Predict"
-import { PlusIcon } from "@heroicons/react/20/solid"
+import { EmbeddedOptions } from "../EmbeddedOptions"
 import { GenericCheckbox } from "../GenericCheckbox"
+import { PredictButton } from "../PredictButton"
+import { QuestionOption } from "../QuestionOption"
+import { ResolveBy } from "../ResolveBy"
+import { QuestionTypeProps } from "./question-types"
 interface MultiChoiceQuestionProps extends QuestionTypeProps {
   unregister: UseFormUnregister<PredictFormType>
 }
@@ -75,9 +75,9 @@ export function MultiChoiceQuestion({
     handleSubmit,
     onSubmit,
     name: "nonExclusive" as keyof PredictFormType,
-    label: "Allow resolution to multiple answers?",
+    label: "Allow resolution to multiple options?",
     helpText:
-      "If selected, you may choose to resolve any number of answers to 'YES'. Otherwise, you will have to choose a single answer. In both cases, an 'OTHER' option will be added by default.",
+      "If selected, you can resolve multiple options to YES. Otherwise, you can only resolve a single option to YES (and an OTHER option is added by default).",
   }
 
   const addOption = useCallback(() => {
