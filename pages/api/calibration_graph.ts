@@ -1,4 +1,4 @@
-import { QuestionType, Resolution } from "@prisma/client"
+import { Forecast, QuestionType, Resolution } from "@prisma/client"
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import ChartJSImage from "chart.js-image"
 import prisma from "../../lib/prisma"
@@ -111,17 +111,22 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
     return undefined
   }
 
+  function excludeForecastsCreatedInLastMinuteBySameUser(
+    f: Forecast,
+    forecasts: Forecast[],
+  ) {
+    return !forecasts.some((f2) => {
+      const timeDiff = f2.createdAt.getTime() - f.createdAt.getTime()
+      return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
+    })
+  }
+
   const forecasts = questions
     .filter((q) => q.type === QuestionType.BINARY)
     .flatMap((q) =>
       q.forecasts
-        // don't include forecasts made <1 minute before another forecast on same question by same user
-        .filter(
-          (f) =>
-            !q.forecasts.some((f2) => {
-              const timeDiff = f2.createdAt.getTime() - f.createdAt.getTime()
-              return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
-            }),
+        .filter((f) =>
+          excludeForecastsCreatedInLastMinuteBySameUser(f, q.forecasts),
         )
         .map((f) => ({
           forecast: f.forecast.toNumber(),
@@ -141,14 +146,11 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
         .filter((option) => option.resolvedAt)
         .flatMap((option) =>
           option.forecasts
-            // don't include forecasts made <1 minute before another forecast on same option by same user
-            .filter(
-              (f) =>
-                !option.forecasts.some((f2) => {
-                  const timeDiff =
-                    f2.createdAt.getTime() - f.createdAt.getTime()
-                  return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
-                }),
+            .filter((f) =>
+              excludeForecastsCreatedInLastMinuteBySameUser(
+                f,
+                option.forecasts,
+              ),
             )
             .map((f) => ({
               forecast: f.forecast.toNumber(),
