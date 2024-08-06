@@ -170,6 +170,26 @@ export function FilterControls({
         </button>
 
         <button
+          onClick={() =>
+            setExtraFilters({
+              ...extraFilters,
+              readyToResolve: false,
+              resolvingSoon: false,
+              unresolved: !extraFilters.unresolved,
+            })
+          }
+          className={clsx(
+            "btn hidden @xs:block",
+            extraFilters.unresolved ? "btn-primary" : "text-neutral-500",
+          )}
+        >
+          {extraFilters.unresolved && (
+            <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
+          )}
+          Unresolved
+        </button>
+
+        <button
           onClick={() => setFilterVisible(!filterVisible)}
           className={clsx(
             "btn text-neutral-500",
