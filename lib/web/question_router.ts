@@ -87,6 +87,9 @@ const zodExtraFilters = z.object({
   resolved: z
     .boolean({ description: "Only get resolved questions" })
     .optional(),
+  unresolved: z
+    .boolean({ description: "Only get unresolved questions" })
+    .optional(),
   readyToResolve: z
     .boolean({ description: "Only get questions ready to be resolved" })
     .optional(),
@@ -1367,6 +1370,11 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
               resolution: {
                 not: null,
               },
+            }
+          : {},
+        input.extraFilters?.unresolved
+          ? {
+              resolution: null
             }
           : {},
         input.extraFilters?.readyToResolve
