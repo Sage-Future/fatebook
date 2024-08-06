@@ -17,7 +17,7 @@ interface QuestionOptionProps<
   TFormValues extends Record<string, any> = Record<string, any>,
 > {
   small?: boolean
-  errors: FieldErrors<any>
+  errors: FieldErrors<PredictFormType>
   register: UseFormRegister<PredictFormType>
   unregister: UseFormUnregister<PredictFormType>
   watch: (name: string) => any
@@ -83,7 +83,7 @@ export function QuestionOption({
   }
 
   return (
-    <div className="flex flex-row justify-between items-center gap-2">
+    <div className="flex flex-row justify-between items-center gap-1.5">
       <OptionTextInput {...optionTextInputProps} />
       <span className="grow">
         <PredictionPercentageInput {...predictionPercentageInputProps} />

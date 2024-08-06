@@ -12,10 +12,10 @@ import Link from "next/link"
 import { useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { QuestionDetails } from "./questions/QuestionDetails"
 import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
+import { QuestionDetails } from "./questions/QuestionDetails"
 import { FormattedDate } from "./ui/FormattedDate"
 import { Username } from "./ui/Username"
 
@@ -25,8 +25,8 @@ import { getDateYYYYMMDD } from "../lib/_utils_common"
 import { getQuestionUrl } from "../lib/web/question_url"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
-import { InfoButton } from "./ui/InfoButton"
 import { QuestionDetailsOption } from "./questions/QuestionDetailsOptions"
+import { InfoButton } from "./ui/InfoButton"
 
 export function Question({
   question,
