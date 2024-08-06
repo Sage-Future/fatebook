@@ -281,6 +281,29 @@ export function FilterControls({
               )}
               Resolved
             </button>
+
+             <button
+              onClick={() =>
+                setExtraFilters({
+                  ...extraFilters,
+                  readyToResolve: false,
+                  resolvingSoon: false,
+                  unresolved: !extraFilters.unresolved,
+                })
+              }
+              className={clsx(
+                "btn @xs:hidden",
+                extraFilters.unresolved ? "btn-primary" : "text-neutral-500",
+              )}
+            >
+              {extraFilters.unresolved && (
+                <CheckCircleIcon
+                  className="inline-flex -ml-2 mr-1"
+                  height={16}
+                />
+              )}
+              Unresolved
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
