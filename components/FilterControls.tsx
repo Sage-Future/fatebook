@@ -3,8 +3,26 @@ import { CheckCircleIcon } from "@heroicons/react/24/outline"
 import { FunnelIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
-import { useEffect, useState } from "react"
+import { ReactElement, ReactNode, useEffect, useState } from "react"
 import { ExtraFilters } from "../lib/web/question_router"
+
+function FilterButton(
+  { onClick, filterActive, children, className }:
+  { onClick: () => void, filterActive?: boolean, children: ReactNode, className: string }
+): ReactElement {
+  return <button
+    onClick={onClick}
+    className={clsx(
+      "btn", className,
+      filterActive ? "btn-primary" : "text-neutral-500",
+    )}
+  >
+    {filterActive && (
+      <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
+    )}
+    {children}
+  </button>
+}
 
 export function FilterControls({
   extraFilters,
@@ -108,9 +126,7 @@ export function FilterControls({
         {
           // show buttons if they fit in the container, otherwise put them in the overflow
         }
-
-        <button
-          onClick={() =>
+        <FilterButton onClick={() =>
             setExtraFilters({
               ...extraFilters,
               resolved: false,
@@ -119,19 +135,13 @@ export function FilterControls({
               unresolved: !extraFilters.resolvingSoon,
             })
           }
-          className={clsx(
-            "btn hidden @xl:block",
-            extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
-          )}
+          className="hidden @xl:block"
+          filterActive={extraFilters.resolvingSoon}
         >
-          {extraFilters.resolvingSoon && (
-            <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
-          )}
           Resolving soon
-        </button>
+        </FilterButton>
 
-        <button
-          onClick={() =>
+        <FilterButton onClick={() =>
             setExtraFilters({
               ...extraFilters,
               resolved: false,
@@ -139,40 +149,28 @@ export function FilterControls({
               readyToResolve: !extraFilters.readyToResolve,
             })
           }
-          className={clsx(
-            "btn hidden @sm:block",
-            extraFilters.readyToResolve ? "btn-primary" : "text-neutral-500",
-          )}
+          className="hidden @sm:block"
+          filterActive={extraFilters.readyToResolve}
         >
-          {extraFilters.readyToResolve && (
-            <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
-          )}
           Ready to resolve
-        </button>
+        </FilterButton>
 
-        <button
-          onClick={() =>
-            setExtraFilters({
-              ...extraFilters,
-              readyToResolve: false,
-              resolvingSoon: false,
-              resolved: !extraFilters.resolved,
-              unresolved: false,
-            })
-          }
-          className={clsx(
-            "btn hidden @xs:block",
-            extraFilters.resolved ? "btn-primary" : "text-neutral-500",
-          )}
+        <FilterButton onClick={() =>
+          setExtraFilters({
+            ...extraFilters,
+            readyToResolve: false,
+            resolvingSoon: false,
+            resolved: !extraFilters.resolved,
+            unresolved: false,
+          })
+        }
+          className="hidden @xs:block"
+          filterActive={extraFilters.resolved}
         >
-          {extraFilters.resolved && (
-            <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
-          )}
           Resolved
-        </button>
+        </FilterButton>
 
-        <button
-          onClick={() =>
+        <FilterButton onClick={() =>
             setExtraFilters({
               ...extraFilters,
               readyToResolve: false,
@@ -180,16 +178,11 @@ export function FilterControls({
               resolved: false,
             })
           }
-          className={clsx(
-            "btn hidden @md:block",
-            extraFilters.unresolved ? "btn-primary" : "text-neutral-500",
-          )}
+          className="hidden @md:block"
+          filterActive={extraFilters.unresolved}
         >
-          {extraFilters.unresolved && (
-            <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
-          )}
           Unresolved
-        </button>
+        </FilterButton>
 
         <button
           onClick={() => setFilterVisible(!filterVisible)}
@@ -213,8 +206,7 @@ export function FilterControls({
             exit={{ opacity: 0, y: -10 }}
             className="w-full flex flex-row flex-wrap gap-1 justify-end mt-2"
           >
-            <button
-              onClick={() =>
+            <FilterButton onClick={() =>
                 setExtraFilters({
                   ...extraFilters,
                   resolved: false,
@@ -223,22 +215,12 @@ export function FilterControls({
                   unresolved: !extraFilters.resolvingSoon,
                 })
               }
-              className={clsx(
-                "btn",
-                extraFilters.resolvingSoon ? "btn-primary" : "text-neutral-500",
-              )}
+              filterActive={extraFilters.resolvingSoon}
             >
-              {extraFilters.resolvingSoon && (
-                <CheckCircleIcon
-                  className="inline-flex -ml-2 mr-1"
-                  height={16}
-                />
-              )}
               Resolving soon
-            </button>
+            </FilterButton>
 
-            <button
-              onClick={() =>
+            <FilterButton onClick={() =>
                 setExtraFilters({
                   ...extraFilters,
                   resolved: false,
@@ -246,68 +228,40 @@ export function FilterControls({
                   readyToResolve: !extraFilters.readyToResolve,
                 })
               }
-              className={clsx(
-                "btn @sm:hidden",
-                extraFilters.readyToResolve
-                  ? "btn-primary"
-                  : "text-neutral-500",
-              )}
+              className="@sm:hidden"
+              filterActive={extraFilters.readyToResolve}
             >
-              {extraFilters.readyToResolve && (
-                <CheckCircleIcon
-                  className="inline-flex -ml-2 mr-1"
-                  height={16}
-                />
-              )}
               Ready to resolve
-            </button>
+            </FilterButton>
 
-            <button
-              onClick={() =>
-                setExtraFilters({
-                  ...extraFilters,
-                  readyToResolve: false,
-                  resolvingSoon: false,
-                  resolved: !extraFilters.resolved,
-                  unresolved: false,
-                })
-              }
-              className={clsx(
-                "btn @xs:hidden",
-                extraFilters.resolved ? "btn-primary" : "text-neutral-500",
-              )}
+            <FilterButton onClick={() =>
+              setExtraFilters({
+                ...extraFilters,
+                readyToResolve: false,
+                resolvingSoon: false,
+                resolved: !extraFilters.resolved,
+                unresolved: false,
+              })
+            }
+              className="@xs:hidden"
+              filterActive={extraFilters.resolved}
             >
-              {extraFilters.resolved && (
-                <CheckCircleIcon
-                  className="inline-flex -ml-2 mr-1"
-                  height={16}
-                />
-              )}
               Resolved
-            </button>
+            </FilterButton>
 
-             <button
-              onClick={() =>
+            <FilterButton onClick={() =>
                 setExtraFilters({
                   ...extraFilters,
                   readyToResolve: false,
                   unresolved: !extraFilters.unresolved,
-                  resolved: false
+                  resolved: false,
                 })
               }
-              className={clsx(
-                "btn @md:hidden",
-                extraFilters.unresolved ? "btn-primary" : "text-neutral-500",
-              )}
+              className="@md:hidden"
+              filterActive={extraFilters.unresolved}
             >
-              {extraFilters.unresolved && (
-                <CheckCircleIcon
-                  className="inline-flex -ml-2 mr-1"
-                  height={16}
-                />
-              )}
               Unresolved
-            </button>
+            </FilterButton>
           </motion.div>
         )}
       </AnimatePresence>
