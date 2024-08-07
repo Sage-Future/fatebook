@@ -48,7 +48,12 @@ export function CalibrationChart({
     buckets,
     bucketedForecasts,
     true,
-    !hovered,
+    !(
+      // don't hide the titles on touchscreens, which have no hover
+      // `'ontouchstart' in document.documentElement` can have false positives,
+      // but that's OK in this case
+      hovered || 'ontouchstart' in document.documentElement
+    ),
     thisUserId === userId,
   )
 
