@@ -8,7 +8,7 @@ import { ExtraFilters } from "../lib/web/question_router"
 
 function FilterButton(
   { onClick, filterActive, children, className }:
-  { onClick: () => void, filterActive?: boolean, children: ReactNode, className: string }
+  { onClick: () => void, filterActive?: boolean, children: ReactNode, className?: string }
 ): ReactElement {
   return <button
     onClick={onClick}
@@ -63,6 +63,55 @@ export function FilterControls({
       window.removeEventListener("setSearchString", handleSetSearchString)
     }
   }, [setSearchString, extraFilters, setExtraFilters, setSearchVisible])
+
+  const filters = [
+    {
+      name: 'Resolving soon', effect: () =>
+        setExtraFilters({
+          ...extraFilters,
+          resolved: false,
+          readyToResolve: false,
+          resolvingSoon: !extraFilters.resolvingSoon,
+          unresolved: !extraFilters.resolvingSoon,
+        }),
+      filterActive: extraFilters.resolvingSoon,
+      className: '@xl:block', overflowClassName: ''
+    },
+    {
+      name: 'Ready to resolve', effect: () =>
+        setExtraFilters({
+          ...extraFilters,
+          resolved: false,
+          resolvingSoon: false,
+          readyToResolve: !extraFilters.readyToResolve,
+        }),
+      filterActive: extraFilters.readyToResolve,
+      className: '@sm:block', overflowClassName: '@sm:hidden'
+    },
+    {
+      name: 'Resolved', effect: () =>
+        setExtraFilters({
+          ...extraFilters,
+          readyToResolve: false,
+          resolvingSoon: false,
+          resolved: !extraFilters.resolved,
+          unresolved: false,
+        }),
+      filterActive: extraFilters.resolved,
+      className: '@xs:block', overflowClassName: '@xs:hidden'
+    },
+    {
+      name: 'Unresolved', effect: () =>
+        setExtraFilters({
+          ...extraFilters,
+          readyToResolve: false,
+          unresolved: !extraFilters.unresolved,
+          resolved: false,
+        }),
+      filterActive: extraFilters.unresolved,
+      className: '@md:block', overflowClassName: '@md:hidden'
+    },
+  ]
 
   return (
     <div className="@container grow sm:ml-2">
@@ -125,64 +174,15 @@ export function FilterControls({
 
         {
           // show buttons if they fit in the container, otherwise put them in the overflow
+          filters.map(({ name, effect, className, filterActive }) =>
+            <FilterButton
+              key={name} onClick={effect}
+              className={clsx('hidden', className)} filterActive={filterActive}
+            >
+              {name}
+            </FilterButton>
+          )
         }
-        <FilterButton onClick={() =>
-            setExtraFilters({
-              ...extraFilters,
-              resolved: false,
-              readyToResolve: false,
-              resolvingSoon: !extraFilters.resolvingSoon,
-              unresolved: !extraFilters.resolvingSoon,
-            })
-          }
-          className="hidden @xl:block"
-          filterActive={extraFilters.resolvingSoon}
-        >
-          Resolving soon
-        </FilterButton>
-
-        <FilterButton onClick={() =>
-            setExtraFilters({
-              ...extraFilters,
-              resolved: false,
-              resolvingSoon: false,
-              readyToResolve: !extraFilters.readyToResolve,
-            })
-          }
-          className="hidden @sm:block"
-          filterActive={extraFilters.readyToResolve}
-        >
-          Ready to resolve
-        </FilterButton>
-
-        <FilterButton onClick={() =>
-          setExtraFilters({
-            ...extraFilters,
-            readyToResolve: false,
-            resolvingSoon: false,
-            resolved: !extraFilters.resolved,
-            unresolved: false,
-          })
-        }
-          className="hidden @xs:block"
-          filterActive={extraFilters.resolved}
-        >
-          Resolved
-        </FilterButton>
-
-        <FilterButton onClick={() =>
-            setExtraFilters({
-              ...extraFilters,
-              readyToResolve: false,
-              unresolved: !extraFilters.unresolved,
-              resolved: false,
-            })
-          }
-          className="hidden @md:block"
-          filterActive={extraFilters.unresolved}
-        >
-          Unresolved
-        </FilterButton>
 
         <button
           onClick={() => setFilterVisible(!filterVisible)}
@@ -206,62 +206,14 @@ export function FilterControls({
             exit={{ opacity: 0, y: -10 }}
             className="w-full flex flex-row flex-wrap gap-1 justify-end mt-2"
           >
-            <FilterButton onClick={() =>
-                setExtraFilters({
-                  ...extraFilters,
-                  resolved: false,
-                  readyToResolve: false,
-                  resolvingSoon: !extraFilters.resolvingSoon,
-                  unresolved: !extraFilters.resolvingSoon,
-                })
-              }
-              filterActive={extraFilters.resolvingSoon}
-            >
-              Resolving soon
-            </FilterButton>
-
-            <FilterButton onClick={() =>
-                setExtraFilters({
-                  ...extraFilters,
-                  resolved: false,
-                  resolvingSoon: false,
-                  readyToResolve: !extraFilters.readyToResolve,
-                })
-              }
-              className="@sm:hidden"
-              filterActive={extraFilters.readyToResolve}
-            >
-              Ready to resolve
-            </FilterButton>
-
-            <FilterButton onClick={() =>
-              setExtraFilters({
-                ...extraFilters,
-                readyToResolve: false,
-                resolvingSoon: false,
-                resolved: !extraFilters.resolved,
-                unresolved: false,
-              })
-            }
-              className="@xs:hidden"
-              filterActive={extraFilters.resolved}
-            >
-              Resolved
-            </FilterButton>
-
-            <FilterButton onClick={() =>
-                setExtraFilters({
-                  ...extraFilters,
-                  readyToResolve: false,
-                  unresolved: !extraFilters.unresolved,
-                  resolved: false,
-                })
-              }
-              className="@md:hidden"
-              filterActive={extraFilters.unresolved}
-            >
-              Unresolved
-            </FilterButton>
+            {filters.map(({ name, effect, overflowClassName, filterActive }) =>
+              <FilterButton
+                key={name} onClick={effect}
+                className={overflowClassName} filterActive={filterActive}
+              >
+                {name}
+              </FilterButton>
+          )}
           </motion.div>
         )}
       </AnimatePresence>
