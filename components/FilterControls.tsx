@@ -178,7 +178,7 @@ export function FilterControls({
             })
           }
           className={clsx(
-            "btn hidden @xs:block",
+            "btn hidden @xl:block",
             extraFilters.unresolved ? "btn-primary" : "text-neutral-500",
           )}
         >
