@@ -109,7 +109,7 @@ export function FilterControls({
           resolved: false,
         }),
       filterActive: extraFilters.unresolved,
-      className: '@md:block', overflowClassName: '@md:hidden'
+      className: '@xl:block', overflowClassName: ''
     },
   ]
 
