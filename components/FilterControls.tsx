@@ -174,7 +174,6 @@ export function FilterControls({
             setExtraFilters({
               ...extraFilters,
               readyToResolve: false,
-              resolvingSoon: false,
               unresolved: !extraFilters.unresolved,
             })
           }
@@ -287,7 +286,6 @@ export function FilterControls({
                 setExtraFilters({
                   ...extraFilters,
                   readyToResolve: false,
-                  resolvingSoon: false,
                   unresolved: !extraFilters.unresolved,
                 })
               }
