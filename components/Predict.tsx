@@ -13,12 +13,7 @@ import React, {
   useState,
 } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import {
-  FormProvider,
-  SubmitHandler,
-  UseFormReturn,
-  useForm,
-} from "react-hook-form"
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
 import TextareaAutosize from "react-textarea-autosize"
 import SuperJSON from "trpc-transformer"
@@ -142,11 +137,7 @@ export function Predict({
   textAreaRef = textAreaRef || nonPassedRef
 
   // TODO: move this somewhere else
-  function usePredictForm(
-    questionType: QuestionType,
-  ): UseFormReturn<PredictFormType> & {
-    setQuestionType: (type: QuestionType) => void
-  } {
+  function usePredictForm(questionType: QuestionType) {
     const form = useForm<PredictFormType>({
       mode: "all",
       resolver: zodResolver(unifiedPredictFormSchema),
@@ -198,7 +189,7 @@ export function Predict({
     watch,
     reset,
     setFocus,
-    formState: { dirtyFields, errors },
+    formState: { touchedFields, errors },
   } = methods
 
   const question = watch("question")
@@ -371,7 +362,6 @@ export function Predict({
 
       if (cachedQuestion.resolveBy) {
         try {
-          // @ts-ignore - type definition is wrong (Date not string)
           setValue("resolveBy", getDateYYYYMMDD(cachedQuestion.resolveBy))
         } catch {
           // just skip it if we can't parse the date
@@ -417,7 +407,7 @@ export function Predict({
   const [showSuggestions, setShowSuggestions] = useState(false)
 
   function smartUpdateResolveBy(newQuestionValue: string) {
-    if (!dirtyFields.resolveBy && smartSetDates) {
+    if (!touchedFields.resolveBy && smartSetDates) {
       const dateResult = chrono.parse(newQuestionValue, new Date(), {
         forwardDate: true,
       })
