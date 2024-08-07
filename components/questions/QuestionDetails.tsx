@@ -17,11 +17,11 @@ import {
   useUserId,
 } from "../../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../../prisma/additional"
-import { CommentBox, DeleteCommentOverflow } from "../CommentBox"
-import { TagsSelect } from "../TagsSelect"
 import { FormattedDate } from "../ui/FormattedDate"
 import { InfoButton } from "../ui/InfoButton"
 import { Username } from "../ui/Username"
+import { CommentBox, DeleteCommentOverflow } from "./CommentBox"
+import { TagsSelect } from "./TagsSelect"
 
 interface QuestionDetailsProps {
   question: QuestionWithStandardIncludes

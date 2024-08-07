@@ -3,11 +3,11 @@ import { ChevronDownIcon } from "@heroicons/react/20/solid"
 import { Resolution } from "@prisma/client"
 import clsx from "clsx"
 import { Fragment } from "react"
-import { api } from "../lib/web/trpc"
-import { invalidateQuestion, useUserId } from "../lib/web/utils"
-import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { BinaryResolutionOptions } from "./questions/BinaryResolutionOptions"
-import { MultiChoiceResolutionOptions } from "./questions/MultiChoiceResolutionOptions"
+import { api } from "../../lib/web/trpc"
+import { invalidateQuestion, useUserId } from "../../lib/web/utils"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import { BinaryResolutionOptions } from "./BinaryResolutionOptions"
+import { MultiChoiceResolutionOptions } from "./MultiChoiceResolutionOptions"
 
 export function ResolveButton({
   question,

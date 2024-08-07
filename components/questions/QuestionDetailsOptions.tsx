@@ -2,8 +2,8 @@ import {
   QuestionOptionWithForecasts,
   QuestionWithStandardIncludes,
 } from "../../prisma/additional"
-import { ResolveButton } from "../ResolveButton"
-import { UpdateableLatestForecast } from "../UpdateableLatestForecast"
+import { ResolveButton } from "./ResolveButton"
+import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 
 interface QuestionDetailsOptionsProps {
   option: QuestionOptionWithForecasts

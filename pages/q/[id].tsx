@@ -2,7 +2,7 @@ import { XMarkIcon } from "@heroicons/react/20/solid"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useState } from "react"
-import { QuestionOrSignIn } from "../../components/QuestionOrSignIn"
+import { QuestionOrSignIn } from "../../components/questions/QuestionOrSignIn"
 
 export default function QuestionPage() {
   const router = useRouter()

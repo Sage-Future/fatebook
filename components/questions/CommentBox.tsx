@@ -3,13 +3,13 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { useState } from "react"
 import TextareaAutosize from "react-textarea-autosize"
-import { api } from "../lib/web/trpc"
-import { invalidateQuestion, useUserId } from "../lib/web/utils"
+import { useIsEmbedded } from "../../lib/web/embed"
+import { api } from "../../lib/web/trpc"
+import { invalidateQuestion, useUserId } from "../../lib/web/utils"
 import {
   CommentWithUser,
   QuestionWithStandardIncludes,
-} from "../prisma/additional"
-import { useIsEmbedded } from "../lib/web/embed"
+} from "../../prisma/additional"
 
 export function CommentBox({
   question,

@@ -18,7 +18,7 @@ import {
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
-import { TagsSelect } from "./TagsSelect"
+import { TagsSelect } from "./questions/TagsSelect"
 import { InfoButton } from "./ui/InfoButton"
 
 export function TrackRecord({
