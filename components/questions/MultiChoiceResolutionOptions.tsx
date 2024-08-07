@@ -1,9 +1,9 @@
 import { Menu } from "@headlessui/react"
-import clsx from "clsx"
-import { toSentenceCase } from "../../../lib/_utils_common"
-import { UseTRPCMutationResult } from "@trpc/react-query/shared"
-import { QuestionWithStandardIncludes } from "../../../prisma/additional"
 import { QuestionType } from "@prisma/client"
+import { UseTRPCMutationResult } from "@trpc/react-query/shared"
+import clsx from "clsx"
+import { toSentenceCase } from "../../lib/_utils_common"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
 
 interface MultiChoiceResolutionOptionsProps {
   question: QuestionWithStandardIncludes

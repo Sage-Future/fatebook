@@ -1,9 +1,9 @@
 import { QuestionType } from "@prisma/client"
-import { EmbeddedOptions } from "../../predict-form/EmbeddedOptions"
-import { PredictButton } from "../../predict-form/PredictButton"
-import { PredictionPercentageInput } from "../../predict-form/PredictionPercentageInput"
-import { ResolveBy } from "../../predict-form/ResolveBy"
-import { QuestionTypeProps } from "../../predict-form/question-types/question-types"
+import { EmbeddedOptions } from "../EmbeddedOptions"
+import { PredictButton } from "../PredictButton"
+import { PredictionPercentageInput } from "../PredictionPercentageInput"
+import { ResolveBy } from "../ResolveBy"
+import { QuestionTypeProps } from "./question-types"
 
 export function BinaryQuestion({
   small,

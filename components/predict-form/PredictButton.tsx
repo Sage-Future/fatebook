@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react"
 import { useEffect, useState } from "react"
 import { useFormContext, useWatch } from "react-hook-form"
 import { useUserId } from "../../lib/web/utils"
-import { PredictFormType } from "../Predict"
+import { PredictFormType } from "./Predict"
 
 export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
   const [showErrors, setShowErrors] = useState(false)

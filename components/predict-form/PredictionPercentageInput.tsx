@@ -3,8 +3,8 @@ import clsx from "clsx"
 import { KeyboardEvent, useRef } from "react"
 import { useFormContext } from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
-import { PredictFormType } from "../Predict"
 import { InfoButton } from "../ui/InfoButton"
+import { PredictFormType } from "./Predict"
 
 export function PredictionPercentageInput({
   small,

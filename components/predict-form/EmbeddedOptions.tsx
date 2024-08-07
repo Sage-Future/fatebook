@@ -1,5 +1,5 @@
 import React from "react"
-import { GenericCheckbox } from "./GenericCheckbox"
+import { FormCheckbox } from "../ui/FormCheckbox"
 
 export function EmbeddedOptions({
   onSubmit,
@@ -22,7 +22,7 @@ export function EmbeddedOptions({
   }
 
   return (
-    <GenericCheckbox
+    <FormCheckbox
       name="sharePublicly"
       label="Share with anyone with the link?"
       onSubmit={onSubmit}

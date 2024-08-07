@@ -6,8 +6,8 @@ import { Fragment } from "react"
 import { api } from "../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { BinaryResolutionOptions } from "./questions/question-types/BinaryResolutionOptions"
-import { MultiChoiceResolutionOptions } from "./questions/question-types/MultiChoiceResolutionOptions"
+import { BinaryResolutionOptions } from "./questions/BinaryResolutionOptions"
+import { MultiChoiceResolutionOptions } from "./questions/MultiChoiceResolutionOptions"
 
 export function ResolveButton({
   question,

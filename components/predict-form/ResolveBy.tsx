@@ -3,9 +3,9 @@ import { useEffect, useRef } from "react"
 import { useFormContext } from "react-hook-form"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
 import { utcDateStrToLocalDate } from "../../lib/web/utils"
-import { PredictFormType } from "../Predict"
 import { FormattedDate } from "../ui/FormattedDate"
 import { InfoButton } from "../ui/InfoButton"
+import { PredictFormType } from "./Predict"
 
 export function ResolveBy({
   small,

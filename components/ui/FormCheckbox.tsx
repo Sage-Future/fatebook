@@ -1,11 +1,10 @@
 import clsx from "clsx"
 import { ChangeEvent, KeyboardEvent } from "react"
 import { useFormContext } from "react-hook-form"
-import { PredictFormType } from "../Predict"
-import { InfoButton } from "../ui/InfoButton"
+import { PredictFormType } from "../predict-form/Predict"
+import { InfoButton } from "./InfoButton"
 
-// TODO: maybe move this to `ui` directory
-export function GenericCheckbox({
+export function FormCheckbox({
   name,
   label,
   onSubmit,

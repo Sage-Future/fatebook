@@ -1,8 +1,8 @@
-import { Question, QuestionType, Resolution } from "@prisma/client"
 import { Menu } from "@headlessui/react"
-import clsx from "clsx"
-import { toSentenceCase } from "../../../lib/_utils_common"
+import { Question, QuestionType, Resolution } from "@prisma/client"
 import { UseTRPCMutationResult } from "@trpc/react-query/shared"
+import clsx from "clsx"
+import { toSentenceCase } from "../../lib/_utils_common"
 
 interface BinaryResolutionOptionsProps {
   question: Question

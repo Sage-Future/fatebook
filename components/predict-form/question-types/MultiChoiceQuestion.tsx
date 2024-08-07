@@ -1,12 +1,12 @@
 import { PlusIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
 import { useCallback, useState } from "react"
-import { EmbeddedOptions } from "../../predict-form/EmbeddedOptions"
-import { PredictButton } from "../../predict-form/PredictButton"
-import { ResolveBy } from "../../predict-form/ResolveBy"
-import { QuestionTypeProps } from "../../predict-form/question-types/question-types"
+import { QuestionOption } from "../../questions/QuestionOption"
 import { FormCheckbox } from "../../ui/FormCheckbox"
-import { QuestionOption } from "../QuestionOption"
+import { EmbeddedOptions } from "../EmbeddedOptions"
+import { PredictButton } from "../PredictButton"
+import { ResolveBy } from "../ResolveBy"
+import { QuestionTypeProps } from "./question-types"
 
 export default function MultiChoiceQuestion({
   small,

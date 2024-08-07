@@ -3,9 +3,9 @@ import { XMarkIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
 import clsx from "clsx"
 import { useFormContext } from "react-hook-form"
-import { PredictFormType } from "../Predict"
-import { OptionTextInput } from "./OptionTextInput"
-import { PredictionPercentageInput } from "./PredictionPercentageInput"
+import { OptionTextInput } from "../predict-form/OptionTextInput"
+import { PredictFormType } from "../predict-form/Predict"
+import { PredictionPercentageInput } from "../predict-form/PredictionPercentageInput"
 
 export function QuestionOption({
   small,
