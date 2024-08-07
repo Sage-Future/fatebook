@@ -116,6 +116,7 @@ export function FilterControls({
               resolved: false,
               readyToResolve: false,
               resolvingSoon: !extraFilters.resolvingSoon,
+              unresolved: !extraFilters.resolvingSoon,
             })
           }
           className={clsx(
@@ -219,6 +220,7 @@ export function FilterControls({
                   resolved: false,
                   readyToResolve: false,
                   resolvingSoon: !extraFilters.resolvingSoon,
+                  unresolved: !extraFilters.resolvingSoon,
                 })
               }
               className={clsx(
