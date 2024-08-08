@@ -59,9 +59,9 @@ export function Question({
   if (question.type === "MULTIPLE_CHOICE") {
     cumulativeForecast =
       question.options?.reduce((acc, option) => {
-        const latestForecast = option.forecasts.sort(
-          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-        )[0]
+        const latestForecast = option.forecasts
+          .filter((f) => f.userId === userId)
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
 
         if (latestForecast && latestForecast.forecast) {
           return acc + latestForecast.forecast.toNumber()

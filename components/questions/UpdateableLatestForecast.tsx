@@ -1,10 +1,12 @@
 import { Forecast, QuestionOption } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime/library"
 import clsx from "clsx"
-import { useRef, useState } from "react"
+import { motion } from "framer-motion"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { useDebouncedCallback } from "use-debounce"
 import {
   displayForecast,
+  formatDecimalNicely,
   getMostRecentForecastForUser,
 } from "../../lib/_utils_common"
 import { sendToHost } from "../../lib/web/embed"
@@ -68,46 +70,70 @@ export function UpdateableLatestForecast({
 
   const inputRef = useRef(null)
 
-  function updateForecast(newForecastInput: string) {
-    closeLinkPopup() // closes the gdoc popover if embedded
+  const checkForErrors = useCallback(
+    (newForecast: number) => {
+      if (isNaN(newForecast) || newForecast < 0 || newForecast > 1) {
+        setErrorMessage("Must be 0-100%")
+        return true
+      }
 
-    const newForecast = parseFloat(newForecastInput) / 100
-    if (isNaN(newForecast) || newForecast <= 0 || newForecast > 1) {
-      setErrorMessage("Please enter a valid probability between 0 and 100.")
-      return
-    }
+      if (question.exclusiveAnswers && cumulativeForecast !== undefined) {
+        const currentForecast = latestForecast
+          ? Number(latestForecast.forecast)
+          : 0
+        const newCumulativeForecast =
+          cumulativeForecast - currentForecast + newForecast
+        if (newCumulativeForecast > 1) {
+          setErrorMessage(
+            `Sum must be ≤100% (currently ${formatDecimalNicely(
+              newCumulativeForecast * 100,
+              0,
+            )}%)`,
+          )
+          return true
+        }
+      }
 
-    if (question.exclusiveAnswers && cumulativeForecast !== undefined) {
-      const currentForecast = latestForecast
-        ? Number(latestForecast.forecast)
-        : 0
-      const newCumulativeForecast =
-        cumulativeForecast - currentForecast + newForecast
-      if (newCumulativeForecast > 1) {
-        setErrorMessage(
-          "The sum of probabilities for exclusive answers cannot exceed 100%.",
-        )
+      return false
+    },
+    [cumulativeForecast, latestForecast, question.exclusiveAnswers],
+  )
+
+  const updateForecast = useCallback(
+    (newForecastInput: string) => {
+      closeLinkPopup() // closes the gdoc popover if embedded
+
+      const newForecast = parseFloat(newForecastInput) / 100
+      if (checkForErrors(newForecast)) {
         return
       }
-    }
 
-    setErrorMessage(null)
+      setErrorMessage(null)
 
-    if (
-      !latestForecast?.forecast ||
-      newForecast !== (latestForecast.forecast as unknown as number)
-    ) {
-      if (embedded) {
-        elicitSuccess()
+      if (
+        !latestForecast?.forecast ||
+        newForecast !== (latestForecast.forecast as unknown as number)
+      ) {
+        if (embedded) {
+          elicitSuccess()
+        }
+
+        addForecast.mutate({
+          questionId: question.id,
+          forecast: newForecast,
+          optionId: option?.id ?? undefined,
+        })
       }
-
-      addForecast.mutate({
-        questionId: question.id,
-        forecast: newForecast,
-        optionId: option?.id ?? undefined,
-      })
-    }
-  }
+    },
+    [
+      checkForErrors,
+      latestForecast,
+      embedded,
+      addForecast,
+      question.id,
+      option?.id,
+    ],
+  )
 
   const updateOrReset = (value: string) => {
     if (defaultVal !== value && value !== "") {
@@ -117,6 +143,31 @@ export function UpdateableLatestForecast({
     }
   }
   const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
+
+  useEffect(() => {
+    console.log({
+      errorMessage,
+      cumulativeForecast,
+      localForecast,
+      active: document.activeElement,
+    })
+    if (
+      document.activeElement?.tagName !== "INPUT" &&
+      errorMessage?.toLowerCase().includes("sum must be") &&
+      cumulativeForecast !== undefined
+    ) {
+      const newForecast = parseFloat(localForecast) / 100
+      if (!checkForErrors(newForecast)) {
+        updateForecast(localForecast)
+      }
+    }
+  }, [
+    checkForErrors,
+    cumulativeForecast,
+    errorMessage,
+    localForecast,
+    updateForecast,
+  ])
 
   if (hasResolution && !latestForecast) return <span></span>
 
@@ -129,6 +180,7 @@ export function UpdateableLatestForecast({
           "mr-1.5 font-bold text-2xl h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative flex",
           addForecast.isLoading && "opacity-50",
           hasResolution ? "text-neutral-600 ring-0" : "text-indigo-800 ring-2",
+          errorMessage && "ring-red-500 focus-within:ring-red-500",
         )}
         onClick={(e) => {
           ;(inputRef.current as any)?.focus()
@@ -166,6 +218,8 @@ export function UpdateableLatestForecast({
               onChange={(e) => {
                 setLocalForecast(e.target.value)
                 setErrorMessage(null)
+                e.target.value &&
+                  checkForErrors(parseFloat(e.target.value) / 100)
 
                 // for iOS users - update forecast when they stop typing, e.g. if they pressed "done"
                 if (
@@ -192,9 +246,14 @@ export function UpdateableLatestForecast({
         )}
       </span>
       {errorMessage && (
-        <div className="absolute left-0 mt-1 text-red-500 text-sm">
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="absolute right-2 mt-1 text-red-500 text-xs"
+        >
           {errorMessage}
-        </div>
+        </motion.div>
       )}
     </>
   )
