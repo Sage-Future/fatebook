@@ -82,9 +82,13 @@ export function Question({
       const aValue = aForecast ? aForecast.forecast.toNumber() : 0
       const bValue = bForecast ? bForecast.forecast.toNumber() : 0
 
+      if (bValue === aValue) {
+        return question.options!.indexOf(a) - question.options!.indexOf(b)
+      }
+
       return bValue - aValue
     })
-  }, [question.options, userId])
+  }, [question.options, question.type, userId])
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>

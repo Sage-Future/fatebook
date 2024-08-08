@@ -37,8 +37,6 @@ export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
 
   const HIDDEN_ERRORS = ["question is required"]
 
-  console.log({ errors })
-
   // Formats error message - removes duplicates, trims whitespace, and lowercases
   const errorMessage = capitalizeFirstLetter(
     Array.from(

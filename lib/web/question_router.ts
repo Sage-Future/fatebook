@@ -435,14 +435,17 @@ export const questionRouter = router({
                 connect: input.shareWithListIds.map((id) => ({ id })),
               }
             : undefined,
-          options: isMultiChoice
-            ? {
-                create: input.options!.map((option) => ({
-                  text: option.text,
-                  user: { connect: { id: ctx.userId } },
-                })),
-              }
-            : undefined,
+          options:
+            isMultiChoice && input.options
+              ? {
+                  // Reverse the options array to work around Prisma bug
+                  // https://github.com/prisma/prisma/issues/22090
+                  create: [...input.options].reverse().map((option) => ({
+                    text: option.text,
+                    user: { connect: { id: ctx.userId } },
+                  })),
+                }
+              : undefined,
         },
         include: {
           tournaments: true,
