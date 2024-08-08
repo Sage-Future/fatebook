@@ -105,8 +105,8 @@ export function TrackRecord({
             {isThisUser && (
               <div className="text-sm flex gap-2 text-neutral-500 text-center mx-auto">
                 <Link
-                  className=""
                   href="https://quantifiedintuitions.org/calibration"
+                  target="_blank"
                 >
                   <button className="btn">
                     <TrophyIcon
