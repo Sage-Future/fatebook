@@ -181,6 +181,7 @@ export function UpdateableLatestForecast({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   updateForecast(e.currentTarget.value)
+                  e.currentTarget.blur()
                 }
               }}
               onBlur={(e) => updateOrReset(e.currentTarget.value)}

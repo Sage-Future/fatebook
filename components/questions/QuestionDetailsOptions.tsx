@@ -30,6 +30,7 @@ export function QuestionDetailsOption({
           embedded={embedded}
           option={option}
           cumulativeForecast={cumulativeForecast}
+          key={option.id}
         />
         {question.exclusiveAnswers ? (
           <div />
