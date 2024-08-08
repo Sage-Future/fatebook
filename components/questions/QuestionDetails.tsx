@@ -1,4 +1,5 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid"
+import { Resolution } from "@prisma/client"
 import { useRouter } from "next/router"
 import { Fragment, LegacyRef, ReactNode, forwardRef, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
@@ -113,6 +114,16 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()
 
+  function getExclusiveMcqResolutionString(
+    question: QuestionWithStandardIncludes,
+  ) {
+    if (question.resolution === Resolution.NO) {
+      return "“Other”"
+    }
+    const option = question.options?.find((opt) => opt.resolution === "YES")
+    return option ? `“${option.text}”` : question.resolution
+  }
+
   const forecastEvents: { timestamp: Date; el: ReactNode }[] =
     question.type === "MULTIPLE_CHOICE"
       ? question
@@ -198,7 +209,11 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
         : []),
     ],
     [
-      ...(question.resolvedAt && question.type === "BINARY"
+      ...(question.resolvedAt &&
+      (question.type === "BINARY" ||
+        (question.type === "MULTIPLE_CHOICE" &&
+          question.exclusiveAnswers &&
+          question.options))
         ? [
             {
               timestamp: question.resolvedAt,
@@ -207,7 +222,10 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                   <Username user={question.user} className="font-semibold" />
                   <span />
                   <span className="italic text-indigo-800 overflow-x-auto">
-                    Resolved {question.resolution}
+                    Resolved{" "}
+                    {question.type === "MULTIPLE_CHOICE" && question.options
+                      ? getExclusiveMcqResolutionString(question)
+                      : question.resolution}
                   </span>
                   <span className="text-neutral-400">
                     <FormattedDate date={question.resolvedAt} />
@@ -218,7 +236,9 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
           ]
         : []),
     ],
-    ...(question.options
+    ...(question.options &&
+    question.type === "MULTIPLE_CHOICE" &&
+    !question.exclusiveAnswers
       ? question.options
           .filter((option) => option.resolvedAt)
           .map((option) => ({
@@ -230,8 +250,8 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                 </span>
                 <span />
                 <span className="italic text-indigo-800 overflow-x-auto">
-                  Resolved option &ldquo;{option.text}&ldquo; as{" "}
-                  {option.resolution ? "correct" : "incorrect"}
+                  Resolved &ldquo;{option.text}&ldquo;{" "}
+                  {option.resolution ? option.resolution : "unknown"}
                 </span>
                 <span className="text-neutral-400">
                   <FormattedDate date={option.resolvedAt!} />

@@ -14,7 +14,7 @@ import {
   QuestionWithQuestionMessagesAndForecastWithUserWithProfiles,
   QuestionWithScores,
 } from "../../prisma/additional"
-import { relativeBrierScoring, ScoreCollection, ScoreTuple } from "../_scoring"
+import { ScoreCollection, ScoreTuple, relativeBrierScoring } from "../_scoring"
 import {
   ResolveQuestionActionParts,
   UndoResolveActionParts,
@@ -950,13 +950,9 @@ export async function undoQuestionOptionResolution(optionId: string) {
   ])
 }
 
-export async function undoQuestionResolution(
-  questionId: string,
-  exclusiveAnswers: boolean = false,
-) {
+export async function undoQuestionResolution(questionId: string) {
   await prisma.$transaction(async (tx) => {
-    // Update the question
-    await tx.question.update({
+    const questionMidUpdate = await tx.question.update({
       where: {
         id: questionId,
       },
@@ -967,8 +963,7 @@ export async function undoQuestionResolution(
       },
     })
 
-    if (exclusiveAnswers) {
-      // Update all options associated with the question
+    if (questionMidUpdate.exclusiveAnswers) {
       await tx.questionOption.updateMany({
         where: {
           questionId: questionId,
@@ -980,7 +975,6 @@ export async function undoQuestionResolution(
       })
     }
 
-    // Delete question scores
     await tx.questionScore.deleteMany({
       where: {
         questionId: questionId,
