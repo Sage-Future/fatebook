@@ -94,6 +94,7 @@ export function UpdateableLatestForecast({
         }
       }
 
+      setErrorMessage(null)
       return false
     },
     [cumulativeForecast, latestForecast, question.exclusiveAnswers],
@@ -145,12 +146,6 @@ export function UpdateableLatestForecast({
   const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
 
   useEffect(() => {
-    console.log({
-      errorMessage,
-      cumulativeForecast,
-      localForecast,
-      active: document.activeElement,
-    })
     if (
       document.activeElement?.tagName !== "INPUT" &&
       errorMessage?.toLowerCase().includes("sum must be") &&
@@ -236,6 +231,10 @@ export function UpdateableLatestForecast({
                 if (e.key === "Enter") {
                   updateForecast(e.currentTarget.value)
                   e.currentTarget.blur()
+                }
+                if (e.key === "Escape") {
+                  setLocalForecast(defaultVal)
+                  checkForErrors(parseFloat(defaultVal) / 100)
                 }
               }}
               onBlur={(e) => updateOrReset(e.currentTarget.value)}
