@@ -1,15 +1,17 @@
 import { ForwardedRef, forwardRef, useState } from "react"
+import { QuestionType } from "@prisma/client"
 
 interface QuestionSuggestionsProps {
   chooseSuggestion: (suggestion: string) => void
+  questionType: QuestionType
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const QuestionSuggestions = forwardRef<
   HTMLDivElement,
   QuestionSuggestionsProps
->(({ chooseSuggestion }, ref: ForwardedRef<HTMLDivElement>) => {
-  const suggestions = [
+>(({ chooseSuggestion, questionType }, ref: ForwardedRef<HTMLDivElement>) => {
+  const binarySuggestions = [
     "Will GPT-5 be released before Jan 2025?",
     "Will I write a blog post this week?",
     "Will volunteering abroad make me all-things-considered happier?",
@@ -31,6 +33,34 @@ const QuestionSuggestions = forwardRef<
     "On December 1st, will Marco, Dawn, and Tina all agree that the biosecurity bill passed without amendments that removed its teeth?",
     "If I survey 40 random Americans online, will our current favourite name be the most popular?",
   ]
+
+  const multipleChoiceSuggestions = [
+    "Which AI company will release the next major language model?",
+    "How many blog posts will I write this month?",
+    "Which aspect of my life will be most improved by volunteering abroad?",
+    "After 2 months of daily job satisfaction tracking, what will be my most frequent response?",
+    "Which topic will dominate the US election debates?",
+    "How many items on my todo list will I complete today?",
+    "What will our user satisfaction rating be at the end of the quarter?",
+    "Who will win our next game night?",
+    "According to Our World in Data, what percentage of global deaths will be due to air pollution by 2030?",
+    "What will be the primary focus of my therapy sessions in 2025?",
+    "How will our team rate the new HR provider after two months?",
+    "Which global health charity will have the highest funding gap this year?",
+    "How many children will I have by Jan 2025?",
+    "How will my mentor evaluate our recent business pivot?",
+    "How many days will I meditate this week?",
+    "Which aspect of the new design will receive the most positive feedback from the team?",
+    "What type of animal advocacy strategy will gain the most traction on the forum this year?",
+    "What percentage of my Twitter followers will prefer my new look?",
+    "How will the biosecurity bill be modified before passing?",
+    "Which name from our shortlist will be most popular in our survey of 40 random Americans?",
+  ]
+
+  const suggestions =
+    questionType === QuestionType.MULTIPLE_CHOICE
+      ? multipleChoiceSuggestions
+      : binarySuggestions
 
   const [showAll, setShowAll] = useState(false)
 

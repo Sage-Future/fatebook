@@ -1,9 +1,9 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { Predict } from "../../components/Predict"
 import { Questions } from "../../components/Questions"
 import { SyncToSlack } from "../../components/SyncToSlack"
 import { UserListDisplay } from "../../components/UserListDisplay"
+import { Predict } from "../../components/predict-form/Predict"
 import { Username } from "../../components/ui/Username"
 import { api } from "../../lib/web/trpc"
 import {

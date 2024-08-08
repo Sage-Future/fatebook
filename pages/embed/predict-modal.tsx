@@ -1,7 +1,7 @@
 // Exposes the Prediction component solo so it can be embedded as desired
 
 import React from "react"
-import PredictModal from "../../components/PredictModal"
+import PredictModal from "../../components/predict-form/PredictModal"
 import {
   useListenForSessionReload,
   useRespondToPing,

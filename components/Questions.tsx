@@ -9,7 +9,7 @@ import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
 import { ifEmpty } from "../lib/web/utils"
 import { FilterControls } from "./FilterControls"
-import { Question } from "./Question"
+import { Question } from "./questions/Question"
 
 export function Questions({
   title,

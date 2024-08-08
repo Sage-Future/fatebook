@@ -567,42 +567,51 @@ export async function updateResolutionQuestionMessages(
   question: QuestionWithAuthorAndAllMessages,
   notificationMessage: string,
 ) {
-  await updateSlackMessages(
-    question.resolutionMessages.map(
-      (x: ResolutionSlackMessageWithMessage) => x.message,
-    ),
-    notificationMessage,
-    question,
-    buildQuestionResolvedBlocks,
-  )
+  // TODO: implement slack sync for MCQs
+  if (question.type === "BINARY") {
+    await updateSlackMessages(
+      question.resolutionMessages.map(
+        (x: ResolutionSlackMessageWithMessage) => x.message,
+      ),
+      notificationMessage,
+      question,
+      buildQuestionResolvedBlocks,
+    )
+  }
 }
 
 export async function updateResolvePingQuestionMessages(
   question: QuestionWithAuthorAndAllMessages,
   notificationMessage: string,
 ) {
-  await updateSlackMessages(
-    question.pingResolveMessages.map(
-      (x: PingSlackMessageWithMessage) => x.message,
-    ),
-    notificationMessage,
-    question,
-    buildResolveQuestionBlocks,
-  )
+  // TODO: implement slack sync for MCQs
+  if (question.type === "BINARY") {
+    await updateSlackMessages(
+      question.pingResolveMessages.map(
+        (x: PingSlackMessageWithMessage) => x.message,
+      ),
+      notificationMessage,
+      question,
+      buildResolveQuestionBlocks,
+    )
+  }
 }
 
 export async function updateForecastQuestionMessages(
   question: QuestionWithForecastWithUserWithProfilesAndSlackMessages,
   notificationMessage: string,
 ) {
-  await updateSlackMessages(
-    question.questionMessages.map(
-      (x: QuestionSlackMessageWithMessage) => x.message,
-    ),
-    notificationMessage,
-    question,
-    buildQuestionBlocks,
-  )
+  // TODO: implement slack sync for MCQs
+  if (question.type === "BINARY") {
+    await updateSlackMessages(
+      question.questionMessages.map(
+        (x: QuestionSlackMessageWithMessage) => x.message,
+      ),
+      notificationMessage,
+      question,
+      buildQuestionBlocks,
+    )
+  }
 }
 
 // date_num: 2020-12-31

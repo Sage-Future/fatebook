@@ -1,9 +1,9 @@
 import clsx from "clsx"
 import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
-import { useQuestionId } from "../lib/web/question_url"
-import { api } from "../lib/web/trpc"
-import { signInToFatebook, truncateString } from "../lib/web/utils"
+import { useQuestionId } from "../../lib/web/question_url"
+import { api } from "../../lib/web/trpc"
+import { signInToFatebook, truncateString } from "../../lib/web/utils"
 import { Question as QuestionComp } from "./Question"
 
 export function QuestionOrSignIn({

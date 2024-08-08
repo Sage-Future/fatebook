@@ -4,6 +4,7 @@ import {
   PingSlackMessage,
   Profile,
   Question,
+  QuestionOption,
   QuestionScore,
   QuestionSlackMessage,
   ResolutionSlackMessage,
@@ -35,6 +36,11 @@ export type QuestionWithForecastsAndUsersAndAuthorAndSlackMessagesAndFullProfile
 
 export type QuestionWithUserAndForecastsWithUser = Question & {
   forecasts: (Forecast & { user: User })[]
+  user: User
+}
+
+export type QuestionWithOptionsAndUser = Question & {
+  options: (QuestionOption & { forecasts: Forecast[] })[]
   user: User
 }
 
@@ -76,6 +82,19 @@ export type QuestionWithForecasts = Question & {
   forecasts: Forecast[]
 }
 
+export type QuestionOptionWithForecasts = QuestionOption & {
+  forecasts: Forecast[]
+}
+
+export type QuestionOptionWithForecastsAndScores =
+  QuestionOptionWithForecasts & {
+    questionScores: QuestionScore[]
+  }
+
+export type QuestionOptionWithForecastsAndUser = QuestionOption & {
+  forecasts: ForecastWithUser[]
+}
+
 export type QuestionWithUserAndForecasts = QuestionWithForecasts & {
   user: User
 }
@@ -88,8 +107,20 @@ export type QuestionWithForecastsAndScores = QuestionWithForecasts & {
   questionScores: QuestionScore[]
 }
 
+export type QuestionWithForecastsAndOptions = QuestionWithForecasts & {
+  options: QuestionOptionWithForecasts[]
+}
+
+export type QuestionWithForecastsAndOptionsAndScores = QuestionWithForecasts & {
+  options: QuestionOptionWithForecastsAndScores[]
+}
+
 export type QuestionWithUser = Question & {
   user: UserWithProfiles
+}
+
+export type ForecastWithUser = Forecast & {
+  user: User
 }
 
 export type ForecastWithUserWithProfiles = Forecast & {
@@ -136,6 +167,7 @@ export type QuestionWithQMessagesAndRMessagesAndForecasts =
 
 export type QuestionWithStandardIncludes =
   QuestionWithUserAndForecastsWithUser & {
+    options?: QuestionOptionWithForecastsAndUser[]
     sharedWith: User[]
     sharedWithLists: UserListWithAuthorAndUsers[]
     questionMessages: QuestionSlackMessageWithMessage[]

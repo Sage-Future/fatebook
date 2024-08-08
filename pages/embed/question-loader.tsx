@@ -1,11 +1,11 @@
-import React, { useEffect } from "react"
 import { useRouter } from "next/router"
+import React, { useEffect } from "react"
+import "../../components/questions/QuestionOrSignIn" // ensure code we need is pre-loaded
 import {
   sendToHost,
   useListenForSessionReload,
   useRespondToPing,
 } from "../../lib/web/embed"
-import "../../components/QuestionOrSignIn" // ensure code we need is pre-loaded
 
 // shows nothing, but starts listening for requests to load a question
 

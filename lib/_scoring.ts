@@ -1,4 +1,4 @@
-import { Forecast, Question, Resolution } from "@prisma/client"
+import { Forecast, Question, QuestionOption, Resolution } from "@prisma/client"
 import { floatEquality } from "./_utils_common"
 
 type ScoreTimeSeries = {
@@ -30,9 +30,10 @@ export type DayAvgForecast = {
   avgForecast: number | undefined
 }
 
+// TODO: this is way too long, refactor it
 export function relativeBrierScoring(
   forecasts: Forecast[],
-  question: Question,
+  question: Question | QuestionOption,
 ): ScoreCollection {
   if (forecasts.length == 0) {
     return {}

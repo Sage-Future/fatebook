@@ -3,8 +3,8 @@ import Link from "next/link"
 import { useState } from "react"
 import Select, { components } from "react-select"
 import CreatableSelect from "react-select/creatable"
-import { api } from "../lib/web/trpc"
-import { getTagPageUrl } from "../pages/tag/[tag]"
+import { api } from "../../lib/web/trpc"
+import { getTagPageUrl } from "../../pages/tag/[tag]"
 
 export function TagsSelect({
   tags,
