@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import {
-  FloatingFocusManager,
   FloatingPortal,
   Placement,
   autoUpdate,
@@ -174,19 +173,17 @@ export const PopoverContent = React.forwardRef<
 
   return (
     <FloatingPortal>
-      <FloatingFocusManager context={floatingContext} modal={context.modal}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { duration: 0.15 } }}
-          ref={ref}
-          style={{ ...context.floatingStyles, ...style }}
-          aria-labelledby={context.labelId}
-          aria-describedby={context.descriptionId}
-          {...context.getFloatingProps(props)}
-        >
-          {props.children}
-        </motion.div>
-      </FloatingFocusManager>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1, transition: { duration: 0.15 } }}
+        ref={ref}
+        style={{ ...context.floatingStyles, ...style }}
+        aria-labelledby={context.labelId}
+        aria-describedby={context.descriptionId}
+        {...context.getFloatingProps(props)}
+      >
+        {props.children}
+      </motion.div>
     </FloatingPortal>
   )
 })

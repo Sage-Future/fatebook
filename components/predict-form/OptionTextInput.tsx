@@ -60,11 +60,6 @@ export function OptionTextInput({
         placeholder={`Option ${index + 1}`}
         onKeyDown={onEnterSubmit}
       />
-      {errors.options?.[optionId]?.text && (
-        <p className="mt-1 text-xs text-red-500">
-          {errors.options?.[optionId]?.text?.message}
-        </p>
-      )}
     </div>
   )
 }

@@ -38,8 +38,8 @@ const optionSchema = z.object({
       (val) => (typeof val === "string" ? parseFloat(val) : val),
       z
         .number()
-        .min(0, "Predictions must be greater than or equal to 0")
-        .max(100, "Predictions must be less than or equal to 100%")
+        .min(0, "Predictions must be 0-100%")
+        .max(100, "Predictions must be 0-100%")
         .or(z.nan())
         .optional(),
     )
@@ -54,11 +54,13 @@ const unifiedPredictFormSchema = z
     resolveBy: z.string(),
     options: z
       .array(optionSchema)
-      .min(2, "At least two answers are required")
+      .min(2, "You need at least two options")
       .max(100, "Maximum 100 options allowed")
       .refine(
         (options) => {
-          const texts = options.map((option) => option.text)
+          const texts = options
+            .map((option) => option.text)
+            .filter((option) => option.length > 0)
           const uniqueTexts = new Set(texts)
           return uniqueTexts.size === texts.length
         },
@@ -68,23 +70,27 @@ const unifiedPredictFormSchema = z
       )
       .optional(),
     nonExclusive: z.boolean().optional(),
-    predictionPercentage: z.number().min(0).max(100).or(z.nan()).optional(),
+    predictionPercentage: z
+      .number()
+      .min(0, "Predictions must be 0-100%")
+      .max(100, "Predictions must be 0-100%")
+      .or(z.nan())
+      .optional(),
     sharePublicly: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.options && data.options.length > 0) {
-      let totalForecast = 0
-      data.options.forEach((option) => {
+      const totalForecast = data.options.reduce((sum, option) => {
         const forecast =
           option.forecast && isFinite(option.forecast)
             ? Number(option.forecast)
             : 0
-        totalForecast += forecast
-      })
+        return sum + forecast
+      }, 0)
       if (!data.nonExclusive && totalForecast > 100) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `For exclusive questions, the sum of all forecasts not exceed 100%, current sum is ${totalForecast}%`,
+          message: `Forecasts must sum to ≤100% (currently ${totalForecast}%)`,
           path: ["options"],
         })
       }
@@ -189,8 +195,19 @@ export function Predict({
     watch,
     reset,
     setFocus,
+    trigger,
     formState: { touchedFields, errors },
   } = methods
+
+  // Trigger validation on any field change because our superRefine rule for summing to 100% isn't automatically revalidated otherwise (seemingly a react-hook-form bug)
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name?.includes("options")) {
+        void trigger("options")
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [watch, trigger])
 
   const question = watch("question")
   const resolveByUTCStr = watch(

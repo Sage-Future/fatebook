@@ -24,7 +24,7 @@ export function QuestionOption({
   canRemove: boolean
   onSubmit: (data: any) => void
 }) {
-  const { unregister, clearErrors } = useFormContext<PredictFormType>()
+  const { unregister, clearErrors, trigger } = useFormContext<PredictFormType>()
 
   const optionTextInputProps = {
     optionId,
@@ -47,7 +47,8 @@ export function QuestionOption({
     unregister(`options.${index}.forecast`)
 
     // Clear errors for the removed option
-    clearErrors(`options.${index}`)
+    clearErrors("options")
+    void trigger("options")
 
     // Call the original onRemove function
     onRemove()

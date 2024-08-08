@@ -69,7 +69,9 @@ export function PredictionPercentageInput({
         className={clsx(
           "text-md bg-white border-2 border-neutral-300 rounded-md p-2 flex focus-within:border-indigo-700 relative min-w-40",
           small ? "text-sm" : "text-md",
-          errors.predictionPercentage && "border-red-500",
+          (errors.predictionPercentage ||
+            (optionId !== undefined && errors.options?.[optionId]?.forecast)) &&
+            "border-red-500 focus-within:border-red-500",
         )}
       >
         <div

@@ -1,51 +1,56 @@
 import { useSession } from "next-auth/react"
-import { useEffect, useState } from "react"
-import { useFormContext, useWatch } from "react-hook-form"
+import { useFormContext, useFormState } from "react-hook-form"
+import { capitalizeFirstLetter } from "../../lib/_utils_common"
 import { useUserId } from "../../lib/web/utils"
 import { PredictFormType } from "./Predict"
 
 export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
-  const [showErrors, setShowErrors] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [formState, setFormState] = useState({})
-
-  const {
-    formState: { errors },
-    clearErrors,
-    control,
-    handleSubmit,
-  } = useFormContext<PredictFormType>()
+  const { handleSubmit } = useFormContext<PredictFormType>()
+  const { errors } = useFormState<PredictFormType>()
 
   const session = useSession()
   const userId = useUserId()
 
-  // Watch for changes in the form
-  const watchedFields = useWatch({ control })
+  // // Gather all errors into a single message
+  const errorMessages = Object.values(errors).map((err) => err?.root?.message)
+  errorMessages.push(...Object.values(errors).map((err) => err?.message))
 
-  useEffect(() => {
-    if (JSON.stringify(watchedFields) !== JSON.stringify(formState)) {
-      setShowErrors(false)
-      clearErrors()
-      setFormState(watchedFields)
-    }
-  }, [watchedFields, formState, clearErrors])
+  if (errors.options) {
+    errorMessages.push(
+      ...Object.values(errors.options).flatMap((err) => {
+        if (typeof err === "object" && err !== null) {
+          return Object.values(err).map((nestedErr) => {
+            if (typeof nestedErr === "object" && nestedErr !== null) {
+              if ("message" in nestedErr) {
+                return nestedErr.message
+              }
+              if ("text" in nestedErr) {
+                return nestedErr.text
+              }
+            }
+          })
+        }
+        return String(err)
+      }),
+    )
+  }
 
-  // Gather all errors into a single message
-  useEffect(() => {
-    const errorMessages = Object.values(errors).map((err) => err?.root?.message)
-    errorMessages.push(...Object.values(errors).map((err) => err?.message))
+  const HIDDEN_ERRORS = ["question is required"]
 
-    if (errors.options) {
-      errorMessages.push(
-        ...Object.values(errors.options).map((err) => err?.toString()),
-      )
-    }
+  console.log({ errors })
 
-    // Formats error message - removes duplicates, trims whitespace, and lowercases
-    const newErrorMessage = Array.from(
+  // Formats error message - removes duplicates, trims whitespace, and lowercases
+  const errorMessage = capitalizeFirstLetter(
+    Array.from(
       new Set(
         errorMessages
-          .filter((item) => item !== undefined && item !== null)
+          .filter(
+            (item) =>
+              item &&
+              !HIDDEN_ERRORS.some(
+                (err) => item?.toLowerCase() === err.toLowerCase(),
+              ),
+          )
           .map((item) => {
             try {
               return String(item).trim().toLowerCase()
@@ -53,28 +58,18 @@ export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
               return ""
             }
           })
-          .filter((str) => str.length > 0),
+          .filter((str) => str.length > 0)
+          .slice(0, 1), // only show the first error
       ),
-    ).join(", ")
-
-    setErrorMessage(
-      newErrorMessage.charAt(0).toUpperCase() +
-        newErrorMessage.slice(1).toLowerCase(),
-    )
-  }, [errors, showErrors])
+    ).join(", "),
+  )
 
   return (
-    <div className="grid grid-cols-1-3-1">
-      <div>
-        {showErrors && errorMessage && (
-          <span className="text-red-500 text-sm mt-2">{errorMessage}</span>
-        )}
-      </div>
+    <div className="grid grid-cols-1-3-1 relative">
       <button
         onClick={(e) => {
           e.preventDefault()
           void handleSubmit(onSubmit)(e)
-          setShowErrors(true)
         }}
         className="btn btn-primary btn-lg hover:scale-105 h-12 max-w-28"
         disabled={!!userId && Object.values(errors).some((err) => !!err)}
@@ -83,6 +78,9 @@ export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
           ? "Predict"
           : "Sign up to predict"}
       </button>
+      <span className="text-xs absolute translate-y-full text-right pt-0.5 bottom-0 right-0 italic text-red-600">
+        {errorMessage}
+      </span>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { PlusIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
 import { useCallback, useState } from "react"
+import { useFormContext } from "react-hook-form"
 import { QuestionOption } from "../../questions/QuestionOption"
 import { FormCheckbox } from "../../ui/FormCheckbox"
 import { EmbeddedOptions } from "../EmbeddedOptions"
@@ -16,6 +17,8 @@ export default function MultiChoiceQuestion({
   onSubmit,
   highlightResolveBy,
 }: QuestionTypeProps) {
+  const { trigger } = useFormContext()
+
   const MIN_OPTIONS = 2
   const MAX_OPTIONS = 10
   const [optionIds, setOptionIds] = useState(() => [0, 1])
@@ -77,6 +80,9 @@ export default function MultiChoiceQuestion({
           label="Allow resolution to multiple options?"
           helpText="If selected, you can resolve multiple options to YES. Otherwise, you can only resolve a single option to YES (and an OTHER option is added by default)."
           labelClassName="text-sm"
+          onChange={() => {
+            void trigger("options") // needed because our superRefine rule for summing to 100% isn't automatically revalidated otherwise
+          }}
         />
       </div>
 

@@ -33,6 +33,8 @@ export function FormCheckbox({
     }
   }
 
+  const registered = register(name)
+
   return (
     <div className={`flex items-center ${className}`}>
       <input
@@ -40,8 +42,11 @@ export function FormCheckbox({
         onKeyDown={onEnterSubmit}
         id={name}
         defaultChecked={defaultChecked}
-        {...register(name)}
-        onChange={onChange}
+        {...registered}
+        onChange={(e) => {
+          void registered.onChange?.(e)
+          onChange?.(e)
+        }}
         className="checkbox accent-indigo-500 checked:bg-indigo-500"
       />
       <label
