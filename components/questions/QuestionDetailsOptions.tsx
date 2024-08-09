@@ -5,21 +5,19 @@ import {
 import { ResolveButton } from "./ResolveButton"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
 
-interface QuestionDetailsOptionsProps {
-  option: QuestionOptionWithForecasts
-  question: QuestionWithStandardIncludes
-  autoFocus?: boolean
-  embedded?: boolean
-  cumulativeForecast?: number
-}
-
 export function QuestionDetailsOption({
   option,
   question,
   autoFocus,
   embedded,
   cumulativeForecast,
-}: QuestionDetailsOptionsProps) {
+}: {
+  option: QuestionOptionWithForecasts
+  question: QuestionWithStandardIncludes
+  autoFocus?: boolean
+  embedded?: boolean
+  cumulativeForecast?: number
+}) {
   return (
     <div className="contents">
       <span className={"max-w-[500px] overflow-x-auto"}>{option.text}</span>

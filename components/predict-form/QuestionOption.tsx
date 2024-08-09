@@ -3,9 +3,9 @@ import { XMarkIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
 import clsx from "clsx"
 import { useFormContext } from "react-hook-form"
-import { OptionTextInput } from "../predict-form/OptionTextInput"
-import { PredictFormType } from "../predict-form/Predict"
-import { PredictionPercentageInput } from "../predict-form/PredictionPercentageInput"
+import { OptionTextInput } from "./OptionTextInput"
+import { PredictFormType } from "./Predict"
+import { PredictionPercentageInput } from "./PredictionPercentageInput"
 
 export function QuestionOption({
   small,
@@ -25,22 +25,6 @@ export function QuestionOption({
   onSubmit: (data: any) => void
 }) {
   const { unregister, clearErrors, trigger } = useFormContext<PredictFormType>()
-
-  const optionTextInputProps = {
-    optionId,
-    index,
-    small,
-    onSubmit,
-  }
-
-  const predictionPercentageInputProps = {
-    small,
-    optionId,
-    index,
-    questionType,
-    onSubmit,
-  }
-
   const handleRemove = () => {
     // Unregister the removed fields
     unregister(`options.${index}.text`)
@@ -56,9 +40,11 @@ export function QuestionOption({
 
   return (
     <div className="flex flex-row justify-between items-center gap-1.5">
-      <OptionTextInput {...optionTextInputProps} />
+      <OptionTextInput {...{ optionId, index, small, onSubmit }} />
       <span className="grow">
-        <PredictionPercentageInput {...predictionPercentageInputProps} />
+        <PredictionPercentageInput
+          {...{ small, optionId, index, questionType, onSubmit }}
+        />
       </span>
       <Transition
         show={canRemove}
