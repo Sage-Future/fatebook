@@ -128,7 +128,7 @@ export function Question({
           }}
         >
           <div
-            className="grid grid-cols-[1fr_min-content_min-content] p-4 gap-2 relative"
+            className="grid grid-cols-[1fr_min-content_min-content] p-4 gap-y-2 relative"
             key={question.id}
           >
             <span className="col-span-3 flex gap-4 mb-1 justify-between">

@@ -20,7 +20,9 @@ export function QuestionDetailsOption({
 }) {
   return (
     <div className="contents">
-      <span className={"max-w-[500px] overflow-x-auto"}>{option.text}</span>
+      <span className={"max-w-[500px] overflow-x-auto mr-2"}>
+        {option.text}
+      </span>
       <div className={"contents"}>
         <UpdateableLatestForecast
           question={question}
@@ -28,12 +30,15 @@ export function QuestionDetailsOption({
           embedded={embedded}
           option={option}
           cumulativeForecast={cumulativeForecast}
+          small={true}
           key={option.id}
         />
         {question.exclusiveAnswers ? (
           <div />
         ) : (
-          <ResolveButton question={question} optionId={option.id} />
+          <span className="ml-2">
+            <ResolveButton question={question} optionId={option.id} />
+          </span>
         )}
       </div>
     </div>

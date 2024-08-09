@@ -28,12 +28,14 @@ export function UpdateableLatestForecast({
   embedded,
   option,
   cumulativeForecast,
+  small,
 }: {
   question: QuestionWithStandardIncludes
   autoFocus?: boolean
   embedded?: boolean
   option?: QuestionOption & { forecasts: Forecast[] } // TODO: fix this type
   cumulativeForecast?: number
+  small?: boolean
 }) {
   const userId = useUserId()
   const hasResolution =
@@ -172,10 +174,11 @@ export function UpdateableLatestForecast({
     <>
       <span
         className={clsx(
-          "mr-1.5 font-bold text-2xl h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative flex",
+          "mr-0.5 font-bold h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative flex",
           addForecast.isLoading && "opacity-50",
           hasResolution ? "text-neutral-600 ring-0" : "text-indigo-800 ring-2",
           errorMessage && "ring-red-500 focus-within:ring-red-500",
+          small ? "text-xl" : "text-2xl",
         )}
         onClick={(e) => {
           ;(inputRef.current as any)?.focus()
