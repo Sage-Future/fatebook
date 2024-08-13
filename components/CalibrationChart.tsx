@@ -53,7 +53,7 @@ export function CalibrationChart({
     buckets,
     bucketedForecasts,
     true,
-    axisTitlesShown,
+    !axisTitlesShown,
     thisUserId === userId,
   )
 
