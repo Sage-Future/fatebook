@@ -38,7 +38,12 @@ export function CalibrationChart({
     userId: userId,
     tags: tags,
   })
-  const [hovered, setHovered] = useState(false)
+
+  // On touchscreens, which have no hover, we want to show the titles by default
+  // `'ontouchstart' in document.documentElement` can have false positives,
+  // but the worst case with that is just that the axis labels show when they shouldn't
+  // on some uncommon browsers
+  const [axisTitlesShown, setaxisTitlesShown] = useState('ontouchstart' in document.documentElement)
   const chartRef = useRef()
 
   if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>
@@ -48,20 +53,15 @@ export function CalibrationChart({
     buckets,
     bucketedForecasts,
     true,
-    !(
-      // don't hide the titles on touchscreens, which have no hover
-      // `'ontouchstart' in document.documentElement` can have false positives,
-      // but that's OK in this case
-      hovered || 'ontouchstart' in document.documentElement
-    ),
+    axisTitlesShown,
     thisUserId === userId,
   )
 
   return (
     <div
       className="mr-4 relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => setaxisTitlesShown(true)}
+      onMouseLeave={() => setaxisTitlesShown(false)}
     >
       <Line
         data={params.data}
@@ -101,11 +101,11 @@ export function CalibrationChart({
       />
       <button
         className={"btn btn-ghost btn-xs absolute bottom-4 left-2"}
-        onClick={() => setHovered(!hovered)}
+        onClick={() => setaxisTitlesShown(!axisTitlesShown)}
       >
         <QuestionMarkCircleIcon
           height={20}
-          className={clsx("text-neutral-400", hovered && "fill-indigo-700")}
+          className={clsx("text-neutral-400", axisTitlesShown && "fill-indigo-700")}
         />
       </button>
     </div>
