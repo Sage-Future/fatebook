@@ -43,7 +43,7 @@ export function CalibrationChart({
   // `'ontouchstart' in document.documentElement` can have false positives,
   // but the worst case with that is just that the axis labels show when they shouldn't
   // on some uncommon browsers
-  const [axisTitlesShown, setaxisTitlesShown] = useState('ontouchstart' in document.documentElement)
+  const [axisTitlesShown, setAxisTitlesShown] = useState('ontouchstart' in document.documentElement)
   const chartRef = useRef()
 
   if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>
@@ -60,8 +60,8 @@ export function CalibrationChart({
   return (
     <div
       className="mr-4 relative"
-      onMouseEnter={() => setaxisTitlesShown(true)}
-      onMouseLeave={() => setaxisTitlesShown(false)}
+      onMouseEnter={() => setAxisTitlesShown(true)}
+      onMouseLeave={() => setAxisTitlesShown(false)}
     >
       <Line
         data={params.data}
@@ -101,7 +101,7 @@ export function CalibrationChart({
       />
       <button
         className={"btn btn-ghost btn-xs absolute bottom-4 left-2"}
-        onClick={() => setaxisTitlesShown(!axisTitlesShown)}
+        onClick={() => setAxisTitlesShown(!axisTitlesShown)}
       >
         <QuestionMarkCircleIcon
           height={20}
