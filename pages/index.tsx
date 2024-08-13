@@ -7,29 +7,53 @@ import { UserLists } from "../components/UserLists"
 import { WhyForecastInfo } from "../components/WhyForecastInfo"
 import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
+import { DemoVideoDisplay } from "../components/DemoVideoDisplay"
+
+const demoVideos = [
+  {
+    src: "/gdocs2x.webm",
+    caption: "Instantly create and embed predictions in Google Docs",
+    text: "...in Google Docs",
+  },
+  {
+    src: "/meet.webm",
+    caption: "Instantly create and embed predictions in Google Meet",
+    text: "...in Google Meet",
+  }
+]
 
 export default function HomePage() {
   const { status: sessionStatus } = useSession()
   const userId = useUserId()
 
   return (
-    <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <div className="prose mx-auto lg:w-[650px]">
-        {!userId && sessionStatus !== "loading" && (
-          <>
-            <h3 className="text-neutral-600">
-              Track your predictions, make better decisions
-            </h3>
-          </>
-        )}
+    <>
+      <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
+        <div className="prose mx-auto lg:w-[650px]">
+          {!userId && sessionStatus !== "loading" && (
+            <>
+              <h3 className="text-neutral-600">
+                Track your predictions, make better decisions
+              </h3>
+            </>
+          )}
 
-        <Predict />
-        <Questions />
-
-        {sessionStatus !== "loading" && !userId && <WhyForecastInfo />}
+          <Predict />
+          <Questions />
+        </div>
       </div>
+
+      {sessionStatus !== "loading" && !userId &&
+        <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 lg:pt-16 mx-auto max-w-6xl flex-col">
+          <div>
+            <WhyForecastInfo />
+          </div>
+          <div>
+            <DemoVideoDisplay videos={demoVideos} />
+          </div>
+        </div>}
       <Sidebar />
-    </div>
+    </>
   )
 }
 

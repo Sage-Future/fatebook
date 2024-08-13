@@ -47,7 +47,7 @@ function DemoVideo({ src, caption }: { src: string; caption: string }) {
       )}
       ref={ref}
     >
-      <h2 className="text-center text-xl font-semibold mb-4 mt-12">
+      <h2 className="text-center text-xl font-semibold mb-4">
         {caption}
       </h2>
       <video
