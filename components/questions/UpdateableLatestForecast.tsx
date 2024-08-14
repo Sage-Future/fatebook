@@ -1,5 +1,4 @@
 import { Forecast, QuestionOption } from "@prisma/client"
-import { Decimal } from "@prisma/client/runtime/library"
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -41,20 +40,9 @@ export function UpdateableLatestForecast({
   const hasResolution =
     (option && option.resolution !== null) || question.resolution !== null
 
-  let latestForecast: {
-    forecast: Decimal
-    createdAt: Date
-    userId: string
-  } | null
-
-  if (userId) {
-    latestForecast = getMostRecentForecastForUser(
-      option ? option : question,
-      userId,
-    )
-  } else {
-    latestForecast = null
-  }
+  const latestForecast = userId
+    ? getMostRecentForecastForUser(option ? option : question, userId)
+    : null
 
   const defaultVal = latestForecast?.forecast
     ? displayForecast(latestForecast, 10, false)
@@ -115,7 +103,7 @@ export function UpdateableLatestForecast({
 
       if (
         !latestForecast?.forecast ||
-        newForecast !== (latestForecast.forecast as unknown as number)
+        newForecast !== latestForecast.forecast.toNumber()
       ) {
         if (embedded) {
           elicitSuccess()
@@ -233,7 +221,6 @@ export function UpdateableLatestForecast({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   updateForecast(e.currentTarget.value)
-                  e.currentTarget.blur()
                 }
                 if (e.key === "Escape") {
                   setLocalForecast(defaultVal)
