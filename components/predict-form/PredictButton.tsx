@@ -69,7 +69,7 @@ export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
           e.preventDefault()
           void handleSubmit(onSubmit)(e)
         }}
-        className="btn btn-primary btn-lg hover:scale-105 h-12 max-w-28"
+        className="btn btn-primary btn-lg hover:scale-105 h-12"
         disabled={!!userId && Object.values(errors).some((err) => !!err)}
       >
         {userId || session.status === "loading"
