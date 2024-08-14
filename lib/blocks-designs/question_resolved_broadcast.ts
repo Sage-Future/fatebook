@@ -19,11 +19,13 @@ export async function buildQuestionResolvedBroadcastBlocks(
         `${getUserNameOrProfileLink(
           teamId,
           question.user,
-        )} has resolved ${await getQuestionTitleLink(
-          question,
-        )} as ${getResolutionEmoji(question.resolution)} *${
-          question.resolution
-        }*`,
+        )} has resolved ${await getQuestionTitleLink(question)} ${
+          question.type !== "MULTIPLE_CHOICE"
+            ? `as ${getResolutionEmoji(question.resolution)} *${
+                question.resolution
+              }*`
+            : ""
+        }`,
       ),
       accessory: feedbackOverflow(),
     },
