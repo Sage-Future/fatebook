@@ -7,7 +7,7 @@ import {
 export function WhyForecastInfo() {
   return (
     <div>
-      <h2>{"Why build a habit of forecasting?"}</h2>
+      <h3>{"Why build a habit of forecasting?"}</h3>
       <ul className="list-none space-y-4 pl-0">
         <li className="flex items-center space-x-3">
           <RocketLaunchIcon className="flex-shrink-0 mr-2 w-6 h-6 text-indigo-500 inline-block" />
