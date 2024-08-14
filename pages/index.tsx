@@ -33,30 +33,28 @@ export default function HomePage() {
   const userId = useUserId()
 
   return (
-    <>
-      <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-        <div className="prose mx-auto lg:w-[650px]">
-          {!userId && sessionStatus !== "loading" && (
-            <>
-              <h3 className="text-neutral-600">
-                Track your predictions, make better decisions
-              </h3>
-            </>
-          )}
+    <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
+      <div className="prose mx-auto lg:w-[650px]">
+        {!userId && sessionStatus !== "loading" && (
+          <>
+            <h3 className="text-neutral-600">
+              Track your predictions, make better decisions
+            </h3>
+          </>
+        )}
 
-          <Predict />
-          <Questions />
+        <Predict />
+        <Questions />
 
-          {sessionStatus !== "loading" && !userId &&
-            <div>
-              <WhyForecastInfo />
-              <DemoVideoDisplay videos={demoVideos} />
-            </div>
-          }
-        </div>
+        {sessionStatus !== "loading" && !userId &&
+          <div>
+            <WhyForecastInfo />
+            <DemoVideoDisplay videos={demoVideos} />
+          </div>
+        }
       </div>
       <Sidebar />
-    </>
+    </div>
   )
 }
 
