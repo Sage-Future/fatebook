@@ -12,7 +12,7 @@ export function forecastsAreHidden(
   question: QuestionWithForecasts,
   userId: string | undefined,
 ) {
-  return (
+  return !question.resolved && (
     (!!question.hideForecastsUntil &&
       question.hideForecastsUntil.getTime() > Date.now()) ||
     (!!question.hideForecastsUntilPrediction &&
