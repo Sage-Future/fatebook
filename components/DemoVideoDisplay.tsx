@@ -4,10 +4,7 @@ import { useRef, useState } from "react"
 type Video = {src: string, text: string, caption: string}
 
 export function DemoVideoDisplay({videos}: {videos: Video[]}) {
-  const [selectedVideo, setSelectedVideo] = useState({
-    src: "/gdocs2x.webm",
-    caption: "Instantly create and embed predictions in Google Docs",
-  })
+  const [selectedVideo, setSelectedVideo] = useState(videos[0])
 
   return (
     <div className="flex flex-row gap-4 max-sm:flex-col-reverse">

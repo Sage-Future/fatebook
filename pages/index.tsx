@@ -11,15 +11,10 @@ import { DemoVideoDisplay } from "../components/DemoVideoDisplay"
 
 const demoVideos = [
   {
-    src: "/gdocs2x.webm",
-    caption: "Instantly create and embed predictions in Google Docs",
-    text: "...in Google Docs",
+    src: "/for_personal_goals.webm",
+    caption: "TODO write a caption for this",
+    text: "...For personal goals",
   },
-  {
-    src: "/meet.webm",
-    caption: "Instantly create and embed predictions in Google Meet",
-    text: "...in Google Meet",
-  }
 ]
 
 export default function HomePage() {
