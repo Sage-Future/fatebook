@@ -55,7 +55,7 @@ function DemoVideo({ src, caption }: { src: string; caption?: string }) {
         controls={false}
         width={992}
         height={576}
-        className={clsx("transition-all rounded-lg shadow-2xl")}
+        className={clsx("transition-all rounded-lg shadow-2xl my-2")}
         onWaiting={() => setLoading(true)}
         onPlaying={() => setLoading(false)}
       >
