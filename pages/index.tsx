@@ -13,7 +13,19 @@ const demoVideos = [
   {
     src: "/for_personal_goals.webm",
     text: "...For personal goals",
-  }
+  },
+  {
+    src: "/for_project_planning.webm",
+    text: "...For project planning",
+  },
+  {
+    src: "/for_research.webm",
+    text: "...For research",
+  },
+  {
+    src: "/for_teams.webm",
+    text: "...For teams",
+  },
 ]
 
 export default function HomePage() {
