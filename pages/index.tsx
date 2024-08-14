@@ -12,9 +12,8 @@ import { DemoVideoDisplay } from "../components/DemoVideoDisplay"
 const demoVideos = [
   {
     src: "/for_personal_goals.webm",
-    caption: "TODO write a caption for this",
     text: "...For personal goals",
-  },
+  }
 ]
 
 export default function HomePage() {
