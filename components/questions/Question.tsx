@@ -9,23 +9,24 @@ import {
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { QuestionWithStandardIncludes } from "../prisma/additional"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import { FormattedDate } from "../ui/FormattedDate"
+import { Username } from "../ui/Username"
 import { QuestionDetails } from "./QuestionDetails"
 import { ResolveButton } from "./ResolveButton"
 import { SharePopover } from "./SharePopover"
 import { UpdateableLatestForecast } from "./UpdateableLatestForecast"
-import { FormattedDate } from "./ui/FormattedDate"
-import { Username } from "./ui/Username"
 
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/solid"
 import toast from "react-hot-toast"
-import { getDateYYYYMMDD } from "../lib/_utils_common"
-import { getQuestionUrl } from "../lib/web/question_url"
-import { api } from "../lib/web/trpc"
-import { invalidateQuestion, useUserId } from "../lib/web/utils"
-import { InfoButton } from "./ui/InfoButton"
+import { getDateYYYYMMDD } from "../../lib/_utils_common"
+import { getQuestionUrl } from "../../lib/web/question_url"
+import { api } from "../../lib/web/trpc"
+import { invalidateQuestion, useUserId } from "../../lib/web/utils"
+import { InfoButton } from "../ui/InfoButton"
+import { QuestionDetailsOption } from "./QuestionDetailsOptions"
 
 export function Question({
   question,
@@ -53,6 +54,41 @@ export function Question({
   })
   const userId = useUserId()
   const editable = question.userId === userId
+
+  let cumulativeForecast = undefined
+  if (question.type === "MULTIPLE_CHOICE") {
+    cumulativeForecast =
+      question.options?.reduce((acc, option) => {
+        const latestForecast = option.forecasts
+          .filter((f) => f.userId === userId)
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0]
+
+        if (latestForecast && latestForecast.forecast) {
+          return acc + latestForecast.forecast.toNumber()
+        }
+
+        return acc // If there's no forecast or it's undefined, just return the accumulator
+      }, 0) ?? 0 // Use nullish coalescing operator to default to 0 if reduce returns undefined
+  }
+
+  const sortedOptions = useMemo(() => {
+    if (question.type !== "MULTIPLE_CHOICE") {
+      return []
+    }
+    return [...question.options!].sort((a, b) => {
+      const aForecast = a.forecasts.find((f) => f.userId === userId)
+      const bForecast = b.forecasts.find((f) => f.userId === userId)
+
+      const aValue = aForecast ? aForecast.forecast.toNumber() : 0
+      const bValue = bForecast ? bForecast.forecast.toNumber() : 0
+
+      if (bValue === aValue) {
+        return question.options!.indexOf(a) - question.options!.indexOf(b)
+      }
+
+      return bValue - aValue
+    })
+  }, [question.options, question.type, userId])
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -92,10 +128,10 @@ export function Question({
           }}
         >
           <div
-            className="grid grid-cols-1 p-4 gap-1 relative"
+            className="grid grid-cols-[1fr_min-content_min-content] p-4 gap-y-2 relative"
             key={question.id}
           >
-            <span className="col-span-2 flex gap-4 mb-1 justify-between">
+            <span className="col-span-3 flex gap-4 mb-1 justify-between">
               <span
                 className={"font-semibold overflow-auto break-words"}
                 key={`${question.id}title`}
@@ -114,13 +150,29 @@ export function Question({
                   )}
                 </Link>
               </span>
-              <UpdateableLatestForecast
-                question={question}
-                autoFocus={alwaysExpand}
-                embedded={embedded}
-              />
+              {question.type === "BINARY" && (
+                <UpdateableLatestForecast
+                  question={question}
+                  autoFocus={alwaysExpand}
+                  embedded={embedded}
+                />
+              )}
             </span>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {question.type === "MULTIPLE_CHOICE" && (
+              <div className="contents">
+                {sortedOptions.map((option, index) => (
+                  <QuestionDetailsOption
+                    key={index}
+                    option={option}
+                    question={question}
+                    autoFocus={alwaysExpand}
+                    embedded={embedded}
+                    cumulativeForecast={cumulativeForecast}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 col-span-3">
               <span className="text-sm my-auto" key={`${question.id}author`}>
                 <Username user={question.user} />
               </span>
@@ -206,7 +258,9 @@ export function Question({
                   <PencilIcon className="hidden group-hover/resolveBy:block absolute top-1/2 -translate-y-1/2 right-0.5 h-3 w-3 shrink-0 text-indigo-400" />
                 </button>
               )}
-              <ResolveButton question={question} />
+              {question.exclusiveAnswers && (
+                <ResolveButton question={question} />
+              )}
               <ActivityNumbers
                 question={question}
                 alwaysExpand={alwaysExpand}
@@ -254,7 +308,7 @@ export function ActivityNumbers({
 
   return (
     <div
-      className="col-span-full flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center"
+      className={`${question.exclusiveAnswers ? "col-span-full" : ""} flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center`}
       onClick={() => setManuallyExpanded(!manuallyExpanded)}
     >
       <InfoButton

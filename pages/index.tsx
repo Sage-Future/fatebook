@@ -1,10 +1,10 @@
 import { useSession } from "next-auth/react"
-import { Predict } from "../components/Predict"
 import { Questions } from "../components/Questions"
 import { Tournaments } from "../components/Tournaments"
 import { TrackRecord } from "../components/TrackRecord"
 import { UserLists } from "../components/UserLists"
 import { WhyForecastInfo } from "../components/WhyForecastInfo"
+import { Predict } from "../components/predict-form/Predict"
 import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
 
@@ -42,11 +42,13 @@ function Sidebar() {
       {userId && <TrackRecord trackRecordUserId={userId} />}
       {userId && <Tournaments />}
       {userId && <UserLists />}
-      {userId && <QuickFeedback
-        type="Fatebook feedback"
-        placeholder="Give feedback on Fatebook..."
-        style="textarea"
-      />}
+      {userId && (
+        <QuickFeedback
+          type="Fatebook feedback"
+          placeholder="Give feedback on Fatebook..."
+          style="textarea"
+        />
+      )}
     </div>
   )
 }

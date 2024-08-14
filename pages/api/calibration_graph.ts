@@ -1,4 +1,4 @@
-import { Resolution } from "@prisma/client"
+import { Forecast, QuestionType, Resolution } from "@prisma/client"
 import { VercelRequest, VercelResponse } from "@vercel/node"
 import ChartJSImage from "chart.js-image"
 import prisma from "../../lib/prisma"
@@ -41,9 +41,26 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
     where: {
       AND: [
         {
-          resolution: {
-            in: [Resolution.YES, Resolution.NO],
-          },
+          OR: [
+            // For binary questions
+            {
+              type: QuestionType.BINARY,
+              resolution: {
+                in: [Resolution.YES, Resolution.NO],
+              },
+            },
+            // For multiple choice questions
+            {
+              type: QuestionType.MULTIPLE_CHOICE,
+              options: {
+                some: {
+                  resolution: {
+                    in: [Resolution.YES, Resolution.NO],
+                  },
+                },
+              },
+            },
+          ],
         },
         {
           forecasts: {
@@ -69,6 +86,22 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
       ],
     },
     include: {
+      options: {
+        where: {
+          resolution: {
+            in: [Resolution.YES, Resolution.NO],
+          },
+        },
+        include: {
+          forecasts: {
+            where: {
+              userId: {
+                equals: userId,
+              },
+            },
+          },
+        },
+      },
       forecasts: {
         where: {
           userId: {
@@ -83,21 +116,55 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
     return undefined
   }
 
-  const forecasts = questions.flatMap((q) =>
-    q.forecasts
-      // don't include forecasts made <1 minute before another forecast on same question by same user
-      .filter(
-        (f) =>
-          !q.forecasts.some((f2) => {
-            const timeDiff = f2.createdAt.getTime() - f.createdAt.getTime()
-            return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
-          }),
-      )
-      .map((f) => ({
-        forecast: f.forecast.toNumber(),
-        resolution: q.resolution,
-      })),
-  )
+  function excludeForecastsCreatedInLastMinuteBySameUser(
+    f: Forecast,
+    forecasts: Forecast[],
+  ) {
+    return !forecasts.some((f2) => {
+      const timeDiff = f2.createdAt.getTime() - f.createdAt.getTime()
+      return f !== f2 && timeDiff < 1000 * 60 && timeDiff > 0
+    })
+  }
+
+  const forecasts = questions
+    .filter((q) => q.type === QuestionType.BINARY)
+    .flatMap((q) =>
+      q.forecasts
+        .filter((f) =>
+          excludeForecastsCreatedInLastMinuteBySameUser(f, q.forecasts),
+        )
+        .map((f) => ({
+          forecast: f.forecast.toNumber(),
+          resolution: q.resolution,
+        })),
+    )
+
+  const mcqForecasts = questions
+    .filter(
+      (q) =>
+        q.type === QuestionType.MULTIPLE_CHOICE &&
+        (!q.resolution || q.resolution != Resolution.AMBIGUOUS), // Exclude ambiguous questions
+    )
+    .flatMap((q) =>
+      q.options
+        // Only include options that have resolutions
+        .filter((option) => option.resolvedAt)
+        .flatMap((option) =>
+          option.forecasts
+            .filter((f) =>
+              excludeForecastsCreatedInLastMinuteBySameUser(
+                f,
+                option.forecasts,
+              ),
+            )
+            .map((f) => ({
+              forecast: f.forecast.toNumber(),
+              resolution: option.resolution,
+            })),
+        ),
+    )
+
+  forecasts.push(...mcqForecasts)
 
   const halfBucketSize = 0.05
   const buckets = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]

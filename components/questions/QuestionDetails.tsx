@@ -1,4 +1,5 @@
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid"
+import { Resolution } from "@prisma/client"
 import { useRouter } from "next/router"
 import { Fragment, LegacyRef, ReactNode, forwardRef, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
@@ -9,19 +10,19 @@ import {
   formatDecimalNicely,
   getCommunityForecast,
   getDateYYYYMMDD,
-} from "../lib/_utils_common"
-import { api } from "../lib/web/trpc"
+} from "../../lib/_utils_common"
+import { api } from "../../lib/web/trpc"
 import {
   invalidateQuestion,
   signInToFatebook,
   useUserId,
-} from "../lib/web/utils"
-import { QuestionWithStandardIncludes } from "../prisma/additional"
+} from "../../lib/web/utils"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import { FormattedDate } from "../ui/FormattedDate"
+import { InfoButton } from "../ui/InfoButton"
+import { Username } from "../ui/Username"
 import { CommentBox, DeleteCommentOverflow } from "./CommentBox"
 import { TagsSelect } from "./TagsSelect"
-import { FormattedDate } from "./ui/FormattedDate"
-import { InfoButton } from "./ui/InfoButton"
-import { Username } from "./ui/Username"
 
 interface QuestionDetailsProps {
   question: QuestionWithStandardIncludes
@@ -113,21 +114,55 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
 function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
   const userId = useUserId()
 
+  function getExclusiveMcqResolutionString(
+    question: QuestionWithStandardIncludes,
+  ) {
+    if (question.resolution === Resolution.NO) {
+      return "“Other”"
+    }
+    const option = question.options?.find((opt) => opt.resolution === "YES")
+    return option ? `“${option.text}”` : question.resolution
+  }
+
+  const forecastEvents: { timestamp: Date; el: ReactNode }[] =
+    question.type === "MULTIPLE_CHOICE"
+      ? question
+          .options!.map((o) =>
+            o.forecasts.map((f) => ({
+              timestamp: f.createdAt || new Date(),
+              el: (
+                <Fragment key={f.id}>
+                  <Username user={f.user} className="font-semibold" />
+                  <span className="font-bold overflow-x-auto">{o.text}</span>
+                  <span className="font-bold text-lg text-indigo-800">
+                    {displayForecast(f, 2)}
+                  </span>
+                  <div className="text-neutral-400">
+                    <FormattedDate date={f.createdAt || new Date()} />
+                  </div>
+                </Fragment>
+              ),
+            })),
+          )
+          .flat()
+      : question.forecasts.map((f) => ({
+          timestamp: f.createdAt,
+          el: (
+            <Fragment key={f.id}>
+              <Username user={f.user} className="font-semibold" />
+              <span />
+              <span className="font-bold text-lg text-indigo-800">
+                {displayForecast(f, 2)}
+              </span>
+              <div className="text-neutral-400">
+                <FormattedDate date={f.createdAt} />
+              </div>
+            </Fragment>
+          ),
+        }))
+
   let events: { timestamp: Date; el: ReactNode }[] = [
-    question.forecasts.map((f) => ({
-      timestamp: f.createdAt,
-      el: (
-        <Fragment key={f.id}>
-          <Username user={f.user} className="font-semibold" />
-          <span className="font-bold text-lg text-indigo-800">
-            {displayForecast(f, 2)}
-          </span>
-          <div className="text-neutral-400">
-            <FormattedDate date={f.createdAt} />
-          </div>
-        </Fragment>
-      ),
-    })),
+    forecastEvents,
     question.comments &&
       question.comments.map((c) => ({
         timestamp: c.createdAt,
@@ -137,11 +172,12 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               <Username user={c.user} className="font-semibold" />
             </span>
             <span />
+            <span />
             <span className="text-neutral-400 inline-flex justify-between w-full">
               <FormattedDate date={c.createdAt} className="my-auto" />
               <DeleteCommentOverflow question={question} comment={c} />
             </span>
-            <span className="md:pl-7 col-span-3 -mt-1 break-words overflow-x-auto whitespace-pre-line">
+            <span className="md:pl-7 col-span-4 -mt-1 break-words overflow-x-auto whitespace-pre-line">
               {c.comment}
             </span>
           </Fragment>
@@ -158,10 +194,12 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                     <Username user={question.user} className="font-semibold" />
                   </span>
                   <span />
+                  <span />
+
                   <span className="text-neutral-400">
                     <FormattedDate date={question.createdAt} />
                   </span>
-                  <span className="md:pl-7 col-span-3 -mt-1">
+                  <span className="md:pl-7 col-span-4 -mt-1">
                     {question.notes}
                   </span>
                 </Fragment>
@@ -171,15 +209,23 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
         : []),
     ],
     [
-      ...(question.resolvedAt
+      ...(question.resolvedAt &&
+      (question.type === "BINARY" ||
+        (question.type === "MULTIPLE_CHOICE" &&
+          question.exclusiveAnswers &&
+          question.options))
         ? [
             {
               timestamp: question.resolvedAt,
               el: (
                 <Fragment key={`${question.id} resolution`}>
                   <Username user={question.user} className="font-semibold" />
-                  <span className="italic text-indigo-800">
-                    Resolved {question.resolution}
+                  <span />
+                  <span className="italic text-indigo-800 overflow-x-auto">
+                    Resolved{" "}
+                    {question.type === "MULTIPLE_CHOICE" && question.options
+                      ? getExclusiveMcqResolutionString(question)
+                      : question.resolution}
                   </span>
                   <span className="text-neutral-400">
                     <FormattedDate date={question.resolvedAt} />
@@ -190,17 +236,42 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
           ]
         : []),
     ],
+    ...(question.options &&
+    question.type === "MULTIPLE_CHOICE" &&
+    !question.exclusiveAnswers
+      ? question.options
+          .filter((option) => option.resolvedAt)
+          .map((option) => ({
+            timestamp: option.resolvedAt!,
+            el: (
+              <Fragment key={`${question.id}-${option.id}-resolution`}>
+                <span>
+                  <Username user={question.user} className="font-semibold" />
+                </span>
+                <span />
+                <span className="italic text-indigo-800 overflow-x-auto">
+                  Resolved &ldquo;{option.text}&ldquo;{" "}
+                  {option.resolution ? option.resolution : "unknown"}
+                </span>
+                <span className="text-neutral-400">
+                  <FormattedDate date={option.resolvedAt!} />
+                </span>
+              </Fragment>
+            ),
+          }))
+      : []),
   ].flat()
 
   const numForecasters = new Set(question.forecasts.map((f) => f.userId)).size
   const communityAverage =
+    question.type === "BINARY" &&
     !forecastsAreHidden(question, userId) &&
     numForecasters > 1 &&
     getCommunityForecast(question, new Date())
 
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
-      <div className="grid grid-cols-[minmax(80px,_auto)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
+      <div className="grid grid-cols-[minmax(80px,_auto)_minmax(0,_300px)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
         {events.length ? (
           events
             .sort(
@@ -231,6 +302,7 @@ function EditQuestionOverflow({
 }: {
   question: QuestionWithStandardIncludes
 }) {
+  const [isVisible, setIsVisible] = useState(false)
   const utils = api.useContext()
   const router = useRouter()
 
@@ -248,78 +320,84 @@ function EditQuestionOverflow({
 
   return (
     <div className="dropdown dropdown-end not-prose">
-      <label tabIndex={0} className="btn btn-xs btn-ghost">
+      <label
+        tabIndex={0}
+        className="btn btn-xs btn-ghost"
+        onClick={() => setIsVisible(!isVisible)}
+      >
         <EllipsisVerticalIcon height={15} />
       </label>
-      <ul
-        tabIndex={0}
-        className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
-      >
-        <li>
-          <a
-            onClick={() => {
-              const newTitle = prompt(
-                "Edit the title of your question:",
-                question.title,
-              )
-              if (newTitle && newTitle !== question.title) {
-                editQuestion.mutate({
-                  questionId: question.id,
-                  title: newTitle,
-                })
-              }
-            }}
-          >
-            Edit question
-          </a>
-        </li>
-        <li>
-          <a
-            onClick={() => {
-              const newDateStr = prompt(
-                "Edit the resolution date of your question (YYYY-MM-DD):",
-                getDateYYYYMMDD(question.resolveBy),
-              )
-              const newDate = newDateStr ? new Date(newDateStr) : undefined
-              if (newDate && !isNaN(newDate.getTime())) {
-                editQuestion.mutate({
-                  questionId: question.id,
-                  resolveBy: newDate,
-                })
-              } else {
-                toast.error(
-                  "The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2024-09-30",
-                  {
-                    duration: 8000,
-                  },
+      {isVisible && (
+        <ul
+          tabIndex={0}
+          className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
+        >
+          <li>
+            <a
+              onClick={() => {
+                const newTitle = prompt(
+                  "Edit the title of your question:",
+                  question.title,
                 )
-              }
-            }}
-          >
-            Edit resolve by date
-          </a>
-        </li>
-        <li>
-          <a
-            onClick={() => {
-              if (
-                confirm(
-                  "Are you sure you want to delete this question? This cannot be undone",
-                )
-              ) {
-                deleteQuestion.mutate({
-                  questionId: question.id,
-                })
-                if (router.asPath.startsWith("/q/")) {
-                  void router.push("/")
+                if (newTitle && newTitle !== question.title) {
+                  editQuestion.mutate({
+                    questionId: question.id,
+                    title: newTitle,
+                  })
                 }
-              }
-            }}
-          >
-            Delete question
-          </a>
-        </li>
-      </ul>
+              }}
+            >
+              Edit question
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => {
+                const newDateStr = prompt(
+                  "Edit the resolution date of your question (YYYY-MM-DD):",
+                  getDateYYYYMMDD(question.resolveBy),
+                )
+                const newDate = newDateStr ? new Date(newDateStr) : undefined
+                if (newDate && !isNaN(newDate.getTime())) {
+                  editQuestion.mutate({
+                    questionId: question.id,
+                    resolveBy: newDate,
+                  })
+                } else {
+                  toast.error(
+                    "The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2024-09-30",
+                    {
+                      duration: 8000,
+                    },
+                  )
+                }
+              }}
+            >
+              Edit resolve by date
+            </a>
+          </li>
+          <li>
+            <a
+              onClick={() => {
+                if (
+                  confirm(
+                    "Are you sure you want to delete this question? This cannot be undone",
+                  )
+                ) {
+                  deleteQuestion.mutate({
+                    questionId: question.id,
+                  })
+                  if (router.asPath.startsWith("/q/")) {
+                    void router.push("/")
+                  }
+                }
+              }}
+            >
+              Delete question
+            </a>
+          </li>
+        </ul>
+      )}
     </div>
   )
 }

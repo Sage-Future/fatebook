@@ -1,6 +1,6 @@
 import { useRouter } from "next/router"
 import React, { useEffect, useRef } from "react"
-import { QuestionOrSignIn } from "../../../components/QuestionOrSignIn"
+import { QuestionOrSignIn } from "../../../components/questions/QuestionOrSignIn"
 import { sendToHost, useListenForSessionReload } from "../../../lib/web/embed"
 
 export default function QuestionEmbed() {

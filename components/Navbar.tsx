@@ -55,7 +55,7 @@ export function Navbar({
       <li>
         <Link href="/predict-your-year">Predict your year</Link>
       </li>
-      <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">
+      <li className="text-neutral-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">
         Integrations
       </li>
       <li>
@@ -75,7 +75,7 @@ export function Navbar({
       <li>
         <Link href="/embed">Embed in your website</Link>
       </li>
-      <li className="text-gray-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">
+      <li className="text-neutral-500 font-normal md:font-semibold pl-4 pt-4 pb-2 cursor-default">
         Your forecasts
       </li>
       <li>
@@ -91,7 +91,7 @@ export function Navbar({
           {exportData.isLoading ? "Exporting..." : "Export all your forecasts"}
         </a>
       </li>
-      <li className="text-gray-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">
+      <li className="text-neutral-500 font-normal md:font-semibold ml-4 mt-4 mb-2 cursor-default">
         Feedback
       </li>
       <li>
