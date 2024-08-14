@@ -1,7 +1,7 @@
 import clsx from "clsx"
 import { useRef, useState } from "react"
 
-type Video = {src: string, text: string, caption: string}
+type Video = {src: string, text: string, caption?: string}
 
 export function DemoVideoDisplay({videos}: {videos: Video[]}) {
   const [selectedVideo, setSelectedVideo] = useState(videos[0])
@@ -33,7 +33,7 @@ export function DemoVideoDisplay({videos}: {videos: Video[]}) {
   )
 }
 
-function DemoVideo({ src, caption }: { src: string; caption: string }) {
+function DemoVideo({ src, caption }: { src: string; caption?: string }) {
   const ref = useRef<HTMLDivElement | null>(null)
 
   const [loading, setLoading] = useState(true)
@@ -44,9 +44,9 @@ function DemoVideo({ src, caption }: { src: string; caption: string }) {
       )}
       ref={ref}
     >
-      <h2 className="text-center text-xl font-semibold mb-4">
+      {caption && <h2 className="text-center text-xl font-semibold mb-4">
         {caption}
-      </h2>
+      </h2>}
       <video
         muted
         playsInline
