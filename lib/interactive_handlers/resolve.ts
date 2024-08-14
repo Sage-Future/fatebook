@@ -644,7 +644,7 @@ export async function handleQuestionResolution(
           q.title
         }"`,
         content: `${q.user.name || "Someone"} resolved ${
-          q.resolution
+          q.type === "MULTIPLE_CHOICE" ? "" : `as ${q.resolution} `
         }: ${getMarkdownLinkQuestionTitle(q)}`,
         tags: ["question_resolved", q.id],
         url: getQuestionUrl(q),
