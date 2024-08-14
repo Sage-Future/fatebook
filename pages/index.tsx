@@ -35,18 +35,15 @@ export default function HomePage() {
 
           <Predict />
           <Questions />
+
+          {sessionStatus !== "loading" && !userId &&
+            <div>
+              <WhyForecastInfo />
+              <DemoVideoDisplay videos={demoVideos} />
+            </div>
+          }
         </div>
       </div>
-
-      {sessionStatus !== "loading" && !userId &&
-        <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 lg:pt-16 mx-auto max-w-6xl flex-col">
-          <div>
-            <WhyForecastInfo />
-          </div>
-          <div>
-            <DemoVideoDisplay videos={demoVideos} />
-          </div>
-        </div>}
       <Sidebar />
     </>
   )
