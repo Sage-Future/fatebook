@@ -79,6 +79,7 @@ export default function ListPage() {
                       key={u.id}
                       user={u}
                       className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 ml-2 hover:bg-neutral-100"
+                      unknownUserText="Invited user"
                     />
                   ))
                 ) : (

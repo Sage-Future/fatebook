@@ -174,7 +174,7 @@ export function Question({
             )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 col-span-3">
               <span className="text-sm my-auto" key={`${question.id}author`}>
-                <Username user={question.user} />
+                <Username user={question.user} unknownUserText="Anonymous" />
               </span>
               <SharePopover question={question} />
               {question.resolvedAt ? (

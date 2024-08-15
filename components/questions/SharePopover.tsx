@@ -309,6 +309,7 @@ function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
               key={user.id}
               user={user}
               className="mr-2 leading-relaxed"
+              unknownUserText="Invited user"
             />
           ))}
         </label>
