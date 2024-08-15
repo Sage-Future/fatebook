@@ -11,6 +11,9 @@ export default {
       fontFamily: {
         sans: ["Inter var", ...defaultTheme.fontFamily.sans],
       },
+      inset: {
+        "calc-50-minus-05rem": "calc(50% - 0.5rem)",
+      },
     },
   },
   plugins: [

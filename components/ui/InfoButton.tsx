@@ -9,6 +9,8 @@ export function InfoButton({
   showInfoButton = true,
   children,
   placement = "top",
+  open,
+  popoverClassName,
 }: {
   tooltip: string
   size?: number
@@ -16,11 +18,13 @@ export function InfoButton({
   showInfoButton?: boolean
   children?: ReactNode
   placement?: "top" | "bottom" | "left" | "right"
+  open?: boolean
+  popoverClassName?: HTMLAttributes<HTMLDivElement>["className"]
 }) {
   const [popoverHovered, setPopoverHovered] = useState(false)
 
   return (
-    <Popover open={popoverHovered || undefined} placement={placement}>
+    <Popover open={popoverHovered || open || undefined} placement={placement}>
       <PopoverTrigger asChild={true}>
         <span className={clsx("inline", className)}>
           {children}
@@ -30,6 +34,7 @@ export function InfoButton({
       <PopoverContent
         className={clsx(
           "Popover z-[10000] bg-neutral-800 text-neutral-200 px-2 py-1 max-w-[15rem] rounded-lg text-sm transition-opacity duration-200 shadow-sm outline-none",
+          popoverClassName,
         )}
         onMouseEnter={() => setPopoverHovered(true)}
         onMouseLeave={() => setPopoverHovered(false)}

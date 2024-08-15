@@ -1,4 +1,5 @@
-import { Prisma, Resolution, Tag, User } from "@prisma/client"
+import { Prisma, QuestionType, Tag, User } from "@prisma/client"
+import { Decimal } from "@prisma/client/runtime/library"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
@@ -20,6 +21,7 @@ import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import {
   handleQuestionResolution,
+  undoQuestionOptionResolution,
   undoQuestionResolution,
 } from "../interactive_handlers/resolve"
 import prisma from "../prisma"
@@ -42,6 +44,15 @@ const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
     include: {
       user: true,
+    },
+  },
+  options: {
+    include: {
+      forecasts: {
+        include: {
+          user: true,
+        },
+      },
     },
   },
   user: true,
@@ -75,6 +86,9 @@ const questionIncludes = (userId: string | undefined) => ({
 const zodExtraFilters = z.object({
   resolved: z
     .boolean({ description: "Only get resolved questions" })
+    .optional(),
+  unresolved: z
+    .boolean({ description: "Only get unresolved questions" })
     .optional(),
   readyToResolve: z
     .boolean({ description: "Only get questions ready to be resolved" })
@@ -135,6 +149,16 @@ export const questionRouter = router({
         include: {
           forecasts: {
             include: {
+              user: true,
+            },
+          },
+          options: {
+            include: {
+              forecasts: {
+                include: {
+                  user: true,
+                },
+              },
               user: true,
             },
           },
@@ -345,6 +369,15 @@ export const questionRouter = router({
         sharedPublicly: z.boolean().optional(),
         tournamentId: z.string().optional(),
         shareWithListIds: z.array(z.string()).optional(),
+        exclusiveAnswers: z.boolean().optional(),
+        options: z
+          .array(
+            z.object({
+              text: z.string(),
+              prediction: z.number().min(0).max(1).optional(),
+            }),
+          )
+          .optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -364,21 +397,19 @@ export const questionRouter = router({
         })
       }
 
+      const isMultiChoice = input.options && input.options.length > 0
+
       const question = await prisma.question.create({
         data: {
           title: input.title,
           resolveBy: input.resolveBy,
-          userId: ctx.userId,
+          user: { connect: { id: ctx.userId } }, // Changed from userId to user connect
+          type: isMultiChoice
+            ? QuestionType.MULTIPLE_CHOICE
+            : QuestionType.BINARY,
           unlisted: input.unlisted,
           sharedPublicly: input.sharedPublicly,
-          forecasts: input.prediction
-            ? {
-                create: {
-                  userId: ctx.userId,
-                  forecast: input.prediction,
-                },
-              }
-            : undefined,
+          exclusiveAnswers: input.exclusiveAnswers,
           tags:
             input.tags && input.tags.length > 0
               ? {
@@ -407,18 +438,63 @@ export const questionRouter = router({
                 connect: input.shareWithListIds.map((id) => ({ id })),
               }
             : undefined,
+          options:
+            isMultiChoice && input.options
+              ? {
+                  // Reverse the options array to work around Prisma bug
+                  // https://github.com/prisma/prisma/issues/22090
+                  create: [...input.options].reverse().map((option) => ({
+                    text: option.text,
+                    user: { connect: { id: ctx.userId } },
+                  })),
+                }
+              : undefined,
         },
         include: {
           tournaments: true,
           sharedWithLists: true,
+          options: true,
+          tags: true,
         },
       })
+
+      if (isMultiChoice && question.options) {
+        await Promise.all(
+          input.options!.map((option) => {
+            if (option.prediction !== undefined) {
+              return prisma.forecast.create({
+                data: {
+                  question: { connect: { id: question.id } },
+                  user: { connect: { id: ctx.userId } },
+                  forecast: new Decimal(option.prediction),
+                  option: {
+                    connect: {
+                      id: question.options.find((o) => o.text === option.text)
+                        ?.id,
+                    },
+                  },
+                },
+              })
+            }
+          }),
+        )
+      } else if (!isMultiChoice && input.prediction) {
+        // Create forecast for binary question
+        await prisma.forecast.create({
+          data: {
+            question: { connect: { id: question.id } },
+            user: { connect: { id: ctx.userId } },
+            forecast: new Decimal(input.prediction),
+          },
+        })
+      }
 
       await backendAnalyticsEvent("question_created", {
         platform: "web",
         user: ctx.userId,
       })
 
+      // TODO: how do we want to handle analytics for MCQ forecasts?
       if (input.prediction) {
         await backendAnalyticsEvent("forecast_submitted", {
           platform: "web",
@@ -437,16 +513,20 @@ export const questionRouter = router({
       z.object({
         questionId: z.string(),
         resolution: z.string({
-          description: "Resolve to YES, NO or AMBIGUOUS",
+          description:
+            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
         }),
+        questionType: z.string(),
         apiKey: z.string().optional(),
+        optionId: z.string().optional(),
       }),
     )
     .meta({
       openapi: {
         method: "POST",
         path: "/v0/resolveQuestion",
-        description: "Resolve the question to YES, NO or AMBIGUOUS",
+        description:
+          "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
       },
     })
     .output(z.undefined())
@@ -455,7 +535,9 @@ export const questionRouter = router({
 
       await handleQuestionResolution(
         input.questionId,
-        input.resolution as Resolution,
+        input.resolution as string,
+        input.questionType as QuestionType,
+        input.optionId,
       )
 
       await backendAnalyticsEvent("question_resolved", {
@@ -468,11 +550,15 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
+        optionId: z.string().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId)
 
+      if (input.optionId) {
+        await undoQuestionOptionResolution(input.optionId)
+      }
       await undoQuestionResolution(input.questionId)
 
       await backendAnalyticsEvent("question_resolution_undone", {
@@ -674,6 +760,7 @@ export const questionRouter = router({
           })
           .max(1)
           .min(0),
+        optionId: z.string().optional(),
         apiKey: z.string().optional(),
       }),
     )
@@ -745,7 +832,14 @@ export const questionRouter = router({
               id: input.questionId,
             },
           },
-          forecast: input.forecast,
+          // If an optionId is set, the forecast goes on that option
+          // Else it goes on the question itself
+          ...(input.optionId
+            ? {
+                option: { connect: { id: input.optionId } },
+                forecast: input.forecast,
+              }
+            : { forecast: input.forecast }),
         },
         include: {
           user: true,
@@ -1278,6 +1372,11 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
               },
             }
           : {},
+        input.extraFilters?.unresolved
+          ? {
+              resolution: null
+            }
+          : {},
         input.extraFilters?.readyToResolve
           ? {
               resolution: null,
@@ -1472,6 +1571,7 @@ export function scrubHiddenForecastsFromQuestion<
               user: null,
               profileId: null,
               profile: null,
+              options: null,
             }
           : {}),
       }

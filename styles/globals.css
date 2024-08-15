@@ -57,3 +57,12 @@ body,
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.4);
 }
+
+/* Similarly couldn't get the extended config working here */
+.grid-rows-1-3-1 {
+  grid-template-rows: 1fr 3fr 1fr;
+}
+
+.checkbox {
+  --chkbg: #6366f1;
+}

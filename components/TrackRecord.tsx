@@ -18,7 +18,7 @@ import {
 import { api } from "../lib/web/trpc"
 import { useUserId } from "../lib/web/utils"
 import { CalibrationChart } from "./CalibrationChart"
-import { TagsSelect } from "./TagsSelect"
+import { TagsSelect } from "./questions/TagsSelect"
 import { InfoButton } from "./ui/InfoButton"
 
 export function TrackRecord({
@@ -103,10 +103,10 @@ export function TrackRecord({
             <CalibrationChart tags={tags} userId={trackRecordUserId} />
 
             {isThisUser && (
-              <div className="text-sm flex gap-2 text-gray-500 text-center mx-auto">
+              <div className="text-sm flex gap-2 text-neutral-500 text-center mx-auto">
                 <Link
-                  className=""
                   href="https://quantifiedintuitions.org/calibration"
+                  target="_blank"
                 >
                   <button className="btn">
                     <TrophyIcon

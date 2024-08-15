@@ -1,9 +1,9 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { Predict } from "../../components/Predict"
 import { Questions } from "../../components/Questions"
 import { SyncToSlack } from "../../components/SyncToSlack"
 import { UserListDisplay } from "../../components/UserListDisplay"
+import { Predict } from "../../components/predict-form/Predict"
 import { Username } from "../../components/ui/Username"
 import { api } from "../../lib/web/trpc"
 import {
@@ -79,6 +79,7 @@ export default function ListPage() {
                       key={u.id}
                       user={u}
                       className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 ml-2 hover:bg-neutral-100"
+                      unknownUserText="Invited user"
                     />
                   ))
                 ) : (
