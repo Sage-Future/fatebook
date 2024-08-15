@@ -226,9 +226,19 @@ export const questionRouter = router({
         return null
       }
 
-      return await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
-        input,
-        ctx,
+      return scrubApiKeyPropertyRecursive(
+        await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
+          input,
+          ctx
+        ),
+        [
+          "email",
+          "discordUserId",
+          "apiKey",
+          "unsubscribedFromEmailsAt",
+          "emailVerified",
+          "staleReminder",
+        ],
       )
     }),
 
