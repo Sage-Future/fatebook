@@ -1,16 +1,13 @@
-import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { Questions } from "../../components/Questions"
-import { SyncToSlack } from "../../components/SyncToSlack"
-import { UserListDisplay } from "../../components/UserListDisplay"
-import { Predict } from "../../components/predict-form/Predict"
-import { Username } from "../../components/ui/Username"
-import { api } from "../../lib/web/trpc"
-import {
-  getUserListUrl,
-  useUserId,
-} from "../../lib/web/utils"
-import SignInToFatebookPrompt from "../../components/SignInToFatebookPrompt"
+import { Predict } from "../../../../components/Predict"
+import { Questions } from "../../../../components/Questions"
+import { SyncToSlack } from "../../../../components/SyncToSlack"
+import { UserListDisplay } from "../../../../components/UserListDisplay"
+import { Username } from "../../../../components/ui/Username"
+import { api } from "../../../../lib/web/trpc"
+import { useUserId, getUserListUrl } from "../../../../lib/web/utils"
+import SignInToFatebookPrompt from "../../../../components/SignInToFatebookPrompt"
+
 
 export default function ListPage() {
   const userId = useUserId()
@@ -33,7 +30,6 @@ export default function ListPage() {
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo title={listQ.data?.name || "Team"} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
           {!userId && <SignInToFatebookPrompt/>}
@@ -70,7 +66,6 @@ export default function ListPage() {
                       key={u.id}
                       user={u}
                       className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 ml-2 hover:bg-neutral-100"
-                      unknownUserText="Invited user"
                     />
                   ))
                 ) : (

@@ -4,7 +4,8 @@ import { Questions } from "../../components/Questions"
 import { TournamentAdminPanel } from "../../components/TournamentAdminPanel"
 import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
 import { api } from "../../lib/web/trpc"
-import { signInToFatebook, useUserId } from "../../lib/web/utils"
+import { useUserId } from "../../lib/web/utils"
+import SignInToFatebookPrompt from "../../components/SignInToFatebookPrompt"
 
 export default function TournamentPage() {
   const userId = useUserId()
@@ -32,16 +33,7 @@ export default function TournamentPage() {
       <NextSeo title={tournamentQ.data?.name || "Prediction tournament"} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
-          {!userId && (
-            <div className="text-center">
-              <button
-                className="button primary mx-auto"
-                onClick={() => void signInToFatebook()}
-              >
-                Sign in to see all questions and add your own predictions
-              </button>
-            </div>
-          )}
+          {!userId && <SignInToFatebookPrompt/>}
           {isAdmin && <TournamentAdminPanel tournamentId={tournamentId} />}
           {tournamentQ.data ? (
             <Questions
