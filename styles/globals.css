@@ -32,6 +32,9 @@ body,
   .btn-primary {
     @apply text-white;
   }
+  .btn-outline {
+    @apply bg-transparent text-blue-700 border border-blue-500 hover:text-blue-600 hover:border-blue-400 hover:bg-transparent;
+  }
   .menu li > a {
     @apply active:bg-neutral-300 active:text-black !important;
   }

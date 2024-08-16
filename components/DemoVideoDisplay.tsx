@@ -15,7 +15,7 @@ export function DemoVideoDisplay({videos}: {videos: Video[]}) {
             onClick={() => setSelectedVideo(video)}
             className={clsx(
               "btn",
-              selectedVideo.src === video.src && "btn-primary",
+              selectedVideo.src === video.src && "btn-outline",
             )}
           >
             {video.text}
