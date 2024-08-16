@@ -227,10 +227,7 @@ export const questionRouter = router({
       }
 
       return scrubApiKeyPropertyRecursive(
-        await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
-          input,
-          ctx
-        ),
+        await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(input, ctx),
         [
           "email",
           "discordUserId",
@@ -1384,7 +1381,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
           : {},
         input.extraFilters?.unresolved
           ? {
-              resolution: null
+              resolution: null,
             }
           : {},
         input.extraFilters?.readyToResolve
