@@ -12,7 +12,7 @@ export function forecastsAreHidden(
   question: QuestionWithForecasts,
   userId: string | undefined,
 ) {
-  return (
+  return !question.resolved && (
     (!!question.hideForecastsUntil &&
       question.hideForecastsUntil.getTime() > Date.now()) ||
     (!!question.hideForecastsUntilPrediction &&
@@ -359,4 +359,12 @@ export function truthyLog(message: any) {
 export function logAndReturn<T>(message: T) {
   console.log(message)
   return message
+}
+
+export function capitalizeFirstLetter(str: string) {
+  if (str.length === 0) {
+    return ""
+  }
+
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }

@@ -11,14 +11,14 @@ import Image from "next/image"
 import Link from "next/link"
 import React, { Fragment } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { getQuestionUrl } from "../lib/web/question_url"
-import { api } from "../lib/web/trpc"
-import { invalidateQuestion, useUserId } from "../lib/web/utils"
-import { QuestionWithStandardIncludes } from "../prisma/additional"
-import { UserListDropdown } from "./UserListDropdown"
-import { CopyToClipboard } from "./ui/CopyToClipboard"
-import { MultiselectUsers } from "./ui/MultiselectEmail"
-import { Username } from "./ui/Username"
+import { getQuestionUrl } from "../../lib/web/question_url"
+import { api } from "../../lib/web/trpc"
+import { invalidateQuestion, useUserId } from "../../lib/web/utils"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import { UserListDropdown } from "../UserListDropdown"
+import { CopyToClipboard } from "../ui/CopyToClipboard"
+import { MultiselectUsers } from "../ui/MultiselectEmail"
+import { Username } from "../ui/Username"
 
 export function SharePopover({
   question,
@@ -309,6 +309,7 @@ function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
               key={user.id}
               user={user}
               className="mr-2 leading-relaxed"
+              unknownUserText="Invited user"
             />
           ))}
         </label>

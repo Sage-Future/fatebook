@@ -12,6 +12,7 @@ import {
   maxForecastsPerUser,
   maxLatestForecastsVisible,
   noForecastsMessage,
+  slackUnsupportedQuestionTypes,
 } from "../_constants"
 import {
   displayForecast,
@@ -21,6 +22,7 @@ import {
 } from "../_utils_common"
 import { getDateSlackFormat, getUserNameOrProfileLink } from "../_utils_server"
 import prisma from "../prisma"
+import { getQuestionUrl } from "../web/question_url"
 import {
   Blocks,
   ResolveQuestionActionParts,
@@ -44,6 +46,21 @@ export async function buildQuestionBlocks(
   question: QuestionWithForecastWithUserWithProfiles,
 ): Promise<Blocks> {
   const hideForecasts = forecastsAreHidden(question, undefined)
+
+  if (slackUnsupportedQuestionTypes.includes(question.type)) {
+    return [
+      {
+        type: "section",
+        text: markdownBlock(`*${question.title}*`),
+      },
+      {
+        type: "section",
+        text: markdownBlock(
+          `<${getQuestionUrl(question, false)}|See your team's forecasts online>`,
+        ),
+      },
+    ]
+  }
 
   return [
     {

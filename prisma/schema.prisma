@@ -9,6 +9,12 @@ datasource db {
   directUrl = env("DATABASE_DIRECT_URL")
 }
 
+enum QuestionType {
+  BINARY
+  MULTIPLE_CHOICE
+  QUANTITY
+}
+
 model Workspace {
   teamId    String   @id @unique
   teamName  String
@@ -17,29 +23,47 @@ model Workspace {
 }
 
 model Forecast {
-  id         Int      @id @default(autoincrement())
-  createdAt  DateTime @default(now())
+  id         Int             @id @default(autoincrement())
+  createdAt  DateTime        @default(now())
   comment    String?
   forecast   Decimal
   profileId  Int?
   questionId String
+  optionId   String?
+  option     QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
   userId     String
-  profile    Profile? @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile    Profile?        @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
+  question   Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model QuestionScore {
-  id                  Int      @id @default(autoincrement())
-  createdAt           DateTime @default(now())
+  id                  Int             @id @default(autoincrement())
+  createdAt           DateTime        @default(now())
   relativeScore       Decimal?
   questionId          String
-  userQuestionComboId String   @unique
+  userQuestionComboId String          @unique // on questions, this is userid + questionid, on options this is userid + optionid
   absoluteScore       Decimal
   rank                Int
   userId              String
-  question            Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question            Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  QuestionOption      QuestionOption? @relation(fields: [questionOptionId], references: [id])
+  questionOptionId    String?
+}
+
+model QuestionOption {
+  id             String          @id @default(cuid())
+  questionId     String
+  text           String
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  forecasts      Forecast[]
+  resolution     Resolution?
+  createdAt      DateTime        @default(now())
+  user           User            @relation("author", fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  resolvedAt     DateTime?
+  questionScores QuestionScore[]
 }
 
 model Question {
@@ -48,6 +72,8 @@ model Question {
   comment                      String? // todo remove, unused
   profileId                    Int?
   title                        String                   @db.Text
+  type                         QuestionType             @default(BINARY)
+  options                      QuestionOption[]
   resolveBy                    DateTime
   resolved                     Boolean                  @default(false)
   pingedForResolution          Boolean                  @default(false)
@@ -71,6 +97,7 @@ model Question {
   comments                     Comment[]
   tags                         Tag[]
   tournaments                  Tournament[]
+  exclusiveAnswers             Boolean?                 @default(true)
 }
 
 model Tag {
@@ -122,27 +149,28 @@ model SlackMessage {
 }
 
 model User {
-  id                       String          @id @default(cuid())
+  id                       String           @id @default(cuid())
   name                     String?
-  createdAt                DateTime        @default(now())
-  email                    String          @unique
+  createdAt                DateTime         @default(now())
+  email                    String           @unique
   image                    String?
   forecasts                Forecast[]
   profiles                 Profile[]
-  questions                Question[]      @relation("author")
+  questions                Question[]       @relation("author")
   questionScores           QuestionScore[]
-  questionsSharedWith      Question[]      @relation("questionsSharedWith")
+  questionsSharedWith      Question[]       @relation("questionsSharedWith")
   comments                 Comment[]
-  target                   Target?         @relation("userTarget")
-  authorOfLists            UserList[]      @relation(name: "author")
-  memberOfLists            UserList[]      @relation(name: "members")
-  staleReminder            Boolean         @default(true)
+  target                   Target?          @relation("userTarget")
+  authorOfLists            UserList[]       @relation(name: "author")
+  memberOfLists            UserList[]       @relation(name: "members")
+  staleReminder            Boolean          @default(true)
   unsubscribedFromEmailsAt DateTime?
   apiKey                   String?
-  discordUserId            String?         @unique
+  discordUserId            String?          @unique
   tags                     Tag[]
   tournaments              Tournament[]
   notifications            Notification[]
+  questionOptions          QuestionOption[] @relation("author")
 
   // Used by next-auth:
   emailVerified DateTime?

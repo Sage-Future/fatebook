@@ -8,11 +8,27 @@ import { getUserPageUrl } from "../../pages/user/[id]"
 export function Username({
   user,
   className,
+  unknownUserText = "Anonymous",
 }: {
-  user: User
+  user: User | null
   className?: string
+  unknownUserText?: string
 }) {
   const embedded = useIsEmbedded()
+  if (!user) {
+    return (
+      <span className={clsx(className)}>
+        <Image
+          src={"/default_avatar.png"}
+          width={20}
+          height={20}
+          className="inline m-0 mr-1.5 rounded-full select-none aspect-square"
+          alt=""
+        />
+        <span>{unknownUserText}</span>
+      </span>
+    )
+  }
 
   return (
     <Link
@@ -34,7 +50,7 @@ export function Username({
           className="inline m-0 mr-1.5 rounded-full select-none aspect-square"
           alt=""
         />
-        <span>{user?.name || "Invited user"}</span>
+        <span>{user?.name || unknownUserText}</span>
       </span>
     </Link>
   )

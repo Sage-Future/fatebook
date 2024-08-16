@@ -1,3 +1,5 @@
+import { QuestionType } from "@prisma/client"
+
 export const signingSecret: string = process.env.SLACK_SIGNING_SECRET!
 export const clientId: string = process.env.SLACK_CLIENT_ID!
 export const clientSecret: string = process.env.SLACK_CLIENT_SECRET!
@@ -63,3 +65,7 @@ export const CONNECTOR_WORKSPACES = [
   "T054STGLAD9", // EAG London
   "T03FPP2328Y", // LEAH office
 ] as string[]
+
+export const slackUnsupportedQuestionTypes: QuestionType[] = [
+  QuestionType.MULTIPLE_CHOICE,
+]
