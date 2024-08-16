@@ -26,6 +26,10 @@ const demoVideos = [
     src: "/for_teams.webm",
     text: "...For teams",
   },
+  {
+    src: "/for_friends.webm",
+    text: "...For friends",
+  },
 ]
 
 export default function HomePage() {
