@@ -205,7 +205,13 @@ export const questionRouter = router({
         where: { id: ctx.userId || "NO MATCH" },
       })
       assertHasAccess(ctx, question, user)
-      return question && scrubHiddenForecastsFromQuestion(question, ctx.userId)
+      return (
+        question &&
+        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
+          question,
+          ctx.userId,
+        )
+      )
     }),
 
   getQuestionsUserCreatedOrForecastedOnOrIsSharedWith: publicProcedure
@@ -1452,7 +1458,9 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
 
   return {
     items: questions
-      .map((q) => scrubHiddenForecastsFromQuestion(q, ctx.userId))
+      .map((q) =>
+        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(q, ctx.userId),
+      )
       // don't include the extra one - it's just to see if there's another page
       .slice(0, limit),
 
@@ -1556,10 +1564,10 @@ export function assertHasAccess(
   }
 }
 
-export function scrubHiddenForecastsFromQuestion<
+export function scrubHiddenForecastsAndSensitiveDetailsFromQuestion<
   QuestionX extends QuestionWithForecasts,
 >(question: QuestionX, userId: string | undefined) {
-  question = scrubApiKeyPropertyRecursive(question)
+  question = scrubApiKeyPropertyRecursive(question, ["email", "discordUserId"])
 
   if (!forecastsAreHidden(question, userId)) {
     return question

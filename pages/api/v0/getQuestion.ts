@@ -5,7 +5,7 @@ import prisma from "../../../lib/prisma"
 import {
   assertHasAccess,
   scrubApiKeyPropertyRecursive,
-  scrubHiddenForecastsFromQuestion,
+  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
 } from "../../../lib/web/question_router"
 import { authOptions } from "../auth/[...nextauth]"
 
@@ -119,8 +119,10 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
   }
 
   const userName = question!.user.name
-  const prediction = getMostRecentForecastForUser(question!, question!.userId)
-    ?.forecast
+  const prediction = getMostRecentForecastForUser(
+    question!,
+    question!.userId,
+  )?.forecast
 
   if (req.query.conciseQuestionDetails) {
     res.status(200).json({
@@ -138,7 +140,7 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
           resolution: question?.resolution,
           resolveBy: question?.resolveBy,
           resolvedAt: question?.resolvedAt,
-          forecasts: scrubHiddenForecastsFromQuestion(
+          forecasts: scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
             question,
             authedUserId,
           )?.forecasts.map((f) => ({
