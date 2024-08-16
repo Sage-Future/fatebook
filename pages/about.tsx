@@ -12,7 +12,7 @@ Fatebook was made by [Sage](https://sage-future.org), a 501(c)(3) charity buildi
 
 Want something changed or added? Send us feedback on [Discord](https://discord.gg/mt9YVB8VDE), to [hello@sage-future.org](mailto:hello@sage-future.org), or in this [form](${webFeedbackUrl}).
 
-You can use Fatebook through [fatebook.io](https://fatebook.io) or in [Slack](/for-slack). If you want to use Fatebook somewhere else, [suggest another Fatebook integration](https://forms.gle/nRqUcj154oEVLxdZ9).
+You can use Fatebook through [fatebook.io](https://fatebook.io), in [Slack](/for-slack), or anywhere on the web with the [Fatebook browser extension](/extension). If you want to use Fatebook somewhere else, [suggest another Fatebook integration](https://forms.gle/nRqUcj154oEVLxdZ9).
 
 Fatebook is open source. You can find the code on [GitHub](https://github.com/Sage-Future/fatebook). Contributions welcome!`
 
