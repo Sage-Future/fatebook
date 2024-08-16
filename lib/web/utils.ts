@@ -366,7 +366,7 @@ export function useBrowser() {
       ) {
         setBrowser("Arc")
       }
-    }, 300)
+    }, 500)
     if (navigator.userAgent.includes("Firefox")) {
       setBrowser("Firefox")
     } else if (navigator.userAgent.includes("Edg/")) {
