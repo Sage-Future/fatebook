@@ -12,23 +12,23 @@ import { DemoVideoDisplay } from "../components/DemoVideoDisplay"
 const demoVideos = [
   {
     src: "/for_personal_goals.webm",
-    text: "...For personal goals",
+    text: "For personal goals",
   },
   {
     src: "/for_project_planning.webm",
-    text: "...For project planning",
+    text: "For project planning",
   },
   {
     src: "/for_research.webm",
-    text: "...For research",
+    text: "For research",
   },
   {
     src: "/for_teams.webm",
-    text: "...For teams",
+    text: "For teams",
   },
   {
     src: "/for_friends.webm",
-    text: "...For friends",
+    text: "For friends",
   },
 ]
 
