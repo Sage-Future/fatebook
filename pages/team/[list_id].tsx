@@ -12,7 +12,7 @@ import {
 } from "../../lib/web/utils"
 import SignInToFatebookPrompt from "../../components/SignInToFatebookPrompt"
 
-export default function ListPage() {
+export default function TeamPage() {
   const userId = useUserId()
   const router = useRouter()
   const utils = api.useContext()
