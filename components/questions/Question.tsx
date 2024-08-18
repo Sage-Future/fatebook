@@ -27,6 +27,7 @@ import { api } from "../../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../../lib/web/utils"
 import { InfoButton } from "../ui/InfoButton"
 import { QuestionDetailsOption } from "./QuestionDetailsOptions"
+import { QuestionTitle } from "./QuestionTitle"
 
 export function Question({
   question,
@@ -132,24 +133,11 @@ export function Question({
             key={question.id}
           >
             <span className="col-span-3 flex gap-4 mb-1 justify-between">
-              <span
-                className={"font-semibold overflow-auto break-words"}
-                key={`${question.id}title`}
-              >
-                <Link
-                  href={getQuestionUrl(question)}
-                  key={question.id}
-                  target={embedded ? "_blank" : ""}
-                  className={"no-underline hover:underline inline items-center"}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {question.title}
-                  {embedded && (
-                    <ArrowTopRightOnSquareIcon className="inline ml-2 h-3 w-3 text-neutral-600" />
-                  )}
-                </Link>
-              </span>
+              <QuestionTitle
+                id={question.id}
+                title={question.title}
+                embedded={embedded}
+              />
               {question.type === "BINARY" && (
                 <UpdateableLatestForecast
                   question={question}

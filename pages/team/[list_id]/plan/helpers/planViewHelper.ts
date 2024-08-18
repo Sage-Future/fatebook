@@ -23,7 +23,7 @@ export function mapDateToPosition(targetDate: Date): number {
   return differenceInDays * DAY_WIDTH;
 }
 
-export function getDayNodes(): Node[] {
+export function getDayNodes(): [Node[], Node[]] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -34,9 +34,11 @@ export function getDayNodes(): Node[] {
   endDate.setMonth(endDate.getMonth() + 3);
 
   const dayNodes: Node[] = [];
+  const weekNodes: Node[] = [];
 
   for (let date = startDate; date <= endDate; date.setDate(date.getDate() + 1)) {
     const day = date.getDate();
+    const dayOfWeek = date.getDay();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
@@ -50,18 +52,29 @@ export function getDayNodes(): Node[] {
         },
         position: { x: mapDateToPosition(date), y: 40 },
     });
+
+    if (dayOfWeek == 1) {
+      weekNodes.push({
+        id: `week-${day}-${month}-${year}`,
+        type: 'week',
+        draggable: false,
+        selectable: false,
+        data: {},
+        position: { x: mapDateToPosition(date), y: 40}
+      })
+    }
   }
 
-  return dayNodes
+  return [dayNodes, weekNodes]
 }
+
 
 export function getMonthNodes(): Node[] {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
   const startDate = new Date(today);
   const endDate = new Date(today);
 
-  console.log(today.getMonth())
+  today.setHours(0, 0, 0, 0);
 
   startDate.setMonth(startDate.getMonth() - 3);
   endDate.setMonth(endDate.getMonth() + 3);
@@ -71,8 +84,6 @@ export function getMonthNodes(): Node[] {
   for (let date = startDate; date <= endDate; date.setMonth(date.getMonth() + 1)) {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
-    console.log('days in month: ', getDaysInMonth(date))
-
 
     monthNodes.push({
         id: `month-${month}-${year}`,

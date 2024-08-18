@@ -15,10 +15,11 @@ BackgroundVariant,
 Position,
 useNodes,
 Node,
-NodeToolbar,
 useReactFlow,
 useViewport,
-SelectionMode
+SelectionMode,
+NodeChange,
+applyNodeChanges
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
@@ -28,8 +29,10 @@ import { useRouter } from "next/router";
 import { Decimal } from '@prisma/client/runtime/library';
 import MonthNode from './nodes/MonthNode';
 import DayNode from './nodes/DayNode';
-import { TOTAL_WIDTH, DAY_WIDTH, WEEK_WIDTH, mapDateToPosition, getDayNodes, getTimetableNodes, getMonthNodes } from './helpers/planViewHelper';
-import DateIndicatorNode from './nodes/DateIndicatorNode';
+import { TOTAL_WIDTH, DAY_WIDTH, WEEK_WIDTH, mapDateToPosition, getDayNodes, getMonthNodes } from './helpers/planViewHelper';
+import PredictionNode from './nodes/PredictionNode';
+import WeekNode from './nodes/WeekNode';
+import { QuestionWithStandardIncludes } from '../../../../prisma/additional';
 
 interface QuestionDetails {
   id: string
@@ -37,6 +40,7 @@ interface QuestionDetails {
   resolved: boolean
   resolveBy: Date
   resolution: string | null
+  question: QuestionWithStandardIncludes
   forecasts: Forecast[]
 }
 
@@ -47,12 +51,16 @@ interface Forecast {
 }
 
 const nodeTypes = {
-  tools: DateIndicatorNode,
+  prediction: PredictionNode,
   month: MonthNode,
+  week: WeekNode,
   day: DayNode,
 };
 
 const panOnDrag = [1, 2];
+
+const NODE_MAX_Y = 700;
+const NODE_MIN_Y = 90;
 
 export function PlanViewPage() {
   const userId = useUserId()
@@ -62,7 +70,7 @@ export function PlanViewPage() {
   const initialNodes: Node[] = [];
   const initialEdges: Edge[] = [];
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect: OnConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -93,6 +101,7 @@ export function PlanViewPage() {
           resolved: question.resolved,
           resolveBy: question.resolveBy,
           resolution: question.resolution,
+          question: question,
           forecasts: question.forecasts.map((forecast => {
             return {
               userId: forecast.userId,
@@ -104,46 +113,43 @@ export function PlanViewPage() {
       })
     }
 
-    const date = new Date();
-
     const questionNodes: Node[] = questionsList.map((question => {
       return {
         id: question.id,
-        type: 'tools',
-        position: { x: mapDateToPosition(question.resolveBy), y: 60 },
-        data: { label: question.title, id: question.id },
+        type: 'prediction',
+        position: {
+          x: mapDateToPosition(question.resolveBy),
+          y: Math.floor(Math.random() * (NODE_MAX_Y - NODE_MIN_Y + 1)) + NODE_MIN_Y
+        },
+        data: {
+          id: question.id,
+          title: question.title,
+          isResolved: question.resolved,
+          question: question.question
+        },
         targetPosition: Position.Left,
         sourcePosition: Position.Right
       }
     }))
 
-
-    // console.log(mapDateToPosition(date, ))
-
-    const timetableDayNodes = getDayNodes();
+    const [timetableDayNodes, timetableWeekNodes] = getDayNodes();
     const timetableMonthNodes = getMonthNodes();
 
-    setNodes(questionNodes.concat(timetableDayNodes, timetableMonthNodes))
+    setNodes([...timetableMonthNodes, ...timetableWeekNodes, ...timetableDayNodes,...questionNodes])
   }, [questionsQ.data])
-  
-  // const setPosition = useCallback(
-  //   (pos: any) =>
-  //     setNodes((nodes) =>
-  //       nodes.map((node) => ({
-  //         ...node,
-  //         data: { ...node.data, toolbarPosition: pos },
-  //       })),
-  //     ),
-  //   [setNodes],
-  // );
-  // const forceToolbarVisible = useCallback((enabled: any) =>
-  //   setNodes((nodes) =>
-  //     nodes.map((node) => ({
-  //       ...node,
-  //       data: { ...node.data, forceToolbarVisible: enabled },
-  //     })),
-  //   ), []
-  // );
+
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    setNodes((nds) => {
+      const parsedChanges = changes.map((change) => {
+        if (change.type === "position" && change.position) {
+          change.position = { x: change.position.x, y: Math.min(Math.max(change.position.y, NODE_MIN_Y), NODE_MAX_Y ) };
+        }
+
+        return change;
+      });
+      return applyNodeChanges(parsedChanges, nds);
+    });
+  }, []);
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
@@ -181,11 +187,11 @@ export function PlanViewPage() {
                 <span>Always show toolbar</span>
               </label>
             </Panel> */}
-            <MiniMap />
+            {/* <Controls /> */}
+            {/* <MiniMap /> */}
             <Background id="1" gap={DAY_WIDTH} color="#ccc" variant={BackgroundVariant.Dots}/>
-            <Background id="2" gap={WEEK_WIDTH} offset={[WEEK_WIDTH/2, 10]} color="#badbed" variant={BackgroundVariant.Lines}/>
           </ReactFlow>
-          <Sidebar/>
+          {/* <Sidebar/> */}
         </ReactFlowProvider>
       </div>
     </div>
@@ -193,8 +199,6 @@ export function PlanViewPage() {
 }
 
 function Sidebar() {
-  // This hook will only work if the component it's used in is a child of a
-  // <ReactFlowProvider />.
   const nodes = useNodes()
   const reactFlow = useReactFlow()
   const { x, y, zoom } = useViewport();
@@ -211,6 +215,5 @@ function Sidebar() {
     </aside>
   )
 }
-
 
 export default PlanViewPage;

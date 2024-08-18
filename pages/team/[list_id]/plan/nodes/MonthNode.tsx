@@ -10,8 +10,8 @@ interface MonthNodeProps {
 function MonthNode({ data }: MonthNodeProps) {
   return (
     <>
-      <div className='border-2' style={{ display: 'flex', height: '40px', width: `${data.width}px`, boxSizing: 'border-box' }}>
-        <div className='text-m'>{data.label}</div>
+      <div className='border border-indigo-400 bg-indigo-200 flex items-center' style={{ display: 'flex', height: '40px', width: `${data.width}px`, boxSizing: 'border-box' }}>
+        <div className='text-m p-2'>{data.label}</div>
       </div>
     </>
   );
