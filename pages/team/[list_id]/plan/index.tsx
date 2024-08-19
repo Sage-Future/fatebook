@@ -66,7 +66,6 @@ export const NODE_MIN_Y = 90;
 export function PlanViewPage() {
   const userId = useUserId()
   const router = useRouter()
-  const utils = api.useContext()
 
   const [timetableDayNodes, timetableWeekNodes] = getDayNodes();
   const timetableMonthNodes = getMonthNodes();
