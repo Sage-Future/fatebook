@@ -28,6 +28,7 @@ export function UpdateableLatestForecast({
   option,
   cumulativeForecast,
   small,
+  showErrorMessage = false,
 }: {
   question: QuestionWithStandardIncludes
   autoFocus?: boolean
@@ -35,6 +36,7 @@ export function UpdateableLatestForecast({
   option?: QuestionOption & { forecasts: Forecast[] } // TODO: fix this type
   cumulativeForecast?: number
   small?: boolean
+  showErrorMessage?: boolean
 }) {
   const userId = useUserId()
   const hasResolution =
@@ -234,7 +236,7 @@ export function UpdateableLatestForecast({
           </>
         )}
       </span>
-      {errorMessage && (
+      {errorMessage && showErrorMessage && (
         <motion.div
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}

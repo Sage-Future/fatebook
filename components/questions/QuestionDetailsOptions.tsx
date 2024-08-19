@@ -32,6 +32,7 @@ export function QuestionDetailsOption({
           cumulativeForecast={cumulativeForecast}
           small={true}
           key={option.id}
+          showErrorMessage={true}
         />
         {question.exclusiveAnswers ? (
           <div />
