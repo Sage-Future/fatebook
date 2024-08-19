@@ -24,6 +24,13 @@ export function getMostRecentForecastPerUser(
   forecasts: Forecast[],
   date: Date,
 ): [string, Forecast][] {
+  return Array.from(getMostRecentForecastPerUserMap(forecasts, date), ([id, value]) => [id, value])
+}
+
+export function getMostRecentForecastPerUserMap(
+  forecasts: Forecast[],
+  date: Date,
+): Map<string, Forecast> {
   const forecastsPerUser = new Map<string, Forecast>()
   for (const forecast of forecasts) {
     const authorId = forecast.userId
@@ -36,7 +43,7 @@ export function getMostRecentForecastPerUser(
       forecastsPerUser.set(authorId, forecast)
     }
   }
-  return Array.from(forecastsPerUser, ([id, value]) => [id, value])
+  return forecastsPerUser
 }
 
 interface HasForecasts {
@@ -126,6 +133,16 @@ export function displayForecast(
       : "?"
   }${includePercent ? "%" : ""}`
 }
+
+export function displayForecastIfExists(
+  forecast: Decimal | null | undefined,
+  decimalPlaces: number
+): string {
+  return forecast
+    ? `${formatDecimalNicely(forecast.toNumber() * 100, decimalPlaces)}%`
+    : "--%"
+}
+
 
 export function formatScoreNicely(
   num: number,

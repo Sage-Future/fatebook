@@ -1,8 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react';
 import {
 ReactFlow,
-MiniMap,
-Controls,
 Background,
 useNodesState,
 useEdgesState,
@@ -12,11 +10,7 @@ OnConnect,
 Edge,
 ReactFlowProvider,
 BackgroundVariant,
-Position,
-useNodes,
 Node,
-useReactFlow,
-useViewport,
 SelectionMode,
 NodeChange,
 applyNodeChanges
@@ -29,26 +23,33 @@ import { useRouter } from "next/router";
 import { Decimal } from '@prisma/client/runtime/library';
 import MonthNode from './nodes/MonthNode';
 import DayNode from './nodes/DayNode';
-import { TOTAL_WIDTH, DAY_WIDTH, WEEK_WIDTH, mapDateToPosition, getDayNodes, getMonthNodes } from './helpers/planViewHelper';
+import { TOTAL_WIDTH, DAY_WIDTH, getDayNodes, getMonthNodes, mapQuestionsToQuestionNodes } from './helpers/planViewHelper';
 import PredictionNode from './nodes/PredictionNode';
 import WeekNode from './nodes/WeekNode';
 import { QuestionWithStandardIncludes } from '../../../../prisma/additional';
+import { getGeometricCommunityForecast, getMostRecentForecastPerUserMap } from '../../../../lib/_utils_common';
+import { Prisma } from '@prisma/client';
 
-interface QuestionDetails {
+export interface QuestionDetails {
   id: string
   title: string
   resolved: boolean
   resolveBy: Date
   resolution: string | null
   question: QuestionWithStandardIncludes
-  forecasts: Forecast[]
+  userForecasts: Map<string, Forecast>
 }
 
-interface Forecast {
-  userId: string
+export interface UserDetails {
+  id: string
   name: string | null
-  forecast: Decimal
+  image: string | null
 }
+
+export interface Forecast {
+  user: UserDetails
+  forecast: Decimal | null
+};
 
 const nodeTypes = {
   prediction: PredictionNode,
@@ -59,23 +60,27 @@ const nodeTypes = {
 
 const panOnDrag = [1, 2];
 
-const NODE_MAX_Y = 700;
-const NODE_MIN_Y = 90;
+export const NODE_MAX_Y = 700;
+export const NODE_MIN_Y = 90;
 
 export function PlanViewPage() {
   const userId = useUserId()
   const router = useRouter()
   const utils = api.useContext()
-  
-  const initialNodes: Node[] = [];
-  const initialEdges: Edge[] = [];
 
-  const [nodes, setNodes] = useNodesState(initialNodes);
+  const [timetableDayNodes, timetableWeekNodes] = getDayNodes();
+  const timetableMonthNodes = getMonthNodes();
+
+  const initialEdges: Array<Edge> = Array<Edge>();
+
+  const [nodes, setNodes] = useNodesState([... timetableMonthNodes, ...timetableWeekNodes, ...timetableDayNodes]);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
   const onConnect: OnConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
-  const questionsList: QuestionDetails[] = Array<QuestionDetails>()
+  const [userViewId, setUserViewId] = useState<string>()
+  const [userList, setUserList] = useState(Array<UserDetails>())
+  const [questionsList, setQuestionsList] = useState(Array<QuestionDetails>())
+  const [questionNodes, setQuestionNodes] = useState(Array<Node>())
 
   // allow an optional ignored slug text before `--` character
   const parts =
@@ -92,57 +97,114 @@ export function PlanViewPage() {
       }
     )
   
+  const listQ = api.userList.get.useQuery(
+    { id: listId },
+    { retry: false }
+  )
+  
+  // const editQuestion = api.question.editQuestion.useMutation({
+  //   async onSuccess(_, variables) {
+  //     const { questionId } = variables;
+  //     await invalidateQuestion(utils, { id: questionId });
+  //   },
+  // });
+
+  useEffect(() => {
+    if (userId) {
+      setUserViewId(userId);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    console.log(userViewId, userId)
+    if (userId && userViewId) {
+      setQuestionNodes(mapQuestionsToQuestionNodes(questionsList, userId, userViewId))
+    }
+  }, [userViewId]);
+
+  useEffect(() => {
+    if (listQ.data) {
+      const updatedUserSet = new Set(
+        listQ.data.users.map(user => ({
+          id: user.id,
+          name: user.name,
+          image: user.image
+        }))
+      );
+
+      updatedUserSet.add({
+        id: 'community-user',
+        name: 'Community',
+        image: null
+      })
+
+      setUserList(Array.from(updatedUserSet))
+
+    }
+  }, [listQ.data])
+  
   useEffect(() => {
     if (questionsQ.data) {
-      questionsQ.data.items.forEach((question) => {
-        questionsList.push({
-          id: question.id,
-          title: question.title,
-          resolved: question.resolved,
-          resolveBy: question.resolveBy,
-          resolution: question.resolution,
-          question: question,
-          forecasts: question.forecasts.map((forecast => {
-            return {
-              userId: forecast.userId,
-              name: forecast.user.name,
-              forecast: forecast.forecast
-            }
-          }))
+
+      const updatedQuestionList = questionsQ.data.items.map((question) => ({
+        id: question.id,
+        title: question.title,
+        resolved: question.resolved,
+        resolveBy: question.resolveBy,
+        resolution: question.resolution,
+        question: question,
+        userForecasts: new Map<UserDetails, Forecast>()
+      }))
+
+      setQuestionsList(updatedQuestionList)
+    }
+  }, [questionsQ.data])
+
+  useEffect(() => {
+    if (userId && userViewId) {
+      setQuestionNodes(mapQuestionsToQuestionNodes(questionsList, userId, userViewId))
+    }
+  }, [questionsList, userId])
+
+  useEffect(() => {
+    if (userList.length > 0 && questionsList.length > 0) {
+      questionsList.forEach(question => {
+        const mostRecentForecasts = getMostRecentForecastPerUserMap(question.question.forecasts, new Date())
+        userList.forEach(user => {
+          if (user.id == 'community-user') {
+            question.userForecasts.set(user.id, {
+              user: user,
+              forecast: new Prisma.Decimal(getGeometricCommunityForecast(question.question, new Date()))
+            })
+          } else {
+            question.userForecasts.set(user.id, {
+              user: user,
+              forecast: mostRecentForecasts.get(user.id)?.forecast ?? null
+            });
+          }
         })
       })
     }
+  }, [userList, questionsList])
 
-    const questionNodes: Node[] = questionsList.map((question => {
-      return {
-        id: question.id,
-        type: 'prediction',
-        position: {
-          x: mapDateToPosition(question.resolveBy),
-          y: Math.floor(Math.random() * (NODE_MAX_Y - NODE_MIN_Y + 1)) + NODE_MIN_Y
-        },
-        data: {
-          id: question.id,
-          title: question.title,
-          isResolved: question.resolved,
-          question: question.question
-        },
-        targetPosition: Position.Left,
-        sourcePosition: Position.Right
-      }
-    }))
-
-    const [timetableDayNodes, timetableWeekNodes] = getDayNodes();
-    const timetableMonthNodes = getMonthNodes();
-
-    setNodes([...timetableMonthNodes, ...timetableWeekNodes, ...timetableDayNodes,...questionNodes])
-  }, [questionsQ.data])
+  useEffect(() => {
+    setNodes([...timetableWeekNodes, ...timetableDayNodes, ...timetableMonthNodes, ...questionNodes])
+  }, [questionNodes])
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     setNodes((nds) => {
       const parsedChanges = changes.map((change) => {
         if (change.type === "position" && change.position) {
-          change.position = { x: change.position.x, y: Math.min(Math.max(change.position.y, NODE_MIN_Y), NODE_MAX_Y ) };
+          change.position = { x: change.position.x, y: Math.min(Math.max(change.position.y, NODE_MIN_Y), NODE_MAX_Y) };
+
+          // const resolutionDate = mapPositionToDate(change.position.x)
+          // const question = questionsList.find(question => question.id == change.id)
+          // if (resolutionDate && resolutionDate != question?.resolveBy) {
+          //   editQuestion.mutate({
+          //     questionId: change.id,
+          //     resolveBy: mapPositionToDate(change.position.x),
+          //   })
+          // }
         }
 
         return change;
@@ -172,47 +234,36 @@ export function PlanViewPage() {
             selectionOnDrag
             selectionMode={SelectionMode.Partial}
           >
-            {/* <Panel>
-              <h3>Node Toolbar position:</h3>
-              <button onClick={() => setPosition(Position.Top)}>top</button>
-              <button onClick={() => setPosition(Position.Right)}>right</button>
-              <button onClick={() => setPosition(Position.Bottom)}>bottom</button>
-              <button onClick={() => setPosition(Position.Left)}>left</button>
-              <h3>Override Node Toolbar visibility</h3>
-              <label>
-                <input
-                  type="checkbox"
-                  onChange={(e) => forceToolbarVisible(e.target.checked)}
-                />
-                <span>Always show toolbar</span>
-              </label>
-            </Panel> */}
-            {/* <Controls /> */}
-            {/* <MiniMap /> */}
+            {userViewId ? <UserViewToggle userList={userList} selectedUserId={userViewId} handleSelection={setUserViewId} /> : <></>}
             <Background id="1" gap={DAY_WIDTH} color="#ccc" variant={BackgroundVariant.Dots}/>
           </ReactFlow>
-          {/* <Sidebar/> */}
         </ReactFlowProvider>
       </div>
     </div>
   );
 }
 
-function Sidebar() {
-  const nodes = useNodes()
-  const reactFlow = useReactFlow()
-  const { x, y, zoom } = useViewport();
- 
+interface UserViewToggleProps {
+  userList: UserDetails[]
+  selectedUserId: string
+  handleSelection: Dispatch<SetStateAction<string | undefined>>
+}
+
+function UserViewToggle({ userList, selectedUserId, handleSelection }: UserViewToggleProps) {
+
   return (
-    <aside>
-      {nodes.map((node) => (
-        <div key={node.id}>
-          Node {node.id} -
-            x: {node.position.x.toFixed(2)},
-            y: {node.position.y.toFixed(2)},
-        </div>
-      ))}
-    </aside>
+    <Panel position="bottom-left">
+      <div>
+        <label htmlFor="dropdown">User View:</label>
+        <select id="dropdown" value={selectedUserId} onChange={(e) => handleSelection(e.target.value)}>
+          {Array.from(userList).map(user => (
+            <option key={user.id} value={user.id}>
+              {user.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    </Panel>
   )
 }
 

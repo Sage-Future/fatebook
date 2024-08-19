@@ -1,4 +1,5 @@
-import { Node } from "@xyflow/react";
+import { Node, Position } from "@xyflow/react";
+import { NODE_MAX_Y, NODE_MIN_Y, QuestionDetails } from "..";
 
 export const DAY_WIDTH = 20;
 const NUMBER_OF_WEEKS = 8;
@@ -106,4 +107,28 @@ function getDaysInMonth(date: Date): number {
   nextMonth.setDate(nextMonth.getDate() - 1);
 
   return nextMonth.getDate();
+}
+
+export function mapQuestionsToQuestionNodes(questionsList: QuestionDetails[], userId: string, userViewId: string): Node[] {
+ return questionsList.map((question => {
+      return {
+        id: question.id,
+        type: 'prediction',
+        position: {
+          x: mapDateToPosition(question.resolveBy),
+          y: Math.floor(Math.random() * (NODE_MAX_Y - NODE_MIN_Y + 1)) + NODE_MIN_Y
+        },
+        data: {
+          id: question.id,
+          userId: userId,
+          userViewId: userViewId,
+          title: question.title,
+          isResolved: question.resolved,
+          userForecasts: question.userForecasts,
+          question: question.question
+        },
+        targetPosition: Position.Left,
+        sourcePosition: Position.Right
+      }
+    }))
 }
