@@ -153,7 +153,7 @@ export function PlanViewPage() {
         resolveBy: question.resolveBy,
         resolution: question.resolution,
         question: question,
-        userForecasts: new Map<UserDetails, Forecast>()
+        userForecasts: new Map<string, Forecast>()
       }))
 
       setQuestionsList(updatedQuestionList)
