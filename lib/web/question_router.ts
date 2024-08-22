@@ -527,7 +527,7 @@ export const questionRouter = router({
         questionId: z.string(),
         resolution: z.string({
           description:
-            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
+            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question. You can only resolve your own questions.",
         }),
         questionType: z.string(),
         apiKey: z.string().optional(),
@@ -540,6 +540,14 @@ export const questionRouter = router({
         path: "/v0/resolveQuestion",
         description:
           "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            resolution: "YES",
+            questionType: "BINARY",
+            apiKey: "your_api_key_here",
+          },
+        },
       },
     })
     .output(z.undefined())
@@ -548,7 +556,7 @@ export const questionRouter = router({
 
       await handleQuestionResolution(
         input.questionId,
-        input.resolution as string,
+        input.resolution,
         input.questionType as QuestionType,
         input.optionId,
       )
@@ -773,7 +781,12 @@ export const questionRouter = router({
           })
           .max(1)
           .min(0),
-        optionId: z.string().optional(),
+        optionId: z
+          .string()
+          .optional()
+          .describe(
+            "The ID of the selected option for multiple-choice questions. Only required for multiple-choice questions.",
+          ),
         apiKey: z.string().optional(),
       }),
     )
@@ -784,6 +797,13 @@ export const questionRouter = router({
         path: "/v0/addForecast",
         description:
           "Add a forecast to the question. Forecasts are between 0 and 1.",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            forecast: 0.75,
+            apiKey: "your_api_key_here",
+          },
+        },
       },
     })
     .mutation(async ({ input, ctx }) => {
@@ -936,7 +956,20 @@ export const questionRouter = router({
       }),
     )
     .output(z.undefined())
-    .meta({ openapi: { method: "POST", path: "/v0/addComment" } })
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/v0/addComment",
+        description: "Add a comment to the question.",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            comment: "This is an interesting question!",
+            apiKey: "your_api_key_here",
+          },
+        },
+      },
+    })
     .mutation(async ({ input, ctx }) => {
       const question = await prisma.question.findUnique({
         where: {
