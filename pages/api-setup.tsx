@@ -41,7 +41,7 @@ export default function ApiPage() {
         )}
         {userId && (
           <div className="flex flex-col w-full gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <label className="label whitespace-nowrap font-semibold">
                 Your API key
               </label>
