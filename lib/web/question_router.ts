@@ -840,6 +840,19 @@ export const questionRouter = router({
         })
       }
 
+      if (input.optionId && question.type !== "MULTIPLE_CHOICE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Option ID can only be supplied for multiple choice questions. This question is a ${question.type}`,
+        })
+      }
+      if (!input.optionId && question.type === "MULTIPLE_CHOICE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Option ID must be supplied for multiple choice questions`,
+        })
+      }
+
       const lastForecastByUser = question.forecasts
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // most recent first
         .find((f) => f.userId === ctx.userId)
