@@ -825,7 +825,6 @@ export default function GlobalStatsPage({
                       </div>
                     )
                   } else if (chart.type === "stacked-bar") {
-                    console.log(chart.data)
                     return (
                       <div
                         key={chart.title}
