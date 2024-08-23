@@ -12,11 +12,12 @@ export function forecastsAreHidden(
   question: QuestionWithForecasts,
   userId: string | undefined,
 ) {
-  return !question.resolved && (
-    (!!question.hideForecastsUntil &&
+  return (
+    !question.resolved &&
+    ((!!question.hideForecastsUntil &&
       question.hideForecastsUntil.getTime() > Date.now()) ||
-    (!!question.hideForecastsUntilPrediction &&
-      (!userId || !question.forecasts.some((f) => f.userId === userId)))
+      (!!question.hideForecastsUntilPrediction &&
+        (!userId || !question.forecasts.some((f) => f.userId === userId))))
   )
 }
 
@@ -352,12 +353,16 @@ export function mean(arr: number[]) {
 
 // for convenient debugging
 export function truthyLog(message: any) {
-  console.log(message)
+  if (process.env.NODE_ENV === "development") {
+    console.log(message)
+  }
   return true as true
 }
 
 export function logAndReturn<T>(message: T) {
-  console.log(message)
+  if (process.env.NODE_ENV === "development") {
+    console.log(message)
+  }
   return message
 }
 
