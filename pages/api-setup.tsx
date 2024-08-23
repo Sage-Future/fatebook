@@ -2,6 +2,7 @@ import { NextSeo } from "next-seo"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import "swagger-ui-react/swagger-ui.css"
+import { CopyToClipboard } from "../components/ui/CopyToClipboard"
 import { api } from "../lib/web/trpc"
 import { signInToFatebook, useUserId } from "../lib/web/utils"
 
@@ -39,34 +40,50 @@ export default function ApiPage() {
           </div>
         )}
         {userId && (
-          <div className="flex flex-wrap gap-2">
-            <label className="label">Your API key</label>
-            <input
-              className="input"
-              type="text"
-              value={apiKey.data ?? ""}
-              readOnly
-              disabled={!apiKey.data || regenerateApiKey.isLoading}
-            />
-            <button
-              className="button primary"
-              onClick={() => {
-                if (regenerateApiKey.isLoading) return
-                if (apiKey.data) {
-                  if (
-                    confirm(
-                      "Are you sure you want to regenerate your API key? This will invalidate your old API key.",
-                    )
-                  ) {
-                    regenerateApiKey.mutate()
-                  }
-                } else {
-                  void regenerateApiKey.mutate()
-                }
-              }}
-            >
-              {apiKey.data ? "Regenerate" : "Generate"}
-            </button>
+          <div className="flex flex-col w-full gap-2">
+            <div className="flex items-center gap-2">
+              <label className="label whitespace-nowrap font-semibold">
+                Your API key
+              </label>
+              <div className="flex flex-grow gap-2">
+                <div className="relative flex-grow">
+                  <input
+                    className="input w-full pr-10"
+                    type="text"
+                    value={apiKey.data ?? ""}
+                    readOnly
+                    disabled={!apiKey.data || regenerateApiKey.isLoading}
+                  />
+                  {apiKey.data && (
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+                      <CopyToClipboard
+                        textToCopy={apiKey.data ?? ""}
+                        buttonLabel="Copy"
+                      />
+                    </div>
+                  )}
+                </div>
+                <button
+                  className="button primary whitespace-nowrap"
+                  onClick={() => {
+                    if (regenerateApiKey.isLoading) return
+                    if (apiKey.data) {
+                      if (
+                        confirm(
+                          "Are you sure you want to regenerate your API key? This will invalidate your old API key.",
+                        )
+                      ) {
+                        regenerateApiKey.mutate()
+                      }
+                    } else {
+                      void regenerateApiKey.mutate()
+                    }
+                  }}
+                >
+                  {apiKey.data ? "Regenerate" : "Generate"}
+                </button>
+              </div>
+            </div>
           </div>
         )}
         <p>
@@ -74,23 +91,23 @@ export default function ApiPage() {
           this URL (separated onto multiple lines for readability):
         </p>
 
-        <p className="bg-neutral-200 p-2 rounded-md break-words">
+        <p className="bg-neutral-100 outline outline-neutral-300 outline-1 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/createQuestion"}
           {"?apiKey="}
           {apiKey.data || "YOUR_API_KEY"}
           <br />
           {"&title="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"YOUR_QUESTION_TITLE"}
           </span>
           <br />
           {"&resolveBy="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"RESOLUTION_DATE_YYYY-MM-DD"}
           </span>
           <br />
           {"&forecast="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"FORECAST_BETWEEN_0_AND_1"}
           </span>
           <br />
@@ -98,49 +115,63 @@ export default function ApiPage() {
 
         <p>{"You can also add some optional parameters, here's an example:"}</p>
 
-        <p className="bg-neutral-200 p-2 rounded-md break-words">
+        <p className="bg-neutral-100 outline outline-neutral-300 outline-1 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/createQuestion"}
           {"?apiKey="}
           {apiKey.data || "YOUR_API_KEY"}
           <br />
           {"&title="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"YOUR_QUESTION_TITLE"}
           </span>
           <br />
           {"&resolveBy="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"RESOLUTION_DATE_YYYY-MM-DD"}
           </span>
           <br />
           {"&forecast="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"FORECAST_BETWEEN_0_AND_1"}
           </span>
           <br />
           {"&tags="}
-          <span className="bg-neutral-300 font-semibold">{"TAG_1"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"TAG_1"}
+          </span>
           <br />
           {"&tags="}
-          <span className="bg-neutral-300 font-semibold">{"TAG_2"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"TAG_2"}
+          </span>
           <br />
           {"&sharePublicly="}
-          <span className="bg-neutral-300 font-semibold">{"yes"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"yes"}
+          </span>
           <br />
           {"&shareWithLists="}
-          <span className="bg-neutral-300 font-semibold">{"LIST_NAME_1"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"LIST_NAME_1"}
+          </span>
           <br />
           {"&shareWithLists="}
-          <span className="bg-neutral-300 font-semibold">{"LIST_NAME_2"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"LIST_NAME_2"}
+          </span>
           <br />
           {"&shareWithEmail="}
-          <span className="bg-neutral-300 font-semibold">{"EMAIL_1"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"EMAIL_1"}
+          </span>
           <br />
           {"&shareWithEmail="}
-          <span className="bg-neutral-300 font-semibold">{"EMAIL_2"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"EMAIL_2"}
+          </span>
           <br />
           {"&hideForecastsUntil="}
-          <span className="bg-neutral-300 font-semibold">
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
             {"HIDE_FORECASTS_UNTIL_DATE_YYYY-MM-DD"}
           </span>
           <br />
@@ -190,13 +221,15 @@ export default function ApiPage() {
           }
         </p>
 
-        <p className="bg-neutral-200 p-2 rounded-md break-words">
+        <p className="bg-neutral-100 outline outline-neutral-300 outline-1 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/getQuestion"}
           {"?apiKey="}
           {apiKey.data || "YOUR_API_KEY"}
           <br />
           {"&questionId="}
-          <span className="bg-neutral-300 font-semibold">{"QUESTION_ID"}</span>
+          <span className="bg-indigo-100 text-indigo-800 font-semibold">
+            {"QUESTION_ID"}
+          </span>
           <br />
         </p>
 
@@ -204,11 +237,11 @@ export default function ApiPage() {
           {
             "To get the question ID, go to the question page and copy the ID from the URL. The ID is the part after the --, e.g. for this question:"
           }{" "}
-          <span className="bg-neutral-200 p-0.5 rounded-md">
+          <span className="bg-neutral-100 outline outline-neutral-300 outline-1 p-0.5 rounded-md">
             https://fatebook.io/q/will-adam-win-the-next-aoe-game---clkqtczp00001l008qcrma6s7
           </span>{" "}
           the ID is{" "}
-          <span className="bg-neutral-200 p-0.5 rounded-md">
+          <span className="bg-neutral-100 outline outline-neutral-300 outline-1 p-0.5 rounded-md">
             {"clkqtczp00001l008qcrma6s7"}
           </span>
           .
