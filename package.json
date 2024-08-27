@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild": "prisma generate",
+    "prebuild": "prisma generate --no-hints",
     "dev": "npm run ssl-proxy & dotenv next dev -- -p 3005",
     "build": "next build",
     "start": "next start",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "prisma generate --no-hints && prisma migrate deploy && next build",
     "ssl-proxy": "npx local-ssl-proxy --key localhost-key.pem --cert localhost.pem --source 3000 --target 3005",
     "lint": "next lint --dir lib --dir pages --dir components",
     "format": "prettier --write .",
