@@ -204,7 +204,7 @@ export const questionRouter = router({
       const user = await prisma.user.findUnique({
         where: { id: ctx.userId || "NO MATCH" },
       })
-      assertHasAccess(ctx, question, user)
+      assertHasAccess(question, user)
       return (
         question &&
         scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
@@ -825,7 +825,7 @@ export const questionRouter = router({
         },
       })
 
-      assertHasAccess(ctx, question, user)
+      assertHasAccess(question, user)
       if (question === null) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -855,7 +855,7 @@ export const questionRouter = router({
 
       const lastForecastByUser = question.forecasts
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // most recent first
-        .find((f) => f.userId === ctx.userId)
+        .find((f) => f.userId === user.id)
 
       // disallow submitting the same forecast twice within two minutes
       if (
@@ -870,7 +870,7 @@ export const questionRouter = router({
         data: {
           user: {
             connect: {
-              id: ctx.userId,
+              id: user.id,
             },
           },
           question: {
@@ -954,7 +954,7 @@ export const questionRouter = router({
 
       await backendAnalyticsEvent("forecast_submitted", {
         platform: input.apiKey ? "api" : "web",
-        user: ctx.userId,
+        user: user.id,
         question: question.id,
         forecast: input.forecast,
       })
@@ -1011,7 +1011,7 @@ export const questionRouter = router({
       })
 
       const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
-      assertHasAccess(ctx, question, user)
+      assertHasAccess(question, user)
       if (question === null) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -1028,7 +1028,7 @@ export const questionRouter = router({
           },
           user: {
             connect: {
-              id: ctx.userId,
+              id: user.id,
             },
           },
           comment: input.comment,
@@ -1062,7 +1062,7 @@ export const questionRouter = router({
 
       await backendAnalyticsEvent("comment_added", {
         platform: input.apiKey ? "api" : "web",
-        user: ctx.userId || user.id,
+        user: user.id,
       })
     }),
 
@@ -1581,7 +1581,6 @@ export async function getQuestionAssertAuthor(
 }
 
 export function assertHasAccess(
-  ctx: { userId: string | undefined },
   question: QuestionWithForecastsAndSharedWithAndLists | null,
   user: User | null,
 ) {
@@ -1589,17 +1588,19 @@ export function assertHasAccess(
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
 
+  const userId = user?.id || "NO MATCH"
+
   if (
     question.sharedPublicly ||
-    question.sharedWith.some((u) => u.id === ctx.userId) ||
+    question.sharedWith.some((u) => u.id === userId) ||
     question.sharedWithLists.some(
       (l) =>
-        l.users.some((u) => u.id === ctx.userId) ||
-        l.authorId === ctx.userId ||
+        l.users.some((u) => u.id === userId) ||
+        l.authorId === userId ||
         l.emailDomains.some((ed) => user && user.email.endsWith(ed)),
     ) ||
-    question.userId === ctx.userId ||
-    question.forecasts.some((f) => f.userId === ctx.userId) // for slack questions
+    question.userId === userId ||
+    question.forecasts.some((f) => f.userId === userId) // for slack questions
   ) {
     return question as QuestionWithForecasts
   } else {
