@@ -1501,7 +1501,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                           contains: input.extraFilters.searchString,
                           mode: "insensitive",
                         },
-                        userId: ctx.userId, 
+                        userId: userIdIfAuthed,
                       },
                     },
                   },
