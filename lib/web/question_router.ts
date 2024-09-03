@@ -108,7 +108,7 @@ const zodExtraFilters = z.object({
     })
     .optional(),
   searchString: z
-    .string({ description: "Only get questions containing this search string" })
+    .string({ description: "Only get questions or tags containing this search string" })
     .optional(),
   theirUserId: z
     .string({
@@ -1488,6 +1488,16 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                     comments: {
                       some: {
                         comment: {
+                          contains: input.extraFilters.searchString,
+                          mode: "insensitive",
+                        },
+                      },
+                    },
+                  },
+                  {
+                    tags: {
+                      some: {
+                        name: {
                           contains: input.extraFilters.searchString,
                           mode: "insensitive",
                         },
