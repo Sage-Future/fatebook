@@ -23,3 +23,6 @@ localhost.pem
 
 .env*.local
 .idea
+
+# Don't commit scripts in root dir
+*.py
