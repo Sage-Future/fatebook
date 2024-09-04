@@ -7,9 +7,8 @@ Closes #[Issue Number]
 
 ## Changes Made
 
-[List the key changes made in this PR. Use bullet points for clarity]
+## [List the key changes made in this PR. Use bullet points for clarity]
 
--
 -
 
 ## Testing
