@@ -71,10 +71,10 @@ export default function ListPage() {
                   className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 hover:bg-neutral-100"
                 />
               </span>
-              <div className="block">
+              <div>
                 <span>Team members:</span>
                 {listQ.data.users.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 mt-1 max-w-2xl">
+                  <div className="flex flex-wrap gap-2 mt-1 max-w-full">
                     {listQ.data.users.map((u) => (
                       <Username
                         key={u.id}
