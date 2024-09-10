@@ -21,6 +21,7 @@ export default function Footer({
             <Link
               className="mr-4"
               href="https://www.every.org/sage-future?utm_campaign=donate-link&method=card%2Cbank%2Cpaypal%2Cpay%2Cvenmo%2Cstocks%2Cdaf%2Ccrypto#/donate"
+              target="_blank"
             >
               Donate
             </Link>{" "}
