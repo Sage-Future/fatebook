@@ -1,11 +1,38 @@
-import clsx from "clsx"
 import { NextSeo } from "next-seo"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useRef, useState } from "react"
 import { useBrowser } from "../lib/web/utils"
+import { DemoVideoDisplay } from "../components/DemoVideoDisplay"
 
+const demoVideos = [
+  {
+    src: "/gdocs2x.webm",
+    caption: "Instantly create and embed predictions in Google Docs",
+    text: "...in Google Docs",
+  },
+  {
+    src: "/meet.webm",
+    caption: "Instantly create and embed predictions in Google Meet",
+    text: "...in Google Meet",
+  },
+  {
+    src: "/asana2x.webm",
+    caption: "Instantly create and embed predictions in your todo list",
+    text: "...in your todo list",
+  },
+  {
+    src: "/notion2x.webm",
+    caption: "Instantly create and embed predictions in Notion",
+    text: "...in Notion",
+  },
+  {
+    src: "/twitter2x.webm",
+    caption:
+      "Instantly create and embed predictions anywhere on the web",
+    text: "...and anywhere else on the web",
+  },
+]
 export default function ExtensionPage() {
   const router = useRouter()
   const justInstalled = router.query.installed
@@ -175,106 +202,10 @@ export default function ExtensionPage() {
           </div>
         </div>
 
-        <DemoVideoDisplay />
+        <DemoVideoDisplay videos={demoVideos} />
       </div>
     </div>
   )
 }
 
-function DemoVideoDisplay() {
-  const [selectedVideo, setSelectedVideo] = useState({
-    src: "/gdocs2x.webm",
-    caption: "Instantly create and embed predictions in Google Docs",
-  })
 
-  return (
-    <div className="flex flex-row gap-4 max-sm:flex-col-reverse">
-      <div className="flex flex-col gap-2 my-auto">
-        {[
-          {
-            src: "/gdocs2x.webm",
-            caption: "Instantly create and embed predictions in Google Docs",
-            text: "...in Google Docs",
-          },
-          {
-            src: "/meet.webm",
-            caption: "Instantly create and embed predictions in Google Meet",
-            text: "...in Google Meet",
-          },
-          {
-            src: "/asana2x.webm",
-            caption: "Instantly create and embed predictions in your todo list",
-            text: "...in your todo list",
-          },
-          {
-            src: "/notion2x.webm",
-            caption: "Instantly create and embed predictions in Notion",
-            text: "...in Notion",
-          },
-          {
-            src: "/twitter2x.webm",
-            caption:
-              "Instantly create and embed predictions anywhere on the web",
-            text: "...and anywhere else on the web",
-          },
-        ].map((video) => (
-          <button
-            key={video.src}
-            onClick={() => setSelectedVideo(video)}
-            className={clsx(
-              "btn",
-              selectedVideo.src === video.src && "btn-primary",
-            )}
-          >
-            {video.text}
-          </button>
-        ))}
-      </div>
-      <div className="md:w-2/3">
-        <DemoVideo
-          src={selectedVideo.src}
-          caption={selectedVideo.caption}
-          key={selectedVideo.src}
-        />
-      </div>
-    </div>
-  )
-}
-
-function DemoVideo({ src, caption }: { src: string; caption: string }) {
-  const ref = useRef<HTMLDivElement | null>(null)
-
-  const [loading, setLoading] = useState(true)
-  return (
-    <div
-      className={clsx(
-        "flex flex-col items-center md:max-w-[80vw] mx-auto relative",
-      )}
-      ref={ref}
-    >
-      <h2 className="text-center text-xl font-semibold mb-4 mt-12">
-        {caption}
-      </h2>
-      <video
-        muted
-        playsInline
-        loop
-        autoPlay={true}
-        controls={false}
-        width={992}
-        height={576}
-        className={clsx("transition-all rounded-lg shadow-2xl")}
-        onWaiting={() => setLoading(true)}
-        onPlaying={() => setLoading(false)}
-      >
-        <source src={src} />
-        <source src={src.replace(".webm", ".mov")} /> {/* Safari */}
-      </video>
-      {loading && (
-        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-          <span className="loading loading-spinner loading-lg translate-y-full opacity-90"></span>
-        </div>
-      )}
-    </div>
-  )
-}
