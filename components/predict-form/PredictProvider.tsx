@@ -1,6 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { QuestionType } from "@prisma/client"
-import { useCallback, useEffect, useState } from "react"
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -72,7 +79,7 @@ const unifiedPredictFormSchema = z
 
 export type PredictFormType = z.infer<typeof unifiedPredictFormSchema>
 
-export function usePredictForm() {
+function usePredictFormStandalone() {
   const [questionType, setQuestionType] = useState<QuestionType>(
     QuestionType.BINARY,
   )
@@ -120,4 +127,46 @@ export function usePredictForm() {
   return { ...form, questionType, setQuestionType }
 }
 
-export function PredictProvider() {}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const PredictFormContext = createContext<ReturnType<
+  typeof usePredictFormStandalone
+> | null>(null)
+
+export function usePredictForm() {
+  const contextForm = useContext(PredictFormContext)
+  // This is inefficient in the case where `contextForm` exists because it still instantiates `standaloneForm`,
+  // additionally it could result in some surprising behaviour if `contextForm` initially exists and is then set to null.
+  // It's hard to avoid this double instantiation because conditionally calling hooks is not allowed.
+  const standaloneForm = usePredictFormStandalone()
+
+  return contextForm ?? standaloneForm
+}
+
+/**
+ * Optional provider that exposes the contents of a nested `<Predict />` form to all child components.
+ *
+ * Example usage:
+ * ```
+ * <PredictProvider>
+ *   <Predict />
+ *   <SiblingComponent />
+ * </PredictProvider>
+ * ```
+ * ...
+ * ```
+ * function SiblingComponent() {
+ *   // Retrieves the same instance as <Predict />, so <SiblingComponent />
+ *   // can interact with the form
+ *   const form = usePredictForm()
+ * }
+ * ```
+ */
+export function PredictProvider({ children }: { children: ReactNode }) {
+  const form = usePredictFormStandalone()
+
+  return (
+    <PredictFormContext.Provider value={form}>
+      {children}
+    </PredictFormContext.Provider>
+  )
+}

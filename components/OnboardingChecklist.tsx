@@ -10,12 +10,12 @@ import { ReactNode, useCallback, useEffect, useState } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
 import Link from "next/link"
 import clsx from "clsx"
+import { usePredictForm } from "./predict-form/PredictProvider"
 
 type QuestionCategory = "personal" | "projects" | "shared"
 
 interface GoalSuggestionsProps {
   category: QuestionCategory
-  chooseSuggestion: (suggestion: string) => void
 }
 
 const personalGoals = [
@@ -37,8 +37,10 @@ const forFriends = [
   "Create a photo album",
 ]
 
-function GoalSuggestions({ category, chooseSuggestion }: GoalSuggestionsProps) {
+function GoalSuggestions({ category }: GoalSuggestionsProps) {
   const [suggestions, setSuggestions] = useState<string[]>([])
+
+  const { setValue } = usePredictForm()
 
   useEffect(() => {
     if (category === "personal") {
@@ -52,14 +54,21 @@ function GoalSuggestions({ category, chooseSuggestion }: GoalSuggestionsProps) {
     }
   }, [category])
 
-  // TODO reuse from elsewhere if possible
+  // TODO reuse styles from elsewhere if possible
+  // TODO change colour to look less greyed out
   return (
     <div className="w-full rounded-b-md flex flex-col items-start gap-2 z-10">
       {suggestions.map((suggestion) => (
         <button
           key={suggestion}
           className="btn justify-start text-neutral-500 font-normal leading-normal w-full"
-          onClick={() => chooseSuggestion(suggestion)}
+          onClick={() => {
+            setValue("question", suggestion, {
+              shouldTouch: true,
+              shouldDirty: true,
+              shouldValidate: true,
+            })
+          }}
         >
           <span className="ml-4">
             <span className="text-neutral-500 font-semibold mr-2 -ml-4">+</span>
@@ -184,17 +193,11 @@ export function OnboardingChecklist() {
                 </SelectCategoryButton>
               </div>
               {categorySelected && (
-                <GoalSuggestions
-                  category={categorySelected}
-                  chooseSuggestion={() => {}}
-                />
+                <GoalSuggestions category={categorySelected} />
               )}
             </div>
           </CollapsibleSection>
-          <CollapsibleSection
-            tryCollapse={false}
-            title={"2. Make a prediction"}
-          >
+          <CollapsibleSection tryCollapse={true} title={"2. Make a prediction"}>
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
               <div>
                 Estimate the probability that the answer is{" "}

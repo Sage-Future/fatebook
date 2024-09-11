@@ -8,6 +8,10 @@ import { Predict } from "../components/predict-form/Predict"
 import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
 import { OnboardingChecklist } from "../components/OnboardingChecklist"
+import {
+  PredictProvider,
+  usePredictForm,
+} from "../components/predict-form/PredictProvider"
 
 export default function HomePage() {
   const { status: sessionStatus } = useSession()
@@ -15,21 +19,23 @@ export default function HomePage() {
 
   return (
     <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 lg:pt-4 mx-auto max-w-6xl">
-      <div className="prose mx-auto pt-12 lg:w-[650px]">
-        {!userId && sessionStatus !== "loading" && (
-          <>
-            <h3 className="text-neutral-600">
-              Track your predictions, make better decisions
-            </h3>
-          </>
-        )}
+      <PredictProvider>
+        <div className="prose mx-auto pt-12 lg:w-[650px]">
+          {!userId && sessionStatus !== "loading" && (
+            <>
+              <h3 className="text-neutral-600">
+                Track your predictions, make better decisions
+              </h3>
+            </>
+          )}
 
-        <Predict />
-        <Questions />
+          <Predict />
+          <Questions />
 
-        {sessionStatus !== "loading" && !userId && <WhyForecastInfo />}
-      </div>
-      <Sidebar />
+          {sessionStatus !== "loading" && !userId && <WhyForecastInfo />}
+        </div>
+        <Sidebar />
+      </PredictProvider>
     </div>
   )
 }
