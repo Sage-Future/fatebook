@@ -2,7 +2,7 @@ import { useSession } from "next-auth/react"
 import { useFormContext, useFormState } from "react-hook-form"
 import { capitalizeFirstLetter } from "../../lib/_utils_common"
 import { useUserId } from "../../lib/web/utils"
-import { PredictFormType } from "./Predict"
+import { PredictFormType } from "./PredictProvider"
 
 export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
   const { handleSubmit } = useFormContext<PredictFormType>()
