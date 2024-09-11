@@ -7,6 +7,7 @@ import { WhyForecastInfo } from "../components/WhyForecastInfo"
 import { Predict } from "../components/predict-form/Predict"
 import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
+import { OnboardingChecklist } from "../components/OnboardingChecklist"
 
 export default function HomePage() {
   const { status: sessionStatus } = useSession()
@@ -38,17 +39,20 @@ function Sidebar() {
 
   // NB: hidden on mobile, stats.tsx is shown instead
   return (
-    <div className="pt-28 lg:w-[320px] max-sm:hidden flex flex-col gap-12">
-      {userId && <TrackRecord trackRecordUserId={userId} />}
-      {userId && <Tournaments />}
-      {userId && <UserLists />}
-      {userId && (
-        <QuickFeedback
-          type="Fatebook feedback"
-          placeholder="Give feedback on Fatebook..."
-          style="textarea"
-        />
-      )}
+    <div className="max-sm:hidden flex flex-col gap-12 max-w-[400px]">
+      {userId && <OnboardingChecklist />}
+      <div className="pt-28 max-w-[320px] flex flex-col gap-12 ml-auto">
+        {userId && <TrackRecord trackRecordUserId={userId} />}
+        {userId && <Tournaments />}
+        {userId && <UserLists />}
+        {userId && (
+          <QuickFeedback
+            type="Fatebook feedback"
+            placeholder="Give feedback on Fatebook..."
+            style="textarea"
+          />
+        )}
+      </div>
     </div>
   )
 }
