@@ -2,192 +2,19 @@
 // - When the user has 0 questions and 0 forecasts on questions _they have created_
 
 // TODO:
-// - [ ] De-dup some components
+// - [X] De-dup some components
 // - [ ] Check style consistency
 //
 
-import { useEffect, useState } from "react"
+import { ReactNode, useCallback, useEffect, useState } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
 import Link from "next/link"
 import clsx from "clsx"
 
 type QuestionCategory = "personal" | "projects" | "shared"
 
-export function OnboardingChecklist() {
-  const [isQuestionCollapsed, setIsQuestionCollapsed] = useState(false)
-  const [isPredictionCollapsed, setIsPredictionCollapsed] = useState(true)
-  const [categorySelected, setCategorySelected] =
-    useState<QuestionCategory | null>(null)
-
-  // TODO remove, this is here for debugging
-  const isSuccessScreen =
-    new URLSearchParams(window.location.search).get("success") === "true"
-
-  return (
-    <div className="bg-indigo-50 p-4 rounded-lg border-2 border-neutral-300 shadow-lg prose w-[400px] mt-7">
-      {!isSuccessScreen ? (
-        <>
-          <h2 className="font-semibold mb-4">Getting started</h2>
-          <div className="mb-2">
-            <div
-              className="flex items-center font-semibold text-black select-none w-fit mb-2"
-              onClick={() => setIsQuestionCollapsed(!isQuestionCollapsed)}
-              role="button"
-              tabIndex={0}
-              aria-expanded={!isQuestionCollapsed}
-            >
-              <ChevronRightIcon
-                className={`w-5 h-5 mr-2 transition-transform duration-200 ${
-                  isQuestionCollapsed ? "rotate-0" : "rotate-90"
-                }`}
-              />
-              1. Write a question
-            </div>
-            <div
-              className={`duration-100 overflow-hidden ${
-                // TODO fixed height required here, try to avoid that
-                isQuestionCollapsed ? "max-h-0" : "max-h-120"
-              }`}
-            >
-              <div className="text-sm text-neutral-500 flex flex-col gap-2 mb-2">
-                {/* TODO maybe cut this line */}
-                <div>
-                  What is something relevant to your life that you&apos;re not
-                  sure about?
-                </div>
-                <div>
-                  You could try looking at{" "}
-                  <Link
-                    href="/public"
-                    target="_blank"
-                    className="text-neutral-500 hover:text-neutral-600"
-                  >
-                    public questions
-                  </Link>{" "}
-                  for inspiration, or pick a question from one of the categories
-                  below.
-                </div>
-                <div className="flex gap-2 justify-between my-1 overflow-visible">
-                  <button
-                    className={clsx(
-                      "btn border-2 shadow-md",
-                      categorySelected === "personal"
-                        ? "btn-primary"
-                        : "border-neutral-300",
-                    )}
-                    onClick={() =>
-                      setCategorySelected(
-                        categorySelected === "personal" ? null : "personal",
-                      )
-                    }
-                  >
-                    Personal goals
-                  </button>
-                  <button
-                    className={clsx(
-                      "btn border-2 shadow-md",
-                      categorySelected === "projects"
-                        ? "btn-primary"
-                        : "border-neutral-300",
-                    )}
-                    onClick={() =>
-                      setCategorySelected(
-                        categorySelected === "projects" ? null : "projects",
-                      )
-                    }
-                  >
-                    Projects
-                  </button>
-                  <button
-                    className={clsx(
-                      "btn border-2 shadow-md",
-                      categorySelected === "shared"
-                        ? "btn-primary"
-                        : "border-2 border-neutral-300",
-                    )}
-                    onClick={() =>
-                      setCategorySelected(
-                        categorySelected === "shared" ? null : "shared",
-                      )
-                    }
-                  >
-                    For friends
-                  </button>
-                </div>
-                {categorySelected && (
-                  <GoalSuggestions
-                    category={categorySelected}
-                    chooseSuggestion={() => {}}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div
-              className="flex items-center font-semibold text-black select-none w-fit mb-2"
-              onClick={() => setIsPredictionCollapsed(!isPredictionCollapsed)}
-              role="button"
-              tabIndex={0}
-              aria-expanded={!isPredictionCollapsed}
-            >
-              <ChevronRightIcon
-                className={`w-5 h-5 mr-2 transition-transform duration-100 ${
-                  isPredictionCollapsed ? "rotate-0" : "rotate-90"
-                }`}
-              />
-              2. Make a prediction
-            </div>
-            <div
-              className={`duration-100 overflow-hidden ${
-                isPredictionCollapsed ? "max-h-0" : "max-h-40"
-              }`}
-            >
-              <div className="text-sm text-neutral-500 flex flex-col gap-2 mb-2">
-                <div>
-                  Estimate the probability that the answer is{" "}
-                  <b className="text-neutral-600">YES</b>.
-                </div>
-                <div>
-                  We&apos;ll remind you to resolve your question on the
-                  &quot;Resolve by&quot; date you set.
-                </div>
-                <div>
-                  Once you have resolved a few questions, you can start to
-                  understand your track record and use this to make better
-                  decisions.
-                </div>
-                {/* <div>
-              You will get an email reminding you to resolve your question on
-              the &quot;Resolve by&quot; date you set.
-            </div> */}
-                {/* <div>
-              Once you have resolved a few questions you will be able to see
-              your track record and understand where you can improve.
-            </div> */}
-                {/* <div>
-              [TODO link to a good resource on the basics of forecasting?]
-            </div> */}
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <h2 className="font-semibold mb-4">Question created!</h2>
-          <div className="text-sm text-neutral-500 flex flex-col gap-2 mb-2">
-            Some text relating to this, which is enough to push it to it&apos;s
-            full available width
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
 interface GoalSuggestionsProps {
-  category: "personal" | "projects" | "shared"
+  category: QuestionCategory
   chooseSuggestion: (suggestion: string) => void
 }
 
@@ -197,6 +24,7 @@ const personalGoals = [
   "Will I spend <n mins> doing <habit y> today?",
 ]
 
+// TODO come up with better examples for these two groups
 const projects = [
   "Complete the website redesign",
   "Launch the new marketing campaign",
@@ -224,6 +52,7 @@ function GoalSuggestions({ category, chooseSuggestion }: GoalSuggestionsProps) {
     }
   }, [category])
 
+  // TODO reuse from elsewhere if possible
   return (
     <div className="w-full rounded-b-md flex flex-col items-start gap-2 z-10">
       {suggestions.map((suggestion) => (
@@ -242,4 +71,157 @@ function GoalSuggestions({ category, chooseSuggestion }: GoalSuggestionsProps) {
   )
 }
 
-export default GoalSuggestions
+/**
+ * @param {boolean} props.tryCollapse - Controls whether the section is collapsed, unless the user has manually toggled the state
+ */
+function CollapsibleSection({
+  tryCollapse,
+  title,
+  children,
+}: {
+  tryCollapse: boolean
+  title: ReactNode
+  children: ReactNode
+}) {
+  const [userCollapsedState, setUserCollapsedState] = useState<boolean | null>(
+    null,
+  )
+
+  const isCollapsed = userCollapsedState ?? tryCollapse
+
+  return (
+    <div>
+      <div
+        className="flex items-center font-semibold text-black select-none w-fit"
+        onClick={() => setUserCollapsedState(!isCollapsed)}
+        role="button"
+        tabIndex={0}
+        aria-expanded={!isCollapsed}
+      >
+        <ChevronRightIcon
+          className={`w-5 h-5 mr-2 transition-transform duration-200 ${
+            isCollapsed ? "rotate-0" : "rotate-90"
+          }`}
+        />
+        {title}
+      </div>
+      <div
+        className={`duration-100 overflow-hidden ${
+          isCollapsed ? "max-h-0" : "max-h-screen"
+        }`}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+export function OnboardingChecklist() {
+  const [categorySelected, setCategorySelected] =
+    useState<QuestionCategory | null>(null)
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const SelectCategoryButton = useCallback(
+    ({
+      category,
+      children,
+    }: {
+      category: QuestionCategory
+      children: ReactNode
+    }) => (
+      <button
+        className={clsx(
+          "btn border-2 shadow-md",
+          categorySelected === category ? "btn-primary" : "border-neutral-300",
+        )}
+        onClick={() =>
+          setCategorySelected(categorySelected === category ? null : category)
+        }
+      >
+        {children}
+      </button>
+    ),
+    [categorySelected],
+  )
+
+  // TODO remove, this is here for debugging
+  const isSuccessScreen =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("success") === "true"
+
+  return (
+    <div className="prose flex flex-col gap-2 w-[400px] p-4 mt-7 bg-indigo-50 border-2 border-neutral-300 rounded-lg shadow-lg">
+      {!isSuccessScreen && (
+        <>
+          <h2 className="font-semibold mb-1">Getting started</h2>
+          <CollapsibleSection tryCollapse={false} title={"1. Write a question"}>
+            <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
+              <div>
+                What is something relevant to your life that you&apos;re not
+                sure about?
+              </div>
+              <div>
+                You could try looking at{" "}
+                <Link
+                  href="/public"
+                  target="_blank"
+                  className="text-neutral-500 hover:text-neutral-600"
+                >
+                  public questions
+                </Link>{" "}
+                for inspiration, or pick a question from one of the categories
+                below.
+              </div>
+              <div className="flex gap-2 justify-between my-1 overflow-visible">
+                <SelectCategoryButton category="personal">
+                  Personal goals
+                </SelectCategoryButton>
+                <SelectCategoryButton category="projects">
+                  Projects
+                </SelectCategoryButton>
+                <SelectCategoryButton category="shared">
+                  For friends
+                </SelectCategoryButton>
+              </div>
+              {categorySelected && (
+                <GoalSuggestions
+                  category={categorySelected}
+                  chooseSuggestion={() => {}}
+                />
+              )}
+            </div>
+          </CollapsibleSection>
+          <CollapsibleSection
+            tryCollapse={false}
+            title={"2. Make a prediction"}
+          >
+            <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
+              <div>
+                Estimate the probability that the answer is{" "}
+                <b className="text-neutral-600">YES</b>.
+              </div>
+              <div>
+                We&apos;ll remind you to resolve your question on the
+                &quot;Resolve by&quot; date you set.
+              </div>
+              <div>
+                Once you have resolved a few questions, you can start to
+                understand your track record and use this to make better
+                decisions.
+              </div>
+            </div>
+          </CollapsibleSection>
+        </>
+      )}
+      {isSuccessScreen && (
+        <>
+          <h2 className="font-semibold mb-1">Success!</h2>
+          <div className="text-sm text-neutral-500 flex flex-col gap-2 mb-2">
+            Some text relating to this, which is enough to push it to it&apos;s
+            full available width
+          </div>
+        </>
+      )}
+    </div>
+  )
+}

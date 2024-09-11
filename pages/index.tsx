@@ -37,30 +37,20 @@ export default function HomePage() {
 function Sidebar() {
   const userId = useUserId()
 
-  // TODO include a check for userId in this
-  const showOnboardingChecklist = false
-
   // NB: hidden on mobile, stats.tsx is shown instead
   return (
     <div className="max-sm:hidden flex flex-col gap-12 max-w-[400px]">
-      {showOnboardingChecklist ? (
-        <OnboardingChecklist />
-      ) : (
-        // Line up the rest of the sidebar below the main <Predict> input
-        <div className="h-28" />
-      )}
+      <div className="min-h-28">{userId && <OnboardingChecklist />}</div>
       <div className="max-w-[320px] flex flex-col gap-12 ml-auto lg:w-[320px]">
+        {userId && <TrackRecord trackRecordUserId={userId} />}
+        {userId && <Tournaments />}
+        {userId && <UserLists />}
         {userId && (
-          <>
-            <TrackRecord trackRecordUserId={userId} />
-            <Tournaments />
-            <UserLists />
-            <QuickFeedback
-              type="Fatebook feedback"
-              placeholder="Give feedback on Fatebook..."
-              style="textarea"
-            />
-          </>
+          <QuickFeedback
+            type="Fatebook feedback"
+            placeholder="Give feedback on Fatebook..."
+            style="textarea"
+          />
         )}
       </div>
     </div>

@@ -33,6 +33,7 @@ export function TrackRecord({
   const isThisUser = trackRecordUserId === thisUserId
   const router = useRouter()
   const showCollapseButton = router.pathname === "/"
+  // TODO fix bug here in separate PR
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" && isThisUser
       ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
