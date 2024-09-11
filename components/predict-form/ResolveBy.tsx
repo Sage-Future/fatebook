@@ -5,7 +5,7 @@ import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
 import { utcDateStrToLocalDate } from "../../lib/web/utils"
 import { FormattedDate } from "../ui/FormattedDate"
 import { InfoButton } from "../ui/InfoButton"
-import { PredictFormType } from "./Predict"
+import { PredictFormType } from "./PredictProvider"
 
 export function ResolveBy({
   small,

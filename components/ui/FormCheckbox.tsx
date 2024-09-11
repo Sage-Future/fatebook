@@ -1,7 +1,7 @@
 import clsx from "clsx"
 import { ChangeEvent, KeyboardEvent } from "react"
 import { useFormContext } from "react-hook-form"
-import { PredictFormType } from "../predict-form/Predict"
+import { PredictFormType } from "../predict-form/PredictProvider"
 import { InfoButton } from "./InfoButton"
 
 export function FormCheckbox({

@@ -2,7 +2,7 @@ import clsx from "clsx"
 import { KeyboardEvent } from "react"
 import { useFormContext } from "react-hook-form"
 import { InfoButton } from "../ui/InfoButton"
-import { PredictFormType } from "./Predict"
+import { PredictFormType } from "./PredictProvider"
 
 interface OptionTextInputProps {
   optionId: number
