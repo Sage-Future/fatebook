@@ -108,7 +108,9 @@ const zodExtraFilters = z.object({
     })
     .optional(),
   searchString: z
-    .string({ description: "Only get questions or tags containing this search string" })
+    .string({
+      description: "Only get questions or tags containing this search string",
+    })
     .optional(),
   theirUserId: z
     .string({
@@ -949,6 +951,7 @@ export const questionRouter = router({
           } predicted on ${getMarkdownLinkQuestionTitle(q)}`,
           tags: ["new_forecast", q.id],
           url: getQuestionUrl(q),
+          questionId: q.id,
         })
       }
 
@@ -1057,6 +1060,7 @@ export const questionRouter = router({
           }`,
           tags: ["new_comment", question.id],
           url: getQuestionUrl(question),
+          questionId: question.id,
         })
       }
 
@@ -1544,6 +1548,7 @@ export async function emailNewlySharedWithUsers(
           )})`,
           url: getQuestionUrl(question),
           tags: ["shared_prediction", question.id],
+          questionId: question.id,
         })
       } else {
         await sendEmailUnbatched({

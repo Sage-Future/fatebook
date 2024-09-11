@@ -648,6 +648,7 @@ export async function handleQuestionResolution(
         }: ${getMarkdownLinkQuestionTitle(q)}`,
         tags: ["question_resolved", q.id],
         url: getQuestionUrl(q),
+        questionId: q.id,
       })
     }
   }
