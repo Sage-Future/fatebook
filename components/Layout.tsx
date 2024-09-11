@@ -1,4 +1,4 @@
-import { BellIcon, ChartBarIcon, HomeIcon } from "@heroicons/react/24/solid"
+import { BellIcon, ChartBarIcon, HomeIcon, UsersIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"
@@ -54,6 +54,7 @@ function BottomNav() {
   // only show on these pages
   if (
     router.pathname !== "/" &&
+    router.pathname !== "/teams" &&
     router.pathname !== "/stats" &&
     router.pathname !== "/notifications"
   )
@@ -66,6 +67,11 @@ function BottomNav() {
           path: "/",
           title: "Home",
           icon: <HomeIcon width={24} />,
+        },
+        {
+          path: "/teams",
+          title: "Teams",
+          icon: <UsersIcon width={24} />,
         },
         {
           path: "/stats",
