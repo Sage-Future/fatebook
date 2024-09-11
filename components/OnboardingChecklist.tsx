@@ -2,7 +2,9 @@
 // - When the user has 0 questions and 0 forecasts on questions _they have created_
 
 // TODO:
+// - [ ] De-dup some components
 // - [ ] Check style consistency
+//
 
 import { useEffect, useState } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
@@ -17,12 +19,12 @@ export function OnboardingChecklist() {
   const [categorySelected, setCategorySelected] =
     useState<QuestionCategory | null>(null)
 
+  // TODO remove, this is here for debugging
   const isSuccessScreen =
     new URLSearchParams(window.location.search).get("success") === "true"
 
   return (
-    // TODO avoid negative margin
-    <div className="bg-indigo-50 p-4 rounded-lg border-2 border-neutral-300 shadow-lg prose max-w-[400px] w-full mt-[-22px]">
+    <div className="bg-indigo-50 p-4 rounded-lg border-2 border-neutral-300 shadow-lg prose w-[400px] mt-7">
       {!isSuccessScreen ? (
         <>
           <h2 className="font-semibold mb-4">Getting started</h2>

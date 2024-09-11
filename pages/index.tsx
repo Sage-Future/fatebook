@@ -14,8 +14,8 @@ export default function HomePage() {
   const userId = useUserId()
 
   return (
-    <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <div className="prose mx-auto lg:w-[650px]">
+    <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 lg:pt-4 mx-auto max-w-6xl">
+      <div className="prose mx-auto pt-12 lg:w-[650px]">
         {!userId && sessionStatus !== "loading" && (
           <>
             <h3 className="text-neutral-600">
@@ -37,20 +37,30 @@ export default function HomePage() {
 function Sidebar() {
   const userId = useUserId()
 
+  // TODO include a check for userId in this
+  const showOnboardingChecklist = false
+
   // NB: hidden on mobile, stats.tsx is shown instead
   return (
     <div className="max-sm:hidden flex flex-col gap-12 max-w-[400px]">
-      {userId && <OnboardingChecklist />}
-      <div className="pt-28 max-w-[320px] flex flex-col gap-12 ml-auto">
-        {userId && <TrackRecord trackRecordUserId={userId} />}
-        {userId && <Tournaments />}
-        {userId && <UserLists />}
+      {showOnboardingChecklist ? (
+        <OnboardingChecklist />
+      ) : (
+        // Line up the rest of the sidebar below the main <Predict> input
+        <div className="h-28" />
+      )}
+      <div className="max-w-[320px] flex flex-col gap-12 ml-auto lg:w-[320px]">
         {userId && (
-          <QuickFeedback
-            type="Fatebook feedback"
-            placeholder="Give feedback on Fatebook..."
-            style="textarea"
-          />
+          <>
+            <TrackRecord trackRecordUserId={userId} />
+            <Tournaments />
+            <UserLists />
+            <QuickFeedback
+              type="Fatebook feedback"
+              placeholder="Give feedback on Fatebook..."
+              style="textarea"
+            />
+          </>
         )}
       </div>
     </div>
