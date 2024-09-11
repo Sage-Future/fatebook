@@ -23,8 +23,10 @@ import { InfoButton } from "./ui/InfoButton"
 
 export function TrackRecord({
   trackRecordUserId,
+  className,
 }: {
   trackRecordUserId: string
+  className?: string
 }) {
   const thisUserId = useUserId()
 
@@ -61,7 +63,7 @@ export function TrackRecord({
   if (!trackRecordUserId) return <></>
 
   return (
-    <div className="max-w-xs prose flex flex-col mx-auto w-full">
+    <div className={clsx("prose flex flex-col mx-auto w-full", className)}>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <h2 className="flex flex-row gap-2 justify-between select-none relative mb-4 w-full">
           <span>
