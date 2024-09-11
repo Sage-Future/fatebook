@@ -373,3 +373,36 @@ export function capitalizeFirstLetter(str: string) {
 
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
+
+export async function subscribeToMailingList(email: string, name?: string) {
+  if (!process.env.MAILING_LIST_SECRET) {
+    throw new Error("MAILING_LIST_SECRET is not set")
+  }
+  const res = await fetch(
+    "https://www.quantifiedintuitions.org/api/email/subscribe",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: process.env.MAILING_LIST_SECRET,
+      },
+      body: JSON.stringify({
+        subscribers: [
+          {
+            email,
+            tags: ["fatebook-user"],
+            products: ["Fatebook"],
+            name,
+          },
+        ],
+      }),
+    },
+  )
+  if (!res.ok) {
+    throw new Error(
+      "Failed to subscribe to mailing list " +
+        JSON.stringify(await res.json(), null, 2),
+    )
+  }
+  return await res.json()
+}
