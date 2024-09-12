@@ -6,7 +6,7 @@ import {
 import clsx from "clsx"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import GitHubCalendar from "react-github-contribution-calendar"
 import {
