@@ -344,7 +344,7 @@ export function OnboardingChecklist() {
         >
           <h2 className="font-semibold mb-1">Forecast created!</h2>
           <div className="text-sm text-neutral-500 flex flex-col gap-2">
-            We&apos;ll notify you when it&apos;s time to resolve your forecast.
+            We&apos;ll notify you when it&apos;s time to resolve it.
           </div>
           <div className="text-sm text-neutral-500 flex flex-col">
             In the meantime, you can:
