@@ -81,6 +81,7 @@ export function Predict({
     formState: { touchedFields, errors },
     questionType,
     setQuestionType,
+    setQuestionInFocus,
   } = methods
 
   // Trigger validation on any field change because our superRefine rule for summing to 100% isn't automatically revalidated otherwise (seemingly a react-hook-form bug)
@@ -111,6 +112,7 @@ export function Predict({
         },
       )
       await utils.question.getForecastCountByDate.invalidate()
+      await utils.question.getOnboardingStage.invalidate()
       if (questionDefaults?.tournamentId) {
         await utils.tournament.get.invalidate({
           id: questionDefaults.tournamentId,
@@ -387,6 +389,8 @@ export function Predict({
                   defaultValue={questionDefaults?.title}
                   onMouseDown={(e) => e.stopPropagation()}
                   {...registerQuestion}
+                  onFocus={setQuestionInFocus.bind(null, true)}
+                  onBlur={setQuestionInFocus.bind(null, false)}
                   ref={mergeRefs([textAreaRef, formRef])}
                 />
 

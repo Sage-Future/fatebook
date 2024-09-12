@@ -6,7 +6,7 @@ import {
 import clsx from "clsx"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import GitHubCalendar from "react-github-contribution-calendar"
 import {
@@ -33,12 +33,32 @@ export function TrackRecord({
   const isThisUser = trackRecordUserId === thisUserId
   const router = useRouter()
   const showCollapseButton = router.pathname === "/"
-  // TODO fix bug here in separate PR
+
+  const onboardingStage = api.question.getOnboardingStage.useQuery()
+  const [defaultCollapsed, setDefaultCollapsed] = useState<boolean | null>(null)
+
+  // TODO fix non-home-page bug here in separate PR
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" && isThisUser
-      ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
-      : false,
+      ? JSON.parse(
+          localStorage.getItem("isCollapsed") || `${defaultCollapsed ?? false}`,
+        )
+      : defaultCollapsed,
   )
+
+  // Set the default collapsed state based on the first value of onboardingStage.data
+  // that we see (i.e. don't automatically uncollapse after the initial page load)
+  if (
+    typeof window !== "undefined" &&
+    defaultCollapsed === null &&
+    onboardingStage.data
+  ) {
+    const newDefaultCollapsed = onboardingStage.data !== "COMPLETE"
+    setDefaultCollapsed(newDefaultCollapsed)
+    if (!localStorage.getItem("isCollapsed")) {
+      setIsCollapsed(newDefaultCollapsed)
+    }
+  }
 
   const userName = api.getUserInfo.useQuery(
     {

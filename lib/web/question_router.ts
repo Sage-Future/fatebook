@@ -247,6 +247,44 @@ export const questionRouter = router({
       )
     }),
 
+  getOnboardingStage: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.userId) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "User not logged in",
+      })
+    }
+
+    const userId = ctx.userId
+
+    const [hasCreatedQuestions, hasForecastsOnOwnQuestions] = await Promise.all(
+      [
+        prisma.question.findFirst({
+          where: { userId },
+          select: { id: true },
+        }),
+        prisma.forecast.findFirst({
+          where: {
+            userId,
+            question: {
+              userId,
+            },
+          },
+        }),
+      ],
+    )
+
+    if (!hasCreatedQuestions) {
+      return "NO_QUESTIONS"
+    }
+
+    if (!hasForecastsOnOwnQuestions) {
+      return "NO_FORECASTS_ON_OWN_QUESTIONS"
+    }
+
+    return "COMPLETE"
+  }),
+
   getQuestionsApiProcedure: publicProcedure
     .input(
       z.object({
