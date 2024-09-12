@@ -1,11 +1,3 @@
-// When to show:
-// - When the user has 0 questions and 0 forecasts on questions _they have created_
-
-// TODO:
-// - [X] De-dup some components
-// - [ ] Check style consistency
-//
-
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
 import Link from "next/link"
@@ -13,6 +5,7 @@ import clsx from "clsx"
 import { usePredictForm } from "./predict-form/PredictProvider"
 import { api } from "../lib/web/trpc"
 import { useDebounce } from "use-debounce"
+import { QuestionType } from "@prisma/client"
 
 type QuestionCategory = "personal" | "projects" | "shared"
 
@@ -158,13 +151,20 @@ export function OnboardingChecklist() {
     [categorySelected],
   )
 
-  const { questionInFocus, watch } = usePredictForm()
+  const { questionType, questionInFocus, watch } = usePredictForm()
   const question = watch("question")
-  // TODO multiple choice
+  const isMultipleChoice = questionType === QuestionType.MULTIPLE_CHOICE
+
   const predictionPercentage = watch("predictionPercentage")
+  const mcqOptions = watch("options")
+
+  const allPredictionValues = !isMultipleChoice
+    ? [predictionPercentage]
+    : mcqOptions?.map((option) => option.forecast)
+
+  const predictionIsTouched = allPredictionValues?.some((n) => !Number.isNaN(n))
 
   const onboardingStage = api.question.getOnboardingStage.useQuery()
-
   const initialOnboardingStageRef =
     useRef<typeof onboardingStage.data>(undefined)
   if (!initialOnboardingStageRef.current && onboardingStage.data) {
@@ -174,7 +174,7 @@ export function OnboardingChecklist() {
   // Add a delay to these updates to make state changes less visually jarring
   const [questionProbablyWritten] = useDebounce(
     onboardingStage.data === "COMPLETE" ||
-      !Number.isNaN(predictionPercentage) ||
+      predictionIsTouched ||
       ((question?.length ?? 0) > 5 && !questionInFocus),
     DEBOUNCE_INTERVAL,
     { leading: false, trailing: true },
@@ -241,14 +241,26 @@ export function OnboardingChecklist() {
             title={"2. Make a prediction"}
           >
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
-              {/* TODO handle multiple choice */}
               <div>
-                Estimate the probability that the answer is{" "}
-                <b className="text-neutral-600">YES</b>.
+                {isMultipleChoice ? (
+                  "How likely do you think each option is?"
+                ) : (
+                  <>
+                    How likely do you think it is that the answer will be{" "}
+                    <b className="text-neutral-600">YES</b>?
+                  </>
+                )}
               </div>
               <div>
-                We&apos;ll remind you to resolve your question on the
-                &quot;Resolve by&quot; date you set.
+                We&apos;ll remind you to resolve your question{" "}
+                {!isMultipleChoice && (
+                  <>
+                    <b className="text-neutral-600">YES</b>,{" "}
+                    <b className="text-neutral-600">NO</b>, or{" "}
+                    <b className="text-neutral-600">AMBIGUOUS</b>
+                  </>
+                )}{" "}
+                on the &quot;Resolve by&quot; date you set.
               </div>
               <div>
                 Once you have resolved a few questions, you can start to
