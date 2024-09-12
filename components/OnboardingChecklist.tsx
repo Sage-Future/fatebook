@@ -328,7 +328,7 @@ export function OnboardingChecklist() {
             <li>
               Check out{" "}
               <Link
-                href="/public-questions"
+                href="/public"
                 className="text-neutral-500 hover:text-neutral-600"
               >
                 public questions
