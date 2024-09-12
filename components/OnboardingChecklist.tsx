@@ -11,47 +11,62 @@ type QuestionCategory = "personal" | "projects" | "shared"
 
 const DEBOUNCE_INTERVAL = 1000
 
-interface GoalSuggestionsProps {
-  category: QuestionCategory
-}
-
-const personalGoals = [
+const personalGoalsBinary = [
   "Will I complete my to-do list today?",
   "Will I be happy I went to <event x>?",
   "Will I spend <n mins> doing <habit y> today?",
 ]
-
-// TODO come up with better examples for these two groups
-const projects = [
-  "Complete the website redesign",
-  "Launch the new marketing campaign",
-  "Develop a new feature for the app",
+const personalGoalsMC = [
+  "How many items on my to-do list will I get to?",
+  "Who will I convince to come to <event x>?",
+  "How many mins will I spend doing <habit y>?",
 ]
 
-const shared = [
-  "Organize a surprise party",
-  "Plan a weekend getaway",
-  "Create a photo album",
+const projectsBinary = [
+  "Will I publish a blog post this week?",
+  "Will I raise more than <x dollars>?",
+  "Will the new kitchen be done this month?",
+]
+const projectsMC = [
+  "How many blog posts will I publish this week?",
+  "How much money will I raise?",
+  "In what month will the new kitchen be done?",
 ]
 
-function GoalSuggestions({ category }: GoalSuggestionsProps) {
+const sharedBinary = [
+  "Will <client x> hire us again?",
+  "Will any of us miss our flight?",
+  "Will Taylor Swift get married this year?",
+]
+const sharedMC = [
+  "How many clients will we book this month?",
+  "How many of us will miss our flights?",
+  "When will Taylor Swift get married?",
+]
+
+function GoalSuggestions({
+  category,
+  isMultipleChoice,
+}: {
+  category: QuestionCategory
+  isMultipleChoice: boolean
+}) {
   const [suggestions, setSuggestions] = useState<string[]>([])
 
   const { setValue } = usePredictForm()
 
   useEffect(() => {
     if (category === "personal") {
-      setSuggestions(personalGoals)
+      setSuggestions(isMultipleChoice ? personalGoalsMC : personalGoalsBinary)
     } else if (category === "projects") {
-      setSuggestions(projects)
+      setSuggestions(isMultipleChoice ? projectsMC : projectsBinary)
     } else if (category === "shared") {
-      setSuggestions(shared)
+      setSuggestions(isMultipleChoice ? sharedMC : sharedBinary)
     } else {
       setSuggestions([])
     }
-  }, [category])
+  }, [category, isMultipleChoice])
 
-  // TODO flag decision about the color
   return (
     <div className="w-full rounded-b-md flex flex-col items-start gap-2 z-10">
       {suggestions.map((suggestion) => (
@@ -114,7 +129,7 @@ function CollapsibleSection({
       </div>
       <div
         className={`overflow-hidden ${
-          isCollapsed ? "max-h-0 duration-100" : "max-h-screen duration-500"
+          isCollapsed ? "max-h-0 duration-300" : "max-h-screen duration-500"
         }`}
       >
         {children}
@@ -138,7 +153,7 @@ export function OnboardingChecklist() {
     }) => (
       <button
         className={clsx(
-          "btn border-2 shadow-md",
+          "btn border-2 shadow-md flex-1 whitespace-nowrap",
           categorySelected === category ? "btn-primary" : "border-neutral-300",
         )}
         onClick={() =>
@@ -213,11 +228,11 @@ export function OnboardingChecklist() {
           >
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
               <div>
-                What is something relevant to your life that you&apos;re not
-                sure about?
+                What&apos;s something relevant to your life that you want to
+                predict?
               </div>
               <div>
-                You could try looking at{" "}
+                For inspiration, check out{" "}
                 <Link
                   href="/public"
                   target="_blank"
@@ -225,8 +240,7 @@ export function OnboardingChecklist() {
                 >
                   public questions
                 </Link>{" "}
-                for inspiration, or pick a question from one of the categories
-                below.
+                or pick a category below.
               </div>
               <div className="flex gap-2 justify-between my-1 overflow-visible">
                 <SelectCategoryButton category="personal">
@@ -236,11 +250,14 @@ export function OnboardingChecklist() {
                   Projects
                 </SelectCategoryButton>
                 <SelectCategoryButton category="shared">
-                  For friends
+                  Shared
                 </SelectCategoryButton>
               </div>
               {categorySelected && (
-                <GoalSuggestions category={categorySelected} />
+                <GoalSuggestions
+                  category={categorySelected}
+                  isMultipleChoice={isMultipleChoice}
+                />
               )}
             </div>
           </CollapsibleSection>
