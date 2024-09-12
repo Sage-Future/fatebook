@@ -8,7 +8,9 @@ import { TeamListContent } from "../components/TeamListContent";
 import { TournamentContent } from "../components/TournamentContent";
 import { signInToFatebook } from "../lib/web/utils";
 // import { useSwipeable } from "react-swipeable";
-import { ChevronLeftIcon, ChevronRightIcon, ArrowDownCircleIcon, ArrowUpCircleIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon } from "@heroicons/react/20/solid";
+import { ChevronLeftIcon as ChevronLeftIconLarge, ChevronRightIcon as ChevronRightIconLarge } from "@heroicons/react/24/solid";
+import Link from 'next/link';
 
 export default function TeamsPage() {
   const userId = useUserId();
@@ -92,9 +94,11 @@ export default function TeamsPage() {
     return `${name.slice(0, maxLength - 3)}...`;
   };
 
+  const isOverviewDisplayed = currentItem.type === 'overview';
+
   return (
     <div 
-      className="px-4 pt-12 pb-20 lg:pt-16 mx-auto max-w-6xl flex flex-col"
+      className="px-4 pt-12 pb-20 lg:pt-16 lg:pb-4 mx-auto max-w-6xl flex flex-col"
       // {...swipeHandlers}
       ref={containerRef}
     >
@@ -110,6 +114,20 @@ export default function TeamsPage() {
             </button>
           </div>
         )}
+      {userId && !isOverviewDisplayed && (
+        <div className="prose hidden lg:block mb-4 mx-auto">
+          <Link
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              setCurrentIndex(items.findIndex(item => item.type === 'overview'));
+            }}
+            className="text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            ← Return to teams & tournaments overview
+          </Link>
+        </div>
+      )}
         {userId && (
           <div className="prose mx-auto flex flex-col gap-8">
             {currentItem.type === 'overview' ? (
@@ -123,41 +141,57 @@ export default function TeamsPage() {
         )}
       </div>
       {userId && (
-        <div className={`fixed bottom-16 lg:bottom-[100px] left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 z-20 ${isDrawerOpen ? 'h-[80vh]' : 'h-16'}`}>
-          <div className="flex justify-between items-center max-w-6xl mx-auto p-4">
+        <>
+          <div className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 z-20 ${isDrawerOpen ? 'h-[80vh]' : 'h-16'}`}>
+            <div className="flex justify-between items-center max-w-6xl mx-auto p-4">
+              <button 
+                onClick={handlePrevious}
+                className="btn text-primary lg:hidden"
+              >
+                <ChevronLeftIcon className="w-6 h-6" />
+              </button>
+              <button 
+                onClick={toggleDrawer}
+                className="flex items-center justify-center flex-grow"
+              >
+                <span className="text-lg font-semibold text-center truncate">
+                  {truncateName(currentItem.name, 20)}
+                </span>
+                {isDrawerOpen ? (
+                  <ChevronDoubleDownIcon className="w-6 h-6 text-primary" />
+                ) : (
+                  <ChevronDoubleUpIcon className="w-6 h-6 text-primary" />
+                )}
+              </button>
+              <button 
+                onClick={handleNext}
+                className="btn text-primary lg:hidden"
+              >
+                <ChevronRightIcon className="w-6 h-6" />
+              </button>
+            </div>
+            {isDrawerOpen && (
+              <div className="p-4 overflow-y-auto h-[calc(100%-4rem)] lg:h-auto">
+                <Tournaments />
+                <UserLists />
+              </div>
+            )}
+          </div>
+          <div className="hidden lg:block">
             <button 
               onClick={handlePrevious}
-              className="btn text-primary"
+              className="fixed left-[calc(50%-500px)] top-1/2 transform -translate-y-1/2 btn-ghost text-neutral-300 rounded-full hover:bg-transparent hover:left-[calc(50%-505px)] transition-all duration-200"
             >
-              <ChevronLeftIcon className="w-6 h-6" />
-            </button>
-            <button 
-              onClick={toggleDrawer}
-              className="flex items-center justify-center flex-grow"
-            >
-              <span className="text-lg font-semibold text-center truncate">
-                {truncateName(currentItem.name, 30)}
-              </span>
-              {isDrawerOpen ? (
-                <ChevronDoubleDownIcon className="w-6 h-6 text-primary" />
-              ) : (
-                <ChevronDoubleUpIcon className="w-6 h-6 text-primary" />
-              )}
+              <ChevronLeftIconLarge className="w-32 h-32" />
             </button>
             <button 
               onClick={handleNext}
-              className="btn text-primary"
+              className="fixed right-[calc(50%-500px)] top-1/2 transform -translate-y-1/2 btn-ghost text-neutral-300 rounded-full hover:bg-transparent hover:right-[calc(50%-505px)] transition-all duration-200"
             >
-              <ChevronRightIcon className="w-6 h-6" />
+              <ChevronRightIconLarge className="w-32 h-32" />
             </button>
           </div>
-          {isDrawerOpen && (
-            <div className="p-4 overflow-y-auto h-[calc(100%-4rem)]">
-              <Tournaments />
-              <UserLists />
-            </div>
-          )}
-        </div>
+        </>
       )}
     </div>
   );
