@@ -13,7 +13,6 @@ export default function StatsPage() {
       <NextSeo title="Stats" />
       <div className="mx-auto">
         {userId && (
-          // TODO flag in PR that I changed the width here slightly
           <TrackRecord trackRecordUserId={userId} className="max-w-sm" />
         )}
         {userId && (

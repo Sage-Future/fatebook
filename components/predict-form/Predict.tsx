@@ -384,7 +384,6 @@ export function Predict({
                     updateTagsPreview(e.currentTarget.value)
                     void onChangeQuestion(e)
                   }}
-                  // TODO flag in PR that there might be some case where onKeyDown was doing something different to onChange
                   onKeyDown={onEnterSubmit}
                   defaultValue={questionDefaults?.title}
                   onMouseDown={(e) => e.stopPropagation()}
