@@ -37,7 +37,6 @@ export function TrackRecord({
   const onboardingStage = api.question.getOnboardingStage.useQuery()
   const [defaultCollapsed, setDefaultCollapsed] = useState<boolean | null>(null)
 
-  // TODO fix non-home-page bug here in separate PR
   const [isCollapsed, setIsCollapsed] = useState(
     typeof window !== "undefined" && isThisUser
       ? JSON.parse(

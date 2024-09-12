@@ -62,7 +62,6 @@ export function PredictButton({ onSubmit }: { onSubmit: (data: any) => void }) {
     ).join(", "),
   )
 
-  // TODO confetti
   return (
     <div className="grid grid-cols-1-3-1 relative">
       <button
