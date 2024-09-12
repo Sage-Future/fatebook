@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { toast } from "react-hot-toast"
 import { api } from "../lib/web/trpc"
 import {
@@ -13,7 +13,6 @@ import {
   signInToFatebook,
   useFatebookForChrome,
   useUserId,
-  webFeedbackUrl,
 } from "../lib/web/utils"
 import Footer from "./Footer"
 import NotificationsPopover from "./NotificationsPopover"
@@ -30,7 +29,6 @@ export function Navbar({
 }) {
   const userId = useUserId()
   const fatebookForChrome = useFatebookForChrome()
-  const exportData = useExportData()
   const menuItems = <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} />
 
   return (
@@ -44,7 +42,7 @@ export function Navbar({
         />
         {children}
       </div>
-      <Drawer menuItems={menuItems} />
+      <Drawer />
     </div>
   )
 }
@@ -202,7 +200,7 @@ function LearnItems() {
   )
 }
 
-function Drawer({ menuItems }: { menuItems: ReactNode }) {
+function Drawer() {
   return (
     <div className="drawer-side z-[9999] mt-16 lg:hidden">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
