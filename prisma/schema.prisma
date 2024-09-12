@@ -98,6 +98,7 @@ model Question {
   tags                         Tag[]
   tournaments                  Tournament[]
   exclusiveAnswers             Boolean?                 @default(true)
+  notifications                Notification[]
 }
 
 model Tag {
@@ -311,6 +312,8 @@ model Notification {
   read        Boolean   @default(false)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questionId  String?
+  question    Question? @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model Feedback {

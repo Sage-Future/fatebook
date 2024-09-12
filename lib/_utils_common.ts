@@ -12,11 +12,12 @@ export function forecastsAreHidden(
   question: QuestionWithForecasts,
   userId: string | undefined,
 ) {
-  return !question.resolved && (
-    (!!question.hideForecastsUntil &&
+  return (
+    !question.resolved &&
+    ((!!question.hideForecastsUntil &&
       question.hideForecastsUntil.getTime() > Date.now()) ||
-    (!!question.hideForecastsUntilPrediction &&
-      (!userId || !question.forecasts.some((f) => f.userId === userId)))
+      (!!question.hideForecastsUntilPrediction &&
+        (!userId || !question.forecasts.some((f) => f.userId === userId))))
   )
 }
 
@@ -352,12 +353,16 @@ export function mean(arr: number[]) {
 
 // for convenient debugging
 export function truthyLog(message: any) {
-  console.log(message)
+  if (process.env.NODE_ENV === "development") {
+    console.log(message)
+  }
   return true as true
 }
 
 export function logAndReturn<T>(message: T) {
-  console.log(message)
+  if (process.env.NODE_ENV === "development") {
+    console.log(message)
+  }
   return message
 }
 
@@ -367,4 +372,37 @@ export function capitalizeFirstLetter(str: string) {
   }
 
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+export async function subscribeToMailingList(email: string, name?: string) {
+  if (!process.env.MAILING_LIST_SECRET) {
+    throw new Error("MAILING_LIST_SECRET is not set")
+  }
+  const res = await fetch(
+    "https://www.quantifiedintuitions.org/api/email/subscribe",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: process.env.MAILING_LIST_SECRET,
+      },
+      body: JSON.stringify({
+        subscribers: [
+          {
+            email,
+            tags: ["fatebook-user"],
+            products: ["Fatebook"],
+            name,
+          },
+        ],
+      }),
+    },
+  )
+  if (!res.ok) {
+    throw new Error(
+      "Failed to subscribe to mailing list " +
+        JSON.stringify(await res.json(), null, 2),
+    )
+  }
+  return await res.json()
 }

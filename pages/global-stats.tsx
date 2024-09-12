@@ -1,4 +1,4 @@
-import { Resolution } from "@prisma/client"
+import { QuestionType, Resolution } from "@prisma/client"
 import { bin } from "d3-array"
 import { InferGetServerSidePropsType } from "next"
 import { NextSeo } from "next-seo"
@@ -16,7 +16,7 @@ import {
   YAxis,
 } from "recharts"
 import { FormattedDate } from "../components/ui/FormattedDate"
-import { getDateYYYYMMDD, mean, round, truthyLog } from "../lib/_utils_common"
+import { getDateYYYYMMDD, mean, round } from "../lib/_utils_common"
 import prisma from "../lib/prisma"
 import { getCsvIdPrefix, getPredictionBookIdPrefix } from "../lib/web/utils"
 
@@ -36,6 +36,7 @@ export async function getStaticProps() {
       resolvedAt: true,
       resolved: true,
       profileId: true,
+      type: true,
       questionScores: {
         select: {
           relativeScore: true,
@@ -305,6 +306,35 @@ export async function getStaticProps() {
           hideRollingAvg: true,
         },
         graphCreatedAt("Questions created", questions),
+        {
+          type: "stacked-bar",
+          title: "Questions created by type",
+          data: Object.entries(
+            questions.reduce(
+              (acc, question) => {
+                const monthYear = getDateYYYYMMDD(question.createdAt).slice(
+                  0,
+                  7,
+                ) // YYYY-MM format
+                if (!acc[monthYear]) {
+                  acc[monthYear] = {
+                    [QuestionType.BINARY]: 0,
+                    [QuestionType.MULTIPLE_CHOICE]: 0,
+                    [QuestionType.QUANTITY]: 0,
+                  }
+                }
+                acc[monthYear][question.type]++
+                return acc
+              },
+              {} as Record<string, Record<string, number>>,
+            ),
+          )
+            .sort(([a], [b]) => a.localeCompare(b)) // Sort by date
+            .map(([monthYear, types]) => ({
+              label: monthYear,
+              values: types,
+            })),
+        },
         graphCreatedAt("Forecasts", forecasts),
         graphCreatedAt(
           "Comments",
@@ -572,6 +602,16 @@ interface Stats {
         data: number[]
         thresholds: number[]
       }
+    | {
+        type: "bar"
+        title: string
+        data: { label: string; value: number }[]
+      }
+    | {
+        type: "stacked-bar"
+        title: string
+        data: { label: string; values: Record<string, number> }[]
+      }
   )[]
 }
 
@@ -717,21 +757,17 @@ export default function GlobalStatsPage({
                           <BarChart
                             data={bin()
                               .thresholds(chart.thresholds)(chart.data)
-                              .map(
-                                (bin) =>
-                                  truthyLog(bin) && {
-                                    name:
-                                      bin.x0 !== undefined &&
-                                      bin.x0 + 1 === bin.x1
-                                        ? bin.x0
-                                        : bin.x0 +
-                                          "-" +
-                                          (bin.x1 !== undefined && bin.x1 > 1
-                                            ? bin.x1 - 1
-                                            : bin.x1),
-                                    value: bin.length,
-                                  },
-                              )}
+                              .map((bin) => ({
+                                name:
+                                  bin.x0 !== undefined && bin.x0 + 1 === bin.x1
+                                    ? bin.x0
+                                    : bin.x0 +
+                                      "-" +
+                                      (bin.x1 !== undefined && bin.x1 > 1
+                                        ? bin.x1 - 1
+                                        : bin.x1),
+                                value: bin.length,
+                              }))}
                             margin={{
                               top: 5,
                               right: 30,
@@ -744,6 +780,77 @@ export default function GlobalStatsPage({
                             <YAxis />
                             <Tooltip />
                             <Bar dataKey="value" fill="#8884d8" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )
+                  } else if (chart.type === "bar") {
+                    return (
+                      <div
+                        key={chart.title}
+                        className="flex flex-col bg-gray-100 p-4 rounded-lg"
+                      >
+                        <h3 className="text-lg font-medium mb-4">
+                          {chart.title}
+                        </h3>
+                        <ResponsiveContainer
+                          width="100%"
+                          height={300}
+                          key={chart.title}
+                        >
+                          <BarChart data={chart.data}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis
+                              dataKey="label"
+                              angle={-25}
+                              textAnchor="end"
+                              tick={{
+                                fontSize: 10,
+                              }}
+                              interval={0}
+                            />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar
+                              dataKey="value"
+                              fill="#6366F1"
+                              label={{
+                                position: "insideTop",
+                                fontSize: 8,
+                                fill: "white",
+                              }}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )
+                  } else if (chart.type === "stacked-bar") {
+                    return (
+                      <div
+                        key={chart.title}
+                        className="flex flex-col bg-gray-100 p-4 rounded-lg"
+                      >
+                        <h3 className="text-lg font-medium mb-4">
+                          {chart.title}
+                        </h3>
+                        <ResponsiveContainer width="100%" height={300}>
+                          <BarChart data={chart.data}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="label" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            {Object.keys(chart.data[0].values).map(
+                              (key, index) => (
+                                <Bar
+                                  key={key}
+                                  dataKey={`values.${key}`}
+                                  name={key}
+                                  stackId="a"
+                                  fill={`hsl(${255 - index * 60}, 70%, 60%)`}
+                                />
+                              ),
+                            )}
                           </BarChart>
                         </ResponsiveContainer>
                       </div>

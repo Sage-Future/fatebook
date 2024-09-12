@@ -65,27 +65,29 @@ export default function ListPage() {
                 onDelete={() => void router.push("/")}
               />
               <span className="block">
-                A team created by{" "}
+                A team created by:{" "}
                 <Username
                   user={listQ.data.author}
                   className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 hover:bg-neutral-100"
                 />
               </span>
-              <span className="block">
-                Team members{" "}
+              <div>
+                <span>Team members:</span>
                 {listQ.data.users.length > 0 ? (
-                  listQ.data.users.map((u) => (
-                    <Username
-                      key={u.id}
-                      user={u}
-                      className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 ml-2 hover:bg-neutral-100"
-                      unknownUserText="Invited user"
-                    />
-                  ))
+                  <div className="flex flex-wrap gap-2 mt-1 max-w-full">
+                    {listQ.data.users.map((u) => (
+                      <Username
+                        key={u.id}
+                        user={u}
+                        className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 hover:bg-neutral-100 leading-8"
+                        unknownUserText="Invited user"
+                      />
+                    ))}
+                  </div>
                 ) : (
                   <span className="italic">none</span>
                 )}
-              </span>
+              </div>
               {listQ.data.emailDomains.length > 0 && (
                 <span className="block">
                   Email domains {listQ.data.emailDomains.join(", ")}

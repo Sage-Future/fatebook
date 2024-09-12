@@ -108,7 +108,9 @@ const zodExtraFilters = z.object({
     })
     .optional(),
   searchString: z
-    .string({ description: "Only get questions containing this search string" })
+    .string({
+      description: "Only get questions or tags containing this search string",
+    })
     .optional(),
   theirUserId: z
     .string({
@@ -204,7 +206,7 @@ export const questionRouter = router({
       const user = await prisma.user.findUnique({
         where: { id: ctx.userId || "NO MATCH" },
       })
-      assertHasAccess(ctx, question, user)
+      assertHasAccess(question, user)
       return (
         question &&
         scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
@@ -565,7 +567,7 @@ export const questionRouter = router({
         questionId: z.string(),
         resolution: z.string({
           description:
-            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
+            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question. You can only resolve your own questions.",
         }),
         questionType: z.string(),
         apiKey: z.string().optional(),
@@ -578,6 +580,14 @@ export const questionRouter = router({
         path: "/v0/resolveQuestion",
         description:
           "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            resolution: "YES",
+            questionType: "BINARY",
+            apiKey: "your_api_key_here",
+          },
+        },
       },
     })
     .output(z.undefined())
@@ -586,7 +596,7 @@ export const questionRouter = router({
 
       await handleQuestionResolution(
         input.questionId,
-        input.resolution as string,
+        input.resolution,
         input.questionType as QuestionType,
         input.optionId,
       )
@@ -811,7 +821,12 @@ export const questionRouter = router({
           })
           .max(1)
           .min(0),
-        optionId: z.string().optional(),
+        optionId: z
+          .string()
+          .optional()
+          .describe(
+            "The ID of the selected option for multiple-choice questions. Only required for multiple-choice questions.",
+          ),
         apiKey: z.string().optional(),
       }),
     )
@@ -822,6 +837,13 @@ export const questionRouter = router({
         path: "/v0/addForecast",
         description:
           "Add a forecast to the question. Forecasts are between 0 and 1.",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            forecast: 0.75,
+            apiKey: "your_api_key_here",
+          },
+        },
       },
     })
     .mutation(async ({ input, ctx }) => {
@@ -843,7 +865,7 @@ export const questionRouter = router({
         },
       })
 
-      assertHasAccess(ctx, question, user)
+      assertHasAccess(question, user)
       if (question === null) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -858,9 +880,22 @@ export const questionRouter = router({
         })
       }
 
+      if (input.optionId && question.type !== "MULTIPLE_CHOICE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Option ID can only be supplied for multiple choice questions. This question is a ${question.type}`,
+        })
+      }
+      if (!input.optionId && question.type === "MULTIPLE_CHOICE") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Option ID must be supplied for multiple choice questions`,
+        })
+      }
+
       const lastForecastByUser = question.forecasts
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // most recent first
-        .find((f) => f.userId === ctx.userId)
+        .find((f) => f.userId === user.id)
 
       // disallow submitting the same forecast twice within two minutes
       if (
@@ -875,7 +910,7 @@ export const questionRouter = router({
         data: {
           user: {
             connect: {
-              id: ctx.userId,
+              id: user.id,
             },
           },
           question: {
@@ -954,12 +989,13 @@ export const questionRouter = router({
           } predicted on ${getMarkdownLinkQuestionTitle(q)}`,
           tags: ["new_forecast", q.id],
           url: getQuestionUrl(q),
+          questionId: q.id,
         })
       }
 
       await backendAnalyticsEvent("forecast_submitted", {
         platform: input.apiKey ? "api" : "web",
-        user: ctx.userId,
+        user: user.id,
         question: question.id,
         forecast: input.forecast,
       })
@@ -974,7 +1010,20 @@ export const questionRouter = router({
       }),
     )
     .output(z.undefined())
-    .meta({ openapi: { method: "POST", path: "/v0/addComment" } })
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/v0/addComment",
+        description: "Add a comment to the question.",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            comment: "This is an interesting question!",
+            apiKey: "your_api_key_here",
+          },
+        },
+      },
+    })
     .mutation(async ({ input, ctx }) => {
       const question = await prisma.question.findUnique({
         where: {
@@ -1003,7 +1052,7 @@ export const questionRouter = router({
       })
 
       const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
-      assertHasAccess(ctx, question, user)
+      assertHasAccess(question, user)
       if (question === null) {
         throw new TRPCError({
           code: "NOT_FOUND",
@@ -1020,7 +1069,7 @@ export const questionRouter = router({
           },
           user: {
             connect: {
-              id: ctx.userId,
+              id: user.id,
             },
           },
           comment: input.comment,
@@ -1049,12 +1098,13 @@ export const questionRouter = router({
           }`,
           tags: ["new_comment", question.id],
           url: getQuestionUrl(question),
+          questionId: question.id,
         })
       }
 
       await backendAnalyticsEvent("comment_added", {
         platform: input.apiKey ? "api" : "web",
-        user: ctx.userId || user.id,
+        user: user.id,
       })
     }),
 
@@ -1486,6 +1536,17 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
                       },
                     },
                   },
+                  {
+                    tags: {
+                      some: {
+                        name: {
+                          contains: input.extraFilters.searchString,
+                          mode: "insensitive",
+                        },
+                        userId: userIdIfAuthed,
+                      },
+                    },
+                  },
                 ],
               }
             : {},
@@ -1525,6 +1586,7 @@ export async function emailNewlySharedWithUsers(
           )})`,
           url: getQuestionUrl(question),
           tags: ["shared_prediction", question.id],
+          questionId: question.id,
         })
       } else {
         await sendEmailUnbatched({
@@ -1573,7 +1635,6 @@ export async function getQuestionAssertAuthor(
 }
 
 export function assertHasAccess(
-  ctx: { userId: string | undefined },
   question: QuestionWithForecastsAndSharedWithAndLists | null,
   user: User | null,
 ) {
@@ -1581,17 +1642,19 @@ export function assertHasAccess(
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
 
+  const userId = user?.id || "NO MATCH"
+
   if (
     question.sharedPublicly ||
-    question.sharedWith.some((u) => u.id === ctx.userId) ||
+    question.sharedWith.some((u) => u.id === userId) ||
     question.sharedWithLists.some(
       (l) =>
-        l.users.some((u) => u.id === ctx.userId) ||
-        l.authorId === ctx.userId ||
+        l.users.some((u) => u.id === userId) ||
+        l.authorId === userId ||
         l.emailDomains.some((ed) => user && user.email.endsWith(ed)),
     ) ||
-    question.userId === ctx.userId ||
-    question.forecasts.some((f) => f.userId === ctx.userId) // for slack questions
+    question.userId === userId ||
+    question.forecasts.some((f) => f.userId === userId) // for slack questions
   ) {
     return question as QuestionWithForecasts
   } else {

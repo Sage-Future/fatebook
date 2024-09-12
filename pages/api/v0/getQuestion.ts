@@ -110,7 +110,7 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
   }
 
   try {
-    assertHasAccess({ userId: authedUserId }, question, user)
+    assertHasAccess(question, user)
   } catch (e) {
     return res.status(401).json({
       message:

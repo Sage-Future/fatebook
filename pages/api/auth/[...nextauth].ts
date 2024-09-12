@@ -1,8 +1,8 @@
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
 import GoogleProvider from "next-auth/providers/google"
-
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { subscribeToMailingList } from "../../../lib/_utils_common"
 import { backendAnalyticsEvent } from "../../../lib/_utils_server"
 import prisma from "../../../lib/prisma"
 
@@ -78,7 +78,22 @@ function getCookies() {
 }
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  adapter: {
+    ...PrismaAdapter(prisma),
+    createUser: async (user) => {
+      const createdUser = await PrismaAdapter(prisma).createUser!(user)
+
+      if (createdUser.email) {
+        console.log("Subscribing to mailing list", createdUser.email)
+        void subscribeToMailingList(
+          createdUser.email,
+          createdUser.name || undefined,
+        )
+      }
+
+      return createdUser
+    },
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",

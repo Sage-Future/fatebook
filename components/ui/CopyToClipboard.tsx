@@ -1,5 +1,5 @@
 import { ClipboardIcon } from "@heroicons/react/20/solid"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export function CopyToClipboard({
   textToCopy,
@@ -9,15 +9,24 @@ export function CopyToClipboard({
   buttonLabel?: string
 }) {
   const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (copied) {
+      const timer = setTimeout(() => {
+        setCopied(false)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [copied])
+
   return (
     <div>
       <button
         className="button text-xs"
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        onClick={async (e) => {
+        onClick={(e) => {
           e.preventDefault()
           setCopied(true)
-          await navigator.clipboard.writeText(textToCopy)
+          void navigator.clipboard.writeText(textToCopy)
         }}
       >
         <ClipboardIcon className="inline shrink-0" height={15} />

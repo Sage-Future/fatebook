@@ -25,7 +25,7 @@ export function FormattedDate({
 }) {
   const oneWeekMs = 1000 * 60 * 60 * 24 * 7
 
-  if (!date) {
+  if (!date || typeof date.getTime !== "function" || isNaN(date.getTime())) {
     return <></>
   }
 
@@ -76,7 +76,6 @@ export function FormattedDate({
         : intlFormatDistance(date, new Date())
       : fullDate
   } catch (e) {
-    console.error(e)
     return <></>
   }
 

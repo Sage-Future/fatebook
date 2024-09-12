@@ -368,7 +368,7 @@ export async function postQuestionToSlack({
     },
   })
 
-  assertHasAccess({ userId: user.id }, question, user)
+  assertHasAccess(question, user)
 
   if (!question) {
     throw new Error()

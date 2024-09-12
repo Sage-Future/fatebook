@@ -11,12 +11,14 @@ export async function createNotification({
   title,
   content,
   url,
+  questionId,
   tags,
   userId,
 }: {
   title: string
   content: string
   url: string
+  questionId: string
   tags: string[]
   userId: string
 }) {
@@ -28,6 +30,7 @@ export async function createNotification({
       url,
       tags,
       userId,
+      questionId,
     },
   })
 }
