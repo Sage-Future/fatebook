@@ -174,8 +174,6 @@ export function OnboardingChecklist() {
 
   const predictionIsTouched = allPredictionValues?.some((n) => !Number.isNaN(n))
 
-  console.log({ onboardingStage: onboardingStage.data })
-
   // Add a delay to these updates to make state changes less visually jarring
   const [questionProbablyWritten] = useDebounce(
     onboardingStage.data === "COMPLETE" ||
