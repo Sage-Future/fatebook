@@ -83,6 +83,10 @@ function usePredictFormStandalone() {
   const [questionType, setQuestionType] = useState<QuestionType>(
     QuestionType.BINARY,
   )
+  // TODO potentially not worth the complexity
+  // `setQuestionInFocus` is manually called via `onFocus`, `onBlur` callbacks,
+  // so this could be prone to getting out of sync
+  const [questionInFocus, setQuestionInFocus] = useState(false)
 
   const form = useForm<PredictFormType>({
     mode: "all",
@@ -124,7 +128,13 @@ function usePredictFormStandalone() {
     questionTypeChangedCallback(questionType)
   }, [questionType, questionTypeChangedCallback])
 
-  return { ...form, questionType, setQuestionType }
+  return {
+    ...form,
+    questionType,
+    setQuestionType,
+    questionInFocus,
+    setQuestionInFocus,
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

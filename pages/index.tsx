@@ -8,10 +8,7 @@ import { Predict } from "../components/predict-form/Predict"
 import { QuickFeedback } from "../components/ui/QuickFeedback"
 import { useUserId } from "../lib/web/utils"
 import { OnboardingChecklist } from "../components/OnboardingChecklist"
-import {
-  PredictProvider,
-  usePredictForm,
-} from "../components/predict-form/PredictProvider"
+import { PredictProvider } from "../components/predict-form/PredictProvider"
 
 export default function HomePage() {
   const { status: sessionStatus } = useSession()

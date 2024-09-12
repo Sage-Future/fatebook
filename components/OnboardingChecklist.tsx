@@ -6,13 +6,17 @@
 // - [ ] Check style consistency
 //
 
-import { ReactNode, useCallback, useEffect, useState } from "react"
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react"
 import { ChevronRightIcon } from "@heroicons/react/24/solid"
 import Link from "next/link"
 import clsx from "clsx"
 import { usePredictForm } from "./predict-form/PredictProvider"
+import { api } from "../lib/web/trpc"
+import { useDebounce } from "use-debounce"
 
 type QuestionCategory = "personal" | "projects" | "shared"
+
+const DEBOUNCE_INTERVAL = 1000
 
 interface GoalSuggestionsProps {
   category: QuestionCategory
@@ -31,7 +35,7 @@ const projects = [
   "Develop a new feature for the app",
 ]
 
-const forFriends = [
+const shared = [
   "Organize a surprise party",
   "Plan a weekend getaway",
   "Create a photo album",
@@ -48,20 +52,19 @@ function GoalSuggestions({ category }: GoalSuggestionsProps) {
     } else if (category === "projects") {
       setSuggestions(projects)
     } else if (category === "shared") {
-      setSuggestions(forFriends)
+      setSuggestions(shared)
     } else {
       setSuggestions([])
     }
   }, [category])
 
-  // TODO reuse styles from elsewhere if possible
-  // TODO change colour to look less greyed out
+  // TODO flag decision about the color
   return (
     <div className="w-full rounded-b-md flex flex-col items-start gap-2 z-10">
       {suggestions.map((suggestion) => (
         <button
           key={suggestion}
-          className="btn justify-start text-neutral-500 font-normal leading-normal w-full"
+          className="btn justify-start text-neutral-500 font-medium leading-normal w-full text-neutral-800 border-2 border-neutral-300"
           onClick={() => {
             setValue("question", suggestion, {
               shouldTouch: true,
@@ -71,7 +74,7 @@ function GoalSuggestions({ category }: GoalSuggestionsProps) {
           }}
         >
           <span className="ml-4">
-            <span className="text-neutral-500 font-semibold mr-2 -ml-4">+</span>
+            <span className="font-semibold mr-2 -ml-4">+</span>
             <span>{suggestion}</span>
           </span>
         </button>
@@ -102,7 +105,9 @@ function CollapsibleSection({
     <div>
       <div
         className="flex items-center font-semibold text-black select-none w-fit"
-        onClick={() => setUserCollapsedState(!isCollapsed)}
+        onClick={() => {
+          setUserCollapsedState(!isCollapsed)
+        }}
         role="button"
         tabIndex={0}
         aria-expanded={!isCollapsed}
@@ -115,8 +120,8 @@ function CollapsibleSection({
         {title}
       </div>
       <div
-        className={`duration-100 overflow-hidden ${
-          isCollapsed ? "max-h-0" : "max-h-screen"
+        className={`overflow-hidden ${
+          isCollapsed ? "max-h-0 duration-100" : "max-h-screen duration-500"
         }`}
       >
         {children}
@@ -153,17 +158,51 @@ export function OnboardingChecklist() {
     [categorySelected],
   )
 
-  // TODO remove, this is here for debugging
-  const isSuccessScreen =
-    typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("success") === "true"
+  const { questionInFocus, watch } = usePredictForm()
+  const question = watch("question")
+  // TODO multiple choice
+  const predictionPercentage = watch("predictionPercentage")
+
+  const onboardingStage = api.question.getOnboardingStage.useQuery()
+
+  const initialOnboardingStageRef =
+    useRef<typeof onboardingStage.data>(undefined)
+  if (!initialOnboardingStageRef.current && onboardingStage.data) {
+    initialOnboardingStageRef.current = onboardingStage.data
+  }
+
+  // Add a delay to these updates to make state changes less visually jarring
+  const [questionProbablyWritten] = useDebounce(
+    onboardingStage.data === "COMPLETE" ||
+      !Number.isNaN(predictionPercentage) ||
+      ((question?.length ?? 0) > 5 && !questionInFocus),
+    DEBOUNCE_INTERVAL,
+    { leading: false, trailing: true },
+  )
+  const [currentOnboardingStage] = useDebounce(
+    onboardingStage.data,
+    DEBOUNCE_INTERVAL,
+    { leading: false, trailing: true },
+  )
+
+  if (
+    !initialOnboardingStageRef.current ||
+    initialOnboardingStageRef.current === "COMPLETE"
+  ) {
+    return null
+  }
+
+  const isSuccessScreen = currentOnboardingStage === "COMPLETE"
 
   return (
-    <div className="prose flex flex-col gap-2 w-[400px] p-4 mt-7 bg-indigo-50 border-2 border-neutral-300 rounded-lg shadow-lg">
+    <div className="w-[400px] p-4 mt-7 bg-indigo-50 border-2 border-neutral-300 rounded-lg shadow-lg">
       {!isSuccessScreen && (
-        <>
+        <div className="prose flex flex-col gap-2">
           <h2 className="font-semibold mb-1">Getting started</h2>
-          <CollapsibleSection tryCollapse={false} title={"1. Write a question"}>
+          <CollapsibleSection
+            tryCollapse={questionProbablyWritten}
+            title={"1. Write a question"}
+          >
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
               <div>
                 What is something relevant to your life that you&apos;re not
@@ -197,8 +236,12 @@ export function OnboardingChecklist() {
               )}
             </div>
           </CollapsibleSection>
-          <CollapsibleSection tryCollapse={true} title={"2. Make a prediction"}>
+          <CollapsibleSection
+            tryCollapse={!questionProbablyWritten}
+            title={"2. Make a prediction"}
+          >
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
+              {/* TODO handle multiple choice */}
               <div>
                 Estimate the probability that the answer is{" "}
                 <b className="text-neutral-600">YES</b>.
@@ -214,17 +257,23 @@ export function OnboardingChecklist() {
               </div>
             </div>
           </CollapsibleSection>
-        </>
+        </div>
       )}
-      {isSuccessScreen && (
-        <>
-          <h2 className="font-semibold mb-1">Success!</h2>
-          <div className="text-sm text-neutral-500 flex flex-col gap-2 mb-2">
-            Some text relating to this, which is enough to push it to it&apos;s
-            full available width
-          </div>
-        </>
-      )}
+      <div
+        className={clsx(
+          "prose flex flex-col gap-2 transition-opacity",
+          !isSuccessScreen
+            ? "max-h-0 opacity-0 duration-0"
+            : "opacity-100 duration-1000",
+        )}
+      >
+        <h2 className="font-semibold mb-1">Success!</h2>
+        {/* TODO copy */}
+        <div className="text-sm text-neutral-500 flex flex-col gap-2">
+          Some text relating to this, which is enough to push it to it&apos;s
+          full available width.
+        </div>
+      </div>
     </div>
   )
 }
