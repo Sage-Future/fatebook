@@ -7,7 +7,7 @@ import { api } from "../lib/web/trpc";
 import { TeamListContent } from "../components/TeamListContent";
 import { TournamentContent } from "../components/TournamentContent";
 import { signInToFatebook } from "../lib/web/utils";
-import { useSwipeable } from "react-swipeable";
+// import { useSwipeable } from "react-swipeable";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 
 export default function TeamsPage() {
@@ -55,15 +55,16 @@ export default function TeamsPage() {
     setCurrentIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
   };
 
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: handleNext,
-    onSwipedRight: handlePrevious,
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-    trackTouch: true,
-    delta: 50,
-    swipeDuration: 500,
-  });
+  // TODO: uncomment this when react-swipeable import is fixed
+  // const swipeHandlers = useSwipeable({
+  //   onSwipedLeft: handleNext,
+  //   onSwipedRight: handlePrevious,
+  //   preventScrollOnSwipe: true,
+  //   trackMouse: true,
+  //   trackTouch: true,
+  //   delta: 50,
+  //   swipeDuration: 500,
+  // });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -90,7 +91,7 @@ export default function TeamsPage() {
   return (
     <div 
       className="px-4 pt-12 pb-20 lg:pt-16 mx-auto max-w-6xl flex flex-col"
-      {...swipeHandlers}
+      // {...swipeHandlers}
       ref={containerRef}
     >
       <NextSeo title="Teams and Tournaments" />
