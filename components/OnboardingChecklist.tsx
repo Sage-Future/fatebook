@@ -46,18 +46,16 @@ const sharedMC = [
   "When will Taylor Swift get married?",
 ]
 
-function GoalSuggestions({
+function QuestionSuggestions({
   category,
   isMultipleChoice,
-  callback,
+  onSelect,
 }: {
   category: QuestionCategory
   isMultipleChoice: boolean
-  callback?: (suggestion: string) => void
+  onSelect: (suggestion: string) => void
 }) {
   const [suggestions, setSuggestions] = useState<string[]>([])
-
-  const { setValue } = usePredictForm()
 
   useEffect(() => {
     if (category === "personal") {
@@ -78,12 +76,7 @@ function GoalSuggestions({
           key={suggestion}
           className="btn justify-start text-neutral-500 font-medium leading-normal w-full text-neutral-800 border-2 border-neutral-300"
           onClick={() => {
-            setValue("question", suggestion, {
-              shouldTouch: true,
-              shouldDirty: true,
-              shouldValidate: true,
-            })
-            callback?.(suggestion)
+            onSelect(suggestion)
           }}
         >
           <span className="ml-4">
@@ -146,9 +139,24 @@ function CollapsibleSection({
 export function OnboardingChecklist() {
   const [categorySelected, setCategorySelected] =
     useState<QuestionCategory | null>(null)
+
   const [suggestionClicked, setSuggestionClicked] = useState(false)
+  const { setValue } = usePredictForm()
+
   const browser = useBrowser()
   const boundaryRef = useRef<HTMLDivElement>(null)
+
+  const onSelectSuggestion = useCallback(
+    (suggestion: string) => {
+      setValue("question", suggestion, {
+        shouldTouch: true,
+        shouldDirty: true,
+        shouldValidate: true,
+      })
+      setSuggestionClicked(true)
+    },
+    [setValue],
+  )
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const SelectCategoryButton = useCallback(
@@ -289,10 +297,10 @@ export function OnboardingChecklist() {
                   </SelectCategoryButton>
                 </div>
                 {categorySelected && (
-                  <GoalSuggestions
+                  <QuestionSuggestions
                     category={categorySelected}
                     isMultipleChoice={isMultipleChoice}
-                    callback={setSuggestionClicked.bind(null, true)}
+                    onSelect={onSelectSuggestion}
                   />
                 )}
               </div>
@@ -334,54 +342,49 @@ export function OnboardingChecklist() {
             </CollapsibleSection>
           </div>
         )}
-        <div
-          className={clsx(
-            "prose flex flex-col gap-2 transition-opacity",
-            !isSuccessScreen
-              ? "max-h-0 opacity-0 duration-0"
-              : "opacity-100 duration-1000",
-          )}
-        >
-          <h2 className="font-semibold mb-1">Forecast created!</h2>
-          <div className="text-sm text-neutral-500 flex flex-col gap-2">
-            We&apos;ll notify you when it&apos;s time to resolve it.
+        {isSuccessScreen && (
+          <div className={"prose flex flex-col gap-2"}>
+            <h2 className="font-semibold mb-1">Forecast created!</h2>
+            <div className="text-sm text-neutral-500 flex flex-col gap-2">
+              We&apos;ll notify you when it&apos;s time to resolve it.
+            </div>
+            <div className="text-sm text-neutral-500 flex flex-col">
+              In the meantime, you can:
+              <ul className="list-disc list-inside m-0 pl-2">
+                <li>
+                  Try the{" "}
+                  <Link
+                    href="/extension"
+                    className="text-neutral-500 hover:text-neutral-600"
+                  >
+                    {browser} extension
+                  </Link>
+                  , to track your predictions instantly around the web
+                </li>
+                <li>
+                  Check out{" "}
+                  <Link
+                    href="/public"
+                    className="text-neutral-500 hover:text-neutral-600"
+                  >
+                    public questions
+                  </Link>{" "}
+                  that others have created
+                </li>
+                <li>
+                  Consider adding our{" "}
+                  <Link
+                    href="/for-slack"
+                    className="text-neutral-500 hover:text-neutral-600"
+                  >
+                    Slack integration
+                  </Link>{" "}
+                  to your workspace
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="text-sm text-neutral-500 flex flex-col">
-            In the meantime, you can:
-            <ul className="list-disc list-inside m-0 pl-2">
-              <li>
-                Try the{" "}
-                <Link
-                  href="/extension"
-                  className="text-neutral-500 hover:text-neutral-600"
-                >
-                  {browser} extension
-                </Link>
-                , to track your predictions instantly around the web
-              </li>
-              <li>
-                Check out{" "}
-                <Link
-                  href="/public"
-                  className="text-neutral-500 hover:text-neutral-600"
-                >
-                  public questions
-                </Link>{" "}
-                that others have created
-              </li>
-              <li>
-                Consider adding our{" "}
-                <Link
-                  href="/for-slack"
-                  className="text-neutral-500 hover:text-neutral-600"
-                >
-                  Slack integration
-                </Link>{" "}
-                to your workspace
-              </li>
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
     </>
   )
