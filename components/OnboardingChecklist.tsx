@@ -151,9 +151,19 @@ export function OnboardingChecklist() {
     [categorySelected],
   )
 
+  const onboardingStage = api.question.getOnboardingStage.useQuery()
+  const initialOnboardingStageRef =
+    useRef<typeof onboardingStage.data>(undefined)
+  if (!initialOnboardingStageRef.current && onboardingStage.data) {
+    initialOnboardingStageRef.current = onboardingStage.data
+  }
+
   const { questionType, questionInFocus, watch } = usePredictForm()
   const question = watch("question")
+
   const isMultipleChoice = questionType === QuestionType.MULTIPLE_CHOICE
+  const hasSubmittedQuestion =
+    onboardingStage.data === "NO_FORECASTS_ON_OWN_QUESTIONS"
 
   const predictionPercentage = watch("predictionPercentage")
   const mcqOptions = watch("options")
@@ -164,16 +174,12 @@ export function OnboardingChecklist() {
 
   const predictionIsTouched = allPredictionValues?.some((n) => !Number.isNaN(n))
 
-  const onboardingStage = api.question.getOnboardingStage.useQuery()
-  const initialOnboardingStageRef =
-    useRef<typeof onboardingStage.data>(undefined)
-  if (!initialOnboardingStageRef.current && onboardingStage.data) {
-    initialOnboardingStageRef.current = onboardingStage.data
-  }
+  console.log({ onboardingStage: onboardingStage.data })
 
   // Add a delay to these updates to make state changes less visually jarring
   const [questionProbablyWritten] = useDebounce(
     onboardingStage.data === "COMPLETE" ||
+      hasSubmittedQuestion ||
       predictionIsTouched ||
       ((question?.length ?? 0) > 5 && !questionInFocus),
     DEBOUNCE_INTERVAL,
@@ -201,7 +207,11 @@ export function OnboardingChecklist() {
           <h2 className="font-semibold mb-1">Getting started</h2>
           <CollapsibleSection
             tryCollapse={questionProbablyWritten}
-            title={"1. Write a question"}
+            title={
+              <span className={hasSubmittedQuestion ? "line-through" : ""}>
+                1. Write a question
+              </span>
+            }
           >
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
               <div>
@@ -238,22 +248,24 @@ export function OnboardingChecklist() {
           </CollapsibleSection>
           <CollapsibleSection
             tryCollapse={!questionProbablyWritten}
-            title={"2. Make a prediction"}
+            title={<span>2. Make a prediction</span>}
           >
             <div className="text-sm text-neutral-500 flex flex-col gap-2 my-2">
-              <div>
-                {isMultipleChoice ? (
-                  "How likely do you think each option is?"
-                ) : (
-                  <>
-                    How likely do you think it is that the answer will be{" "}
-                    <b className="text-neutral-600">YES</b>?
-                  </>
-                )}
-              </div>
+              {!hasSubmittedQuestion && (
+                <div>
+                  {isMultipleChoice ? (
+                    "How likely do you think each option is?"
+                  ) : (
+                    <>
+                      How likely do you think it is that the answer will be{" "}
+                      <b className="text-neutral-600">YES</b>?
+                    </>
+                  )}
+                </div>
+              )}
               <div>
                 We&apos;ll remind you to resolve your question{" "}
-                {!isMultipleChoice && (
+                {!isMultipleChoice && !hasSubmittedQuestion && (
                   <>
                     <b className="text-neutral-600">YES</b>,{" "}
                     <b className="text-neutral-600">NO</b>, or{" "}
