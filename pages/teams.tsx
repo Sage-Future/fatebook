@@ -72,6 +72,10 @@ export default function TeamsPage() {
     setIsDrawerOpen(!isDrawerOpen);
   };
 
+  const closeDrawer = () => {
+    setIsDrawerOpen(false);
+  };
+
   useEffect(() => {
     const container = containerRef.current;
     if (container) {
@@ -98,7 +102,7 @@ export default function TeamsPage() {
 
   return (
     <div 
-      className="px-4 pt-12 pb-20 lg:pt-16 lg:pb-4 mx-auto max-w-6xl flex flex-col"
+      className="px-4 pt-12 pb-20 lg:pt-16 lg:pb-4 mx-auto max-w-6xl flex flex-col relative"
       // {...swipeHandlers}
       ref={containerRef}
     >
@@ -135,13 +139,19 @@ export default function TeamsPage() {
             ) : currentItem.type === 'userList' ? (
               <TeamListContent userList={currentItem.data} userId={userId} />
             ) : (
-              <TournamentContent tournament={currentItem.data} userId={userId} />
+              <TournamentContent tournament={currentItem.data} />
             )}
           </div>
         )}
       </div>
       {userId && (
         <>
+          {isDrawerOpen && (
+            <div 
+              className="fixed top-16 inset-0 bg-black bg-opacity-30 z-10 transition-all duration-500"
+              onClick={closeDrawer}
+            ></div>
+          )}
           <div className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 z-20 ${isDrawerOpen ? 'h-[80vh]' : 'h-16'}`}>
             <div className="flex justify-between items-center max-w-6xl mx-auto p-4">
               <button 

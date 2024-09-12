@@ -45,7 +45,7 @@ export default function TournamentPage() {
           {isAdmin && <TournamentAdminPanel tournamentId={tournamentId} />}
           {tournamentQ.data ? (
             <>
-              <TournamentContent tournament={tournamentQ.data} userId={userId} />
+              <TournamentContent tournament={tournamentQ.data} />
               <TournamentLeaderboard tournamentId={tournamentId} />
             </>
           ) : (

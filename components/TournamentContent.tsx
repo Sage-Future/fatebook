@@ -2,7 +2,7 @@ import { Username } from "./ui/Username";
 import { Questions } from "./Questions";
 import { TournamentWithAuthor } from "../prisma/additional";
 
-export function TournamentContent({ tournament, userId }: { tournament: TournamentWithAuthor, userId?: string }) {
+export function TournamentContent({ tournament}: { tournament: TournamentWithAuthor }) {
   return (
     <div className="flex flex-col gap-2">
       <h2 className="mt-0">{tournament.name}</h2>
