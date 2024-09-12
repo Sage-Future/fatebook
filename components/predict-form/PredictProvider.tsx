@@ -83,7 +83,6 @@ function usePredictFormStandalone() {
   const [questionType, setQuestionType] = useState<QuestionType>(
     QuestionType.BINARY,
   )
-  // TODO potentially not worth the complexity
   // `setQuestionInFocus` is manually called via `onFocus`, `onBlur` callbacks,
   // so this could be prone to getting out of sync
   const [questionInFocus, setQuestionInFocus] = useState(false)
