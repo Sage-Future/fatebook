@@ -38,11 +38,10 @@ export function TrackRecord({
   const [defaultCollapsed, setDefaultCollapsed] = useState<boolean | null>(null)
 
   const [isCollapsed, setIsCollapsed] = useState(
-    typeof window !== "undefined" && isThisUser
-      ? JSON.parse(
-          localStorage.getItem("isCollapsed") || `${defaultCollapsed ?? false}`,
-        )
-      : defaultCollapsed,
+    showCollapseButton &&
+      (typeof window !== "undefined" && isThisUser
+        ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
+        : false),
   )
 
   // Set the default collapsed state based on the first value of onboardingStage.data
