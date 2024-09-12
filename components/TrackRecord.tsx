@@ -32,9 +32,10 @@ export function TrackRecord({
   const router = useRouter()
   const showCollapseButton = router.pathname === "/"
   const [isCollapsed, setIsCollapsed] = useState(
-    typeof window !== "undefined" && isThisUser
-      ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
-      : false,
+    showCollapseButton &&
+      (typeof window !== "undefined" && isThisUser
+        ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
+        : false),
   )
 
   const userName = api.getUserInfo.useQuery(
