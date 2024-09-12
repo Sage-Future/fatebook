@@ -17,6 +17,7 @@ export default function TeamsPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
   const tournamentsQ = api.tournament.getAll.useQuery({});
   const userListsQ = api.userList.getUserLists.useQuery();
@@ -91,6 +92,15 @@ export default function TeamsPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isDrawerOpen) {
+      // Small delay to trigger the transition
+      setTimeout(() => setIsOverlayVisible(true), 50);
+    } else {
+      setIsOverlayVisible(false);
+    }
+  }, [isDrawerOpen]);
+
   const currentItem = items[currentIndex];
 
   const truncateName = (name: string, maxLength: number) => {
@@ -146,12 +156,12 @@ export default function TeamsPage() {
       </div>
       {userId && (
         <>
-          {isDrawerOpen && (
-            <div 
-              className="fixed top-16 inset-0 bg-black bg-opacity-30 z-10 transition-all duration-500"
-              onClick={closeDrawer}
-            ></div>
-          )}
+          <div 
+            className={`fixed inset-x-0 top-16 bottom-0 bg-black transition-opacity duration-500 ease-in-out z-10 ${
+              isDrawerOpen ? 'pointer-events-auto' : 'pointer-events-none'
+            } ${isOverlayVisible ? 'opacity-30' : 'opacity-0'}`}
+            onClick={closeDrawer}
+          ></div>
           <div className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 z-20 ${isDrawerOpen ? 'h-[80vh]' : 'h-16'}`}>
             <div className="flex justify-between items-center max-w-6xl mx-auto p-4">
               <button 
