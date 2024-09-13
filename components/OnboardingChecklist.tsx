@@ -372,12 +372,12 @@ export function OnboardingChecklist() {
                   that others have created
                 </li>
                 <li>
-                  Consider adding our{" "}
+                  Consider adding{" "}
                   <Link
                     href="/for-slack"
                     className="text-neutral-500 hover:text-neutral-600"
                   >
-                    Slack integration
+                    Fatebook for Slack
                   </Link>{" "}
                   to your workspace
                 </li>
