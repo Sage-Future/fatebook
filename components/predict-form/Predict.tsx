@@ -388,8 +388,8 @@ export function Predict({
                   defaultValue={questionDefaults?.title}
                   onMouseDown={(e) => e.stopPropagation()}
                   {...registerQuestion}
-                  onFocus={setQuestionInFocus.bind(null, true)}
-                  onBlur={setQuestionInFocus.bind(null, false)}
+                  onFocus={() => setQuestionInFocus(true)}
+                  onBlur={() => setQuestionInFocus(false)}
                   ref={mergeRefs([textAreaRef, formRef])}
                 />
 
