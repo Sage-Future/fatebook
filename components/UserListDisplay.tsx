@@ -21,11 +21,13 @@ export function UserListDisplay({
   bigHeading,
   onDelete,
   compact,
+  inCarousel, 
 }: {
   userList: UserListWithAuthorAndUsers
   bigHeading?: boolean
   onDelete?: () => void
   compact?: boolean
+  inCarousel?: boolean 
 }) {
   const userId = useUserId()
   const utils = api.useContext()
@@ -52,7 +54,7 @@ export function UserListDisplay({
   return (
     <div
       className={clsx("flex flex-col gap-2 grow")}
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => inCarousel ? e.preventDefault() : undefined}
     >
       <span className="flex gap-2 justify-between">
         {isEditing ? (
@@ -84,43 +86,81 @@ export function UserListDisplay({
           />
         ) : (
           <>
-            <Link
-              href={getUserListUrl(userList, true)}
-              className={clsx(
-                "p-1 my-auto no-underline hover:underline",
-                compact && "text-sm text-neutral-600",
-              )}
-              target={compact ? "_self" : "_blank"}
-            >
-              {bigHeading ? (
-                <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
-              ) : (
-                <>
-                  {userList.name}
-                  {!compact && (
-                    <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
-                  )}
+            {inCarousel ? (
+              // When in carousel, don't use a Link
+              <span
+                className={clsx(
+                  "p-1 my-auto",
+                  compact && "text-sm text-neutral-600",
+                )}
+              >
+                {bigHeading ? (
+                  <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
+                ) : (
+                  <>
+                    {userList.name}
+                    {!compact && (
+                      <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
+                    )}
 
-                  {(userList.users.length > 0 ||
-                    userList.emailDomains.length === 0) && (
-                    <span className="block text-xs my-auto font-normal text-neutral-400">
-                      {userList.users.length} member
-                      {userList.users.length === 1 ? "" : "s"}
-                    </span>
-                  )}
-                  {userList.emailDomains.length > 0 && (
-                    <span className="block text-xs my-auto font-normal text-neutral-400">
-                      {userList.emailDomains
-                        .map((domain) => `anyone@${domain}`)
-                        .join(", ")}
-                    </span>
-                  )}
-                </>
-              )}
-            </Link>
+                    {(userList.users.length > 0 ||
+                      userList.emailDomains.length === 0) && (
+                      <span className="block text-xs my-auto font-normal text-neutral-400 text-left">
+                        {userList.users.length} member
+                        {userList.users.length === 1 ? "" : "s"}
+                      </span>
+                    )}
+                    {userList.emailDomains.length > 0 && (
+                      <span className="block text-xs my-auto font-normal text-neutral-400">
+                        {userList.emailDomains
+                          .map((domain) => `anyone@${domain}`)
+                          .join(", ")}
+                      </span>
+                    )}
+                  </>
+                )}
+              </span>
+            ) : (
+              // When not in carousel, use the Link as before
+              <Link
+                href={getUserListUrl(userList, true)}
+                className={clsx(
+                  "p-1 my-auto no-underline hover:underline",
+                  compact && "text-sm text-neutral-600",
+                )}
+                target={compact ? "_self" : "_blank"}
+              >
+                {bigHeading ? (
+                  <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
+                ) : (
+                  <>
+                    {userList.name}
+                    {!compact && (
+                      <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
+                    )}
+
+                    {(userList.users.length > 0 ||
+                      userList.emailDomains.length === 0) && (
+                      <span className="block text-xs my-auto font-normal text-neutral-400">
+                        {userList.users.length} member
+                        {userList.users.length === 1 ? "" : "s"}
+                      </span>
+                    )}
+                    {userList.emailDomains.length > 0 && (
+                      <span className="block text-xs my-auto font-normal text-neutral-400">
+                        {userList.emailDomains
+                          .map((domain) => `anyone@${domain}`)
+                          .join(", ")}
+                      </span>
+                    )}
+                  </>
+                )}
+              </Link>
+            )}
           </>
         )}
-        {!compact && (
+        {!compact && !inCarousel && (
+          // Only show these buttons when not in carousel mode
           <div className="flex gap-2">
             {userList.authorId !== userId ? (
               <InfoButton
@@ -199,7 +239,7 @@ export function UserListDisplay({
           </div>
         )}
       </span>
-      {isEditing && <EmailInput userList={userList} />}
+      {isEditing && !inCarousel && <EmailInput userList={userList} />}
     </div>
   )
 }

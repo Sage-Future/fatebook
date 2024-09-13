@@ -9,12 +9,17 @@ export function Tournaments({
   includePublic = false,
   onlyIncludePredictYourYear = false,
   showCreateButton = true,
+  inCarousel = false,
+  onItemClick,
 }: {
-  title?: string
+  title?: string 
   includePublic?: boolean
   onlyIncludePredictYourYear?: boolean
   showCreateButton?: boolean
+  inCarousel?: boolean
+  onItemClick?: (id: string) => void
 }) {
+  console.log('tournaments inCarousel', inCarousel);
   const tournamentsQ = api.tournament.getAll.useQuery({
     includePublic,
     onlyIncludePredictYourYear,
@@ -47,12 +52,21 @@ export function Tournaments({
       </h2>
       {tournamentsQ.data?.map((tournament) => (
         <span key={tournament.id} className="flex flex-col gap-2">
-          <Link
-            href={getTournamentUrl(tournament, true)}
-            className="btn btn-ghost flex justify-start"
-          >
-            {tournament.name}
-          </Link>
+          {inCarousel ? (
+            <button
+              className="btn btn-ghost flex justify-start w-full text-left"
+              onClick={() => onItemClick && onItemClick(tournament.id)}
+            >
+              {tournament.name}
+            </button>
+          ) : (
+            <Link
+              href={getTournamentUrl(tournament, true)}
+              className="btn btn-ghost flex justify-start text-left"
+            >
+              {tournament.name}
+            </Link>
+          )}
         </span>
       ))}
       {tournamentsQ.status !== "loading" && tournamentsQ.data?.length === 0 && (
