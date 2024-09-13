@@ -51,12 +51,12 @@ export function FormattedDate({
     return <></>
   }
 
-  const isRecent =
+  const isNearInPastOrFuture =
     (date.getTime() <= Date.now() &&
       Date.now() - date.getTime() <= oneWeekMs * 8) ||
     (date.getTime() > Date.now() && date.getTime() - Date.now() < oneWeekMs)
 
-  if (alwaysUseDistance || isRecent) {
+  if (alwaysUseDistance || isNearInPastOrFuture) {
     try {
       return wrapFormattedDate(
         currentDateShowToday &&
