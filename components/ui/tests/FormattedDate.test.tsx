@@ -94,8 +94,4 @@ describe("FormattedDate", () => {
     )
     expect(getByText("in 3 days")).toBeInTheDocument()
   })
-
-  it("fails", () => {
-    throw new Error("Failing test")
-  })
 })
