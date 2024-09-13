@@ -10,6 +10,7 @@ out
 *debug/
 *exportContacts.ts
 .eslintcache
+coverage/
 
 *.code-workspace
 
@@ -23,6 +24,3 @@ localhost.pem
 
 .env*.local
 .idea
-
-# Don't commit scripts in root dir
-*.py

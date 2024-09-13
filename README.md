@@ -74,11 +74,18 @@ createdb fatebook_development --owner fatebook
 1. Run `npm run dev`.
 2. Go to https://localhost:3000. You should be able to sign in and create predictions.
 
+### Running tests
+
+Run jest tests with `npm run test`.
+
+You can also generate a coverage report by running `npm run test -- --coverage`, the report will be printed to the console and also saved in the `coverage/` directory. The best way to view it is in the html format under `coverage/lcov-report/index.html` (run `open coverage/lcov-report/index.html`).
+
 ### Developing the Fatebook browser extension
 
 Fatebook has a Chrome and Firefox [extension](https://fatebook.io/extension). The source is in [/chrome-extension](https://github.com/Sage-Future/fatebook/tree/main/chrome-extension)
 
 To test changes to the Chrome extension:
+
 1. Follow the general Fatebook dev setup steps above
 2. In `after.js`, make sure `extensionInfo.isDev = true`
 3. `npm run dev`, and check that your dev server is running at https://localhost:3000
@@ -89,6 +96,7 @@ To test changes to the Chrome extension:
 8. Before committing, make sure `extensionInfo.isDev = false` in `after.js`
 
 If you make a change to the contents of a file in `chrome-extension`, to see the changes in your browser you'll need to reload the extension:
+
 1. Go to `chrome://extensions`
 2. Click the refresh button next to the unpacked version of Fatebook for Chrome
 3. Refresh any tabs where you want to test the extension
