@@ -88,7 +88,7 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
             )}
           </div>
         )}
-        {forecastsAreHidden(question, userId) && (
+        {forecastsAreHidden(question, userId) ? (
           <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
             {question.hideForecastsUntil
               ? `Other users' forecasts are hidden until ${getDateYYYYMMDD(
@@ -97,8 +97,7 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
               : question.hideForecastsUntilPrediction &&
                 "Other users' forecasts are hidden until you make a prediction, to reduce anchoring."}
           </div>
-        )}
-        {showEvents ? (
+        ) : showEvents ? (
           <EventsLog question={question} />
         ) : (
           <button className="btn mx-auto" onClick={() => setShowEvents(true)}>

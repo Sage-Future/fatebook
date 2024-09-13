@@ -8,11 +8,11 @@ import { Username } from "../../components/ui/Username"
 import { api } from "../../lib/web/trpc"
 import {
   getUserListUrl,
-  signInToFatebook,
   useUserId,
 } from "../../lib/web/utils"
+import SignInToFatebookPrompt from "../../components/SignInToFatebookPrompt"
 
-export default function ListPage() {
+export default function TeamPage() {
   const userId = useUserId()
   const router = useRouter()
   const utils = api.useContext()
@@ -36,16 +36,7 @@ export default function ListPage() {
       <NextSeo title={listQ.data?.name || "Team"} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
-          {!userId && (
-            <div className="text-center">
-              <button
-                className="button primary mx-auto"
-                onClick={() => void signInToFatebook()}
-              >
-                Sign in to see all questions and add your own predictions
-              </button>
-            </div>
-          )}
+          {!userId && <SignInToFatebookPrompt/>}
           {!listQ.data && (
             <div className="text-center">
               <h3 className="text-neutral-600">
