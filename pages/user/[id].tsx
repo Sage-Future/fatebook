@@ -26,7 +26,7 @@ export default function UserPage() {
         />
       </div>
 
-      <div className="md:pt-28 lg:w-[320px]">
+      <div className="md:pt-28 flex flex-col gap-12 max-w-[320px]">
         <TrackRecord trackRecordUserId={theirUserId} />
       </div>
     </div>

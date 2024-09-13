@@ -23,20 +23,43 @@ import { InfoButton } from "./ui/InfoButton"
 
 export function TrackRecord({
   trackRecordUserId,
+  className,
 }: {
   trackRecordUserId: string
+  className?: string
 }) {
   const thisUserId = useUserId()
 
   const isThisUser = trackRecordUserId === thisUserId
   const router = useRouter()
   const showCollapseButton = router.pathname === "/"
+
+  const onboardingStage = api.question.getOnboardingStage.useQuery()
+  const [defaultCollapsed, setDefaultCollapsed] = useState<boolean | null>(null)
+
   const [isCollapsed, setIsCollapsed] = useState(
     showCollapseButton &&
       (typeof window !== "undefined" && isThisUser
-        ? JSON.parse(localStorage.getItem("isCollapsed") || "false")
-        : false),
+        ? JSON.parse(
+            localStorage.getItem("isCollapsed") ||
+              `${defaultCollapsed ?? false}`,
+          )
+        : defaultCollapsed),
   )
+
+  // Set the default collapsed state based on the first value of onboardingStage.data
+  // that we see (i.e. don't automatically uncollapse after the initial page load)
+  if (
+    typeof window !== "undefined" &&
+    defaultCollapsed === null &&
+    onboardingStage.data
+  ) {
+    const newDefaultCollapsed = onboardingStage.data !== "COMPLETE"
+    setDefaultCollapsed(newDefaultCollapsed)
+    if (showCollapseButton && !localStorage.getItem("isCollapsed")) {
+      setIsCollapsed(newDefaultCollapsed)
+    }
+  }
 
   const userName = api.getUserInfo.useQuery(
     {
@@ -62,7 +85,7 @@ export function TrackRecord({
   if (!trackRecordUserId) return <></>
 
   return (
-    <div className="max-w-xs prose flex flex-col mx-auto w-full">
+    <div className={clsx("prose flex flex-col mx-auto w-full", className)}>
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
         <h2 className="flex flex-row gap-2 justify-between select-none relative mb-4 w-full">
           <span>

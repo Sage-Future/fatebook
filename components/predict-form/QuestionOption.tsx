@@ -4,7 +4,7 @@ import { QuestionType } from "@prisma/client"
 import clsx from "clsx"
 import { useFormContext } from "react-hook-form"
 import { OptionTextInput } from "./OptionTextInput"
-import { PredictFormType } from "./Predict"
+import { PredictFormType } from "./PredictProvider"
 import { PredictionPercentageInput } from "./PredictionPercentageInput"
 
 export function QuestionOption({

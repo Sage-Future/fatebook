@@ -186,6 +186,7 @@ export async function invalidateQuestion(
     },
   )
   await utils.question.getQuestion.invalidate({ questionId: question.id })
+  void utils.question.getOnboardingStage.invalidate()
 }
 
 export function truncateString(

@@ -4,7 +4,7 @@ import { KeyboardEvent, useRef } from "react"
 import { useFormContext } from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
 import { InfoButton } from "../ui/InfoButton"
-import { PredictFormType } from "./Predict"
+import { PredictFormType } from "./PredictProvider"
 
 export function PredictionPercentageInput({
   small,

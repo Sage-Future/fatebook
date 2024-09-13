@@ -1,6 +1,5 @@
 import { Transition } from "@headlessui/react"
 import { LightBulbIcon } from "@heroicons/react/24/solid"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { QuestionType } from "@prisma/client"
 import * as chrono from "chrono-node"
 import clsx from "clsx"
@@ -13,11 +12,10 @@ import React, {
   useState,
 } from "react"
 import { ErrorBoundary } from "react-error-boundary"
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form"
+import { FormProvider, SubmitHandler } from "react-hook-form"
 import { mergeRefs } from "react-merge-refs"
 import TextareaAutosize from "react-textarea-autosize"
 import SuperJSON from "trpc-transformer"
-import { z } from "zod"
 import { fatebookUrl } from "../../lib/_constants"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
 import { api } from "../../lib/web/trpc"
@@ -26,78 +24,11 @@ import QuestionSuggestions from "./QuestionSuggestions"
 import { QuestionTypeSelect } from "./QuestionTypeSelect"
 import BinaryQuestion from "./question-types/BinaryQuestion"
 import MultiChoiceQuestion from "./question-types/MultiChoiceQuestion"
+import { PredictFormType, usePredictForm } from "./PredictProvider"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
 >
-
-const optionSchema = z.object({
-  text: z.string().min(1, "Option text is required"),
-  forecast: z
-    .preprocess(
-      (val) => (typeof val === "string" ? parseFloat(val) : val),
-      z
-        .number()
-        .min(0, "Predictions must be 0-100%")
-        .max(100, "Predictions must be 0-100%")
-        .or(z.nan())
-        .optional(),
-    )
-    .optional(),
-})
-
-const unifiedPredictFormSchema = z
-  .object({
-    question: z
-      .string({ required_error: "Question is required" })
-      .min(1, "Question is required"),
-    resolveBy: z.string(),
-    options: z
-      .array(optionSchema)
-      .min(2, "You need at least two options")
-      .max(100, "Maximum 100 options allowed")
-      .refine(
-        (options) => {
-          const texts = options
-            .map((option) => option.text)
-            .filter((option) => option.length > 0)
-          const uniqueTexts = new Set(texts)
-          return uniqueTexts.size === texts.length
-        },
-        {
-          message: "All answers must be unique",
-        },
-      )
-      .optional(),
-    nonExclusive: z.boolean().optional(),
-    predictionPercentage: z
-      .number()
-      .min(0, "Predictions must be 0-100%")
-      .max(100, "Predictions must be 0-100%")
-      .or(z.nan())
-      .optional(),
-    sharePublicly: z.boolean().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.options && data.options.length > 0) {
-      const totalForecast = data.options.reduce((sum, option) => {
-        const forecast =
-          option.forecast && isFinite(option.forecast)
-            ? Number(option.forecast)
-            : 0
-        return sum + forecast
-      }, 0)
-      if (!data.nonExclusive && totalForecast > 100) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Forecasts must sum to ≤100% (currently ${totalForecast}%)`,
-          path: ["options"],
-        })
-      }
-    }
-  })
-
-export type PredictFormType = z.infer<typeof unifiedPredictFormSchema>
 
 interface QuestionDefaults {
   title?: string
@@ -135,59 +66,10 @@ export function Predict({
   small,
   smartSetDates = true,
 }: PredictProps) {
-  const [questionType, setQuestionType] = useState<QuestionType>(
-    QuestionType.BINARY,
-  )
-
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
 
-  // TODO: move this somewhere else
-  function usePredictForm(questionType: QuestionType) {
-    const form = useForm<PredictFormType>({
-      mode: "all",
-      resolver: zodResolver(unifiedPredictFormSchema),
-    })
-
-    const setQuestionType = useCallback(
-      (newType: QuestionType) => {
-        const currentValues = form.getValues()
-        if (newType === QuestionType.MULTIPLE_CHOICE) {
-          form.reset(
-            {
-              ...currentValues,
-              options: currentValues.options?.length
-                ? currentValues.options
-                : [
-                    { text: "", forecast: NaN },
-                    { text: "", forecast: NaN },
-                  ],
-              predictionPercentage: undefined,
-            },
-            { keepDefaultValues: true },
-          )
-        } else {
-          form.reset(
-            {
-              ...currentValues,
-              predictionPercentage: currentValues.predictionPercentage ?? NaN,
-              options: undefined,
-            },
-            { keepDefaultValues: true },
-          )
-        }
-      },
-      [form],
-    )
-
-    useEffect(() => {
-      setQuestionType(questionType)
-    }, [questionType, setQuestionType])
-
-    return { ...form, setQuestionType }
-  }
-
-  const methods = usePredictForm(questionType) // for useFormContext
+  const methods = usePredictForm() // for useFormContext
   const {
     register,
     handleSubmit,
@@ -197,6 +79,9 @@ export function Predict({
     setFocus,
     trigger,
     formState: { touchedFields, errors },
+    questionType,
+    setQuestionType,
+    setQuestionInFocus,
   } = methods
 
   // Trigger validation on any field change because our superRefine rule for summing to 100% isn't automatically revalidated otherwise (seemingly a react-hook-form bug)
@@ -227,6 +112,7 @@ export function Predict({
         },
       )
       await utils.question.getForecastCountByDate.invalidate()
+      await utils.question.getOnboardingStage.invalidate()
       if (questionDefaults?.tournamentId) {
         await utils.tournament.get.invalidate({
           id: questionDefaults.tournamentId,
@@ -386,7 +272,7 @@ export function Predict({
       }
       localStorage.removeItem("cached_question_content")
     }
-  }, [setValue])
+  }, [setQuestionType, setValue])
 
   useEffect(() => {
     const handlePredictAll = () => {
@@ -423,26 +309,39 @@ export function Predict({
 
   const [showSuggestions, setShowSuggestions] = useState(false)
 
-  function smartUpdateResolveBy(newQuestionValue: string) {
-    if (!touchedFields.resolveBy && smartSetDates) {
-      const dateResult = chrono.parse(newQuestionValue, new Date(), {
-        forwardDate: true,
-      })
-      const newResolveBy =
-        dateResult.length === 1 && dateResult[0].date()
-          ? getDateYYYYMMDD(dateResult[0].date())
-          : undefined
+  const smartUpdateResolveBy = useCallback(
+    (newQuestionValue: string) => {
+      if (!touchedFields.resolveBy && smartSetDates) {
+        const dateResult = chrono.parse(newQuestionValue, new Date(), {
+          forwardDate: true,
+        })
+        const newResolveBy =
+          dateResult.length === 1 && dateResult[0].date()
+            ? getDateYYYYMMDD(dateResult[0].date())
+            : undefined
 
-      if (
-        newResolveBy &&
-        newResolveBy !== getDateYYYYMMDD(utcDateStrToLocalDate(resolveByUTCStr))
-      ) {
-        setValue("resolveBy", newResolveBy)
-        setHighlightResolveBy(true)
-        setTimeout(() => setHighlightResolveBy(false), 800)
+        if (
+          newResolveBy &&
+          newResolveBy !==
+            getDateYYYYMMDD(utcDateStrToLocalDate(resolveByUTCStr))
+        ) {
+          setValue("resolveBy", newResolveBy)
+          setHighlightResolveBy(true)
+          setTimeout(() => setHighlightResolveBy(false), 800)
+        }
       }
-    }
-  }
+    },
+    [touchedFields.resolveBy, smartSetDates, resolveByUTCStr, setValue],
+  )
+
+  const questionRef = useRef(question)
+  useEffect(() => {
+    if (questionRef.current === question) return
+
+    questionRef.current = question
+    smartUpdateResolveBy(question)
+  }, [question, smartUpdateResolveBy])
+
   const {
     onChange: onChangeQuestion,
     ref: formRef,
@@ -482,20 +381,15 @@ export function Predict({
                   }
                   maxRows={15}
                   onChange={(e) => {
-                    smartUpdateResolveBy(e.currentTarget.value)
                     updateTagsPreview(e.currentTarget.value)
                     void onChangeQuestion(e)
                   }}
-                  onKeyDown={(e) => {
-                    if (onEnterSubmit(e)) return
-                    // current value doesn't include the key just pressed! So
-                    if (e.key.length === 1) {
-                      smartUpdateResolveBy(e.currentTarget.value + e.key)
-                    }
-                  }}
+                  onKeyDown={onEnterSubmit}
                   defaultValue={questionDefaults?.title}
                   onMouseDown={(e) => e.stopPropagation()}
                   {...registerQuestion}
+                  onFocus={() => setQuestionInFocus(true)}
+                  onBlur={() => setQuestionInFocus(false)}
                   ref={mergeRefs([textAreaRef, formRef])}
                 />
 
@@ -542,7 +436,6 @@ export function Predict({
                         shouldDirty: true,
                         shouldValidate: true,
                       })
-                      smartUpdateResolveBy(suggestion)
                     }}
                     questionType={questionType}
                   />

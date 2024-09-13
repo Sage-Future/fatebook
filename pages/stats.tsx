@@ -12,7 +12,9 @@ export default function StatsPage() {
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
       <NextSeo title="Stats" />
       <div className="mx-auto">
-        {userId && <TrackRecord trackRecordUserId={userId} />}
+        {userId && (
+          <TrackRecord trackRecordUserId={userId} className="max-w-sm" />
+        )}
         {userId && (
           <div className="prose mx-auto mt-14 flex flex-col gap-8">
             <Tournaments />
