@@ -47,7 +47,7 @@ export function FormattedDate({
     [capitalise, className, date, includeTime, postfix, prefix],
   )
 
-  if (!date) {
+  if (!date || typeof date.getTime !== "function" || isNaN(date.getTime())) {
     return <></>
   }
 
