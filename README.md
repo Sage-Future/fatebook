@@ -74,6 +74,12 @@ createdb fatebook_development --owner fatebook
 1. Run `npm run dev`.
 2. Go to https://localhost:3000. You should be able to sign in and create predictions.
 
+### Running tests
+
+Run jest tests with `npm run test`.
+
+You can also generate a coverage report by running `npm run test -- --coverage`, the report will be printed to the console and also saved in the `coverage/` directory. The best way to view it is in the html format under `coverage/lcov-report/index.html` (run `open coverage/lcov-report/index.html`).
+
 ### Running in the vscode debugger
 
 There is a launch config for vscode/Cursor called "Next.js: debug fatebook full stack" that will run the web app in the debugger (frontend and backend, breakpoints will work on the client or during SSR).
