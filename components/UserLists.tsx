@@ -4,7 +4,6 @@ import { api } from "../lib/web/trpc"
 import { UserListDisplay } from "./UserListDisplay"
 import { getUserListUrl } from "../lib/web/utils"
 
-// Add new props
 export function UserLists({
   inCarousel,
   onItemClick,

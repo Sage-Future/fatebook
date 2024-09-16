@@ -248,9 +248,9 @@ function LearnItems() {
         <Link href="/anki-with-uncertainty">Anki with Uncertainty</Link>
       </li>
       <li className="menu-title">More resources</li>
-      <li>
+      {/* <li>
         <Link href="/tips-on-writing-questions">Tips on writing questions</Link>
-      </li>
+      </li> */}
       <li>
         <Link href="/predict-your-year">Predict your year</Link>
       </li>
