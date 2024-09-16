@@ -1,21 +1,24 @@
-import { UserListDisplay } from "./UserListDisplay";
-import { Username } from "./ui/Username";
-import { SyncToSlack } from "./SyncToSlack";
-import { Predict } from "./predict-form/Predict";
-import { Questions } from "./Questions";
-import { getUserListUrl } from "../lib/web/utils";
-import { api } from "../lib/web/trpc";
-import { UserListWithAuthorAndUsers } from "../prisma/additional";
+import { UserListDisplay } from "./UserListDisplay"
+import { Username } from "./ui/Username"
+import { SyncToSlack } from "./SyncToSlack"
+import { Predict } from "./predict-form/Predict"
+import { Questions } from "./Questions"
+import { getUserListUrl } from "../lib/web/utils"
+import { api } from "../lib/web/trpc"
+import { UserListWithAuthorAndUsers } from "../prisma/additional"
 
-export function TeamListContent({ userList, userId }: { userList: UserListWithAuthorAndUsers, userId: string }) {
-  const utils = api.useContext();
+export function TeamListContent({
+  userList,
+  userId,
+}: {
+  userList: UserListWithAuthorAndUsers
+  userId: string
+}) {
+  const utils = api.useContext()
 
   return (
     <div className="flex flex-col gap-2">
-      <UserListDisplay
-        bigHeading={true}
-        userList={userList}
-      />
+      <UserListDisplay bigHeading={true} userList={userList} />
       <span className="block">
         A team created by:{" "}
         <Username
@@ -74,5 +77,5 @@ export function TeamListContent({ userList, userId }: { userList: UserListWithAu
         filterUserListId={userList.id}
       />
     </div>
-  );
+  )
 }

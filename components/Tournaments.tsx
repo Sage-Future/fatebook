@@ -12,7 +12,7 @@ export function Tournaments({
   inCarousel = false,
   onItemClick,
 }: {
-  title?: string 
+  title?: string
   includePublic?: boolean
   onlyIncludePredictYourYear?: boolean
   showCreateButton?: boolean

@@ -1,8 +1,12 @@
-import { Username } from "./ui/Username";
-import { Questions } from "./Questions";
-import { TournamentWithAuthor } from "../prisma/additional";
+import { Username } from "./ui/Username"
+import { Questions } from "./Questions"
+import { TournamentWithAuthor } from "../prisma/additional"
 
-export function TournamentContent({ tournament}: { tournament: TournamentWithAuthor }) {
+export function TournamentContent({
+  tournament,
+}: {
+  tournament: TournamentWithAuthor
+}) {
   return (
     <div className="flex flex-col gap-2">
       <h2 className="mt-0">{tournament.name}</h2>
@@ -19,5 +23,5 @@ export function TournamentContent({ tournament}: { tournament: TournamentWithAut
         filterTournamentId={tournament.id}
       />
     </div>
-  );
+  )
 }

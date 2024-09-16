@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { ReactNode } from 'react';
+import { ReactNode } from "react"
 import { toast } from "react-hot-toast"
 import { api } from "../lib/web/trpc"
 import {
@@ -29,7 +29,9 @@ export function Navbar({
 }) {
   const userId = useUserId()
   const fatebookForChrome = useFatebookForChrome()
-  const menuItems = <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} />
+  const menuItems = (
+    <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} />
+  )
 
   return (
     <div className="drawer grow">
@@ -55,7 +57,7 @@ function SpecialButton({ url, label }: { url: string; label: ReactNode }) {
       <button
         className={clsx(
           "btn btn-sm relative max-sm:btn-xs max-sm:w-24 max-sm:h-full ml-2 max-sm:ml-auto mr-2 py-2",
-          !userId && "max-sm:hidden",
+          !userId && "max-sm:hidden", // not enough space otherwise
         )}
       >
         {label}
@@ -67,10 +69,14 @@ function SpecialButton({ url, label }: { url: string; label: ReactNode }) {
   )
 }
 
-function NavbarContent({ userId, menuItems, showCreateAccountButton }: {
-  userId: string | null;
-  menuItems: ReactNode;
-  showCreateAccountButton: boolean;
+function NavbarContent({
+  userId,
+  menuItems,
+  showCreateAccountButton,
+}: {
+  userId: string | null
+  menuItems: ReactNode
+  showCreateAccountButton: boolean
 }) {
   return (
     <div className="navbar max-w-5xl mx-auto">
@@ -99,10 +105,14 @@ function NavbarContent({ userId, menuItems, showCreateAccountButton }: {
   )
 }
 
-function MenuItems({ userId, fatebookForChrome, isDrawer = false }: {
-  userId: string | null;
-  fatebookForChrome: ReactNode;
-  isDrawer?: boolean;
+function MenuItems({
+  userId,
+  fatebookForChrome,
+  isDrawer = false,
+}: {
+  userId: string | null
+  fatebookForChrome: ReactNode
+  isDrawer?: boolean
 }) {
   return (
     <>
@@ -138,36 +148,69 @@ function MenuItems({ userId, fatebookForChrome, isDrawer = false }: {
   )
 }
 
-function IntegrationsDropdown({ fatebookForChrome }: { fatebookForChrome: ReactNode }) {
+function IntegrationsDropdown({
+  fatebookForChrome,
+}: {
+  fatebookForChrome: ReactNode
+}) {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
         <ChevronDownIcon width={16} /> Integrations
       </label>
-      <ul tabIndex={0} className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64">
+      <ul
+        tabIndex={0}
+        className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
+      >
         <IntegrationsItems fatebookForChrome={fatebookForChrome} />
       </ul>
     </div>
   )
 }
 
-function IntegrationsItems({ fatebookForChrome }: { fatebookForChrome: ReactNode }) {
+function IntegrationsItems({
+  fatebookForChrome,
+}: {
+  fatebookForChrome: ReactNode
+}) {
   const exportData = useExportData()
 
   return (
     <>
       <li className="menu-title">Rapid predictions, anywhere</li>
-      {fatebookForChrome && <li><Link href="/extension">{fatebookForChrome}</Link></li>}
-      <li><Link href="/for-slack">Fatebook for Slack</Link></li>
-      <li><Link href="/for-discord">Fatebook for Discord</Link></li>
-      <li><Link href="/api-setup">Fatebook API</Link></li>
-      <li><Link href="/embed">Embed in your website</Link></li>
+      {fatebookForChrome && (
+        <li>
+          <Link href="/extension">{fatebookForChrome}</Link>
+        </li>
+      )}
+      <li>
+        <Link href="/for-slack">Fatebook for Slack</Link>
+      </li>
+      <li>
+        <Link href="/for-discord">Fatebook for Discord</Link>
+      </li>
+      <li>
+        <Link href="/api-setup">Fatebook API</Link>
+      </li>
+      <li>
+        <Link href="/embed">Embed in your website</Link>
+      </li>
       <li className="menu-title">Your prediction data</li>
-      <li><Link href="/import-from-prediction-book">Import from PredictionBook</Link></li>
-      <li><Link href="/import-from-spreadsheet">Import from spreadsheet</Link></li>
-      <li><a onClick={() => !exportData.isLoading && exportData.mutate()}>
-        {exportData.isLoading ? "Exporting..." : "Export all your predictions"}
-      </a></li>
+      <li>
+        <Link href="/import-from-prediction-book">
+          Import from PredictionBook
+        </Link>
+      </li>
+      <li>
+        <Link href="/import-from-spreadsheet">Import from spreadsheet</Link>
+      </li>
+      <li>
+        <a onClick={() => !exportData.isLoading && exportData.mutate()}>
+          {exportData.isLoading
+            ? "Exporting..."
+            : "Export all your predictions"}
+        </a>
+      </li>
     </>
   )
 }
@@ -178,7 +221,10 @@ function LearnDropdown() {
       <label className="flex gap-1" tabIndex={0}>
         <ChevronDownIcon width={16} /> Learn
       </label>
-      <ul tabIndex={0} className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64">
+      <ul
+        tabIndex={0}
+        className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
+      >
         <LearnItems />
       </ul>
     </div>
@@ -189,13 +235,25 @@ function LearnItems() {
   return (
     <>
       <li className="menu-title">Training tools</li>
-      <li><Link href="/calibration-training">Calibration training</Link></li>
-      <li><Link href="/pastcasting">Pastcasting</Link></li>
-      <li><Link href="/estimation-game">The Estimation Game</Link></li>
-      <li><Link href="/anki-with-uncertainty">Anki with Uncertainty</Link></li>
+      <li>
+        <Link href="/calibration-training">Calibration training</Link>
+      </li>
+      <li>
+        <Link href="/pastcasting">Pastcasting</Link>
+      </li>
+      <li>
+        <Link href="/estimation-game">The Estimation Game</Link>
+      </li>
+      <li>
+        <Link href="/anki-with-uncertainty">Anki with Uncertainty</Link>
+      </li>
       <li className="menu-title">More resources</li>
-      <li><Link href="/tips-on-writing-questions">Tips on writing questions</Link></li>
-      <li><Link href="/predict-your-year">Predict your year</Link></li>
+      <li>
+        <Link href="/tips-on-writing-questions">Tips on writing questions</Link>
+      </li>
+      <li>
+        <Link href="/predict-your-year">Predict your year</Link>
+      </li>
     </>
   )
 }

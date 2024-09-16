@@ -1,4 +1,9 @@
-import { BellIcon, ChartBarIcon, HomeIcon, UsersIcon } from "@heroicons/react/24/solid"
+import {
+  BellIcon,
+  ChartBarIcon,
+  HomeIcon,
+  UsersIcon,
+} from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"

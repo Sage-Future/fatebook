@@ -21,13 +21,13 @@ export function UserListDisplay({
   bigHeading,
   onDelete,
   compact,
-  inCarousel, 
+  inCarousel,
 }: {
   userList: UserListWithAuthorAndUsers
   bigHeading?: boolean
   onDelete?: () => void
   compact?: boolean
-  inCarousel?: boolean 
+  inCarousel?: boolean
 }) {
   const userId = useUserId()
   const utils = api.useContext()
@@ -54,7 +54,7 @@ export function UserListDisplay({
   return (
     <div
       className={clsx("flex flex-col gap-2 grow")}
-      onClick={(e) => inCarousel ? e.preventDefault() : undefined}
+      onClick={(e) => (inCarousel ? e.preventDefault() : undefined)}
     >
       <span className="flex gap-2 justify-between">
         {isEditing ? (
@@ -95,7 +95,9 @@ export function UserListDisplay({
                 )}
               >
                 {bigHeading ? (
-                  <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
+                  <h3 className="text-xl font-semibold my-0">
+                    {userList.name}
+                  </h3>
                 ) : (
                   <>
                     {userList.name}
@@ -131,7 +133,9 @@ export function UserListDisplay({
                 target={compact ? "_self" : "_blank"}
               >
                 {bigHeading ? (
-                  <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
+                  <h3 className="text-xl font-semibold my-0">
+                    {userList.name}
+                  </h3>
                 ) : (
                   <>
                     {userList.name}

@@ -5,7 +5,13 @@ import { UserListDisplay } from "./UserListDisplay"
 import { getUserListUrl } from "../lib/web/utils"
 
 // Add new props
-export function UserLists({ inCarousel, onItemClick }: { inCarousel?: boolean, onItemClick?: (id: string) => void }) {
+export function UserLists({
+  inCarousel,
+  onItemClick,
+}: {
+  inCarousel?: boolean
+  onItemClick?: (id: string) => void
+}) {
   const userListsQ = api.userList.getUserLists.useQuery()
   const createUserList = api.userList.createList.useMutation()
   const router = useRouter()
@@ -30,7 +36,7 @@ export function UserLists({ inCarousel, onItemClick }: { inCarousel?: boolean, o
         </button>
       </h2>
       <div className="mx-3.5">
-        {userListsQ.data?.map((userList) => (
+        {userListsQ.data?.map((userList) =>
           inCarousel ? (
             <button
               key={userList.id}
@@ -41,8 +47,8 @@ export function UserLists({ inCarousel, onItemClick }: { inCarousel?: boolean, o
             </button>
           ) : (
             <UserListDisplay key={userList.id} userList={userList} compact />
-          )
-        ))}
+          ),
+        )}
       </div>
       {userListsQ.status !== "loading" && userListsQ.data?.length === 0 && (
         <p className="text-sm text-neutral-500 mx-1">
