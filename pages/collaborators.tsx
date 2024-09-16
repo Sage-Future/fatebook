@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, ReactNode } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { NextSeo } from "next-seo";
 import { UserLists } from "../components/UserLists";
 import { useUserId } from "../lib/web/utils";
@@ -9,13 +9,11 @@ import { TournamentContent } from "../components/TournamentContent";
 import { signInToFatebook } from "../lib/web/utils";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon } from "@heroicons/react/20/solid";
 import { ChevronLeftIcon as ChevronLeftIconLarge, ChevronRightIcon as ChevronRightIconLarge } from "@heroicons/react/24/solid";
-import Link from 'next/link';
 
-export default function TeamsPage() {
+export default function CollaboratorsPage() {
   const userId = useUserId();
   const [currentIndex, setCurrentIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [overlayTop, setOverlayTop] = useState('4rem');
 
@@ -25,7 +23,6 @@ export default function TeamsPage() {
   type CarouselItemType = 
     | { type: 'userList'; id: string; name: string; data: any }
     | { type: 'tournament'; id: string; name: string; data: any }
-    | { type: 'overview'; id: string; name: string; component: ReactNode };
 
   const items: CarouselItemType[] = useMemo(() => {
     const userLists = userListsQ.data?.map(userList => ({
@@ -42,24 +39,10 @@ export default function TeamsPage() {
       data: tournament
     })) || [];
 
-    const allItems: CarouselItemType[] = [...userLists, ...tournaments];
-
-    if (allItems.length === 0) {
-      allItems.push({
-        type: 'overview',
-        id: 'overview',
-        name: 'Overview',
-        component: (
-          <>
-            <UserLists />
-            <Tournaments />
-          </>
-        )
-      });
-    }
-
-    return allItems;
+    return [...userLists, ...tournaments];
   }, [tournamentsQ.data, userListsQ.data]);
+
+  const [isDrawerOpen, setIsDrawerOpen] = useState(items.length === 0);
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
@@ -70,11 +53,15 @@ export default function TeamsPage() {
   };
 
   const toggleDrawer = () => {
-    setIsDrawerOpen(!isDrawerOpen);
+    if (items.length > 0) {
+      setIsDrawerOpen(!isDrawerOpen);
+    }
   };
 
   const closeDrawer = () => {
-    setIsDrawerOpen(false);
+    if (items.length > 0) {
+      setIsDrawerOpen(false);
+    }
   };
 
   const handleItemClick = (id: string) => {
@@ -131,8 +118,6 @@ export default function TeamsPage() {
     return `${name.slice(0, maxLength - 3)}...`;
   };
 
-  const isOverviewDisplayed = currentItem.type === 'overview';
-
   return (
     <div 
       className="px-4 pt-12 pb-20 lg:pt-16 lg:pb-4 mx-auto max-w-6xl flex flex-col relative"
@@ -150,25 +135,9 @@ export default function TeamsPage() {
             </button>
           </div>
         )}
-      {userId && !isOverviewDisplayed && (
-        <div className="prose hidden lg:block mb-4 mx-auto">
-          <Link
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setCurrentIndex(items.findIndex(item => item.type === 'overview'));
-            }}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            ← Return to teams & tournaments overview
-          </Link>
-        </div>
-      )}
-        {userId && (
+        {userId && currentItem && (
           <div className="prose mx-auto flex flex-col gap-8">
-            {currentItem.type === 'overview' ? (
-              currentItem.component
-            ) : currentItem.type === 'userList' ? (
+            { currentItem.type === 'userList' ? (
               <TeamListContent userList={currentItem.data} userId={userId} />
             ) : (
               <TournamentContent tournament={currentItem.data} />
@@ -185,41 +154,47 @@ export default function TeamsPage() {
             onClick={closeDrawer}
             style={{ top: overlayTop }}
           ></div>
-          <div className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 ease-in-out z-20 ${isDrawerOpen ? 'h-[80vh]' : 'h-16'}`}>
+          <div className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 ease-in-out z-20 ${isDrawerOpen || items.length === 0 ? 'h-[80vh]' : 'h-16'}`}>
             <div className="flex justify-between items-center max-w-6xl mx-auto p-4 h-16">
+              {items.length > 1 && (
               <button 
                 onClick={handlePrevious}
                 className="btn btn-ghost text-neutral-500 lg:hidden"
               >
                 <ChevronLeftIcon className="w-6 h-6" />
-              </button>
+                  </button>
+              )}
               <button 
                 onClick={toggleDrawer}
                 className="flex items-center justify-center flex-grow"
+                disabled={items.length === 0}
               >
                 <span className="text-lg font-semibold text-center truncate mx-[3px]">
-                  {truncateName(currentItem.name, 20)}
+                  {items.length > 0 ? truncateName(currentItem.name, 20) : "Teams & Tournaments"}
                 </span>
-                {isDrawerOpen ? (
+                {isDrawerOpen || items.length === 0 ? (
                   <ChevronDoubleDownIcon className="w-6 h-6 text-neutral-500" />
                 ) : (
                   <ChevronDoubleUpIcon className="w-6 h-6 text-neutral-500" />
                 )}
               </button>
-              <button 
-                onClick={handleNext}
+              {items.length > 1 && (
+                <button 
+                  onClick={handleNext}
                 className="btn btn-ghost text-neutral-500 lg:hidden"
               >
-                <ChevronRightIcon className="w-6 h-6" />
-              </button>
+                  <ChevronRightIcon className="w-6 h-6" />
+                </button>
+              )}
             </div>
-            {isDrawerOpen && (
-              <div className="p-4 overflow-y-auto h-[calc(100%-4rem)] lg:h-auto">
+            {(isDrawerOpen || items.length === 0) && (
+              <div className="p-4 overflow-y-auto h-[calc(100%-4rem)] lg:h-auto flex flex-col gap-8">
                 <UserLists inCarousel={true} onItemClick={handleItemClick} />
                 <Tournaments inCarousel={true} onItemClick={handleItemClick} />
               </div>
             )}
           </div>
+          {items.length > 1 && (
           <div className="hidden lg:block">
             <button 
               onClick={handlePrevious}
@@ -234,6 +209,7 @@ export default function TeamsPage() {
               <ChevronRightIconLarge className="w-32 h-32" />
             </button>
           </div>
+          )}
         </>
       )}
     </div>

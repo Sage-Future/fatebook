@@ -19,7 +19,6 @@ export function Tournaments({
   inCarousel?: boolean
   onItemClick?: (id: string) => void
 }) {
-  console.log('tournaments inCarousel', inCarousel);
   const tournamentsQ = api.tournament.getAll.useQuery({
     includePublic,
     onlyIncludePredictYourYear,

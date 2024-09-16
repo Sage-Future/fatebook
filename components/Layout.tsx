@@ -60,8 +60,8 @@ function BottomNav() {
           icon: <HomeIcon width={24} />,
         },
         {
-          path: "/teams",
-          title: "Teams",
+          path: "/collaborators",
+          title: "Collaborators",
           icon: <UsersIcon width={24} />,
         },
         {
