@@ -22,17 +22,19 @@ export async function questionsToCsv(
       const questionScore = questionScores.find(
         (qs) => qs.questionId === f.questionId,
       )
+      const mcqOption = question?.options?.find((o) => o.id === f.optionId)
 
       return {
         "Question title": question?.title,
+        "Multiple choice option": mcqOption?.text,
         "Forecast created by": f.user?.name,
         "Forecast (scale = 0-1)": f.forecast,
         "Forecast created at": f.createdAt,
         "Question created by": question?.user?.name,
         "Question created at": question?.createdAt,
-        "Question resolution": question?.resolution,
         "Question resolve by": question?.resolveBy,
-        "Question resolved at": question?.resolvedAt,
+        Resolution: mcqOption?.resolution || question?.resolution,
+        "Resolved at": mcqOption?.resolvedAt || question?.resolvedAt,
         "Your Brier score for this question": questionScore?.absoluteScore,
         "Your relative Brier score for this question":
           questionScore?.relativeScore,
