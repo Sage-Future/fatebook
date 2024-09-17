@@ -2,7 +2,6 @@ import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
 import { TournamentView } from "../../components/TournamentView"
 import { TournamentAdminPanel } from "../../components/TournamentAdminPanel"
-import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook, useUserId } from "../../lib/web/utils"
 
@@ -45,7 +44,7 @@ export default function TournamentPage() {
           {isAdmin && <TournamentAdminPanel tournamentId={tournamentId} />}
           {tournamentQ.data ? (
             <>
-              <TournamentView tournament={tournamentQ.data} />
+              <TournamentView tournamentId={tournamentQ.data?.id} />
             </>
           ) : (
             <h3 className="text-neutral-600">

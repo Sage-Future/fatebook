@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { NextSeo } from "next-seo"
 import { UserLists } from "../components/UserLists"
 import { useUserId } from "../lib/web/utils"
@@ -140,7 +140,7 @@ export default function CollaboratorsPage() {
             {currentItem.type === "userList" ? (
               <TeamView userList={currentItem.data} userId={userId} />
             ) : (
-              <TournamentView tournament={currentItem.data} />
+              <TournamentView tournamentId={currentItem.data.id} />
             )}
           </div>
         )}
