@@ -29,9 +29,9 @@ export function Navbar({
 }) {
   const userId = useUserId()
   const fatebookForChrome = useFatebookForChrome()
-  const router = useRouter()
+  
   const menuItems = (
-    <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} router={router} />
+    <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} />
   )
 
   return (
@@ -42,11 +42,10 @@ export function Navbar({
           userId={userId ?? null}
           menuItems={menuItems}
           showCreateAccountButton={showCreateAccountButton}
-          router={router}
         />
         {children}
       </div>
-      <Drawer router={router} />
+      <Drawer />
     </div>
   )
 }
@@ -75,12 +74,10 @@ function NavbarContent({
   userId,
   menuItems,
   showCreateAccountButton,
-  router,
 }: {
   userId: string | null
   menuItems: ReactNode
   showCreateAccountButton: boolean
-  router: ReturnType<typeof useRouter>
 }) {
   return (
     <div className="navbar max-w-5xl mx-auto">
@@ -113,13 +110,12 @@ function MenuItems({
   userId,
   fatebookForChrome,
   isDrawer = false,
-  router,
 }: {
   userId: string | null
   fatebookForChrome: ReactNode
   isDrawer?: boolean
-  router: ReturnType<typeof useRouter>
 }) {
+  const router = useRouter()
   const isActive = (path: string) => router.pathname === path
 
   return (
@@ -137,17 +133,17 @@ function MenuItems({
       {isDrawer ? (
         <>
           <li className="menu-title text-lg mt-2 leading-4">Integrations</li>
-          <IntegrationsItems fatebookForChrome={fatebookForChrome} router={router} />
+          <IntegrationsItems fatebookForChrome={fatebookForChrome} />
           <li className="menu-title text-lg mt-2 leading-4">Learn</li>
-          <LearnItems router={router} />
+          <LearnItems />
         </>
       ) : (
         <>
           <li>
-            <IntegrationsDropdown fatebookForChrome={fatebookForChrome} router={router} />
+            <IntegrationsDropdown />
           </li>
           <li>
-            <LearnDropdown router={router} />
+            <LearnDropdown />
           </li>
         </>
       )}
@@ -160,13 +156,8 @@ function MenuItems({
   )
 }
 
-function IntegrationsDropdown({
-  fatebookForChrome,
-  router,
-}: {
-  fatebookForChrome: ReactNode
-  router: ReturnType<typeof useRouter>
-}) {
+function IntegrationsDropdown() {
+  const fatebookForChrome = useFatebookForChrome()
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
@@ -176,7 +167,7 @@ function IntegrationsDropdown({
         tabIndex={0}
         className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
       >
-        <IntegrationsItems fatebookForChrome={fatebookForChrome} router={router} />
+        <IntegrationsItems fatebookForChrome={fatebookForChrome} />
       </ul>
     </div>
   )
@@ -184,12 +175,11 @@ function IntegrationsDropdown({
 
 function IntegrationsItems({
   fatebookForChrome,
-  router,
 }: {
   fatebookForChrome: ReactNode
-  router: ReturnType<typeof useRouter>
 }) {
   const exportData = useExportData()
+  const router = useRouter()
   const isActive = (path: string) => router.pathname === path
   return (
     <>
@@ -231,7 +221,7 @@ function IntegrationsItems({
   )
 }
 
-function LearnDropdown({ router }: { router: ReturnType<typeof useRouter> }) {
+function LearnDropdown() {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
@@ -241,13 +231,14 @@ function LearnDropdown({ router }: { router: ReturnType<typeof useRouter> }) {
         tabIndex={0}
         className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
       >
-        <LearnItems router={router} />
+        <LearnItems />
       </ul>
     </div>
   )
 }
 
-function LearnItems({ router }: { router: ReturnType<typeof useRouter> }) {
+function LearnItems() {
+  const router = useRouter()
   const isActive = (path: string) => router.pathname === path
   return (
     <>
@@ -283,13 +274,14 @@ function LearnItems({ router }: { router: ReturnType<typeof useRouter> }) {
   )
 }
 
-function Drawer({ router }: { router: ReturnType<typeof useRouter> }) {
+function Drawer() {
+
   return (
     <div className="drawer-side z-[9999] mt-16 lg:hidden">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
       <ul className="menu flex flex-col flex-nowrap p-4 w-80 overflow-auto bg-neutral-100 h-full text-md text-neutral-600 font-semibold">
         <div className="overflow-y-auto flex-shrink pb-8">
-          <MenuItems userId={null} fatebookForChrome={null} isDrawer={true} router={router} />
+          <MenuItems userId={null} fatebookForChrome={useFatebookForChrome()} isDrawer={true} />
         </div>
         <div className="grow" />
         <div className="-m-4 mb-8 z-10">

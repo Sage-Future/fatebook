@@ -46,7 +46,6 @@ export default function TournamentPage() {
           {tournamentQ.data ? (
             <>
               <TournamentView tournament={tournamentQ.data} />
-              <TournamentLeaderboard tournamentId={tournamentId} />
             </>
           ) : (
             <h3 className="text-neutral-600">

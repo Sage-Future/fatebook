@@ -28,29 +28,20 @@ export default function CollaboratorsPage() {
   const tournamentsQ = api.tournament.getAll.useQuery({})
   const userListsQ = api.userList.getUserLists.useQuery()
 
-  type CarouselItemType =
-    | { type: "userList"; id: string; name: string; data: any }
-    | { type: "tournament"; id: string; name: string; data: any }
-
-  const items: CarouselItemType[] = useMemo(() => {
-    const userLists =
-      userListsQ.data?.map((userList) => ({
-        type: "userList" as const,
-        id: userList.id,
-        name: userList.name,
-        data: userList,
-      })) || []
-
-    const tournaments =
-      tournamentsQ.data?.map((tournament) => ({
-        type: "tournament" as const,
-        id: tournament.id,
-        name: tournament.name,
-        data: tournament,
-      })) || []
-
-    return [...userLists, ...tournaments]
-  }, [tournamentsQ.data, userListsQ.data])
+  const items = [
+  ...(userListsQ.data?.map((userList) => ({
+    type: "userList" as const,
+    id: userList.id,
+    name: userList.name,
+    data: userList,
+  })) || []),
+  ...(tournamentsQ.data?.map((tournament) => ({
+    type: "tournament" as const,
+    id: tournament.id,
+    name: tournament.name,
+    data: tournament,
+  })) || [])
+]
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(items.length === 0)
 

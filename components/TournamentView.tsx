@@ -1,6 +1,7 @@
 import { Username } from "./ui/Username"
 import { Questions } from "./Questions"
 import { TournamentWithAuthor } from "../prisma/additional"
+import { TournamentLeaderboard } from "./TournamentLeaderboard"
 
 export function TournamentView({
   tournament,
@@ -22,6 +23,7 @@ export function TournamentView({
         noQuestionsText="No questions in this tournament yet."
         filterTournamentId={tournament.id}
       />
+      <TournamentLeaderboard tournamentId={tournament.id} />
     </div>
   )
 }

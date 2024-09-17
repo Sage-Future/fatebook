@@ -18,10 +18,10 @@ import { MultiselectUsers } from "./ui/MultiselectEmail"
 
 export function UserListDisplay({
   userList,
-  bigHeading,
+  bigHeading = false,
   onDelete,
-  compact,
-  inCarousel,
+  compact = false,
+  inCarousel = false,
 }: {
   userList: UserListWithAuthorAndUsers
   bigHeading?: boolean
@@ -50,6 +50,40 @@ export function UserListDisplay({
       await utils.userList.get.invalidate()
     },
   })
+
+  const ListContent = ({ 
+    bigHeading,
+    compact,
+    userList
+  }: {
+    bigHeading: boolean;
+    compact: boolean;
+    userList: UserListWithAuthorAndUsers;
+  }) => (
+    <>
+      {bigHeading ? (
+        <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
+      ) : (
+        <>
+          {userList.name}
+          {!compact && (
+            <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
+          )}
+
+          {(userList.users.length > 0 || userList.emailDomains.length === 0) && (
+            <span className="block text-xs my-auto font-normal text-neutral-400 text-left">
+              {userList.users.length} member{userList.users.length === 1 ? "" : "s"}
+            </span>
+          )}
+          {userList.emailDomains.length > 0 && (
+            <span className="block text-xs my-auto font-normal text-neutral-400">
+              {userList.emailDomains.map((domain) => `anyone@${domain}`).join(", ")}
+            </span>
+          )}
+        </>
+      )}
+    </>
+  );
 
   return (
     <div
@@ -87,43 +121,15 @@ export function UserListDisplay({
         ) : (
           <>
             {inCarousel ? (
-              // When in carousel, don't use a Link
               <span
                 className={clsx(
                   "p-1 my-auto",
                   compact && "text-sm text-neutral-600",
                 )}
               >
-                {bigHeading ? (
-                  <h3 className="text-xl font-semibold my-0">
-                    {userList.name}
-                  </h3>
-                ) : (
-                  <>
-                    {userList.name}
-                    {!compact && (
-                      <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
-                    )}
-
-                    {(userList.users.length > 0 ||
-                      userList.emailDomains.length === 0) && (
-                      <span className="block text-xs my-auto font-normal text-neutral-400 text-left">
-                        {userList.users.length} member
-                        {userList.users.length === 1 ? "" : "s"}
-                      </span>
-                    )}
-                    {userList.emailDomains.length > 0 && (
-                      <span className="block text-xs my-auto font-normal text-neutral-400">
-                        {userList.emailDomains
-                          .map((domain) => `anyone@${domain}`)
-                          .join(", ")}
-                      </span>
-                    )}
-                  </>
-                )}
+                <ListContent bigHeading={bigHeading} compact={compact} userList={userList} />
               </span>
             ) : (
-              // When not in carousel, use the Link as before
               <Link
                 href={getUserListUrl(userList, true)}
                 className={clsx(
@@ -132,39 +138,12 @@ export function UserListDisplay({
                 )}
                 target={compact ? "_self" : "_blank"}
               >
-                {bigHeading ? (
-                  <h3 className="text-xl font-semibold my-0">
-                    {userList.name}
-                  </h3>
-                ) : (
-                  <>
-                    {userList.name}
-                    {!compact && (
-                      <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
-                    )}
-
-                    {(userList.users.length > 0 ||
-                      userList.emailDomains.length === 0) && (
-                      <span className="block text-xs my-auto font-normal text-neutral-400">
-                        {userList.users.length} member
-                        {userList.users.length === 1 ? "" : "s"}
-                      </span>
-                    )}
-                    {userList.emailDomains.length > 0 && (
-                      <span className="block text-xs my-auto font-normal text-neutral-400">
-                        {userList.emailDomains
-                          .map((domain) => `anyone@${domain}`)
-                          .join(", ")}
-                      </span>
-                    )}
-                  </>
-                )}
+                <ListContent bigHeading={bigHeading} compact={compact} userList={userList} />
               </Link>
             )}
           </>
         )}
-        {!compact && !inCarousel && (
-          // Only show these buttons when not in carousel mode
+        {!compact && (
           <div className="flex gap-2">
             {userList.authorId !== userId ? (
               <InfoButton
@@ -243,7 +222,7 @@ export function UserListDisplay({
           </div>
         )}
       </span>
-      {isEditing && !inCarousel && <EmailInput userList={userList} />}
+      {isEditing && <EmailInput userList={userList} />}
     </div>
   )
 }
