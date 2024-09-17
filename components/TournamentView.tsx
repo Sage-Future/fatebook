@@ -2,7 +2,7 @@ import { Username } from "./ui/Username"
 import { Questions } from "./Questions"
 import { TournamentWithAuthor } from "../prisma/additional"
 
-export function TournamentContent({
+export function TournamentView({
   tournament,
 }: {
   tournament: TournamentWithAuthor

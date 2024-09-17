@@ -1,6 +1,6 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { TeamListContent } from "../../components/TeamListContent"
+import { TeamView } from "../../components/TeamView"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook, useUserId } from "../../lib/web/utils"
 
@@ -49,7 +49,7 @@ export default function ListPage() {
             </div>
           )}
           {listQ.data && userId && (
-            <TeamListContent userList={listQ.data} userId={userId} />
+            <TeamView userList={listQ.data} userId={userId} />
           )}
         </div>
       </div>

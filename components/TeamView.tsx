@@ -7,7 +7,7 @@ import { getUserListUrl } from "../lib/web/utils"
 import { api } from "../lib/web/trpc"
 import { UserListWithAuthorAndUsers } from "../prisma/additional"
 
-export function TeamListContent({
+export function TeamView({
   userList,
   userId,
 }: {

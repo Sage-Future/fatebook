@@ -4,8 +4,8 @@ import { UserLists } from "../components/UserLists"
 import { useUserId } from "../lib/web/utils"
 import { Tournaments } from "../components/Tournaments"
 import { api } from "../lib/web/trpc"
-import { TeamListContent } from "../components/TeamListContent"
-import { TournamentContent } from "../components/TournamentContent"
+import { TeamView } from "../components/TeamView"
+import { TournamentView } from "../components/TournamentView"
 import { signInToFatebook } from "../lib/web/utils"
 import {
   ChevronLeftIcon,
@@ -147,9 +147,9 @@ export default function CollaboratorsPage() {
         {userId && currentItem && (
           <div className="prose mx-auto flex flex-col gap-8">
             {currentItem.type === "userList" ? (
-              <TeamListContent userList={currentItem.data} userId={userId} />
+              <TeamView userList={currentItem.data} userId={userId} />
             ) : (
-              <TournamentContent tournament={currentItem.data} />
+              <TournamentView tournament={currentItem.data} />
             )}
           </div>
         )}
