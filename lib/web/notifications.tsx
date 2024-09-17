@@ -1,6 +1,4 @@
 import { ServerClient } from "postmark"
-import { renderToString } from "react-dom/server"
-import ReactMarkdown from "react-markdown"
 import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
 import { backendAnalyticsEvent } from "../_utils_server"
@@ -60,7 +58,19 @@ export async function sendBatchedEmails() {
       ],
     },
     include: {
-      notifications: true,
+      notifications: {
+        where: {
+          emailSentAt: null,
+        },
+        include: {
+          question: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      },
     },
   })
 
@@ -68,23 +78,41 @@ export async function sendBatchedEmails() {
     const notifications = user.notifications
       .filter((notification) => notification.emailSentAt === null)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) // oldest first
-    const notificationsHtml = notifications
-      .map((notification) => {
-        return renderToString(
-          <ReactMarkdown>{notification.content}</ReactMarkdown>,
-        )
-      })
-      .join("<br/><br/>")
+    const notificationsByQuestionId = notifications.reduce(
+      (acc, notification) => {
+        if (!notification.questionId) {
+          // Collect notifications without questionId separately
+          acc["no-question"] = acc["no-question"] || []
+          acc["no-question"].push(notification)
+        } else {
+          acc[notification.questionId] = acc[notification.questionId] || []
+          acc[notification.questionId].push(notification)
+        }
+        return acc
+      },
+      {} as Record<string, typeof notifications>,
+    )
 
-    await sendEmailUnbatched({
-      subject:
-        notifications.length === 1
-          ? notifications[0].title
-          : "New activity on your predictions",
-      htmlBody: notificationsHtml + fatebookEmailFooter(user.email),
-      textBody: `${notifications.length} new notification${
-        notifications.length === 1 ? "" : "s"
-      }`,
+    await sendEmailWithTemplateUnbatched({
+      templateAlias: "fatebook-new-activity",
+      templateParams: {
+        email_subject:
+          notifications.length === 1
+            ? notifications[0].title
+            : "New activity on your predictions",
+        questions: Object.values(notificationsByQuestionId).map(
+          (notifications) => {
+            const latestNotification = notifications[notifications.length - 1]
+            return {
+              url: latestNotification.url,
+              header: latestNotification.question?.title || "Notifications",
+              notifications: notifications.map((n) => ({
+                title: n.title,
+              })),
+            }
+          },
+        ),
+      },
       to: user.email,
     })
 
@@ -98,6 +126,66 @@ export async function sendBatchedEmails() {
         emailSentAt: new Date(),
       },
     })
+  }
+}
+
+export async function sendEmailWithTemplateUnbatched({
+  templateAlias,
+  templateParams,
+  to,
+  log = true,
+}: {
+  templateAlias: string
+  templateParams: object
+  to: string
+  log?: boolean
+}) {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: to,
+    },
+  })
+  if (user?.unsubscribedFromEmailsAt) {
+    log && console.log(`Not sending email to ${to} because they unsubscribed`)
+    return
+  }
+
+  log && console.log("Sending email...")
+  const client = new ServerClient(postmarkApiToken)
+  let response
+  try {
+    response = await client.sendEmailWithTemplate({
+      From: "reminders@fatebook.io",
+      ReplyTo: "hello@sage-future.org",
+      To: to,
+      TemplateAlias: templateAlias,
+      TemplateModel: {
+        product_url: "https://fatebook.io",
+        product_name: "Fatebook",
+        ...templateParams,
+      },
+      MessageStream: "outbound",
+    })
+  } catch (error: any) {
+    if (
+      error.message.includes(
+        "You tried to send to recipient(s) that have been marked as inactive.",
+      )
+    ) {
+      log &&
+        console.warn(
+          `Warning: Attempted to send to inactive recipient(s). Continuing...`,
+        )
+    } else {
+      throw error
+    }
+  }
+
+  if (response?.ErrorCode) {
+    log && console.error(`Error sending email: ${JSON.stringify(response)}`)
+  } else {
+    log && console.log(`Sent email to ${to} with template: ${templateAlias}`)
+    await backendAnalyticsEvent("email_sent", { platform: "web" })
   }
 }
 

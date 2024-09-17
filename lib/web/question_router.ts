@@ -35,7 +35,6 @@ import { getQuestionUrl } from "./question_url"
 import { Context, publicProcedure, router } from "./trpc_base"
 import {
   getHtmlLinkQuestionTitle,
-  getMarkdownLinkQuestionTitle,
   getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
@@ -984,9 +983,7 @@ export const questionRouter = router({
           title: `${submittedForecast.user.name || "Someone"} predicted on "${
             q.title
           }"`,
-          content: `${
-            submittedForecast.user.name || "Someone"
-          } predicted on ${getMarkdownLinkQuestionTitle(q)}`,
+          content: `${submittedForecast.user.name || "Someone"} predicted`,
           tags: ["new_forecast", q.id],
           url: getQuestionUrl(q),
           questionId: q.id,
@@ -1091,9 +1088,7 @@ export const questionRouter = router({
           title: `${newComment.user.name || "Someone"} commented on "${
             question.title
           }"`,
-          content: `${
-            newComment.user.name || "Someone"
-          } commented on ${getMarkdownLinkQuestionTitle(question)}:\n\n${
+          content: `${newComment.user.name || "Someone"} commented:\n\n${
             newComment.comment
           }`,
           tags: ["new_comment", question.id],
@@ -1579,11 +1574,7 @@ export async function emailNewlySharedWithUsers(
         await createNotification({
           userId: user.id,
           title: `${author} shared a prediction with you`,
-          content: `${author} shared a prediction with you: **${getMarkdownLinkQuestionTitle(
-            question,
-          )}**\n\n[See ${author}'s prediction and add your own on Fatebook.](${getQuestionUrl(
-            question,
-          )})`,
+          content: `${author} shared a prediction with you`,
           url: getQuestionUrl(question),
           tags: ["shared_prediction", question.id],
           questionId: question.id,

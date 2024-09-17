@@ -216,6 +216,13 @@ export const appRouter = router({
         },
         take: limit + 1, // fetch an extra item to check for next page
         skip: skip,
+        include: {
+          question: {
+            select: {
+              title: true,
+            },
+          },
+        },
       })
 
       return {
