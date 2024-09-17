@@ -39,7 +39,7 @@ export function UserLists({
           inCarousel ? (
             <button
               key={userList.id}
-              className="btn btn-ghost flex justify-start w-full p-0"
+              className="btn btn-ghost flex justify-start w-full p-0 text-left"
               onClick={() => onItemClick && onItemClick(userList.id)}
             >
               <UserListDisplay userList={userList} compact inCarousel={true} />
