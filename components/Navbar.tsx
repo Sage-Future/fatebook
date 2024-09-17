@@ -29,8 +29,9 @@ export function Navbar({
 }) {
   const userId = useUserId()
   const fatebookForChrome = useFatebookForChrome()
+  const router = useRouter()
   const menuItems = (
-    <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} />
+    <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} router={router} />
   )
 
   return (
@@ -41,10 +42,11 @@ export function Navbar({
           userId={userId ?? null}
           menuItems={menuItems}
           showCreateAccountButton={showCreateAccountButton}
+          router={router}
         />
         {children}
       </div>
-      <Drawer />
+      <Drawer router={router} />
     </div>
   )
 }
@@ -73,10 +75,12 @@ function NavbarContent({
   userId,
   menuItems,
   showCreateAccountButton,
+  router,
 }: {
   userId: string | null
   menuItems: ReactNode
   showCreateAccountButton: boolean
+  router: ReturnType<typeof useRouter>
 }) {
   return (
     <div className="navbar max-w-5xl mx-auto">
@@ -109,36 +113,44 @@ function MenuItems({
   userId,
   fatebookForChrome,
   isDrawer = false,
+  router,
 }: {
   userId: string | null
   fatebookForChrome: ReactNode
   isDrawer?: boolean
+  router: ReturnType<typeof useRouter>
 }) {
+  const isActive = (path: string) => router.pathname === path
+
   return (
     <>
+      <li>
+        <Link href="/public" className={isActive('/public') ? 'bg-base-200' : ''}>
+          Public predictions
+        </Link>
+      </li>
+      <li>
+        <Link href="/about" className={isActive('/about') ? 'bg-base-200' : ''}>
+          About
+        </Link>
+      </li>
       {isDrawer ? (
         <>
-          <li className="menu-title">Integrations</li>
-          <IntegrationsItems fatebookForChrome={fatebookForChrome} />
-          <li className="menu-title">Learn</li>
-          <LearnItems />
+          <li className="menu-title text-lg mt-2 leading-4">Integrations</li>
+          <IntegrationsItems fatebookForChrome={fatebookForChrome} router={router} />
+          <li className="menu-title text-lg mt-2 leading-4">Learn</li>
+          <LearnItems router={router} />
         </>
       ) : (
         <>
           <li>
-            <IntegrationsDropdown fatebookForChrome={fatebookForChrome} />
+            <IntegrationsDropdown fatebookForChrome={fatebookForChrome} router={router} />
           </li>
           <li>
-            <LearnDropdown />
+            <LearnDropdown router={router} />
           </li>
         </>
       )}
-      <li>
-        <Link href="/public">Public predictions</Link>
-      </li>
-      <li>
-        <Link href="/about">About</Link>
-      </li>
       {userId && (
         <li className="hidden lg:block">
           <NotificationsPopover />
@@ -150,8 +162,10 @@ function MenuItems({
 
 function IntegrationsDropdown({
   fatebookForChrome,
+  router,
 }: {
   fatebookForChrome: ReactNode
+  router: ReturnType<typeof useRouter>
 }) {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
@@ -162,7 +176,7 @@ function IntegrationsDropdown({
         tabIndex={0}
         className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
       >
-        <IntegrationsItems fatebookForChrome={fatebookForChrome} />
+        <IntegrationsItems fatebookForChrome={fatebookForChrome} router={router} />
       </ul>
     </div>
   )
@@ -170,39 +184,41 @@ function IntegrationsDropdown({
 
 function IntegrationsItems({
   fatebookForChrome,
+  router,
 }: {
   fatebookForChrome: ReactNode
+  router: ReturnType<typeof useRouter>
 }) {
   const exportData = useExportData()
-
+  const isActive = (path: string) => router.pathname === path
   return (
     <>
       <li className="menu-title">Rapid predictions, anywhere</li>
       {fatebookForChrome && (
         <li>
-          <Link href="/extension">{fatebookForChrome}</Link>
+          <Link href="/extension" className={isActive('/extension') ? 'bg-base-200' : ''}>{fatebookForChrome}</Link>
         </li>
       )}
       <li>
-        <Link href="/for-slack">Fatebook for Slack</Link>
+        <Link href="/for-slack" className={isActive('/for-slack') ? 'bg-base-200' : ''}>Fatebook for Slack</Link>
       </li>
       <li>
-        <Link href="/for-discord">Fatebook for Discord</Link>
+        <Link href="/for-discord" className={isActive('/for-discord') ? 'bg-base-200' : ''}>Fatebook for Discord</Link>
       </li>
       <li>
-        <Link href="/api-setup">Fatebook API</Link>
+        <Link href="/api-setup" className={isActive('/api-setup') ? 'bg-base-200' : ''}>Fatebook API</Link>
       </li>
       <li>
-        <Link href="/embed">Embed in your website</Link>
+        <Link href="/embed" className={isActive('/embed') ? 'bg-base-200' : ''}>Embed in your website</Link>
       </li>
       <li className="menu-title">Your prediction data</li>
       <li>
-        <Link href="/import-from-prediction-book">
+        <Link href="/import-from-prediction-book" className={isActive('/import-from-prediction-book') ? 'bg-base-200' : ''}>
           Import from PredictionBook
         </Link>
       </li>
       <li>
-        <Link href="/import-from-spreadsheet">Import from spreadsheet</Link>
+        <Link href="/import-from-spreadsheet" className={isActive('/import-from-spreadsheet') ? 'bg-base-200' : ''}>Import from spreadsheet</Link>
       </li>
       <li>
         <a onClick={() => !exportData.isLoading && exportData.mutate()}>
@@ -215,7 +231,7 @@ function IntegrationsItems({
   )
 }
 
-function LearnDropdown() {
+function LearnDropdown({ router }: { router: ReturnType<typeof useRouter> }) {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
@@ -225,13 +241,14 @@ function LearnDropdown() {
         tabIndex={0}
         className="dropdown-content z-[9999] menu p-2 shadow-lg bg-base-100 rounded-box w-64"
       >
-        <LearnItems />
+        <LearnItems router={router} />
       </ul>
     </div>
   )
 }
 
-function LearnItems() {
+function LearnItems({ router }: { router: ReturnType<typeof useRouter> }) {
+  const isActive = (path: string) => router.pathname === path
   return (
     <>
       <li className="menu-title">Training tools</li>
@@ -257,22 +274,22 @@ function LearnItems() {
       </li>
       <li className="menu-title">More resources</li>
       {/* <li>
-        <Link href="/tips-on-writing-questions">Tips on writing questions</Link>
+        <Link href="/tips-on-writing-questions" className={isActive('/tips-on-writing-questions') ? 'bg-base-200' : ''}>Tips on writing questions</Link>
       </li> */}
       <li>
-        <Link href="/predict-your-year">Predict your year</Link>
+        <Link href="/predict-your-year" className={isActive('/predict-your-year') ? 'bg-base-200' : ''}>Predict your year</Link>
       </li>
     </>
   )
 }
 
-function Drawer() {
+function Drawer({ router }: { router: ReturnType<typeof useRouter> }) {
   return (
     <div className="drawer-side z-[9999] mt-16 lg:hidden">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
       <ul className="menu flex flex-col flex-nowrap p-4 w-80 overflow-auto bg-neutral-100 h-full text-md text-neutral-600 font-semibold">
         <div className="overflow-y-auto flex-shrink pb-8">
-          <MenuItems userId={null} fatebookForChrome={null} isDrawer={true} />
+          <MenuItems userId={null} fatebookForChrome={null} isDrawer={true} router={router} />
         </div>
         <div className="grow" />
         <div className="-m-4 mb-8 z-10">
