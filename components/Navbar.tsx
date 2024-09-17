@@ -236,16 +236,24 @@ function LearnItems() {
     <>
       <li className="menu-title">Training tools</li>
       <li>
-        <Link href="/calibration-training">Calibration training</Link>
+        <Link href="https://www.quantifiedintuitions.org/calibration">
+          Calibration training
+        </Link>
       </li>
       <li>
-        <Link href="/pastcasting">Pastcasting</Link>
+        <Link href="https://www.quantifiedintuitions.org/pastcasting">
+          Pastcasting
+        </Link>
       </li>
       <li>
-        <Link href="/estimation-game">The Estimation Game</Link>
+        <Link href="https://www.quantifiedintuitions.org/estimation-game">
+          The Estimation Game
+        </Link>
       </li>
       <li>
-        <Link href="/anki-with-uncertainty">Anki with Uncertainty</Link>
+        <Link href="https://www.quantifiedintuitions.org/anki-with-uncertainty">
+          Anki with Uncertainty
+        </Link>
       </li>
       <li className="menu-title">More resources</li>
       {/* <li>
