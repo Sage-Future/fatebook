@@ -72,7 +72,9 @@ export function Notifications() {
                     ),
                   }}
                 >
-                  {notification.content}
+                  {(notification.question?.title
+                    ? `**${notification.question.title}**\n\n`
+                    : "") + notification.content}
                 </ReactMarkdown>
                 <FormattedDate
                   date={notification.createdAt}

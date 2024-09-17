@@ -43,7 +43,6 @@ import { buildQuestionResolvedBroadcastBlocks } from "../blocks-designs/question
 import prisma from "../prisma"
 import { createNotification } from "../web/notifications"
 import { getQuestionUrl } from "../web/question_url"
-import { getMarkdownLinkQuestionTitle } from "../web/utils"
 
 async function dbResolveQuestion(questionid: string, resolution: Resolution) {
   console.log(`      dbResolveQuestion ${questionid} - ${resolution}`)
@@ -645,7 +644,7 @@ export async function handleQuestionResolution(
         }"`,
         content: `${q.user.name || "Someone"} resolved ${
           q.type === "MULTIPLE_CHOICE" ? "" : `as ${q.resolution} `
-        }: ${getMarkdownLinkQuestionTitle(q)}`,
+        }`,
         tags: ["question_resolved", q.id],
         url: getQuestionUrl(q),
         questionId: q.id,
