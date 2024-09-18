@@ -91,7 +91,7 @@ export function Questions({
 
   return (
     <div>
-      <div className="flex max-sm:flex-col justify-between pt-6">
+      <div className="flex max-sm:flex-col justify-between pt-6 pb-4">
         <h3 className="select-none flex gap-4 mt-2 mb-0 max-w-[80%]">
           {title || "Your forecasts"}
           {questionsQ.isLoading && (
@@ -157,14 +157,12 @@ export function Questions({
             </div>
           )}
         </motion.div>
+      ) : filtersApplied ? (
+        <div className="italic text-neutral-500 text-sm mt-4 text-center">
+          No questions match your filters.
+        </div>
       ) : (
-        filtersApplied ? (
-          <div className="italic text-neutral-500 text-sm mt-4 text-center">
-            No questions match your filters.
-          </div>
-        ) : (
-          <>{noQuestionsText}</>
-        )
+        <>{noQuestionsText}</>
       )}
     </div>
   )
