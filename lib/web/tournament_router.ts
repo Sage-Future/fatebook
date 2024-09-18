@@ -277,6 +277,9 @@ export const tournamentRouter = router({
               : {},
           ],
         },
+        include: {
+          author: true,
+        },
       })
       return tournaments
     }),

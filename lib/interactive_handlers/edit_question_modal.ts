@@ -157,8 +157,9 @@ export async function questionModalSubmitted(
   )
 
   const question = getVal("forecast_question")?.value
-  const resolutionDate = getVal('{"action":"updateResolutionDate"}')
-    ?.selected_date
+  const resolutionDate = getVal(
+    '{"action":"updateResolutionDate"}',
+  )?.selected_date
   const notes = getVal("notes")?.value
 
   const hideForecastsUntilStr = getVal(

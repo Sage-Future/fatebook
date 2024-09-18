@@ -1,8 +1,7 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { Questions } from "../../components/Questions"
+import { TournamentView } from "../../components/TournamentView"
 import { TournamentAdminPanel } from "../../components/TournamentAdminPanel"
-import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook, useUserId } from "../../lib/web/utils"
 
@@ -44,22 +43,14 @@ export default function TournamentPage() {
           )}
           {isAdmin && <TournamentAdminPanel tournamentId={tournamentId} />}
           {tournamentQ.data ? (
-            <Questions
-              title={
-                tournamentQ.data?.name
-                  ? `${tournamentQ.data.name}`
-                  : "Loading..."
-              }
-              noQuestionsText="No questions in this tournament yet."
-              filterTournamentId={tournamentId}
-              description={tournamentQ.data?.description || undefined}
-            />
+            <>
+              <TournamentView tournamentId={tournamentQ.data?.id} />
+            </>
           ) : (
             <h3 className="text-neutral-600">
               {tournamentQ.isLoading ? "Loading..." : ""}
             </h3>
           )}
-          <TournamentLeaderboard tournamentId={tournamentId} />
         </div>
       </div>
     </div>
