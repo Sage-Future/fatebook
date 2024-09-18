@@ -155,7 +155,7 @@ export default function CollaboratorsPage() {
             style={{ top: overlayTop }}
           ></div>
           <div
-            className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 ease-in-out z-20 ${isDrawerOpen || items.length === 0 ? "h-[80vh]" : "h-16"}`}
+            className={`fixed lg:hidden bottom-16 left-0 right-0 bg-white border-t border-gray-200 transition-all duration-300 ease-in-out z-20 ${isDrawerOpen || items.length === 0 ? "h-[80svh]" : "h-16"}`}
           >
             <div className="flex justify-between items-center max-w-6xl mx-auto p-4 h-16">
               {items.length > 1 && (
