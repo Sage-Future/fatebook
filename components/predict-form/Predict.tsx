@@ -366,6 +366,11 @@ export function Predict({
           <form onSubmit={void handleSubmit(onSubmit)}>
             <div className="w-full ">
               <div className="relative">
+                <QuestionTypeSelect
+                  questionType={questionType}
+                  setQuestionType={setQuestionType}
+                />
+
                 <TextareaAutosize
                   className={clsx(
                     "w-full border-2 border-neutral-300 rounded-md resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
@@ -397,7 +402,7 @@ export function Predict({
                   <button
                     tabIndex={-1}
                     className={clsx(
-                      "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-calc-50-minus-05rem hover:opacity-100 !-translate-y-1/2",
+                      "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-calc-50-plus-1rem hover:opacity-100 !-translate-y-1/2",
                       showSuggestions ? "btn-active" : "btn-ghost",
                       !!question && !showSuggestions
                         ? "opacity-20"
@@ -447,11 +452,6 @@ export function Predict({
                 Tagging this question: {tagsPreview.join(", ")}
               </div>
             )}
-
-            <QuestionTypeSelect
-              questionType={questionType}
-              setQuestionType={setQuestionType}
-            />
 
             {(() => {
               switch (questionType) {
