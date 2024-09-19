@@ -402,7 +402,7 @@ export function Predict({
                   <button
                     tabIndex={-1}
                     className={clsx(
-                      "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-calc-50-plus-1rem hover:opacity-100 !-translate-y-1/2",
+                      "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-[calc(50%+1rem)] hover:opacity-100 !-translate-y-1/2",
                       showSuggestions ? "btn-active" : "btn-ghost",
                       !!question && !showSuggestions
                         ? "opacity-20"

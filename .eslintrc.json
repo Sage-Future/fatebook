@@ -112,7 +112,8 @@
         "@typescript-eslint/switch-exhaustiveness-check": "off",
         "@typescript-eslint/unbound-method": "off"
       }
-    }, {
+    },
+    {
       "files": ["./**/*.test.*"],
       "rules": {
         "no-undef": "off"

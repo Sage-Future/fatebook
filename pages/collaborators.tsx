@@ -29,19 +29,19 @@ export default function CollaboratorsPage() {
   const userListsQ = api.userList.getUserLists.useQuery()
 
   const items = [
-  ...(userListsQ.data?.map((userList) => ({
-    type: "userList" as const,
-    id: userList.id,
-    name: userList.name,
-    data: userList,
-  })) || []),
-  ...(tournamentsQ.data?.map((tournament) => ({
-    type: "tournament" as const,
-    id: tournament.id,
-    name: tournament.name,
-    data: tournament,
-  })) || [])
-]
+    ...(userListsQ.data?.map((userList) => ({
+      type: "userList" as const,
+      id: userList.id,
+      name: userList.name,
+      data: userList,
+    })) || []),
+    ...(tournamentsQ.data?.map((tournament) => ({
+      type: "tournament" as const,
+      id: tournament.id,
+      name: tournament.name,
+      data: tournament,
+    })) || []),
+  ]
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(items.length === 0)
 

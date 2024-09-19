@@ -16,41 +16,45 @@ import { CopyToClipboard } from "./ui/CopyToClipboard"
 import { InfoButton } from "./ui/InfoButton"
 import { MultiselectUsers } from "./ui/MultiselectEmail"
 
-function ListContent({ 
-    bigHeading,
-    compact,
-    userList
-  }: {
-    bigHeading: boolean;
-    compact: boolean;
-    userList: UserListWithAuthorAndUsers;
-  }) {
-    return (
-      <>
-        {bigHeading ? (
-          <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
-        ) : (
-          <>
-            {userList.name}
-            {!compact && (
-              <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
-            )}
+function ListContent({
+  bigHeading,
+  compact,
+  userList,
+}: {
+  bigHeading: boolean
+  compact: boolean
+  userList: UserListWithAuthorAndUsers
+}) {
+  return (
+    <>
+      {bigHeading ? (
+        <h3 className="text-xl font-semibold my-0">{userList.name}</h3>
+      ) : (
+        <>
+          {userList.name}
+          {!compact && (
+            <ArrowTopRightOnSquareIcon className="inline ml-1 h-3 w-3 text-neutral-600" />
+          )}
 
-            {(userList.users.length > 0 || userList.emailDomains.length === 0) && (
-              <span className="block text-xs my-auto font-normal text-neutral-400 text-left">
-                {userList.users.length} member{userList.users.length === 1 ? "" : "s"}
-              </span>
-            )}
-            {userList.emailDomains.length > 0 && (
-              <span className="block text-xs my-auto font-normal text-neutral-400">
-                {userList.emailDomains.map((domain) => `anyone@${domain}`).join(", ")}
-              </span>
-            )}
-          </>
-        )}
-      </>
-    );
-};
+          {(userList.users.length > 0 ||
+            userList.emailDomains.length === 0) && (
+            <span className="block text-xs my-auto font-normal text-neutral-400 text-left">
+              {userList.users.length} member
+              {userList.users.length === 1 ? "" : "s"}
+            </span>
+          )}
+          {userList.emailDomains.length > 0 && (
+            <span className="block text-xs my-auto font-normal text-neutral-400">
+              {userList.emailDomains
+                .map((domain) => `anyone@${domain}`)
+                .join(", ")}
+            </span>
+          )}
+        </>
+      )}
+    </>
+  )
+}
 
 export function UserListDisplay({
   userList,
@@ -86,8 +90,6 @@ export function UserListDisplay({
       await utils.userList.get.invalidate()
     },
   })
-
-  
 
   return (
     <div
@@ -131,7 +133,11 @@ export function UserListDisplay({
                   compact && "text-sm text-neutral-600",
                 )}
               >
-                <ListContent bigHeading={bigHeading} compact={compact} userList={userList} />
+                <ListContent
+                  bigHeading={bigHeading}
+                  compact={compact}
+                  userList={userList}
+                />
               </span>
             ) : (
               <Link
@@ -142,7 +148,11 @@ export function UserListDisplay({
                 )}
                 target={compact ? "_self" : "_blank"}
               >
-                <ListContent bigHeading={bigHeading} compact={compact} userList={userList} />
+                <ListContent
+                  bigHeading={bigHeading}
+                  compact={compact}
+                  userList={userList}
+                />
               </Link>
             )}
           </>

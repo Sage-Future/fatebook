@@ -11,11 +11,7 @@ import { api } from "../lib/web/trpc"
 import { TournamentSettingsButton } from "./TournamentSettingsButton"
 import { PlusIcon } from "@heroicons/react/20/solid"
 
-export function TournamentView({
-  tournamentId,
-}: {
-  tournamentId: string
-}) {
+export function TournamentView({ tournamentId }: { tournamentId: string }) {
   const router = useRouter()
   const { data: session } = useSession()
   const userId = session?.user?.id
@@ -48,7 +44,9 @@ export function TournamentView({
     return (
       <div className="flex flex-col gap-2">
         <h2 className="mt-0">{tournamentQ.data?.name}</h2>
-        {tournamentQ.data?.description && <p>{tournamentQ.data?.description}</p>}
+        {tournamentQ.data?.description && (
+          <p>{tournamentQ.data?.description}</p>
+        )}
         <div>
           <span>Created by: </span>
           <Username
@@ -98,11 +96,13 @@ export function TournamentView({
                 }}
                 onQuestionCreate={() => {
                   void utils.tournament.get.invalidate({ id: tournamentId })
-                  void utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate({
-                    extraFilters: { filterTournamentId: tournamentId },
-                  })
+                  void utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate(
+                    {
+                      extraFilters: { filterTournamentId: tournamentId },
+                    },
+                  )
                   setQuestionDrafts((drafts) =>
-                    drafts.filter((d) => d.key !== draft.key)
+                    drafts.filter((d) => d.key !== draft.key),
                   )
                 }}
                 resolveByButtons={[

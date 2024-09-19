@@ -29,7 +29,7 @@ export function Navbar({
 }) {
   const userId = useUserId()
   const fatebookForChrome = useFatebookForChrome()
-  
+
   const menuItems = (
     <MenuItems userId={userId ?? null} fatebookForChrome={fatebookForChrome} />
   )
@@ -121,12 +121,15 @@ function MenuItems({
   return (
     <>
       <li>
-        <Link href="/public" className={isActive('/public') ? 'bg-base-200' : ''}>
+        <Link
+          href="/public"
+          className={isActive("/public") ? "bg-base-200" : ""}
+        >
           Public predictions
         </Link>
       </li>
       <li>
-        <Link href="/about" className={isActive('/about') ? 'bg-base-200' : ''}>
+        <Link href="/about" className={isActive("/about") ? "bg-base-200" : ""}>
           About
         </Link>
       </li>
@@ -186,29 +189,61 @@ function IntegrationsItems({
       <li className="menu-title">Rapid predictions, anywhere</li>
       {fatebookForChrome && (
         <li>
-          <Link href="/extension" className={isActive('/extension') ? 'bg-base-200' : ''}>{fatebookForChrome}</Link>
+          <Link
+            href="/extension"
+            className={isActive("/extension") ? "bg-base-200" : ""}
+          >
+            {fatebookForChrome}
+          </Link>
         </li>
       )}
       <li>
-        <Link href="/for-slack" className={isActive('/for-slack') ? 'bg-base-200' : ''}>Fatebook for Slack</Link>
+        <Link
+          href="/for-slack"
+          className={isActive("/for-slack") ? "bg-base-200" : ""}
+        >
+          Fatebook for Slack
+        </Link>
       </li>
       <li>
-        <Link href="/for-discord" className={isActive('/for-discord') ? 'bg-base-200' : ''}>Fatebook for Discord</Link>
+        <Link
+          href="/for-discord"
+          className={isActive("/for-discord") ? "bg-base-200" : ""}
+        >
+          Fatebook for Discord
+        </Link>
       </li>
       <li>
-        <Link href="/api-setup" className={isActive('/api-setup') ? 'bg-base-200' : ''}>Fatebook API</Link>
+        <Link
+          href="/api-setup"
+          className={isActive("/api-setup") ? "bg-base-200" : ""}
+        >
+          Fatebook API
+        </Link>
       </li>
       <li>
-        <Link href="/embed" className={isActive('/embed') ? 'bg-base-200' : ''}>Embed in your website</Link>
+        <Link href="/embed" className={isActive("/embed") ? "bg-base-200" : ""}>
+          Embed in your website
+        </Link>
       </li>
       <li className="menu-title">Your prediction data</li>
       <li>
-        <Link href="/import-from-prediction-book" className={isActive('/import-from-prediction-book') ? 'bg-base-200' : ''}>
+        <Link
+          href="/import-from-prediction-book"
+          className={
+            isActive("/import-from-prediction-book") ? "bg-base-200" : ""
+          }
+        >
           Import from PredictionBook
         </Link>
       </li>
       <li>
-        <Link href="/import-from-spreadsheet" className={isActive('/import-from-spreadsheet') ? 'bg-base-200' : ''}>Import from spreadsheet</Link>
+        <Link
+          href="/import-from-spreadsheet"
+          className={isActive("/import-from-spreadsheet") ? "bg-base-200" : ""}
+        >
+          Import from spreadsheet
+        </Link>
       </li>
       <li>
         <a onClick={() => !exportData.isLoading && exportData.mutate()}>
@@ -268,20 +303,28 @@ function LearnItems() {
         <Link href="/tips-on-writing-questions" className={isActive('/tips-on-writing-questions') ? 'bg-base-200' : ''}>Tips on writing questions</Link>
       </li> */}
       <li>
-        <Link href="/predict-your-year" className={isActive('/predict-your-year') ? 'bg-base-200' : ''}>Predict your year</Link>
+        <Link
+          href="/predict-your-year"
+          className={isActive("/predict-your-year") ? "bg-base-200" : ""}
+        >
+          Predict your year
+        </Link>
       </li>
     </>
   )
 }
 
 function Drawer() {
-
   return (
     <div className="drawer-side z-[9999] mt-16 lg:hidden">
       <label htmlFor="my-drawer" className="drawer-overlay"></label>
       <ul className="menu flex flex-col flex-nowrap p-4 w-80 overflow-auto bg-neutral-100 h-full text-md text-neutral-600 font-semibold">
         <div className="overflow-y-auto flex-shrink pb-8">
-          <MenuItems userId={null} fatebookForChrome={useFatebookForChrome()} isDrawer={true} />
+          <MenuItems
+            userId={null}
+            fatebookForChrome={useFatebookForChrome()}
+            isDrawer={true}
+          />
         </div>
         <div className="grow" />
         <div className="-m-4 mb-8 z-10">
