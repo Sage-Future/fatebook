@@ -124,7 +124,8 @@ export const userListRouter = router({
       z.object({
         listId: z.string(),
         name: z.string().optional(),
-        userEmails: z.array(z.string()).optional(),
+        addEmails: z.array(z.string()).optional(),
+        removeUserIds: z.array(z.string()).optional(),
         emailDomains: z.array(z.string()).optional(),
       }),
     )
@@ -133,22 +134,25 @@ export const userListRouter = router({
         where: {
           id: input.listId,
         },
+        include: {
+          users: true,
+        },
       })
       if (!oldList || !ctx.userId || oldList.authorId !== ctx.userId) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "" })
       }
 
       // create users if they don't exist
-      if (input.userEmails) {
+      if (input.addEmails) {
         const existingUsers = await prisma.user.findMany({
           where: {
             email: {
-              in: input.userEmails,
+              in: input.addEmails,
             },
           },
         })
 
-        const nonExistingUsers = input.userEmails.filter(
+        const nonExistingUsers = input.addEmails.filter(
           (email) => !existingUsers.some((u) => u.email === email),
         )
 
@@ -159,6 +163,15 @@ export const userListRouter = router({
         }
       }
 
+      const newListEmails = [
+        ...oldList.users
+          .filter(
+            (u) => !(input.removeUserIds && input.removeUserIds.includes(u.id)),
+          )
+          .map((u) => u.email),
+        ...(input.addEmails || []),
+      ]
+
       await prisma.userList.update({
         where: {
           id: input.listId,
@@ -166,7 +179,7 @@ export const userListRouter = router({
         data: {
           name: input?.name,
           users: {
-            set: input.userEmails?.map((email) => ({ email })),
+            set: newListEmails?.map((email) => ({ email })),
           },
           emailDomains: input.emailDomains,
         },
