@@ -6,7 +6,7 @@ export async function sendWelcomeEmail(user: User) {
   await sendEmailUnbatched({
     subject: "Welcome to Fatebook",
     htmlBody: `
-    <p>Hi${user.name ? " " + user.name : ""},</p>
+    <p>Hi${user.name ? " " + user.name.split(" ")[0] : ""},</p>
     <p>Welcome to <a href="https://fatebook.io">Fatebook</a>: the fastest way to make and track predictions!</p>
     <p>Here are some things you could try using Fatebook for:</p>
     <ul>
