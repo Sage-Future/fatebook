@@ -15,9 +15,7 @@ export function QuestionTypeSelect({
       <button
         className={clsx(
           "btn",
-          questionType === QuestionType.BINARY
-            ? "btn-primary"
-            : "text-neutral-500",
+          questionType === QuestionType.BINARY ? "" : "btn-ghost",
         )}
         onClick={(e) => {
           e.preventDefault()
@@ -29,9 +27,7 @@ export function QuestionTypeSelect({
       <button
         className={clsx(
           "btn",
-          questionType === QuestionType.MULTIPLE_CHOICE
-            ? "btn-primary"
-            : "text-neutral-500",
+          questionType === QuestionType.MULTIPLE_CHOICE ? "" : "btn-ghost",
         )}
         onClick={(e) => {
           e.preventDefault()

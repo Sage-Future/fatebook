@@ -12,7 +12,7 @@ export default {
         sans: ["Inter var", ...defaultTheme.fontFamily.sans],
       },
       inset: {
-        "calc-50-minus-05rem": "calc(50% - 0.5rem)",
+        "calc-50-plus-1rem": "calc(50% + 1rem)",
       },
     },
   },
