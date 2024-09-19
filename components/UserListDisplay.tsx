@@ -263,8 +263,11 @@ function EmailInput({ userList }: { userList: UserListWithAuthorAndUsers }) {
 
       <MultiselectUsers
         users={userList.users}
-        setEmails={(emails) =>
-          updateList.mutate({ listId: userList.id, userEmails: emails })
+        addEmails={(emails) =>
+          updateList.mutate({ listId: userList.id, addEmails: emails })
+        }
+        removeUsers={(userIds) =>
+          updateList.mutate({ listId: userList.id, removeUserIds: userIds })
         }
         isLoading={updateList.isLoading}
         placeholder="Add a teammate by email..."
