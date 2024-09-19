@@ -71,25 +71,6 @@ export function Question({
       }, 0) ?? 0 // Use nullish coalescing operator to default to 0 if reduce returns undefined
   }
 
-  const sortedOptions = useMemo(() => {
-    if (question.type !== "MULTIPLE_CHOICE") {
-      return []
-    }
-    return [...question.options!].sort((a, b) => {
-      const aForecast = a.forecasts.find((f) => f.userId === userId)
-      const bForecast = b.forecasts.find((f) => f.userId === userId)
-
-      const aValue = aForecast ? aForecast.forecast.toNumber() : 0
-      const bValue = bForecast ? bForecast.forecast.toNumber() : 0
-
-      if (bValue === aValue) {
-        return question.options!.indexOf(a) - question.options!.indexOf(b)
-      }
-
-      return bValue - aValue
-    })
-  }, [question.options, question.type, userId])
-
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <motion.div
@@ -158,11 +139,11 @@ export function Question({
                 />
               )}
             </span>
-            {question.type === "MULTIPLE_CHOICE" && (
+            {question.type === "MULTIPLE_CHOICE" && question.options && (
               <div className="contents">
-                {sortedOptions.map((option, index) => (
+                {question.options.map((option) => (
                   <QuestionDetailsOption
-                    key={index}
+                    key={option.id}
                     option={option}
                     question={question}
                     autoFocus={alwaysExpand}
