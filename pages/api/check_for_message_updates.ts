@@ -175,9 +175,7 @@ export async function sendEmailReadyToResolveNotification(
     )}</b></p>\n
 <p><a href=${getQuestionUrl(
       question,
-    )}>Resolve your question</a>.</p>${fatebookEmailFooter(
-      question.user.email,
-    )}`,
+    )}>Resolve your question</a>.</p>${fatebookEmailFooter()}`,
   })
 
   await prisma.question.update({
@@ -495,7 +493,7 @@ async function sendEmailForStaleForecasts(
               "</p>",
           )
           .join("\n") +
-        `\n\n${fatebookEmailFooter(user.email)}`,
+        `\n\n${fatebookEmailFooter()}`,
     })
   }
 }

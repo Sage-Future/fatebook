@@ -693,7 +693,8 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string(),
-        sharedWith: z.array(z.string()),
+        addEmails: z.array(z.string()),
+        removeUsers: z.array(z.string()),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -707,7 +708,20 @@ export const questionRouter = router({
         },
       )) as QuestionWithUserAndSharedWith
 
-      const sharedWith = Array.from(new Set(input.sharedWith))
+      const sharedWith = Array.from(
+        new Set(
+          [
+            ...question.sharedWith.map((u) => u.email),
+            ...input.addEmails,
+          ].filter(
+            (e) =>
+              !question.sharedWith.some(
+                (user) =>
+                  input.removeUsers.includes(user.id) && user.email === e,
+              ),
+          ),
+        ),
+      )
       const newlySharedWith = sharedWith.filter(
         (email) => !question.sharedWith.some((u) => u.email === email),
       )
@@ -1586,11 +1600,11 @@ export async function emailNewlySharedWithUsers(
           textBody: `"${question.title}"`,
           htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(
             question,
-          )}</b></p>
+          )}</p>
 <p><a href=${getQuestionUrl(
             question,
           )}>See ${author}'s prediction and add your own on Fatebook.</a></p>
-${fatebookEmailFooter(email)}`,
+${fatebookEmailFooter()}`,
         })
       }
     }),

@@ -4,19 +4,21 @@ import clsx from "clsx"
 import Image from "next/image"
 import Link from "next/link"
 import React, { ReactNode, useState } from "react"
+import toast from "react-hot-toast"
 import ReactSelect, { ActionMeta, SingleValue } from "react-select"
-import { logAndReturn } from "../../lib/_utils_common"
 import { api } from "../../lib/web/trpc"
 import { getUserPageUrl } from "../../pages/user/[id]"
 
 export function MultiselectUsers({
   users,
-  setEmails,
+  addEmails,
+  removeUsers,
   isLoading,
   placeholder = "Share by email...",
 }: {
   users: User[]
-  setEmails: (emails: string[]) => void
+  addEmails: (emails: string[]) => void
+  removeUsers: (userIds: string[]) => void
   isLoading: boolean
   placeholder?: string
 }) {
@@ -25,9 +27,7 @@ export function MultiselectUsers({
       className={clsx("text-sm flex flex-col gap-2", isLoading && "opacity-80")}
     >
       <EmailInput
-        submitEmail={(email) => {
-          setEmails([...users.map((u) => u.email), email])
-        }}
+        submitEmail={(email) => addEmails([email])}
         hideSuggestedEmails={users.map((u) => u.email)}
         placeholder={placeholder}
       />
@@ -42,15 +42,7 @@ export function MultiselectUsers({
               <button
                 className="btn btn-xs btn-circle btn-ghost"
                 disabled={isLoading}
-                onClick={() =>
-                  setEmails(
-                    logAndReturn(
-                      users
-                        .map((u) => u.email)
-                        .filter((email) => email !== user.email),
-                    ),
-                  )
-                }
+                onClick={() => removeUsers([user.id])}
               >
                 <XMarkIcon className="w-4 h-4 shrink-0" />
               </button>
@@ -103,16 +95,22 @@ function EmailInput({
         newValue: SingleValue<UserOption>,
         actionMeta: ActionMeta<UserOption>,
       ) => {
-        if (
-          actionMeta.action === "select-option" &&
-          newValue &&
-          isValidEmail(newValue.value)
-        )
-          submitEmail(newValue.value)
+        if (actionMeta.action === "select-option" && newValue?.value) {
+          if (isValidEmail(newValue.value)) {
+            submitEmail(newValue.value)
+          } else {
+            toast.error("Please enter a valid email")
+          }
+        }
       }}
       onKeyDown={(event: React.KeyboardEvent<HTMLElement>) => {
-        if (event.key === "Enter" && inputValue && isValidEmail(inputValue))
-          submitEmail(inputValue)
+        if (event.key === "Enter" && inputValue) {
+          if (isValidEmail(inputValue)) {
+            submitEmail(inputValue)
+          } else {
+            toast.error("Please enter a valid email")
+          }
+        }
       }}
       placeholder={placeholder}
       noOptionsMessage={() => null}
