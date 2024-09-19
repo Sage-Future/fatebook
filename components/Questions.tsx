@@ -7,7 +7,6 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { ExtraFilters } from "../lib/web/question_router"
 import { api } from "../lib/web/trpc"
-import { ifEmpty } from "../lib/web/utils"
 import { FilterControls } from "./FilterControls"
 import { Question } from "./questions/Question"
 
@@ -119,55 +118,52 @@ export function Questions({
           )}
         </div>
       )}
-      <motion.div className="grid gap-6 relative">
-        <AnimatePresence initial={false} mode="popLayout">
-          {ifEmpty(
-            questions.map((question, index, array) =>
-              question ? (
-                <React.Fragment key={question.id}>
-                  <DateSeparator
-                    key={question.id + "header"}
-                    header={groupDatesByBuckets(
-                      question[orderedBy],
-                      array[index - 1]?.[orderedBy],
-                    )}
-                  />
-                  <Question
-                    question={question}
-                    key={question.id}
-                    startExpanded={
-                      index === 0 && question.userId === session.data?.user.id
-                    }
-                    zIndex={
-                      questions?.length ? questions?.length - index : undefined
-                    }
-                  />
-                </React.Fragment>
-              ) : (
-                <></>
-              ),
-            ),
-            <div className="italic text-neutral-500 text-sm mt-4 text-center">
-              {filtersApplied
-                ? "No questions match your filters."
-                : noQuestionsText}
-            </div>,
+      {questions.length > 0 ? (
+        <motion.div className="grid gap-6 relative">
+          <AnimatePresence initial={false} mode="popLayout">
+            {questions.map((question, index, array) => (
+              <React.Fragment key={question.id}>
+                <DateSeparator
+                  key={question.id + "header"}
+                  header={groupDatesByBuckets(
+                    question[orderedBy],
+                    array[index - 1]?.[orderedBy],
+                  )}
+                />
+                <Question
+                  question={question}
+                  key={question.id}
+                  startExpanded={
+                    index === 0 && question.userId === session.data?.user.id
+                  }
+                  zIndex={
+                    questions.length ? questions.length - index : undefined
+                  }
+                />
+              </React.Fragment>
+            ))}
+          </AnimatePresence>
+          <InView>
+            {({ inView, ref }) => {
+              if (inView && questionsQ.hasNextPage) {
+                void questionsQ.fetchNextPage()
+              }
+              return <div ref={ref} />
+            }}
+          </InView>
+          {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && (
+            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
+              <LoaderIcon className="mx-auto" />
+            </div>
           )}
-        </AnimatePresence>
-        <InView>
-          {({ inView, ref }) => {
-            if (inView && questionsQ.hasNextPage) {
-              void questionsQ.fetchNextPage()
-            }
-            return <div ref={ref} />
-          }}
-        </InView>
-        {(questionsQ.isFetchingNextPage || questionsQ.isRefetching) && (
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
-            <LoaderIcon className="mx-auto" />
-          </div>
-        )}
-      </motion.div>
+        </motion.div>
+      ) : filtersApplied ? (
+        <div className="italic text-neutral-500 text-sm mt-4 text-center">
+          No questions match your filters.
+        </div>
+      ) : (
+        <>{noQuestionsText}</>
+      )}
     </div>
   )
 }

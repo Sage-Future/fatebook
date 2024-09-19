@@ -80,6 +80,10 @@ Run jest tests with `npm run test`.
 
 You can also generate a coverage report by running `npm run test -- --coverage`, the report will be printed to the console and also saved in the `coverage/` directory. The best way to view it is in the html format under `coverage/lcov-report/index.html` (run `open coverage/lcov-report/index.html`).
 
+### Running in the vscode debugger
+
+There is a launch config for vscode/Cursor called "Next.js: debug fatebook full stack" that will run the web app in the debugger (frontend and backend, breakpoints will work on the client or during SSR).
+
 ### Developing the Fatebook browser extension
 
 Fatebook has a Chrome and Firefox [extension](https://fatebook.io/extension). The source is in [/chrome-extension](https://github.com/Sage-Future/fatebook/tree/main/chrome-extension)

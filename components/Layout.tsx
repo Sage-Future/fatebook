@@ -1,4 +1,9 @@
-import { BellIcon, ChartBarIcon, HomeIcon } from "@heroicons/react/24/solid"
+import {
+  BellIcon,
+  ChartBarIcon,
+  HomeIcon,
+  UsersIcon,
+} from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { useRouter } from "next/router"
 import { ReactNode } from "react"
@@ -51,14 +56,6 @@ function BottomNav() {
   // only show when logged in
   if (!userId) return <></>
 
-  // only show on these pages
-  if (
-    router.pathname !== "/" &&
-    router.pathname !== "/stats" &&
-    router.pathname !== "/notifications"
-  )
-    return <></>
-
   return (
     <div className="btm-nav ring-1 ring-neutral-100 z-[500] lg:hidden">
       {[
@@ -66,6 +63,11 @@ function BottomNav() {
           path: "/",
           title: "Home",
           icon: <HomeIcon width={24} />,
+        },
+        {
+          path: "/collaborators",
+          title: "Collaborators",
+          icon: <UsersIcon width={24} />,
         },
         {
           path: "/stats",

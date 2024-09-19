@@ -77,7 +77,7 @@ export function TournamentAdminPanel({
   return (
     <form
       className={clsx(
-        "space-y-4 bg-white py-4 px-6 rounded-xl max-w-prose",
+        "space-y-4 bg-white py-4 px-6 mb-8 rounded-xl max-w-prose",
         collapsible && "shadow-md",
       )}
     >

@@ -1,6 +1,5 @@
-import { PlusIcon, XMarkIcon } from "@heroicons/react/20/solid"
-import { BoltIcon, CogIcon } from "@heroicons/react/24/solid"
-import { Tournament } from "@prisma/client"
+import { PlusIcon } from "@heroicons/react/20/solid"
+import { BoltIcon } from "@heroicons/react/24/solid"
 import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
 import Link from "next/link"
@@ -8,14 +7,13 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { Questions } from "../../components/Questions"
-import { ShareTournament } from "../../components/ShareTournament"
 import { TabbedQuestionSuggestions } from "../../components/TabbedQuestionSuggestions"
-import { TournamentAdminPanel } from "../../components/TournamentAdminPanel"
 import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
 import { Predict } from "../../components/predict-form/Predict"
 import { generateRandomId } from "../../lib/_utils_common"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook } from "../../lib/web/utils"
+import { TournamentSettingsButton } from "../../components/TournamentSettingsButton"
 
 export default function PredictYourYearPage() {
   const router = useRouter()
@@ -103,7 +101,7 @@ export default function PredictYourYearPage() {
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px] flex flex-col gap-10 relative">
           {userId && tournamentQ.data && (
-            <SettingsButtons
+            <TournamentSettingsButton
               teamMode={teamMode}
               tournament={tournamentQ.data}
             />
@@ -283,62 +281,3 @@ export default function PredictYourYearPage() {
   )
 }
 
-function SettingsButtons({
-  teamMode,
-  tournament,
-}: {
-  teamMode: boolean
-  tournament: Tournament
-}) {
-  return (
-    <div className="ml-auto -mt-2 -mb-10 right-0 top-4 flex gap-2">
-      <button
-        className="btn btn-primary"
-        onClick={() =>
-          (
-            document?.getElementById("tournament_share_modal") as any
-          )?.showModal()
-        }
-      >
-        Share with your {teamMode ? "team" : "friends"}
-      </button>
-      <dialog id="tournament_share_modal" className="modal max-sm:modal-top">
-        <div className="modal-box max-w-[100vw] sm:max-w-prose">
-          <form method="dialog" className="modal-backdrop">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              <XMarkIcon className="w-6 h-6 text-neutral-500" />
-            </button>
-          </form>
-          <h3 className="font-bold text-lg mt-0">Share</h3>
-          <ShareTournament tournamentId={tournament.id} />
-        </div>
-      </dialog>
-
-      <button
-        className="btn"
-        onClick={() =>
-          (
-            document?.getElementById("tournament_admin_panel") as any
-          )?.showModal()
-        }
-      >
-        <CogIcon className="w-6 h-6 text-neutral-500" />
-      </button>
-      <dialog id="tournament_admin_panel" className="modal max-sm:modal-top">
-        <div className="modal-box max-w-[100vw] sm:max-w-prose">
-          <form method="dialog" className="modal-backdrop">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
-              <XMarkIcon className="w-6 h-6 text-neutral-500" />
-            </button>
-          </form>
-          <TournamentAdminPanel
-            tournamentId={tournament.id}
-            includeAddNewQuestion={false}
-            includeShareTournament={false}
-            collapsible={false}
-          />
-        </div>
-      </dialog>
-    </div>
-  )
-}

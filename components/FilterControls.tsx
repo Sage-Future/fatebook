@@ -6,22 +6,32 @@ import { AnimatePresence, motion } from "framer-motion"
 import { ReactElement, ReactNode, useEffect, useState } from "react"
 import { ExtraFilters } from "../lib/web/question_router"
 
-function FilterButton(
-  { onClick, filterActive, children, className }:
-  { onClick: () => void, filterActive?: boolean, children: ReactNode, className?: string }
-): ReactElement {
-  return <button
-    onClick={onClick}
-    className={clsx(
-      "btn", className,
-      filterActive ? "btn-primary" : "text-neutral-500",
-    )}
-  >
-    {filterActive && (
-      <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
-    )}
-    {children}
-  </button>
+function FilterButton({
+  onClick,
+  filterActive,
+  children,
+  className,
+}: {
+  onClick: () => void
+  filterActive?: boolean
+  children: ReactNode
+  className?: string
+}): ReactElement {
+  return (
+    <button
+      onClick={onClick}
+      className={clsx(
+        "btn",
+        className,
+        filterActive ? "btn-primary" : "text-neutral-500",
+      )}
+    >
+      {filterActive && (
+        <CheckCircleIcon className="inline-flex -ml-2 mr-1" height={16} />
+      )}
+      {children}
+    </button>
+  )
 }
 
 export function FilterControls({
@@ -66,7 +76,8 @@ export function FilterControls({
 
   const filters = [
     {
-      name: 'Resolving soon', effect: () =>
+      name: "Resolving soon",
+      effect: () =>
         setExtraFilters({
           ...extraFilters,
           resolved: false,
@@ -75,10 +86,12 @@ export function FilterControls({
           unresolved: !extraFilters.resolvingSoon,
         }),
       filterActive: extraFilters.resolvingSoon,
-      className: '@xl:block', overflowClassName: ''
+      className: "@xl:block",
+      overflowClassName: "",
     },
     {
-      name: 'Ready to resolve', effect: () =>
+      name: "Ready to resolve",
+      effect: () =>
         setExtraFilters({
           ...extraFilters,
           resolved: false,
@@ -86,10 +99,12 @@ export function FilterControls({
           readyToResolve: !extraFilters.readyToResolve,
         }),
       filterActive: extraFilters.readyToResolve,
-      className: '@sm:block', overflowClassName: '@sm:hidden'
+      className: "@sm:block",
+      overflowClassName: "@sm:hidden",
     },
     {
-      name: 'Resolved', effect: () =>
+      name: "Resolved",
+      effect: () =>
         setExtraFilters({
           ...extraFilters,
           readyToResolve: false,
@@ -98,10 +113,12 @@ export function FilterControls({
           unresolved: false,
         }),
       filterActive: extraFilters.resolved,
-      className: '@xs:block', overflowClassName: '@xs:hidden'
+      className: "@xs:block",
+      overflowClassName: "@xs:hidden",
     },
     {
-      name: 'Unresolved', effect: () =>
+      name: "Unresolved",
+      effect: () =>
         setExtraFilters({
           ...extraFilters,
           readyToResolve: false,
@@ -109,7 +126,8 @@ export function FilterControls({
           resolved: false,
         }),
       filterActive: extraFilters.unresolved,
-      className: '@xl:block', overflowClassName: ''
+      className: "@xl:block",
+      overflowClassName: "",
     },
   ]
 
@@ -174,14 +192,16 @@ export function FilterControls({
 
         {
           // show buttons if they fit in the container, otherwise put them in the overflow
-          filters.map(({ name, effect, className, filterActive }) =>
+          filters.map(({ name, effect, className, filterActive }) => (
             <FilterButton
-              key={name} onClick={effect}
-              className={clsx('hidden', className)} filterActive={filterActive}
+              key={name}
+              onClick={effect}
+              className={clsx("hidden", className)}
+              filterActive={filterActive}
             >
               {name}
             </FilterButton>
-          )
+          ))
         }
 
         <button
@@ -206,14 +226,18 @@ export function FilterControls({
             exit={{ opacity: 0, y: -10 }}
             className="w-full flex flex-row flex-wrap gap-1 justify-end mt-2"
           >
-            {filters.map(({ name, effect, overflowClassName, filterActive }) =>
-              <FilterButton
-                key={name} onClick={effect}
-                className={overflowClassName} filterActive={filterActive}
-              >
-                {name}
-              </FilterButton>
-          )}
+            {filters.map(
+              ({ name, effect, overflowClassName, filterActive }) => (
+                <FilterButton
+                  key={name}
+                  onClick={effect}
+                  className={overflowClassName}
+                  filterActive={filterActive}
+                >
+                  {name}
+                </FilterButton>
+              ),
+            )}
           </motion.div>
         )}
       </AnimatePresence>

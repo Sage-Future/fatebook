@@ -205,3 +205,7 @@ export type TournamentWithQuestionsAndSharedWithLists = Tournament & {
   questions: QuestionWithUserLists[]
   userList: UserList | null
 }
+
+export type TournamentWithAuthor = Tournament & {
+  author: User
+}

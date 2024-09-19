@@ -1,21 +1,12 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { Questions } from "../../components/Questions"
-import { SyncToSlack } from "../../components/SyncToSlack"
-import { UserListDisplay } from "../../components/UserListDisplay"
-import { Predict } from "../../components/predict-form/Predict"
-import { Username } from "../../components/ui/Username"
+import { TeamView } from "../../components/TeamView"
 import { api } from "../../lib/web/trpc"
-import {
-  getUserListUrl,
-  signInToFatebook,
-  useUserId,
-} from "../../lib/web/utils"
+import { signInToFatebook, useUserId } from "../../lib/web/utils"
 
 export default function ListPage() {
   const userId = useUserId()
   const router = useRouter()
-  const utils = api.useContext()
 
   // allow an optional ignored slug text before `--` character
   const parts =
@@ -57,75 +48,8 @@ export default function ListPage() {
               </h3>
             </div>
           )}
-          {listQ.data ? (
-            <div className="flex flex-col gap-2">
-              <UserListDisplay
-                bigHeading={true}
-                userList={listQ.data}
-                onDelete={() => void router.push("/")}
-              />
-              <span className="block">
-                A team created by:{" "}
-                <Username
-                  user={listQ.data.author}
-                  className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 hover:bg-neutral-100"
-                />
-              </span>
-              <div>
-                <span>Team members:</span>
-                {listQ.data.users.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 mt-1 max-w-full">
-                    {listQ.data.users.map((u) => (
-                      <Username
-                        key={u.id}
-                        user={u}
-                        className="bg-white px-2 py-1.5 rounded-full outline outline-1 outline-neutral-200 hover:bg-neutral-100 leading-8"
-                        unknownUserText="Invited user"
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <span className="italic">none</span>
-                )}
-              </div>
-              {listQ.data.emailDomains.length > 0 && (
-                <span className="block">
-                  Email domains {listQ.data.emailDomains.join(", ")}
-                </span>
-              )}
-              {userId && listQ.data.authorId === userId && (
-                <SyncToSlack
-                  listType="team"
-                  url={getUserListUrl(listQ.data, false)}
-                  entity={listQ.data}
-                />
-              )}
-              <h3>Share new questions with this team</h3>
-              <Predict
-                questionDefaults={{
-                  shareWithListIds: [listId],
-                }}
-                small={true}
-                onQuestionCreate={() => {
-                  void utils.question.getQuestionsUserCreatedOrForecastedOnOrIsSharedWith.invalidate(
-                    {
-                      extraFilters: {
-                        filterUserListId: listId,
-                      },
-                    },
-                  )
-                }}
-              />
-              <Questions
-                title={"Your team's questions"}
-                noQuestionsText="No questions shared with this team yet."
-                filterUserListId={listId}
-              />
-            </div>
-          ) : (
-            <h3 className="text-neutral-600">
-              {listQ.isLoading ? "Loading..." : ""}
-            </h3>
+          {listQ.data && userId && (
+            <TeamView userList={listQ.data} userId={userId} />
           )}
         </div>
       </div>
