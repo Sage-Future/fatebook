@@ -1,5 +1,4 @@
 import { ServerClient } from "postmark"
-import { getUnsubscribeUrl } from "../../pages/unsubscribe"
 import { postmarkApiToken } from "../_constants"
 import { backendAnalyticsEvent } from "../_utils_server"
 import prisma from "../prisma"
@@ -216,14 +215,19 @@ export async function sendEmailUnbatched({
   const client = new ServerClient(postmarkApiToken)
   let response
   try {
-    response = await client.sendEmail({
+    response = await client.sendEmailWithTemplate({
       From: "reminders@fatebook.io",
       ReplyTo: "hello@sage-future.org",
       To: to,
-      Subject:
-        subject.length >= 1999 ? `${subject.slice(0, 1995)}...` : subject,
-      HtmlBody: htmlBody,
-      TextBody: textBody,
+      TemplateAlias: "blank-transactional",
+      TemplateModel: {
+        product_url: "https://fatebook.io",
+        product_name: "Fatebook",
+        subject:
+          subject.length >= 1999 ? `${subject.slice(0, 1995)}...` : subject,
+        html_body: htmlBody,
+        text_body: textBody,
+      },
       MessageStream: "outbound",
     })
   } catch (error: any) {
@@ -249,14 +253,9 @@ export async function sendEmailUnbatched({
   }
 }
 
-export function fatebookEmailFooter(userEmailAddress: string) {
+export function fatebookEmailFooter() {
   return `\n
-<br/>
 <p><i><a href="https://fatebook.io">Fatebook</a> helps you rapidly make and track predictions about the future.</i></p>
-<br/>
 <p><a href=${webFeedbackUrl}>Give feedback on Fatebook</a></p>
-<p><a href=${getUnsubscribeUrl(
-    userEmailAddress,
-  )}>Unsubscribe from all emails from Fatebook</a></p>
 `
 }

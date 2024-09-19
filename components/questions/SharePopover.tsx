@@ -325,9 +325,20 @@ function EmailInput({ question }: { question: QuestionWithStandardIncludes }) {
       </label>
       <MultiselectUsers
         users={question.sharedWith}
-        setEmails={(emails) =>
-          setSharedWith.mutate({ questionId: question.id, sharedWith: emails })
+        addEmails={(emails) =>
+          setSharedWith.mutate({
+            questionId: question.id,
+            addEmails: emails,
+            removeUsers: [],
+          })
         }
+        removeUsers={(userIds) => {
+          return setSharedWith.mutate({
+            questionId: question.id,
+            addEmails: [],
+            removeUsers: userIds,
+          })
+        }}
         isLoading={setSharedWith.isLoading}
       />
     </div>
