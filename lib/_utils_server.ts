@@ -484,10 +484,6 @@ export async function callSlackApi(
         { response: modifiedResponse, message, url },
         JSON.stringify(message, null, 2),
       )
-    } else if (data.error == "is_archived" && throwOnError) {
-      throw new Error(
-        "Your question has been created successfully, but the channel is archived. Please select a different channel to sync with.",
-      )
     } else {
       console.error(
         "Error calling Slack API:",
