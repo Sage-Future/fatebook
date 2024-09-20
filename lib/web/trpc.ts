@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast"
 import transformer from "trpc-transformer"
 import { AppRouter } from "./app_router"
 
-/** @jsxImportSource react */
 export function getClientBaseUrl(useRelativePath = true) {
   if (typeof window !== "undefined") {
     return useRelativePath ? "" : window.location.origin
