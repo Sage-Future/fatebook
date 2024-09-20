@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import clsx from "clsx"
 import Link from "next/link"
 import { useState } from "react"
@@ -6,15 +5,6 @@ import Select, { components } from "react-select"
 import CreatableSelect from "react-select/creatable"
 import { api } from "../../lib/web/trpc"
 import { getTagPageUrl } from "../../pages/tag/[tag]"
-
-// Add this interface near the top of the file, after the imports
-interface MultiValueLabelProps {
-  data: { value: string }
-  questionCount?: number
-  innerProps: any
-  selectProps: any
-  [key: string]: any
-}
 
 export function TagsSelect({
   tags,
@@ -98,11 +88,7 @@ export function TagsSelect({
         }
         closeMenuOnSelect={false}
         components={{
-          MultiValueLabel: (props) => (
-            <MultiValueLabel {...props} questionCount={
-              allTags.find(t => t.name === props.data.value)?.questionCount
-            } />
-          ),
+          MultiValueLabel,
           // hide the dropdown chevron
           // eslint-disable-next-line @typescript-eslint/naming-convention
           DropdownIndicator: () => null,
@@ -120,19 +106,20 @@ export function TagsSelect({
   )
 }
 
-// Update the MultiValueLabel function definition
-function MultiValueLabel({ data, questionCount, innerProps, selectProps, ...props }: MultiValueLabelProps) {
+function MultiValueLabel(props: {
+  data: { value: string }
+  questionCount?: number
+  [key: string]: any
+}) {
   return (
     <Link
-      href={getTagPageUrl(data.value)}
+      href={getTagPageUrl(props.data.value)}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <components.MultiValueLabel {...props} data={data} innerProps={innerProps} selectProps={selectProps}>
-        {data.value}
-        {questionCount !== undefined && (
-          <span className="ml-1 text-xs text-gray-500">
-            ({questionCount})
-          </span>
+      <components.MultiValueLabel {...(props as unknown as any)}>
+        {props.data.value}
+        {props.questionCount !== undefined && (
+          <span className="ml-1 text-xs text-gray-500">({props.questionCount})</span>
         )}
       </components.MultiValueLabel>
     </Link>
