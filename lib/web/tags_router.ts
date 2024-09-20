@@ -21,7 +21,7 @@ export const tagsRouter = router({
       },
     })
 
-    return tags.map(tag => ({
+    return tags.map((tag) => ({
       ...tag,
       questionCount: tag._count.questions,
       _count: undefined,

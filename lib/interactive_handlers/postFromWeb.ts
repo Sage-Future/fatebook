@@ -265,12 +265,19 @@ export async function syncToSlackIfNeeded(
         where: { id: userId || "NO MATCH" },
       })
       if (user) {
-        await postQuestionToSlack({
-          questionId: question.id,
-          teamId: entity.syncToSlackTeamId,
-          channelId: entity.syncToSlackChannelId,
-          user,
-        })
+        try {
+          await postQuestionToSlack({
+            questionId: question.id,
+            teamId: entity.syncToSlackTeamId,
+            channelId: entity.syncToSlackChannelId,
+            user,
+          })
+        } catch (error) {
+          if (error instanceof Error && error.message.includes("is_archived")) {
+            throw new Error("slackSyncError: Channel is archived")
+          }
+          throw error
+        }
       }
     }
   }
