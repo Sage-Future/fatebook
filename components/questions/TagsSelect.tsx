@@ -61,11 +61,14 @@ export function TagsSelect({
             ? (inputValue) => `Add new tag "${inputValue}"`
             : undefined
         }
-        formatOptionLabel={(option: {
-          label: string
-          value: string
-          questionCount: number
-        }, { context }: { context: string }) => (
+        formatOptionLabel={(
+          option: {
+            label: string
+            value: string
+            questionCount: number
+          },
+          { context }: { context: string },
+        ) => (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-1">
               <TagIcon className="text-neutral-400 w-4 h-4" />
@@ -73,7 +76,7 @@ export function TagsSelect({
                 {option.label}
               </span>
             </div>
-            {context !== 'value' && (
+            {context !== "value" && (
               <span className="bg-neutral-100 text-neutral-800 text-xs font-semibold px-2 py-0.5 rounded-full">
                 {option.questionCount}
               </span>

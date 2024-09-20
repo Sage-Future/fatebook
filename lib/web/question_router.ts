@@ -556,7 +556,20 @@ export const questionRouter = router({
         })
       }
 
-      await syncToSlackIfNeeded(question, ctx.userId)
+      try {
+        await syncToSlackIfNeeded(question, ctx.userId)
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("is_archived")) {
+          // If the error is due to an archived Slack channel, handle it gracefully
+          return {
+            url: getQuestionUrl(question),
+            ...input,
+            slackSyncError: "archived_channel",
+          }
+        }
+        throw error
+      }
+
       return { url: getQuestionUrl(question), ...input }
     }),
 

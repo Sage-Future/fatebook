@@ -1,9 +1,11 @@
+import React from "react"
 import { TRPCClientError, httpBatchLink } from "@trpc/client"
 import { createTRPCNext } from "@trpc/next"
 import { toast } from "react-hot-toast"
 import transformer from "trpc-transformer"
 import { AppRouter } from "./app_router"
 
+/** @jsxImportSource react */
 export function getClientBaseUrl(useRelativePath = true) {
   if (typeof window !== "undefined") {
     return useRelativePath ? "" : window.location.origin
@@ -77,6 +79,17 @@ export const api = createTRPCNext<AppRouter>({
               if (!(error instanceof TRPCClientError)) return false
               if (error?.data?.code === 404) return false
               else {
+                // display a different message when the error is due to a Slack channel being archived
+                if (error.message.includes("slackSyncError")) {
+                  toast.custom(
+                    "The Slack channel you tried to sync to has been archived. The question was still created successfully, however it was not posted to Slack.",
+                    {
+                      icon: "🚨",
+                      duration: 10000,
+                    },
+                  )
+                  return false
+                }
                 toast.error(
                   `Oops, something went wrong.` +
                     (process.env.NODE_ENV === "development"
