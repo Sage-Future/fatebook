@@ -14,7 +14,16 @@ export const tagsRouter = router({
       where: {
         userId: ctx.userId,
       },
-    })
+      include: {
+        _count: {
+          select: { questions: true },
+        },
+      },
+    }).then(tags => tags.map(tag => ({
+      ...tag,
+      questionCount: tag._count.questions,
+      _count: undefined,
+    })))
   }),
 
   getByName: publicProcedure

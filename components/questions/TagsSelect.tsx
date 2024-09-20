@@ -44,7 +44,10 @@ export function TagsSelect({
               }
             : undefined
         }
-        options={allTags.map((tag) => ({ label: tag.name, value: tag.name }))}
+        options={allTags.map((tag) => ({
+          label: `${tag.name} (${tag.questionCount})`,
+          value: tag.name,
+        }))}
         hideSelectedOptions={true}
         formatCreateLabel={
           allowCreation
@@ -85,7 +88,11 @@ export function TagsSelect({
         }
         closeMenuOnSelect={false}
         components={{
-          MultiValueLabel,
+          MultiValueLabel: (props) => (
+            <MultiValueLabel {...props} questionCount={
+              allTags.find(t => t.name === props.data.value)?.questionCount
+            } />
+          ),
           // hide the dropdown chevron
           // eslint-disable-next-line @typescript-eslint/naming-convention
           DropdownIndicator: () => null,
@@ -105,6 +112,7 @@ export function TagsSelect({
 
 function MultiValueLabel(props: {
   data: { value: string }
+  questionCount?: number
   [key: string]: any
 }) {
   return (
@@ -112,7 +120,14 @@ function MultiValueLabel(props: {
       href={getTagPageUrl(props.data.value)}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <components.MultiValueLabel {...(props as unknown as any)} />
+      <components.MultiValueLabel {...(props as unknown as any)}>
+        {props.data.value}
+        {props.questionCount !== undefined && (
+          <span className="ml-1 text-xs text-gray-500">
+            ({props.questionCount})
+          </span>
+        )}
+      </components.MultiValueLabel>
     </Link>
   )
 }
