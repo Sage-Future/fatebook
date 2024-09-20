@@ -164,7 +164,7 @@ export function UpdateableLatestForecast({
     <>
       <span
         className={clsx(
-          "mr-0.5 font-bold h-min focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative flex",
+          "mr-0.5 font-bold h-min hover:ring-neutral-400 focus-within:ring-indigo-800 hover:focus-within:ring-indigo-800 ring-neutral-300 px-1 py-0.5 rounded-md shrink-0 relative flex",
           addForecast.isLoading && "opacity-50",
           hasResolution ? "text-neutral-600 ring-0" : "text-indigo-800 ring-2",
           errorMessage && "ring-red-500 focus-within:ring-red-500",
