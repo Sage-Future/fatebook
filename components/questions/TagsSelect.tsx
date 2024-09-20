@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import clsx from "clsx"
 import Link from "next/link"
 import { useState } from "react"
@@ -5,6 +6,15 @@ import Select, { components } from "react-select"
 import CreatableSelect from "react-select/creatable"
 import { api } from "../../lib/web/trpc"
 import { getTagPageUrl } from "../../pages/tag/[tag]"
+
+// Add this interface near the top of the file, after the imports
+interface MultiValueLabelProps {
+  data: { value: string }
+  questionCount?: number
+  innerProps: any
+  selectProps: any
+  [key: string]: any
+}
 
 export function TagsSelect({
   tags,
@@ -110,21 +120,18 @@ export function TagsSelect({
   )
 }
 
-function MultiValueLabel(props: {
-  data: { value: string }
-  questionCount?: number
-  [key: string]: any
-}) {
+// Update the MultiValueLabel function definition
+function MultiValueLabel({ data, questionCount, innerProps, selectProps, ...props }: MultiValueLabelProps) {
   return (
     <Link
-      href={getTagPageUrl(props.data.value)}
+      href={getTagPageUrl(data.value)}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <components.MultiValueLabel {...(props as unknown as any)}>
-        {props.data.value}
-        {props.questionCount !== undefined && (
+      <components.MultiValueLabel {...props} data={data} innerProps={innerProps} selectProps={selectProps}>
+        {data.value}
+        {questionCount !== undefined && (
           <span className="ml-1 text-xs text-gray-500">
-            ({props.questionCount})
+            ({questionCount})
           </span>
         )}
       </components.MultiValueLabel>
