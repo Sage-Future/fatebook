@@ -5,6 +5,7 @@ import Select, { components } from "react-select"
 import CreatableSelect from "react-select/creatable"
 import { api } from "../../lib/web/trpc"
 import { getTagPageUrl } from "../../pages/tag/[tag]"
+import { TagIcon } from "@heroicons/react/24/outline"
 
 export function TagsSelect({
   tags,
@@ -28,9 +29,12 @@ export function TagsSelect({
   return (
     <div className="">
       <SelectComponent
-        value={localTags.map((tag) => ({ label: tag, value: tag }))}
+        value={localTags.map((tag) => ({
+          label: tag,
+          value: tag,
+          questionCount: 0,
+        }))}
         onChange={(newValue) => {
-          console.log(newValue)
           const newTags = newValue.map((v) => v.value)
           setLocalTags(newTags)
           setTags(newTags)
@@ -47,8 +51,9 @@ export function TagsSelect({
         options={allTags
           .sort((a, b) => b.questionCount - a.questionCount) // Sort tags by questionCount descending
           .map((tag) => ({
-            label: `${tag.name} (${tag.questionCount})`,
+            label: tag.name,
             value: tag.name,
+            questionCount: tag.questionCount,
           }))}
         hideSelectedOptions={true}
         formatCreateLabel={
@@ -56,6 +61,23 @@ export function TagsSelect({
             ? (inputValue) => `Add new tag "${inputValue}"`
             : undefined
         }
+        formatOptionLabel={(option: {
+          label: string
+          value: string
+          questionCount: number
+        }) => (
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-1">
+              <TagIcon className="text-neutral-400 w-4 h-4" />
+              <span className="text-sm font-medium text-gray-700">
+                {option.label}
+              </span>
+            </div>
+            <span className="bg-neutral-100 text-neutral-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+              {option.questionCount}
+            </span>
+          </div>
+        )}
         className="cursor-text"
         classNames={{
           control: () =>
@@ -118,12 +140,7 @@ function MultiValueLabel(props: {
       href={getTagPageUrl(props.data.value)}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      <components.MultiValueLabel {...(props as unknown as any)}>
-        {props.data.value}
-        {props.questionCount !== undefined && (
-          <span className="ml-1 text-xs text-gray-500">({props.questionCount})</span>
-        )}
-      </components.MultiValueLabel>
+      <components.MultiValueLabel {...(props as unknown as any)} />
     </Link>
   )
 }
