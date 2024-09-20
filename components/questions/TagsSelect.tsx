@@ -44,10 +44,12 @@ export function TagsSelect({
               }
             : undefined
         }
-        options={allTags.map((tag) => ({
-          label: `${tag.name} (${tag.questionCount})`,
-          value: tag.name,
-        }))}
+        options={allTags
+          .sort((a, b) => b.questionCount - a.questionCount) // Sort tags by questionCount descending
+          .map((tag) => ({
+            label: `${tag.name} (${tag.questionCount})`,
+            value: tag.name,
+          }))}
         hideSelectedOptions={true}
         formatCreateLabel={
           allowCreation
