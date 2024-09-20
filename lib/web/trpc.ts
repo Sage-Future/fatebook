@@ -1,4 +1,3 @@
-import React from "react"
 import { TRPCClientError, httpBatchLink } from "@trpc/client"
 import { createTRPCNext } from "@trpc/next"
 import { toast } from "react-hot-toast"
