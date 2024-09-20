@@ -10,7 +10,7 @@ export const tagsRouter = router({
       return null
     }
 
-    return await prisma.tag.findMany({
+    const tags = await prisma.tag.findMany({
       where: {
         userId: ctx.userId,
       },
@@ -19,11 +19,13 @@ export const tagsRouter = router({
           select: { questions: true },
         },
       },
-    }).then(tags => tags.map(tag => ({
+    })
+
+    return tags.map(tag => ({
       ...tag,
       questionCount: tag._count.questions,
       _count: undefined,
-    })))
+    }))
   }),
 
   getByName: publicProcedure
