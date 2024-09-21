@@ -119,9 +119,7 @@ export function TagsSelect({
         components={{
           MultiValueLabel,
           // hide the dropdown chevron
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           DropdownIndicator: () => null,
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           IndicatorSeparator: () => null,
         }}
         isMulti={true}
