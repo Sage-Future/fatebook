@@ -50,7 +50,6 @@ export function Username({
           className="inline m-0 mr-1.5 rounded-full select-none aspect-square"
           alt=""
         />
-        <span>{user?.name || unknownUserText}</span>
       </span>
     </Link>
   )

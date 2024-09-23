@@ -119,7 +119,7 @@ export function Questions({
         </div>
       )}
       {questions.length > 0 ? (
-        <motion.div className="grid gap-6 relative">
+        <motion.div className="grid gap-0 relative">
           <AnimatePresence initial={false} mode="popLayout">
             {questions.map((question, index, array) => (
               <React.Fragment key={question.id}>

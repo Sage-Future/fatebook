@@ -86,7 +86,7 @@ export function Question({
         <div
           className={clsx(
             !embedded &&
-              "outline-1 outline cursor-pointer rounded-md shadow-sm group-hover:shadow-md transition-all z-10",
+              "outline-1 outline cursor-pointer shadow-sm group-hover:shadow-md transition-all z-10",
 
             (manuallyExpanded || alwaysExpand) && "rounded-b-none",
 
@@ -109,12 +109,12 @@ export function Question({
           }}
         >
           <div
-            className="grid grid-cols-[1fr_min-content_min-content] p-4 gap-y-2 relative"
+            className="grid grid-cols-[1fr_min-content_min-content] py-2 px-4 relative"
             key={question.id}
           >
             <span className="col-span-3 flex gap-4 mb-1 justify-between">
               <span
-                className={"font-semibold overflow-auto break-words"}
+                className={"font-semibold overflow-auto break-words text-sm"}
                 key={`${question.id}title`}
               >
                 <Link
@@ -132,11 +132,14 @@ export function Question({
                 </Link>
               </span>
               {question.type === "BINARY" && (
-                <UpdateableLatestForecast
-                  question={question}
-                  autoFocus={alwaysExpand}
-                  embedded={embedded}
-                />
+                <div className="absolute -right-2 top-0 scale-75">
+                  <UpdateableLatestForecast
+                    question={question}
+                    autoFocus={alwaysExpand}
+                    embedded={embedded}
+                    small={true}
+                  />
+                </div>
               )}
             </span>
             {question.type === "MULTIPLE_CHOICE" && question.options && (
@@ -211,12 +214,9 @@ export function Question({
                 >
                   {question.resolveBy < new Date() ? (
                     <FormattedDate
-                      className="[text-wrap:balanced]"
+                      className="[text-wrap:balanced] text-xs"
                       prefix={
-                        <span className="font-semibold">
-                          Ready to resolve
-                          <br />
-                        </span>
+                        <span className="font-semibold mr-1">Resolves</span>
                       }
                       date={question.resolveBy}
                       postfix=""
@@ -226,9 +226,7 @@ export function Question({
                     />
                   ) : (
                     <span>
-                      <span>
-                        Resolves <br />
-                      </span>
+                      <span className=" mr-1">Resolves</span>
                       <FormattedDate
                         className="[text-wrap:balanced]"
                         date={question.resolveBy}
@@ -242,12 +240,12 @@ export function Question({
               {question.exclusiveAnswers && (
                 <ResolveButton question={question} />
               )}
-              <ActivityNumbers
+              {/* <ActivityNumbers
                 question={question}
                 alwaysExpand={alwaysExpand}
                 manuallyExpanded={manuallyExpanded}
                 setManuallyExpanded={setManuallyExpanded}
-              />
+              /> */}
             </div>
           </div>
         </div>

@@ -77,7 +77,7 @@ export function ResolveButton({
         >
           <Menu.Button
             className={clsx(
-              "inline-flex w-full justify-center rounded-md bg-black bg-opacity-80 px-4 py-1.5 text-sm font-medium hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 disabled:opacity-70 h-full items-center",
+              "button text-sm h-6",
               // TODO: clean this up
               resolution === "YES"
                 ? "bg-green-500 text-white"

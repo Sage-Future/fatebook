@@ -31,26 +31,26 @@ export function SharePopover({
     <div className="">
       <Popover as="div" className="inline-block text-left relative w-full">
         <div className="w-full text-right md:text-center">
-          <Popover.Button className="button text-sm">
+          <Popover.Button className="button text-sm h-6">
             {question.sharedPublicly ? (
               question.unlisted ? (
                 <>
-                  <LinkIcon height={15} /> <span>Shared link</span>
+                  <LinkIcon height={15} />
                 </>
               ) : (
                 <>
-                  <UserGroupIcon height={15} /> <span>Public</span>
+                  <UserGroupIcon height={15} />
                 </>
               )
             ) : question.sharedWith?.length > 0 ||
               question.sharedWithLists?.length > 0 ||
               sharedToSlack ? (
               <>
-                <UsersIcon height={15} /> <span>Shared</span>
+                <UsersIcon height={15} />
               </>
             ) : (
               <>
-                <LockClosedIcon height={15} /> <span>Only me</span>
+                <LockClosedIcon height={15} />
               </>
             )}
             <ChevronDownIcon
