@@ -155,8 +155,10 @@ export function TagsSelect({
             backgroundColor: state.isFocused
               ? "#f5f5f5"
               : provided.backgroundColor,
+            borderRadius: state.isFocused ? "6px" : provided.borderRadius,
             ":hover": {
               backgroundColor: "#f5f5f5",
+              borderRadius: "6px",
             },
           }),
           valueContainer: (provided) => ({
