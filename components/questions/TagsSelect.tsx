@@ -126,7 +126,7 @@ export function TagsSelect({
             ...provided,
             padding: "0rem",
           }),
-          multiValueLabel: (provided, state) => ({
+          multiValueLabel: (provided) => ({
             ...provided,
             ":hover": {
               borderRadius: "6px 0 0 6px",
