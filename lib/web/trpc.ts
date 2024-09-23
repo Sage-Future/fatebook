@@ -79,7 +79,7 @@ export const api = createTRPCNext<AppRouter>({
               else {
                 // display a different message when the error is due to a Slack channel being archived
                 if (error.message.includes("slackSyncError")) {
-                  toast.custom(
+                  toast.error(
                     "The Slack channel you tried to sync to has been archived. The question was still created successfully, however it was not posted to Slack.",
                     {
                       icon: "🚨",
