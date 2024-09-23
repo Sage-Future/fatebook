@@ -24,6 +24,7 @@ export function TagsSelect({
   const allTagsQ = api.tags.getAll.useQuery()
   const allTags = allTagsQ.data ?? []
 
+  // See https://react-select.com/styles for styling help
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const SelectComponent = allowCreation ? CreatableSelect : Select
   return (
@@ -73,7 +74,9 @@ export function TagsSelect({
             <div className="flex items-center gap-1">
               <TagIcon className="text-neutral-400 w-4 h-4" />
               <span className="text-sm font-medium text-gray-700">
-                {option.label}
+                {context === "menu" && option.label.length > 20
+                  ? `${option.label.slice(0, 20)}...`
+                  : option.label}
               </span>
             </div>
             {context !== "value" && (
@@ -108,6 +111,60 @@ export function TagsSelect({
             ...provided,
             // 2px box shadow
             boxShadow: state.isFocused ? "0 0 0 2px #6366f1" : "none",
+          }),
+          menuList: (provided) => ({
+            ...provided,
+            paddingTop: 0,
+            paddingBottom: 0,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            "@media (max-width: 768px)": {
+              gridTemplateColumns: "1fr",
+            },
+          }),
+          multiValue: (provided) => ({
+            ...provided,
+            padding: "0rem",
+          }),
+          multiValueLabel: (provided, state) => ({
+            ...provided,
+            ":hover": {
+              borderRadius: "6px 0 0 6px",
+            },
+          }),
+          multiValueRemove: (provided, state) => ({
+            ...provided,
+            padding: "0.25rem",
+            borderRadius: "0 6px 6px 0",
+            backgroundColor: state.isFocused
+              ? "f5f5f5"
+              : provided.backgroundColor,
+            ":hover": {
+              backgroundColor: "#f5f5f5",
+              borderRadius: "0 6px 6px 0",
+              color: "black",
+            },
+          }),
+          option: (provided, state) => ({
+            ...provided,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0.5rem",
+            wordBreak: "break-all",
+            backgroundColor: state.isFocused
+              ? "#f5f5f5"
+              : provided.backgroundColor,
+            ":hover": {
+              backgroundColor: "#f5f5f5",
+            },
+          }),
+          valueContainer: (provided) => ({
+            ...provided,
+            padding: "5px 0",
+            "@media (max-width: 768px)": {
+              padding: "5px 8px",
+            },
           }),
         }}
         noOptionsMessage={() =>
