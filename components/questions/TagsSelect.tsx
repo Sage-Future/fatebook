@@ -112,16 +112,20 @@ export function TagsSelect({
             // 2px box shadow
             boxShadow: state.isFocused ? "0 0 0 2px #6366f1" : "none",
           }),
-          menuList: (provided) => ({
-            ...provided,
-            paddingTop: 0,
-            paddingBottom: 0,
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            "@media (max-width: 768px)": {
-              gridTemplateColumns: "1fr",
-            },
-          }),
+          menuList: (provided, state) => {
+            // checks if there are <2 unselected options in the list
+            const remainingOptions = state.options.length - (Array.isArray(state.selectProps.value) ? state.selectProps.value.length : 0);
+            return {
+              ...provided,
+              paddingTop: 0,
+              paddingBottom: 0,
+              display: "grid",
+              gridTemplateColumns: remainingOptions <= 1 ? "1fr" : "1fr 1fr",
+              "@media (max-width: 768px)": {
+                gridTemplateColumns: "1fr",
+              },
+            };
+          },
           multiValue: (provided) => ({
             ...provided,
             padding: "0rem",
