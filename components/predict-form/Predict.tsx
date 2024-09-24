@@ -348,19 +348,8 @@ export function Predict({
     ...registerQuestion
   } = register("question", { required: true })
 
-  function getTags(question: string) {
-    const tags = question.match(/#\w+/g)
-    return tags?.map((t) => t.replace("#", "")) || []
-  }
-  function updateTagsPreview(question: string) {
-    const tags = getTags(question)
-    if (tags.length > 0 || tagsPreview.length > 0) {
-      setTagsPreview(tags)
-    }
-  }
-
   // used to calculate width of TagsSelect menu
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null)
   const purpleOutline = "solid 1px #4338ca"
 
   return (
@@ -378,12 +367,12 @@ export function Predict({
                 <div
                   ref={containerRef}
                   className={clsx(
-                    "w-full rounded-md mb-2 relative z-20 border border-neutral-300 bg-neutral-100",
+                    "w-full rounded-md mb-2 relative z-20 border-2 border-neutral-300 bg-neutral-100",
                   )}
                 >
                   <TextareaAutosize
                     className={clsx(
-                      "w-full resize-none rounded-md p-4 -mb-2 border-b bg-white",
+                      "w-full resize-none rounded-md p-4 -mb-2 border-b-2 bg-white box-border",
                       "focus:outline-indigo-700 placeholder:text-neutral-400",
                       small ? "text-md" : "text-xl",
                     )}
@@ -395,7 +384,6 @@ export function Predict({
                     }
                     maxRows={15}
                     onChange={(e) => {
-                      updateTagsPreview(e.currentTarget.value)
                       void onChangeQuestion(e)
                     }}
                     onKeyDown={onEnterSubmit}

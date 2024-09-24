@@ -21,8 +21,8 @@ export function TagsSelect({
   disabled?: boolean
   placeholder?: string
   allowCreation?: boolean
-  customStyles?: any 
-  containerWidth?: number 
+  customStyles?: any
+  containerWidth?: number
 }) {
   const [localTags, setLocalTags] = useState<string[]>(tags)
   const allTagsQ = api.tags.getAll.useQuery()
@@ -132,13 +132,14 @@ export function TagsSelect({
               (Array.isArray(state.selectProps.value)
                 ? state.selectProps.value.length
                 : 0)
+            const inputValue = state.selectProps.inputValue
             return {
               ...provided,
               paddingTop: 0,
               paddingBottom: 0,
               display: "grid",
               gridTemplateColumns:
-                containerWidth && containerWidth > 400 && remainingOptions > 1
+                containerWidth && containerWidth > 400 && remainingOptions > 1 && !inputValue
                   ? "1fr 1fr"
                   : "1fr",
               [`@media (max-width: ${mobileBreakpoint}px)`]: {
