@@ -13,12 +13,16 @@ export function TagsSelect({
   disabled,
   placeholder = "Add tags...",
   allowCreation = true,
+  customStyles = {},
+  containerWidth,
 }: {
   tags: string[]
   setTags: (tags: string[]) => void
   disabled?: boolean
   placeholder?: string
   allowCreation?: boolean
+  customStyles?: any 
+  containerWidth?: number 
 }) {
   const [localTags, setLocalTags] = useState<string[]>(tags)
   const allTagsQ = api.tags.getAll.useQuery()
@@ -28,7 +32,7 @@ export function TagsSelect({
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const SelectComponent = allowCreation ? CreatableSelect : Select
   return (
-    <div className="">
+    <div className="flex-grow">
       <SelectComponent
         value={localTags.map((tag) => ({
           label: tag,
@@ -112,6 +116,10 @@ export function TagsSelect({
             // 2px box shadow
             boxShadow: state.isFocused ? "0 0 0 2px #6366f1" : "none",
           }),
+          menu: (provided) => ({
+            ...provided,
+            width: containerWidth ? `calc(${containerWidth}px - 2.25rem)` : provided.width,
+          }),
           menuList: (provided, state) => {
             // checks if there are <2 unselected options in the list
             const remainingOptions = state.options.length - (Array.isArray(state.selectProps.value) ? state.selectProps.value.length : 0);
@@ -124,6 +132,7 @@ export function TagsSelect({
               "@media (max-width: 768px)": {
                 gridTemplateColumns: "1fr",
               },
+              width: containerWidth ? `calc(${containerWidth}px - 2.25rem)` : provided.width, 
             };
           },
           multiValue: (provided) => ({
@@ -172,6 +181,7 @@ export function TagsSelect({
               padding: "5px 8px",
             },
           }),
+          ...customStyles,
         }}
         noOptionsMessage={() =>
           allowCreation
