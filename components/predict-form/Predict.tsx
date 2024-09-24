@@ -380,7 +380,7 @@ export function Predict({
                 >
                   <TextareaAutosize
                     className={clsx(
-                      "w-full resize-none rounded-md p-4 -mb-2 border-b bg-white shadow-lg ",
+                      "w-full resize-none rounded-md p-4 -mb-2 border-b bg-white",
                       "focus:outline-indigo-700 placeholder:text-neutral-400",
                       small ? "text-md" : "text-xl",
                     )}
@@ -412,6 +412,7 @@ export function Predict({
                           ...provided,
                           borderRadius: "6px",
                           fontSize: "14px",
+                          minHeight: "38px", // needed to ensure the outline is in the correct
                           ":focus": {
                             outline: "solid 1px #4338ca",
                           },
@@ -425,15 +426,14 @@ export function Predict({
                         control: (provided: any) => ({
                           ...provided,
                           border: "none",
+                          borderRadius: "8px",
                           boxShadow: "none",
                           padding: "0",
-                          minHeight: "30px", // otherwise container will expand to 38px and messes up background color
                         }),
                         input: (provided: any) => ({
                           ...provided,
                           margin: "0",
                           padding: "0 5px",
-                          minHeight: "30px",
                         }),
                         placeholder: (provided: any) => ({
                           ...provided,
@@ -446,7 +446,7 @@ export function Predict({
                     {showQuestionSuggestionsButton && (
                       <button
                         className={clsx(
-                          "inline-flex align-middle justify-center text-center btn btn-sm hover:opacity-100 min-h-8 text-neutral-500 font-normal",
+                          "inline-flex align-middle justify-center text-center btn btn-sm hover:opacity-100 min-h-[38px] text-neutral-500 font-normal",
                           showSuggestions
                             ? "btn-primary text-white"
                             : "hover:text-neutral-700",
