@@ -122,18 +122,24 @@ export function TagsSelect({
           }),
           menuList: (provided, state) => {
             // checks if there are <2 unselected options in the list
-            const remainingOptions = state.options.length - (Array.isArray(state.selectProps.value) ? state.selectProps.value.length : 0);
+            const remainingOptions =
+              state.options.length -
+              (Array.isArray(state.selectProps.value)
+                ? state.selectProps.value.length
+                : 0)
             return {
               ...provided,
               paddingTop: 0,
               paddingBottom: 0,
               display: "grid",
-              gridTemplateColumns: remainingOptions <= 1 ? "1fr" : "1fr 1fr",
+              gridTemplateColumns: containerWidth && containerWidth > 400 && remainingOptions > 1 ? "1fr 1fr" : "1fr",
               "@media (max-width: 768px)": {
                 gridTemplateColumns: "1fr",
               },
-              width: containerWidth ? `calc(${containerWidth}px - 2.25rem)` : provided.width, 
-            };
+              width: containerWidth
+                ? `calc(${containerWidth}px - 2.25rem)`
+                : provided.width,
+            }
           },
           multiValue: (provided) => ({
             ...provided,

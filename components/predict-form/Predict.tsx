@@ -377,13 +377,11 @@ export function Predict({
 
                 <div
                   ref={containerRef}
-                  className={clsx(
-                    "w-full border-2 border-neutral-300 rounded-md mb-2 bg-white shadow-lg relative z-20",
-                  )}
+                  className={clsx("w-full rounded-md mb-2 relative z-20 border border-neutral-300 bg-neutral-100")}
                 >
                   <TextareaAutosize
                     className={clsx(
-                      "w-full resize-none rounded-md p-4 -mb-2",
+                      "w-full resize-none rounded-md p-4 -mb-2 border-b bg-white shadow-lg ",
                       "focus:outline-indigo-700 placeholder:text-neutral-400",
                       small ? "text-md" : "text-xl",
                     )}
@@ -406,25 +404,26 @@ export function Predict({
                     onBlur={() => setQuestionInFocus(false)}
                     ref={mergeRefs([textAreaRef, formRef])}
                   />
-                  <div className="flex flex-row items-center px-4 py-1 bg-neutral-200 gap-1">
+                  <div className="flex flex-row items-center px-4 py-2 gap-1 z-20">
                     <TagsSelect
                       tags={tagsPreview}
                       setTags={setTagsPreview}
                       customStyles={{
                         valueContainer: (provided: any) => ({
                           ...provided,
-                          backgroundColor: "white",
+                          // backgroundColor: "white",
                           borderRadius: "6px",
                           fontSize: "14px",
                           padding: "0",
+                          outline: "solid 2px transparent",
                           ":focus": {
-                            outline: "solid 2px #4338ca",
+                            outline: "solid 1px #4338ca",
                           },
                           ":active": {
-                            outline: "solid 2px #4338ca",
+                            outline: "solid 1px #4338ca",
                           },
                           ":focus-within": {
-                            outline: "solid 2px #4338ca",
+                            outline: "solid 1px #4338ca",
                           },
                         }),
                         control: (provided: any) => ({
@@ -432,6 +431,7 @@ export function Predict({
                           border: "none",
                           boxShadow: "none",
                           padding: "0",
+                          minHeight: "30px", // otherwise container will expand to 38px and messes up background color
                         }),
                         input: (provided: any) => ({
                           ...provided,
@@ -450,9 +450,9 @@ export function Predict({
                     {showQuestionSuggestionsButton && (
                       <button
                         className={clsx(
-                          "inline-flex align-middle justify-center text-center btn btn-sm hover:opacity-100 min-h-8 text-neutral-500  bg-white hover:bg-white",
+                          "inline-flex align-middle justify-center text-center btn btn-sm hover:opacity-100 min-h-8 text-neutral-500 font-normal",
                           showSuggestions
-                            ? "btn-active"
+                            ? "btn-primary text-white"
                             : "hover:text-neutral-700",
                           small && "btn-xs px-5",
                         )}
@@ -492,11 +492,6 @@ export function Predict({
                 )}
               </Transition>
             </div>
-            {tagsPreview?.length > 0 && (
-              <div className="italic text-neutral-400 text-sm p-1 mb-2">
-                Tagging this question: {tagsPreview.join(", ")}
-              </div>
-            )}
 
             {(() => {
               switch (questionType) {
