@@ -27,6 +27,9 @@ export function TagsSelect({
   const [localTags, setLocalTags] = useState<string[]>(tags)
   const allTagsQ = api.tags.getAll.useQuery()
   const allTags = allTagsQ.data ?? []
+  const lightGrey = "#f5f5f5"
+  const mobileBreakpoint = 768
+  const borderRadius = "6px"
 
   // See https://react-select.com/styles for styling help
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -118,7 +121,9 @@ export function TagsSelect({
           }),
           menu: (provided) => ({
             ...provided,
-            width: containerWidth ? `calc(${containerWidth}px - 2.25rem)` : provided.width,
+            width: containerWidth
+              ? `calc(${containerWidth}px - 2.25rem)`
+              : provided.width,
           }),
           menuList: (provided, state) => {
             // checks if there are <2 unselected options in the list
@@ -132,8 +137,11 @@ export function TagsSelect({
               paddingTop: 0,
               paddingBottom: 0,
               display: "grid",
-              gridTemplateColumns: containerWidth && containerWidth > 400 && remainingOptions > 1 ? "1fr 1fr" : "1fr",
-              "@media (max-width: 768px)": {
+              gridTemplateColumns:
+                containerWidth && containerWidth > 400 && remainingOptions > 1
+                  ? "1fr 1fr"
+                  : "1fr",
+              [`@media (max-width: ${mobileBreakpoint}px)`]: {
                 gridTemplateColumns: "1fr",
               },
               width: containerWidth
@@ -148,19 +156,18 @@ export function TagsSelect({
           multiValueLabel: (provided) => ({
             ...provided,
             ":hover": {
-              borderRadius: "6px 0 0 6px",
+              borderRadius: `${borderRadius} 0 0 ${borderRadius}`,
             },
           }),
           multiValueRemove: (provided, state) => ({
             ...provided,
             padding: "0.25rem",
-            borderRadius: "0 6px 6px 0",
+            borderRadius: `0 ${borderRadius} ${borderRadius} 0`,
             backgroundColor: state.isFocused
               ? "f5f5f5"
               : provided.backgroundColor,
             ":hover": {
-              backgroundColor: "#f5f5f5",
-              borderRadius: "0 6px 6px 0",
+              backgroundColor: lightGrey,
               color: "black",
             },
           }),
@@ -172,18 +179,20 @@ export function TagsSelect({
             padding: "0.5rem",
             wordBreak: "break-all",
             backgroundColor: state.isFocused
-              ? "#f5f5f5"
+              ? lightGrey
               : provided.backgroundColor,
-            borderRadius: state.isFocused ? "6px" : provided.borderRadius,
+            borderRadius: state.isFocused
+              ? borderRadius
+              : provided.borderRadius,
             ":hover": {
-              backgroundColor: "#f5f5f5",
-              borderRadius: "6px",
+              backgroundColor: lightGrey,
+              borderRadius: borderRadius,
             },
           }),
           valueContainer: (provided) => ({
             ...provided,
             padding: "5px 0",
-            "@media (max-width: 768px)": {
+            [`@media (max-width: ${mobileBreakpoint}px)`]: {
               padding: "5px 8px",
             },
           }),

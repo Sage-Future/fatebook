@@ -361,6 +361,7 @@ export function Predict({
 
   // used to calculate width of TagsSelect menu
   const containerRef = useRef<HTMLDivElement>(null);
+  const purpleOutline = "solid 1px #4338ca"
 
   return (
     <div className="w-full">
@@ -376,7 +377,9 @@ export function Predict({
 
                 <div
                   ref={containerRef}
-                  className={clsx("w-full rounded-md mb-2 relative z-20 border border-neutral-300 bg-neutral-100")}
+                  className={clsx(
+                    "w-full rounded-md mb-2 relative z-20 border border-neutral-300 bg-neutral-100",
+                  )}
                 >
                   <TextareaAutosize
                     className={clsx(
@@ -403,7 +406,7 @@ export function Predict({
                     onBlur={() => setQuestionInFocus(false)}
                     ref={mergeRefs([textAreaRef, formRef])}
                   />
-                  <div className="flex flex-row items-center px-4 py-2 gap-1 z-20">
+                  <div className="flex flex-row items-center p-2 sm:px-4 gap-1 z-20">
                     <TagsSelect
                       tags={tagsPreview}
                       setTags={setTagsPreview}
@@ -414,13 +417,13 @@ export function Predict({
                           fontSize: "14px",
                           minHeight: "38px", // needed to ensure the outline is in the correct
                           ":focus": {
-                            outline: "solid 1px #4338ca",
+                            outline: purpleOutline,
                           },
                           ":active": {
-                            outline: "solid 1px #4338ca",
+                            outline: purpleOutline,
                           },
                           ":focus-within": {
-                            outline: "solid 1px #4338ca",
+                            outline: purpleOutline,
                           },
                         }),
                         control: (provided: any) => ({
