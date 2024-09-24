@@ -1,5 +1,4 @@
 import { Transition } from "@headlessui/react"
-import { LightBulbIcon } from "@heroicons/react/24/solid"
 import { QuestionType } from "@prisma/client"
 import * as chrono from "chrono-node"
 import clsx from "clsx"
@@ -25,6 +24,7 @@ import { QuestionTypeSelect } from "./QuestionTypeSelect"
 import BinaryQuestion from "./question-types/BinaryQuestion"
 import MultiChoiceQuestion from "./question-types/MultiChoiceQuestion"
 import { PredictFormType, usePredictForm } from "./PredictProvider"
+import { TagsSelect } from "../questions/TagsSelect"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
@@ -122,6 +122,8 @@ export function Predict({
   })
 
   const [tagsPreview, setTagsPreview] = useState<string[]>([])
+  const [lastSubmittedTags, setLastSubmittedTags] = useState<string[]>([])
+
   const onSubmit: SubmitHandler<PredictFormType> = useCallback(
     (data, e) => {
       e?.preventDefault() // don't reload the page
@@ -208,6 +210,7 @@ export function Predict({
         )
       }
 
+      setLastSubmittedTags(tagsPreview)
       setTagsPreview([])
       reset()
       textAreaRef?.current?.focus()
@@ -348,16 +351,13 @@ export function Predict({
     ...registerQuestion
   } = register("question", { required: true })
 
-  function getTags(question: string) {
-    const tags = question.match(/#\w+/g)
-    return tags?.map((t) => t.replace("#", "")) || []
-  }
-  function updateTagsPreview(question: string) {
-    const tags = getTags(question)
-    if (tags.length > 0 || tagsPreview.length > 0) {
-      setTagsPreview(tags)
-    }
-  }
+  // used to calculate width of TagsSelect menu
+  const containerRef = useRef<HTMLDivElement>(null)
+  const purpleOutline = "solid 2px #4338ca"
+
+  useEffect(() => {
+    setTagsPreview(lastSubmittedTags)
+  }, [lastSubmittedTags, resetTrigger])
 
   return (
     <div className="w-full">
@@ -371,56 +371,95 @@ export function Predict({
                   setQuestionType={setQuestionType}
                 />
 
-                <TextareaAutosize
+                <div
+                  ref={containerRef}
                   className={clsx(
-                    "w-full border-2 border-neutral-300 rounded-md resize-none shadow-lg focus:shadow-xl transition-shadow mb-2",
-                    "focus:outline-indigo-700 placeholder:text-neutral-400",
-                    small
-                      ? "text-md py-2 pl-4 pr-16"
-                      : "text-xl py-4 pl-4 pr-16",
+                    "w-full rounded-md mb-2 relative z-20 border-2 border-neutral-300 bg-neutral-100",
                   )}
-                  placeholder={
-                    placeholder || questionType === QuestionType.MULTIPLE_CHOICE
-                      ? "What day will my project be done by?"
-                      : "Will I finish my project by Friday?"
-                  }
-                  maxRows={15}
-                  onChange={(e) => {
-                    updateTagsPreview(e.currentTarget.value)
-                    void onChangeQuestion(e)
-                  }}
-                  onKeyDown={onEnterSubmit}
-                  defaultValue={questionDefaults?.title}
-                  onMouseDown={(e) => e.stopPropagation()}
-                  {...registerQuestion}
-                  onFocus={() => setQuestionInFocus(true)}
-                  onBlur={() => setQuestionInFocus(false)}
-                  ref={mergeRefs([textAreaRef, formRef])}
-                />
-
-                {showQuestionSuggestionsButton && (
-                  <button
-                    tabIndex={-1}
+                >
+                  <TextareaAutosize
                     className={clsx(
-                      "inline-flex align-middle justify-center text-center btn btn-circle aspect-square absolute right-3 top-[calc(50%+1rem)] hover:opacity-100 !-translate-y-1/2",
-                      showSuggestions ? "btn-active" : "btn-ghost",
-                      !!question && !showSuggestions
-                        ? "opacity-20"
-                        : "opacity-80",
-                      small && "btn-xs px-5",
+                      "w-full resize-none rounded-md p-4 -mb-2 border-b-2 bg-white box-border",
+                      "focus:outline-indigo-700 placeholder:text-neutral-400",
+                      small ? "text-md" : "text-xl",
                     )}
-                    onClick={(e) => {
-                      setShowSuggestions(!showSuggestions)
-                      e.preventDefault()
+                    placeholder={
+                      placeholder ||
+                      questionType === QuestionType.MULTIPLE_CHOICE
+                        ? "What day will my project be done by?"
+                        : "Will I finish my project by Friday? "
+                    }
+                    maxRows={15}
+                    onChange={(e) => {
+                      void onChangeQuestion(e)
                     }}
-                  >
-                    <LightBulbIcon
-                      height={16}
-                      width={16}
-                      className="shrink-0"
+                    onKeyDown={onEnterSubmit}
+                    defaultValue={questionDefaults?.title}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    {...registerQuestion}
+                    onFocus={() => setQuestionInFocus(true)}
+                    onBlur={() => setQuestionInFocus(false)}
+                    ref={mergeRefs([textAreaRef, formRef])}
+                  />
+                  <div className="flex flex-row items-center p-2 sm:px-4 gap-1 z-20">
+                    <TagsSelect
+                      tags={tagsPreview}
+                      setTags={setTagsPreview}
+                      customStyles={{
+                        valueContainer: (provided: any) => ({
+                          ...provided,
+                          borderRadius: "6px",
+                          fontSize: "14px",
+                          minHeight: "38px", // needed to ensure the outline is in the correct
+                          ":focus": {
+                            outline: purpleOutline,
+                          },
+                          ":active": {
+                            outline: purpleOutline,
+                          },
+                          ":focus-within": {
+                            outline: purpleOutline,
+                          },
+                        }),
+                        control: (provided: any) => ({
+                          ...provided,
+                          border: "none",
+                          borderRadius: "8px",
+                          boxShadow: "none",
+                          padding: "0",
+                        }),
+                        input: (provided: any) => ({
+                          ...provided,
+                          margin: "0",
+                          padding: "0 5px",
+                        }),
+                        placeholder: (provided: any) => ({
+                          ...provided,
+                          margin: "0",
+                          padding: "0 5px",
+                        }),
+                      }}
+                      containerWidth={containerRef.current?.offsetWidth} // needed to set width of menu and number of columns
                     />
-                  </button>
-                )}
+                    {showQuestionSuggestionsButton && (
+                      <button
+                        className={clsx(
+                          "inline-flex align-middle justify-center text-center btn btn-sm hover:opacity-100 min-h-[38px] text-neutral-500 font-normal",
+                          showSuggestions
+                            ? "btn-primary text-white"
+                            : "hover:text-neutral-700",
+                          small && "btn-xs px-5",
+                        )}
+                        onClick={(e) => {
+                          setShowSuggestions(!showSuggestions)
+                          e.preventDefault()
+                        }}
+                      >
+                        Suggestions
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
 
               <Transition
@@ -447,11 +486,6 @@ export function Predict({
                 )}
               </Transition>
             </div>
-            {tagsPreview?.length > 0 && (
-              <div className="italic text-neutral-400 text-sm p-1 mb-2">
-                Tagging this question: {tagsPreview.join(", ")}
-              </div>
-            )}
 
             {(() => {
               switch (questionType) {

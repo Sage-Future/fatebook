@@ -13,21 +13,29 @@ export function TagsSelect({
   disabled,
   placeholder = "Add tags...",
   allowCreation = true,
+  customStyles = {},
+  containerWidth,
 }: {
   tags: string[]
   setTags: (tags: string[]) => void
   disabled?: boolean
   placeholder?: string
   allowCreation?: boolean
+  customStyles?: any
+  containerWidth?: number
 }) {
   const [localTags, setLocalTags] = useState<string[]>(tags)
   const allTagsQ = api.tags.getAll.useQuery()
   const allTags = allTagsQ.data ?? []
+  const lightGrey = "#f5f5f5"
+  const mobileBreakpoint = 768
+  const borderRadius = "6px"
 
+  // See https://react-select.com/styles for styling help
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const SelectComponent = allowCreation ? CreatableSelect : Select
   return (
-    <div className="">
+    <div className="flex-grow">
       <SelectComponent
         value={localTags.map((tag) => ({
           label: tag,
@@ -73,7 +81,9 @@ export function TagsSelect({
             <div className="flex items-center gap-1">
               <TagIcon className="text-neutral-400 w-4 h-4" />
               <span className="text-sm font-medium text-gray-700">
-                {option.label}
+                {context === "menu" && option.label.length > 20
+                  ? `${option.label.slice(0, 20)}...`
+                  : option.label}
               </span>
             </div>
             {context !== "value" && (
@@ -103,12 +113,92 @@ export function TagsSelect({
             primary: "#6366f1",
           },
         })}
+        // TODO: replace these with Tailwind classes in classNames above
         styles={{
           control: (provided, state) => ({
             ...provided,
             // 2px box shadow
             boxShadow: state.isFocused ? "0 0 0 2px #6366f1" : "none",
           }),
+          menu: (provided) => ({
+            ...provided,
+            width: containerWidth
+              ? `calc(${containerWidth}px - 2.25rem)`
+              : provided.width,
+          }),
+          menuList: (provided, state) => {
+            // checks if there are <2 unselected options in the list
+            const remainingOptions =
+              state.options.length -
+              (Array.isArray(state.selectProps.value)
+                ? state.selectProps.value.length
+                : 0)
+            const inputValue = state.selectProps.inputValue
+            return {
+              ...provided,
+              paddingTop: 0,
+              paddingBottom: 0,
+              display: "grid",
+              gridTemplateColumns:
+                containerWidth && containerWidth > 400 && remainingOptions > 1 && !inputValue
+                  ? "1fr 1fr"
+                  : "1fr",
+              [`@media (max-width: ${mobileBreakpoint}px)`]: {
+                gridTemplateColumns: "1fr",
+              },
+              width: containerWidth
+                ? `calc(${containerWidth}px - 2.25rem)`
+                : provided.width,
+            }
+          },
+          multiValue: (provided) => ({
+            ...provided,
+            padding: "0rem",
+          }),
+          multiValueLabel: (provided) => ({
+            ...provided,
+            ":hover": {
+              borderRadius: `${borderRadius} 0 0 ${borderRadius}`,
+            },
+          }),
+          multiValueRemove: (provided, state) => ({
+            ...provided,
+            padding: "0.25rem",
+            borderRadius: `0 ${borderRadius} ${borderRadius} 0`,
+            backgroundColor: state.isFocused
+              ? "f5f5f5"
+              : provided.backgroundColor,
+            ":hover": {
+              backgroundColor: lightGrey,
+              color: "black",
+            },
+          }),
+          option: (provided, state) => ({
+            ...provided,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0.5rem",
+            wordBreak: "break-all",
+            backgroundColor: state.isFocused
+              ? lightGrey
+              : provided.backgroundColor,
+            borderRadius: state.isFocused
+              ? borderRadius
+              : provided.borderRadius,
+            ":hover": {
+              backgroundColor: lightGrey,
+              borderRadius: borderRadius,
+            },
+          }),
+          valueContainer: (provided) => ({
+            ...provided,
+            padding: "5px 0",
+            [`@media (max-width: ${mobileBreakpoint}px)`]: {
+              padding: "5px 8px",
+            },
+          }),
+          ...customStyles,
         }}
         noOptionsMessage={() =>
           allowCreation
