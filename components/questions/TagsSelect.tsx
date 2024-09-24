@@ -113,6 +113,7 @@ export function TagsSelect({
             primary: "#6366f1",
           },
         })}
+        // TODO: replace these with Tailwind classes in classNames above
         styles={{
           control: (provided, state) => ({
             ...provided,
