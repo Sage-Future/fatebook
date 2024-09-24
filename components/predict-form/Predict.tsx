@@ -122,6 +122,8 @@ export function Predict({
   })
 
   const [tagsPreview, setTagsPreview] = useState<string[]>([])
+  const [lastSubmittedTags, setLastSubmittedTags] = useState<string[]>([])
+
   const onSubmit: SubmitHandler<PredictFormType> = useCallback(
     (data, e) => {
       e?.preventDefault() // don't reload the page
@@ -208,6 +210,7 @@ export function Predict({
         )
       }
 
+      setLastSubmittedTags(tagsPreview)
       setTagsPreview([])
       reset()
       textAreaRef?.current?.focus()
@@ -350,7 +353,11 @@ export function Predict({
 
   // used to calculate width of TagsSelect menu
   const containerRef = useRef<HTMLDivElement>(null)
-  const purpleOutline = "solid 1px #4338ca"
+  const purpleOutline = "solid 2px #4338ca"
+
+  useEffect(() => {
+    setTagsPreview(lastSubmittedTags)
+  }, [lastSubmittedTags, resetTrigger])
 
   return (
     <div className="w-full">
