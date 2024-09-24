@@ -1,5 +1,4 @@
 import { Transition } from "@headlessui/react"
-import { LightBulbIcon } from "@heroicons/react/24/solid"
 import { QuestionType } from "@prisma/client"
 import * as chrono from "chrono-node"
 import clsx from "clsx"
