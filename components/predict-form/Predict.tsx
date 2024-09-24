@@ -410,11 +410,8 @@ export function Predict({
                       customStyles={{
                         valueContainer: (provided: any) => ({
                           ...provided,
-                          // backgroundColor: "white",
                           borderRadius: "6px",
                           fontSize: "14px",
-                          padding: "0",
-                          outline: "solid 2px transparent",
                           ":focus": {
                             outline: "solid 1px #4338ca",
                           },
@@ -444,7 +441,7 @@ export function Predict({
                           padding: "0 5px",
                         }),
                       }}
-                      containerWidth={containerRef.current?.offsetWidth}
+                      containerWidth={containerRef.current?.offsetWidth} // needed to set width of menu and number of columns
                     />
                     {showQuestionSuggestionsButton && (
                       <button
