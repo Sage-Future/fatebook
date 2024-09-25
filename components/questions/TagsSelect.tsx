@@ -77,7 +77,7 @@ export function TagsSelect({
         ) => (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-1">
-              <TagIcon className="text-neutral-400 w-4 h-4" />
+              <TagIcon className="text-neutral-400 w-4 h-4 min-w-4" />
               <span className="text-sm font-medium text-gray-700">
                 {option.label}
               </span>
@@ -104,7 +104,7 @@ export function TagsSelect({
           multiValue: () =>
             "!bg-white shadow-sm px-0.5 !rounded-md !cursor-pointer not-prose !p-0",
           multiValueLabel: () =>
-            "hover:underline hover:bg-neutral-100 hyphenated break-words hover:rounded-s-md",
+            "hover:underline hover:bg-neutral-100 hyphenated break-all hover:rounded-s-md",
           multiValueRemove: () => "text-neutral-400 !px-0.5 !rounded-e-md",
           menu: () =>
             containerWidth ? `!w-[calc(${containerWidth}px-2.25rem)]` : "",
@@ -125,7 +125,17 @@ export function TagsSelect({
           },
         })}
         // TODO: replace these with Tailwind classes in classNames above
+        // Sometimes the class don't get applied while the styles do :(
         styles={{
+          multiValue: (provided, state) => ({
+            ...provided,
+            maxWidth: "190px",
+          }),
+          multiValueLabel: (provided, state) => ({
+            ...provided,
+            wordBreak: "break-all",
+            textWrap: "wrap",
+          }),
           multiValueRemove: (provided, state) => ({
             ...provided,
             backgroundColor: state.isFocused
