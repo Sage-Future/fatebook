@@ -81,9 +81,7 @@ export function TagsSelect({
             <div className="flex items-center gap-1">
               <TagIcon className="text-neutral-400 w-4 h-4" />
               <span className="text-sm font-medium text-gray-700">
-                {context === "menu" && option.label.length > 20
-                  ? `${option.label.slice(0, 20)}...`
-                  : option.label}
+                {option.label}
               </span>
             </div>
             {context !== "value" && (
@@ -139,13 +137,7 @@ export function TagsSelect({
               paddingTop: 0,
               paddingBottom: 0,
               display: "grid",
-              gridTemplateColumns:
-                containerWidth && containerWidth > 400 && remainingOptions > 1 && !inputValue
-                  ? "1fr 1fr"
-                  : "1fr",
-              [`@media (max-width: ${mobileBreakpoint}px)`]: {
-                gridTemplateColumns: "1fr",
-              },
+              gridTemplateColumns: "1fr",
               width: containerWidth
                 ? `calc(${containerWidth}px - 2.25rem)`
                 : provided.width,
