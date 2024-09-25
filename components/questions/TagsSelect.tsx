@@ -129,7 +129,7 @@ export function TagsSelect({
         styles={{
           multiValue: (provided) => ({
             ...provided,
-            maxWidth: "190px",
+            maxWidth: "100%",
           }),
           multiValueLabel: (provided) => ({
             ...provided,
