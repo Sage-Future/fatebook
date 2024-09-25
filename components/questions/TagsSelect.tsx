@@ -28,8 +28,6 @@ export function TagsSelect({
   const allTagsQ = api.tags.getAll.useQuery()
   const allTags = allTagsQ.data ?? []
   const lightGrey = "#f5f5f5"
-  const mobileBreakpoint = 768
-  const borderRadius = "6px"
 
   // See https://react-select.com/styles for styling help
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -93,15 +91,30 @@ export function TagsSelect({
         )}
         className="cursor-text"
         classNames={{
-          control: () =>
+          control: ({ isFocused }) =>
             clsx(
-              "!border-none shadow-inner !cursor-text md:px-2",
+              "!border-none shadow-inner !cursor-text md:px-2 !rounded-md",
               allowCreation ? "!bg-neutral-200" : "!bg-neutral-100",
+              isFocused ? "!shadow-[0_0_0_2px_#6366f1]" : "!shadow-none",
             ),
+          menuList: () =>
+            containerWidth
+              ? `!w-[calc(${containerWidth}px-2.25rem)] !py-0`
+              : "!py-0",
           multiValue: () =>
-            "!bg-white shadow-sm px-0.5 !rounded-md !cursor-pointer not-prose",
-          multiValueLabel: () => "hover:underline hover:bg-neutral-100",
-          multiValueRemove: () => "text-neutral-400 !px-0.5",
+            "!bg-white shadow-sm px-0.5 !rounded-md !cursor-pointer not-prose !p-0",
+          multiValueLabel: () =>
+            "hover:underline hover:bg-neutral-100 hyphenated break-words hover:rounded-s-md",
+          multiValueRemove: () => "text-neutral-400 !px-0.5 !rounded-e-md",
+          menu: () =>
+            containerWidth ? `!w-[calc(${containerWidth}px-2.25rem)]` : "",
+          option: ({ isFocused }) =>
+            clsx(
+              "flex items-center justify-center p-2 break-all",
+              isFocused ? "!bg-[#f5f5f5] !rounded-md" : "",
+              "hover:bg-[#f5f5f5] hover:rounded-md",
+            ),
+          valueContainer: () => "!py-[5px] !md:px-0 !px-2",
         }}
         theme={(theme) => ({
           ...theme,
@@ -113,81 +126,14 @@ export function TagsSelect({
         })}
         // TODO: replace these with Tailwind classes in classNames above
         styles={{
-          control: (provided, state) => ({
-            ...provided,
-            // 2px box shadow
-            boxShadow: state.isFocused ? "0 0 0 2px #6366f1" : "none",
-          }),
-          menu: (provided) => ({
-            ...provided,
-            width: containerWidth
-              ? `calc(${containerWidth}px - 2.25rem)`
-              : provided.width,
-          }),
-          menuList: (provided, state) => {
-            // checks if there are <2 unselected options in the list
-            const remainingOptions =
-              state.options.length -
-              (Array.isArray(state.selectProps.value)
-                ? state.selectProps.value.length
-                : 0)
-            const inputValue = state.selectProps.inputValue
-            return {
-              ...provided,
-              paddingTop: 0,
-              paddingBottom: 0,
-              display: "grid",
-              gridTemplateColumns: "1fr",
-              width: containerWidth
-                ? `calc(${containerWidth}px - 2.25rem)`
-                : provided.width,
-            }
-          },
-          multiValue: (provided) => ({
-            ...provided,
-            padding: "0rem",
-          }),
-          multiValueLabel: (provided) => ({
-            ...provided,
-            ":hover": {
-              borderRadius: `${borderRadius} 0 0 ${borderRadius}`,
-            },
-          }),
           multiValueRemove: (provided, state) => ({
             ...provided,
-            padding: "0.25rem",
-            borderRadius: `0 ${borderRadius} ${borderRadius} 0`,
             backgroundColor: state.isFocused
               ? "f5f5f5"
               : provided.backgroundColor,
             ":hover": {
               backgroundColor: lightGrey,
               color: "black",
-            },
-          }),
-          option: (provided, state) => ({
-            ...provided,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "0.5rem",
-            wordBreak: "break-all",
-            backgroundColor: state.isFocused
-              ? lightGrey
-              : provided.backgroundColor,
-            borderRadius: state.isFocused
-              ? borderRadius
-              : provided.borderRadius,
-            ":hover": {
-              backgroundColor: lightGrey,
-              borderRadius: borderRadius,
-            },
-          }),
-          valueContainer: (provided) => ({
-            ...provided,
-            padding: "5px 0",
-            [`@media (max-width: ${mobileBreakpoint}px)`]: {
-              padding: "5px 8px",
             },
           }),
           ...customStyles,

@@ -439,7 +439,7 @@ export function Predict({
                           padding: "0 5px",
                         }),
                       }}
-                      containerWidth={containerRef.current?.offsetWidth} // needed to set width of menu and number of columns
+                      containerWidth={containerRef.current?.offsetWidth} // needed to set width of menu
                     />
                     {showQuestionSuggestionsButton && (
                       <button
