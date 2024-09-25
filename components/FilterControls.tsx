@@ -86,7 +86,7 @@ export function FilterControls({
           unresolved: !extraFilters.resolvingSoon,
         }),
       filterActive: extraFilters.resolvingSoon,
-      className: "@xl:block",
+      className: "hidden",
       overflowClassName: "",
     },
     {
@@ -99,7 +99,7 @@ export function FilterControls({
           readyToResolve: !extraFilters.readyToResolve,
         }),
       filterActive: extraFilters.readyToResolve,
-      className: "@sm:block",
+      className: "@xs:hidden @md:block",
       overflowClassName: "@sm:hidden",
     },
     {
@@ -126,7 +126,7 @@ export function FilterControls({
           resolved: false,
         }),
       filterActive: extraFilters.unresolved,
-      className: "@xl:block",
+      className: "hidden",
       overflowClassName: "",
     },
   ]
