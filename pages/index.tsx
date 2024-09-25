@@ -42,7 +42,7 @@ function Sidebar() {
 
   // NB: hidden on mobile, stats.tsx is shown instead
   return (
-    <div className="max-sm:hidden flex flex-col gap-12 max-w-[400px]">
+    <div className="max-md:hidden flex flex-col gap-12 max-w-[400px]">
       <div className="min-h-28">{userId && <OnboardingChecklist />}</div>
       <div className="max-w-[320px] flex flex-col gap-12 ml-auto lg:w-[320px]">
         {userId && <TrackRecord trackRecordUserId={userId} />}
