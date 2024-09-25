@@ -15,7 +15,7 @@ export default function HomePage() {
   const userId = useUserId()
 
   return (
-    <div className="max-sm:flex-col gap-8 lg:gap-12 flex justify-center px-4 lg:pt-4 mx-auto max-w-6xl">
+    <div className="max-md:flex-col gap-8 lg:gap-12 flex justify-center px-4 lg:pt-4 mx-auto max-w-6xl">
       <PredictProvider>
         <div className="prose mx-auto pt-12 lg:w-[650px]">
           {!userId && sessionStatus !== "loading" && (
