@@ -200,7 +200,7 @@ export function UpdateableLatestForecast({
               enterKeyHint="go"
               pattern="[0-9]*"
               className={
-                "pl-1 w-16 text-right rounded-md focus:outline-none bg-transparent"
+                "pl-1 w-16 text-right focus:outline-none bg-transparent"
               }
               value={localForecast}
               placeholder="__"
