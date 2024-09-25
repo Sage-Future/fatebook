@@ -127,11 +127,11 @@ export function TagsSelect({
         // TODO: replace these with Tailwind classes in classNames above
         // Sometimes the class don't get applied while the styles do :(
         styles={{
-          multiValue: (provided, state) => ({
+          multiValue: (provided) => ({
             ...provided,
             maxWidth: "190px",
           }),
-          multiValueLabel: (provided, state) => ({
+          multiValueLabel: (provided) => ({
             ...provided,
             wordBreak: "break-all",
             textWrap: "wrap",
