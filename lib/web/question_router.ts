@@ -9,6 +9,7 @@ import {
   QuestionWithUserAndSharedWith,
 } from "../../prisma/additional"
 import {
+  displayForecast,
   filterToUniqueIds,
   forecastsAreHidden,
   getDateYYYYMMDD,
@@ -998,19 +999,25 @@ export const questionRouter = router({
       )
 
       const q = submittedForecast.question
-      for (const user of filterToUniqueIds([
+      for (const userToNotify of filterToUniqueIds([
         q.user,
         ...q.forecasts.map((f) => f.user),
         ...q.comments.map((c) => c.user),
         ...q.sharedWith,
         ...q.sharedWithLists.flatMap((l) => l.users),
       ]).filter((u) => u && u.id !== submittedForecast.user.id)) {
+        const forecastsHidden = forecastsAreHidden(q, userToNotify.id)
+        const userPredictedNStr = `${
+          (!forecastsHidden && submittedForecast.user.name) || "Someone"
+        } predicted${
+          forecastsHidden
+            ? ""
+            : ` ${displayForecast(submittedForecast, 2, true)}`
+        }`
         await createNotification({
-          userId: user.id,
-          title: `${submittedForecast.user.name || "Someone"} predicted on "${
-            q.title
-          }"`,
-          content: `${submittedForecast.user.name || "Someone"} predicted`,
+          userId: userToNotify.id,
+          title: `${userPredictedNStr} on "${q.title}"`,
+          content: userPredictedNStr,
           tags: ["new_forecast", q.id],
           url: getQuestionUrl(q),
           questionId: q.id,
