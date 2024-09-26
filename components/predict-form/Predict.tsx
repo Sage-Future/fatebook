@@ -122,7 +122,6 @@ export function Predict({
   })
 
   const [tagsPreview, setTagsPreview] = useState<string[]>([])
-  const [lastSubmittedTags, setLastSubmittedTags] = useState<string[]>([])
 
   const onSubmit: SubmitHandler<PredictFormType> = useCallback(
     (data, e) => {
@@ -131,7 +130,7 @@ export function Predict({
       if (!userId) {
         localStorage.setItem(
           "cached_question_content",
-          SuperJSON.stringify(data),
+          SuperJSON.stringify({ ...data, tags: tagsPreview })
         )
         if (embedded) {
           window.open(fatebookUrl, "_blank")?.focus()
@@ -210,8 +209,6 @@ export function Predict({
         )
       }
 
-      setLastSubmittedTags(tagsPreview)
-      setTagsPreview([])
       reset()
       textAreaRef?.current?.focus()
     },
@@ -273,9 +270,14 @@ export function Predict({
           // just skip it if we can't parse the date
         }
       }
+
+      if (cachedQuestion.tags && cachedQuestion.tags.length > 0) {
+        setTagsPreview(cachedQuestion.tags)
+      }
+
       localStorage.removeItem("cached_question_content")
     }
-  }, [setQuestionType, setValue])
+  }, [setQuestionType, setValue, setTagsPreview])
 
   useEffect(() => {
     const handlePredictAll = () => {
@@ -355,10 +357,6 @@ export function Predict({
   const containerRef = useRef<HTMLDivElement>(null)
   const purpleOutline = "solid 2px #4338ca"
 
-  useEffect(() => {
-    setTagsPreview(lastSubmittedTags)
-  }, [lastSubmittedTags, resetTrigger])
-
   return (
     <div className="w-full">
       <ErrorBoundary fallback={<div>Something went wrong</div>}>
@@ -403,6 +401,7 @@ export function Predict({
                   />
                   <div className="flex flex-row items-center p-2 sm:px-4 gap-1 z-20">
                     <TagsSelect
+                      key={JSON.stringify(tagsPreview)} // slight hack to force re-render of TagsSelect when tagsPreview changes
                       tags={tagsPreview}
                       setTags={setTagsPreview}
                       customStyles={{
