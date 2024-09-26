@@ -2,7 +2,6 @@ import { Forecast, QuestionOption } from "@prisma/client"
 import clsx from "clsx"
 import { motion } from "framer-motion"
 import { useCallback, useEffect, useRef, useState } from "react"
-import { useDebouncedCallback } from "use-debounce"
 import {
   displayForecast,
   formatDecimalNicely,
@@ -135,7 +134,6 @@ export function UpdateableLatestForecast({
       setLocalForecast(defaultVal)
     }
   }
-  const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
 
   useEffect(() => {
     if (
@@ -209,14 +207,6 @@ export function UpdateableLatestForecast({
                 setErrorMessage(null)
                 e.target.value &&
                   checkForErrors(parseFloat(e.target.value) / 100)
-
-                // for iOS users - update forecast when they stop typing, e.g. if they pressed "done"
-                if (
-                  /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-                  !(window as any).MSStream
-                ) {
-                  updateOrResetDebounced(e.target.value)
-                }
               }}
               onClick={(e) => {
                 e.stopPropagation()
