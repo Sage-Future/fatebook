@@ -139,6 +139,31 @@ export const questionRouter = router({
         questionId: z.string().optional(),
       }),
     )
+    .output(
+      z.object({
+        url: z.string(),
+        title: z.string(),
+        resolveBy: z.string(),
+        prediction: z.number().optional(),
+        tags: z.array(z.string()).optional(),
+        unlisted: z.boolean().optional(),
+        sharedPublicly: z.boolean().optional(),
+        tournamentId: z.string().optional(),
+      }),
+    )
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/v1/getQuestion",
+        description: "Get details of a specific question",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            apiKey: "your_api_key_here",
+          },
+        },
+      },
+    })
     .query(async ({ input, ctx }) => {
       if (!input.questionId) {
         return null
@@ -316,7 +341,7 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "GET",
-        path: "/v0/getQuestions",
+        path: "/v1/getQuestions",
         description:
           "By default, this fetches all questions that you've created, forecasted on, or are shared with you. Alternatively, if you set showAllPublic to true, it fetches all public questions from fatebook.io/public.",
       },
@@ -433,6 +458,63 @@ export const questionRouter = router({
           .optional(),
       }),
     )
+    .output(
+      z.object({
+        url: z.string(),
+        title: z.string(),
+        resolveBy: z.date(),
+        prediction: z.number().optional(),
+        tags: z.array(z.string()).optional(),
+        unlisted: z.boolean().optional(),
+        sharedPublicly: z.boolean().optional(),
+        tournamentId: z.string().optional(),
+        shareWithListIds: z.array(z.string()).optional(),
+        exclusiveAnswers: z.boolean().optional(),
+        options: z
+          .array(
+            z.object({
+              text: z.string(),
+              prediction: z.number().optional(),
+            }),
+          )
+          .optional(),
+        slackSyncError: z.string().optional(),
+      }),
+    )
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/v1/createQuestion",
+        description: "Create a new question (binary or multiple choice)",
+        example: {
+          request: {
+            binaryExample: {
+              title: "Will it rain tomorrow?",
+              resolveBy: "2023-12-31T23:59:59Z",
+              prediction: 0.7,
+              tags: ["weather"],
+              unlisted: false,
+              sharedPublicly: true,
+              apiKey: "your_api_key_here",
+            },
+            multichoiceExample: {
+              title: "Which team will win the World Cup?",
+              resolveBy: "2023-12-31T23:59:59Z",
+              options: [
+                { text: "Brazil", prediction: 0.3 },
+                { text: "Germany", prediction: 0.25 },
+                { text: "France", prediction: 0.2 },
+                { text: "Other", prediction: 0.25 },
+              ],
+              tags: ["sports", "football"],
+              unlisted: false,
+              sharedPublicly: true,
+              apiKey: "your_api_key_here",
+            },
+          },
+        },
+      },
+    })
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -590,7 +672,7 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "POST",
-        path: "/v0/resolveQuestion",
+        path: "/v1/resolveQuestion",
         description:
           "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
         example: {
@@ -663,7 +745,7 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "PATCH",
-        path: "/v0/setSharedPublicly",
+        path: "/v1/setSharedPublicly",
         description:
           "Change the visibility of the question. The 'sharedPublicly' parameter sets whether the question is accessible to anyone via a direct link. The 'unlisted' parameter sets whether the question is visible on fatebook.io/public",
       },
@@ -861,7 +943,7 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "POST",
-        path: "/v0/addForecast",
+        path: "/v1/addForecast",
         description:
           "Add a forecast to the question. Forecasts are between 0 and 1.",
         example: {
@@ -1044,7 +1126,7 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "POST",
-        path: "/v0/addComment",
+        path: "/v1/addComment",
         description: "Add a comment to the question.",
         example: {
           request: {
@@ -1265,7 +1347,7 @@ export const questionRouter = router({
       }),
     )
     .output(z.undefined())
-    .meta({ openapi: { method: "DELETE", path: "/v0/deleteQuestion" } })
+    .meta({ openapi: { method: "DELETE", path: "/v1/deleteQuestion" } })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -1287,7 +1369,7 @@ export const questionRouter = router({
       }),
     )
     .output(z.undefined())
-    .meta({ openapi: { method: "PATCH", path: "/v0/editQuestion" } })
+    .meta({ openapi: { method: "PATCH", path: "/v1/editQuestion" } })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
