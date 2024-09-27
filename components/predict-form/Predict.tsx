@@ -265,7 +265,10 @@ export function Predict({
 
       if (cachedQuestion.resolveBy) {
         try {
-          setValue("resolveBy", getDateYYYYMMDD(cachedQuestion.resolveBy))
+          setValue(
+            "resolveBy",
+            getDateYYYYMMDD(utcDateStrToLocalDate(cachedQuestion.resolveBy)),
+          )
         } catch {
           // just skip it if we can't parse the date
         }
