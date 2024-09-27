@@ -137,11 +137,10 @@ export const questionRouter = router({
     .input(
       z.object({
         questionId: z.string().optional(),
+        apiKey: z.string().optional(),
       }),
     )
-    .output(
-      z.any(),
-    )
+    .output(z.any())
     .meta({
       openapi: {
         method: "GET",
@@ -219,9 +218,8 @@ export const questionRouter = router({
               }),
         },
       })
-      const user = await prisma.user.findUnique({
-        where: { id: ctx.userId || "NO MATCH" },
-      })
+
+      const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
       assertHasAccess(question, user)
       return (
         question &&
@@ -447,11 +445,10 @@ export const questionRouter = router({
             }),
           )
           .optional(),
+        apiKey: z.string().optional(),
       }),
     )
-    .output(
-      z.any(),
-    )
+    .output(z.any())
     .meta({
       openapi: {
         method: "POST",
