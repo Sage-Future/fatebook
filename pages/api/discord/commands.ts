@@ -47,6 +47,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           min_value: 0,
           max_value: 100,
         },
+        {
+          name: "share_with_lists",
+          description: "The lists to share the forecast with (comma-separated)",
+          type: ApplicationCommandOptionType.STRING,
+          required: false,
+        },
       ],
     },
   ])
