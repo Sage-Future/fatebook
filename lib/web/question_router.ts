@@ -39,7 +39,7 @@ import {
   getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
-import { QuestionSchema } from "../../prisma/generated/zod"
+import { ForecastSchema, QuestionSchema } from "../../prisma/generated/zod"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -340,7 +340,7 @@ export const questionRouter = router({
       z.object({
         items: z.array(QuestionSchema),
         nextCursor: z.number().optional(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const user = await getUserByApiKeyOrThrow(input.apiKey)
@@ -666,7 +666,7 @@ export const questionRouter = router({
         },
       },
     })
-    .output(z.undefined()) // TODO: implement response
+    .output(z.object({ message: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -681,6 +681,10 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         resolution: input.resolution.toLowerCase(),
       })
+
+      return {
+        message: `Question ${input.questionId} resolved to ${input.resolution}`,
+      }
     }),
 
   undoResolution: publicProcedure
@@ -731,7 +735,7 @@ export const questionRouter = router({
           "Change the visibility of the question. The 'sharedPublicly' parameter sets whether the question is accessible to anyone via a direct link. The 'unlisted' parameter sets whether the question is visible on fatebook.io/public",
       },
     })
-    .output(z.undefined())
+    .output(z.object({ message: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -744,6 +748,10 @@ export const questionRouter = router({
           unlisted: input.unlisted,
         },
       })
+
+      return {
+        message: `Question ${input.questionId} updated; it is now ${input.sharedPublicly ? "shared publicly" : "not shared publicly"} and ${input.unlisted ? "unlisted" : "listed"}.`,
+      }
     }),
 
   setHideForecastsUntilPrediction: publicProcedure
@@ -920,7 +928,10 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
+    .output(z.object({
+      message: z.string(),
+      forecast: ForecastSchema,
+    }).optional())
     .meta({
       openapi: {
         method: "POST",
@@ -1093,6 +1104,20 @@ export const questionRouter = router({
         question: question.id,
         forecast: input.forecast,
       })
+
+      return {
+        message: `Forecast ${input.forecast} successfully added to "${question.title}"`,
+        forecast: {
+          questionId: submittedForecast.questionId,
+          forecast: submittedForecast.forecast,
+          optionId: submittedForecast.optionId,
+          id: submittedForecast.id,
+          createdAt: submittedForecast.createdAt,
+          comment: submittedForecast.comment,
+          profileId: submittedForecast.profileId,
+          userId: submittedForecast.userId,
+        },
+      }
     }),
 
   addComment: publicProcedure
@@ -1103,7 +1128,9 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
+    .output(z.object({
+      message: z.string(),
+    }))
     .meta({
       openapi: {
         method: "POST",
@@ -1198,6 +1225,10 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         user: user.id,
       })
+
+      return {
+        message: `Comment "${input.comment}" successfully added to "${question.title}"`,
+      }
     }),
 
   deleteComment: publicProcedure
@@ -1327,7 +1358,9 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
+    .output(z.object({
+      message: z.string(),
+    }))
     .meta({ openapi: { method: "DELETE", path: "/v1/deleteQuestion" } })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
@@ -1338,6 +1371,10 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
       })
+
+      return {
+        message: `Question "${input.questionId}" successfully deleted`,
+      }
     }),
 
   editQuestion: publicProcedure
@@ -1349,7 +1386,10 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
+    .output(z.object({
+      message: z.string(),
+      question: QuestionSchema,
+    }))
     .meta({ openapi: { method: "PATCH", path: "/v1/editQuestion" } })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
@@ -1391,6 +1431,11 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
       })
+
+      return {
+        message: `Question "${input.questionId}" successfully edited`,
+        question: question,
+      }
     }),
 
   exportAllQuestions: publicProcedure.mutation(async ({ ctx }) => {
