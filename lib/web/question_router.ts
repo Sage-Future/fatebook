@@ -39,6 +39,7 @@ import {
   getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
+import { QuestionSchema } from "../../prisma/generated/zod"
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -140,7 +141,7 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.any())
+    .output(QuestionSchema)
     .meta({
       openapi: {
         method: "GET",
@@ -156,7 +157,7 @@ export const questionRouter = router({
     })
     .query(async ({ input, ctx }) => {
       if (!input.questionId) {
-        return null
+        return null as any // needed in order to appease type checker
       }
 
       const question = await prisma.question.findUnique({
@@ -337,13 +338,14 @@ export const questionRouter = router({
     })
     .output(
       z.object({
-        items: z.array(z.any()),
-      }),
-    ) // required for openapi
+        items: z.array(QuestionSchema),
+        nextCursor: z.number().optional(),
+      })
+    )
     .query(async ({ input }) => {
       const user = await getUserByApiKeyOrThrow(input.apiKey)
 
-      return scrubApiKeyPropertyRecursive(
+      const result = scrubApiKeyPropertyRecursive(
         await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
           {
             cursor: input.cursor || 0,
@@ -367,6 +369,11 @@ export const questionRouter = router({
           "staleReminder",
         ],
       )
+
+      return {
+        items: result.items.map((item) => QuestionSchema.parse(item)),
+        nextCursor: result.nextCursor,
+      }
     }),
 
   getForecastCountByDate: publicProcedure
@@ -448,7 +455,11 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.any())
+    .output(
+      z.object({
+        url: z.string(),
+      }),
+    )
     .meta({
       openapi: {
         method: "POST",
@@ -653,7 +664,7 @@ export const questionRouter = router({
         },
       },
     })
-    .output(z.undefined())
+    .output(z.undefined()) // TODO: implement response
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 

@@ -82,7 +82,7 @@ export function QuestionOrSignIn({
       <NextSeo title={truncateString(question?.title, 60)} />
       <QuestionComp
         embedded={embedded}
-        question={question}
+        question={question as any}
         alwaysExpand={alwaysExpand}
       />
     </div>
