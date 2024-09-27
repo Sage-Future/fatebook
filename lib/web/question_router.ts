@@ -140,16 +140,7 @@ export const questionRouter = router({
       }),
     )
     .output(
-      z.object({
-        url: z.string(),
-        title: z.string(),
-        resolveBy: z.string(),
-        prediction: z.number().optional(),
-        tags: z.array(z.string()).optional(),
-        unlisted: z.boolean().optional(),
-        sharedPublicly: z.boolean().optional(),
-        tournamentId: z.string().optional(),
-      }),
+      z.any(),
     )
     .meta({
       openapi: {
@@ -459,27 +450,7 @@ export const questionRouter = router({
       }),
     )
     .output(
-      z.object({
-        url: z.string(),
-        title: z.string(),
-        resolveBy: z.date(),
-        prediction: z.number().optional(),
-        tags: z.array(z.string()).optional(),
-        unlisted: z.boolean().optional(),
-        sharedPublicly: z.boolean().optional(),
-        tournamentId: z.string().optional(),
-        shareWithListIds: z.array(z.string()).optional(),
-        exclusiveAnswers: z.boolean().optional(),
-        options: z
-          .array(
-            z.object({
-              text: z.string(),
-              prediction: z.number().optional(),
-            }),
-          )
-          .optional(),
-        slackSyncError: z.string().optional(),
-      }),
+      z.any(),
     )
     .meta({
       openapi: {
