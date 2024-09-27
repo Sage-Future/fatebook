@@ -458,6 +458,8 @@ export const questionRouter = router({
     .output(
       z.object({
         url: z.string(),
+        title: z.string(),
+        prediction: z.number().min(0).max(1).optional(),
       }),
     )
     .meta({
