@@ -2,14 +2,10 @@ import { NextApiRequest, NextApiResponse } from "next"
 import { getServerSession } from "next-auth"
 import NextCors from "nextjs-cors"
 import prisma from "../../../lib/prisma"
-import {
-  assertHasAccess,
-  scrubApiKeyPropertyRecursive,
-  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
-} from "../../../lib/web/question_router"
 import { authOptions } from "../auth/[...nextauth]"
-
+import { assertHasAccess } from "../../../lib/web/question_router/assert"
 import { getMostRecentForecastForUser } from "../../../lib/_utils_common"
+import { scrubApiKeyPropertyRecursive, scrubHiddenForecastsAndSensitiveDetailsFromQuestion } from "../../../lib/web/question_router/scrub"
 
 interface Request extends NextApiRequest {
   query: {

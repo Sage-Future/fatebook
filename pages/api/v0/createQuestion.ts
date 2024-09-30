@@ -4,9 +4,9 @@ import { z } from "zod"
 import { generateErrorMessage } from "zod-error"
 import { backendAnalyticsEvent } from "../../../lib/_utils_server"
 import prisma from "../../../lib/prisma"
-import { emailNewlySharedWithUsers } from "../../../lib/web/question_router"
 import { getQuestionUrl } from "../../../lib/web/question_url"
 import { UserListWithAuthorAndUsers } from "../../../prisma/additional"
+import { emailNewlySharedWithUsers } from "../../../lib/web/question_router/email_shared"
 
 const createQuestionSchema = z.object({
   apiKey: z.string().nonempty({
