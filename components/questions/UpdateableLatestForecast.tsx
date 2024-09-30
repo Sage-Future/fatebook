@@ -11,6 +11,7 @@ import { sendToHost } from "../../lib/web/embed"
 import { api } from "../../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../../lib/web/utils"
 import { QuestionWithStandardIncludes } from "../../prisma/additional"
+import { useDebouncedCallback } from "use-debounce"
 
 function closeLinkPopup() {
   sendToHost("close_link_popup")
@@ -50,6 +51,8 @@ export function UpdateableLatestForecast({
     : ""
   const [localForecast, setLocalForecast] = useState<string>(defaultVal)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isIOS, setIsIOS] = useState(false)
+  const lastUpdateTime = useRef(0)
 
   const utils = api.useContext()
   const addForecast = api.question.addForecast.useMutation({
@@ -127,13 +130,23 @@ export function UpdateableLatestForecast({
     ],
   )
 
-  const updateOrReset = (value: string) => {
+  const updateOrReset = useCallback((value: string) => {
+    const now = Date.now()
+    if (now - lastUpdateTime.current < 2000) return
+    lastUpdateTime.current = now
+
     if (defaultVal !== value && value !== "") {
       updateForecast(value)
     } else if (value === "" || !value) {
       setLocalForecast(defaultVal)
     }
-  }
+  }, [defaultVal, updateForecast])
+
+  const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
+
+  useEffect(() => {
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream)
+  }, [])
 
   useEffect(() => {
     if (
@@ -207,6 +220,10 @@ export function UpdateableLatestForecast({
                 setErrorMessage(null)
                 e.target.value &&
                   checkForErrors(parseFloat(e.target.value) / 100)
+                
+                if (isIOS) {
+                  updateOrResetDebounced(e.target.value)
+                }
               }}
               onClick={(e) => {
                 e.stopPropagation()
@@ -220,7 +237,11 @@ export function UpdateableLatestForecast({
                   checkForErrors(parseFloat(defaultVal) / 100)
                 }
               }}
-              onBlur={(e) => updateOrReset(e.currentTarget.value)}
+              onBlur={(e) => {
+                if (!isIOS) {
+                  updateOrReset(e.currentTarget.value)
+                }
+              }}
               disabled={hasResolution || addForecast.isLoading || !userId}
             />
             <span className={"text-left"}>{"%"}</span>
