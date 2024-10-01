@@ -11,7 +11,11 @@ export default function UserPage() {
 
   return (
     <div className="max-sm:flex-col-reverse gap-8 lg:gap-12 flex justify-center px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo title={`${theirUserInfoQ.data?.name || "User"}'s predictions`} />
+      <NextSeo
+        title={`${theirUserInfoQ.data?.name || "User"}'s predictions`}
+        noindex={true}
+        nofollow={true}
+      />
       <div className="prose mx-auto lg:w-[650px]">
         <Questions
           theirUserId={theirUserId}

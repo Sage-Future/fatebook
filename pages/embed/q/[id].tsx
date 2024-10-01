@@ -1,3 +1,4 @@
+import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
 import React, { useEffect, useRef } from "react"
 import { QuestionOrSignIn } from "../../../components/questions/QuestionOrSignIn"
@@ -23,6 +24,7 @@ export default function QuestionEmbed() {
 
   return (
     <div ref={ref} className="max-h-[500px] overflow-auto bg-white">
+      <NextSeo noindex={true} nofollow={true} />
       <QuestionOrSignIn
         embedded={true}
         alwaysExpand={!router.query.compact}
