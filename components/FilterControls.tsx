@@ -4,7 +4,7 @@ import { FunnelIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { AnimatePresence, motion } from "framer-motion"
 import { ReactElement, ReactNode, useEffect, useState } from "react"
-import { ExtraFilters } from "../lib/web/question_router"
+import { ExtraFilters } from "../lib/web/question_router/types"
 
 function FilterButton({
   onClick,

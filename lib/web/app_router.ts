@@ -9,15 +9,17 @@ import {
 import prisma from "../prisma"
 import { feedbackRouter } from "./feedback_router"
 import { importRouter } from "./import_router"
-import { questionRouter } from "./question_router"
 import { tagsRouter } from "./tags_router"
 import { tournamentRouter } from "./tournament_router"
 import { getClientBaseUrl } from "./trpc"
 import { publicProcedure, router } from "./trpc_base"
 import { userListRouter } from "./userList_router"
+import { questionRouter } from "./question_router/v1/question_router"
+import { questionRouter as legacyQuestionRouter } from "./question_router/v0/question_router"
 
 export const appRouter = router({
   question: questionRouter,
+  legacyQuestion: legacyQuestionRouter,
   userList: userListRouter,
   tags: tagsRouter,
   import: importRouter,
