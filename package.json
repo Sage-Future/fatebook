@@ -16,7 +16,8 @@
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios",
     "zip": "echo \"have you set isDev=false and incremented version num?\" && bash zip-extensions.sh",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.0",
@@ -79,6 +80,7 @@
     "trpc-openapi": "^1.2.0",
     "trpc-transformer": "^3.2.2",
     "use-debounce": "^10.0.1",
+    "util": "^0.12.5",
     "vercel": "^34.2.7",
     "zod": "^3.23.8",
     "zod-error": "^1.5.0",
@@ -95,6 +97,7 @@
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.5",
     "@types/react": "^18.3.3",
+    "@types/supertest": "^6.0.2",
     "@types/swagger-ui-react": "^4.18.3",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
@@ -112,6 +115,7 @@
     "postcss": "^8.4.38",
     "prettier": "3.3.2",
     "prisma": "^5.15.0",
+    "supertest": "^7.0.0",
     "tailwindcss": "^3.3.2",
     "typescript": "^5.4.5"
   },

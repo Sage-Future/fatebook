@@ -10,7 +10,20 @@ const createJestConfig = nextJest({
   dir: "./",
 })
 
-const config: Config = {
+const esModules = [
+  "@panva/hkdf",
+  "data-uri-to-buffer",
+  "fetch-blob",
+  "formdata-polyfill",
+  "jose",
+  "node-fetch",
+  "preact",
+  "preact-render-to-string",
+  "superjson",
+  "uncrypto",
+  "uuid",
+]
+const customConfig: Config = {
   clearMocks: true,
   collectCoverage: false,
   coverageDirectory: "coverage",
@@ -20,7 +33,18 @@ const config: Config = {
     "!**/vendor/**",
   ],
   coverageProvider: "v8",
-  testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  testEnvironment: "node",
+  transformIgnorePatterns: [`/node_modules/(?!(${esModules.join("|")})/)`],
 }
 
-export default createJestConfig(config)
+module.exports = async () => {
+  const jestConfig = await createJestConfig(customConfig)()
+  return {
+    ...jestConfig,
+    transformIgnorePatterns:
+      jestConfig.transformIgnorePatterns?.filter(
+        (ptn) => ptn !== "/node_modules/",
+      ) ?? [], // ['^.+\\.module\\.(css|sass|scss)$', '/node_modules/(?!(package1|package2)/']
+  }
+}
