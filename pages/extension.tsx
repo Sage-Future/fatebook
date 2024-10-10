@@ -4,12 +4,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
 import { useRef, useState } from "react"
-import { useBrowser } from "../lib/web/utils"
+import { useBrowser, useOS } from "../lib/web/utils"
 
 export default function ExtensionPage() {
   const router = useRouter()
   const justInstalled = router.query.installed
   const browser = useBrowser()
+  const os = useOS()
   return (
     <div className="bg-neutral-50 grow">
       <NextSeo
@@ -36,7 +37,9 @@ export default function ExtensionPage() {
                 Try <Link href="https://doc.new">creating a Google Doc</Link>{" "}
                 and press{" "}
                 <span className="font-semibold whitespace-nowrap">
-                  Ctrl+Shift+F
+                  {browser === "Firefox"
+                    ? `${os === "macOS" ? "Cmd+Opt+Q" : "Ctrl+Alt+Q"}`
+                    : `${os === "macOS" ? "Cmd+Shift+F" : "Ctrl+Shift+F"}`}
                 </span>{" "}
                 to make a prediction.
               </p>
@@ -160,17 +163,35 @@ export default function ExtensionPage() {
               className="text-center text-xl"
               suppressHydrationWarning={true}
             >
-              <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
-                ctrl
-              </span>
-              <span>{"+"}</span>
-              <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
-                shift
-              </span>
-              <span>{"+"}</span>
-              <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
-                F
-              </span>
+              {browser === "Firefox" ? (
+                <>
+                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                    {os === "macOS" ? "cmd" : "ctrl"}
+                  </span>
+                  <span>{"+"}</span>
+                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                    {os === "macOS" ? "opt" : "alt"}
+                  </span>
+                  <span>{"+"}</span>
+                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                    Q
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                    {os === "macOS" ? "cmd" : "ctrl"}
+                  </span>
+                  <span>{"+"}</span>
+                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                    shift
+                  </span>
+                  <span>{"+"}</span>
+                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                    F
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
