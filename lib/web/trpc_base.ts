@@ -14,6 +14,15 @@ export const createContext = async (opts: CreateNextContextOptions) => {
   }
 }
 
+export const createTestContext = async (opts: CreateNextContextOptions) => {
+  const session = await getServerSession(opts.req, opts.res, authOptions)
+
+  return {
+    session,
+    userId: "testUserId",
+  }
+}
+
 export type Context = inferAsyncReturnType<typeof createContext>
 const t = initTRPC.meta<OpenApiMeta>().context<Context>().create({
   transformer,

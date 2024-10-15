@@ -34,7 +34,7 @@ const customConfig: Config = {
   ],
   coverageProvider: "v8",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
-  testEnvironment: "node",
+  testEnvironment: "jsdom",
   transformIgnorePatterns: [`/node_modules/(?!(${esModules.join("|")})/)`],
 }
 
@@ -45,6 +45,6 @@ module.exports = async () => {
     transformIgnorePatterns:
       jestConfig.transformIgnorePatterns?.filter(
         (ptn) => ptn !== "/node_modules/",
-      ) ?? [], // ['^.+\\.module\\.(css|sass|scss)$', '/node_modules/(?!(package1|package2)/']
+      ) ?? [],
   }
 }
