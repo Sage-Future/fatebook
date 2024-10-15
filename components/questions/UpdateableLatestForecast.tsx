@@ -230,7 +230,7 @@ export function UpdateableLatestForecast({
               }} // prevent focus being lost by parent span onClick
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  updateForecast(e.currentTarget.value)
+                  e.currentTarget.blur()
                 }
                 if (e.key === "Escape") {
                   setLocalForecast(defaultVal)

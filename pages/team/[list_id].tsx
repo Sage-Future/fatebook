@@ -24,7 +24,7 @@ export default function ListPage() {
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
-      <NextSeo title={listQ.data?.name || "Team"} />
+      <NextSeo title={listQ.data?.name || "Team"} noindex={true} nofollow={true} />
       <div className="mx-auto">
         <div className="prose mx-auto lg:w-[650px]">
           {!userId && (

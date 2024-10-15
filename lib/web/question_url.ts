@@ -12,19 +12,19 @@ export function getQuestionUrl(
   }`
 }
 
+export function extractQuestionId(input: string): string {
+  // allow an optional ignored slug text before `--` character
+  const parts = input.match(/(.*)--(.*)/)
+  return parts ? parts[2] : input
+}
+
 export function useQuestionId() {
   const router = useRouter()
-
-  // allow an optional ignored slug text before `--` character
-  const parts =
-    router.query.id && (router.query.id as string).match(/(.*)--(.*)/)
-  return parts ? parts[2] : (router.query.id as string) || ""
+  const id = router.query.id as string
+  return id ? extractQuestionId(id) : ""
 }
 
 export function getQuestionIdFromUrl(url: string) {
   const lastSegment = url.substring(url.lastIndexOf("/") + 1)
-
-  // allow an optional ignored slug text before `--` character
-  const parts = lastSegment.match(/(.*)--(.*)/)
-  return parts ? parts[2] : lastSegment || ""
+  return extractQuestionId(lastSegment)
 }

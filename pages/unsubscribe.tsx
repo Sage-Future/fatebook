@@ -3,6 +3,7 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { api, getClientBaseUrl } from "../lib/web/trpc"
 import { webFeedbackUrl } from "../lib/web/utils"
+import { NextSeo } from "next-seo"
 
 export function getUnsubscribeUrl(
   userEmail?: string,
@@ -29,6 +30,7 @@ export default function UnsubscribePage() {
 
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto max-w-6xl">
+      <NextSeo noindex={true} nofollow={true} />
       <div className="prose mx-auto">
         <p>
           {isUnsubscribed

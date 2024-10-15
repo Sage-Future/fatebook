@@ -381,6 +381,28 @@ export function useBrowser() {
   return browser
 }
 
+export function useOS() {
+  const [os, setOS] = useState<"Windows" | "macOS" | "iOS" | "Android" | "Linux" | "Unknown">("Unknown")
+
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent.toLowerCase()
+
+    if (userAgent.includes("win")) {
+      setOS("Windows")
+    } else if (userAgent.includes("mac")) {
+      setOS("macOS")
+    } else if (userAgent.includes("iphone") || userAgent.includes("ipad") || userAgent.includes("ipod")) {
+      setOS("iOS")
+    } else if (userAgent.includes("android")) {
+      setOS("Android")
+    } else if (userAgent.includes("linux")) {
+      setOS("Linux")
+    }
+  }, [])
+
+  return os
+}
+
 export function useFatebookForChrome() {
   const browser = useBrowser()
   return `Fatebook for ${browser}`
