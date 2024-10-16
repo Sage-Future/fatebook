@@ -36,7 +36,7 @@ describe("emailNewlySharedWithUsers", () => {
       apiKey: null,
       discordUserId: null,
       emailVerified: null,
-      profiles: [] // Add this line
+      profiles: []
     },
     sharedWith: [],
     createdAt: new Date(),

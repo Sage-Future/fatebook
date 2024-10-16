@@ -5,6 +5,7 @@ import { useQuestionId } from "../../lib/web/question_url"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook, truncateString } from "../../lib/web/utils"
 import { Question as QuestionComp } from "./Question"
+import { QuestionWithStandardIncludes } from "../../prisma/additional"
 
 export function QuestionOrSignIn({
   embedded,
@@ -82,7 +83,7 @@ export function QuestionOrSignIn({
       <NextSeo title={truncateString(question?.title, 60)} />
       <QuestionComp
         embedded={embedded}
-        question={question as any}
+        question={question as QuestionWithStandardIncludes}
         alwaysExpand={alwaysExpand}
       />
     </div>

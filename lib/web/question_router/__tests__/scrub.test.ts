@@ -15,22 +15,22 @@ describe("scrubHiddenForecastsAndSensitiveDetailsFromQuestion", () => {
       {
         id: 1,
         userId: "user1",
-        forecast: new Decimal(50), // Use Decimal instead of number
+        forecast: new Decimal(50),
         createdAt: new Date(),
         comment: null,
         profileId: null,
         questionId: "1",
-        optionId: null, // Make this nullable
+        optionId: null,
       },
       {
         id: 2,
         userId: "user2",
-        forecast: new Decimal(70), // Use Decimal instead of number
+        forecast: new Decimal(70),
         createdAt: new Date(),
         comment: null,
         profileId: null,
         questionId: "1",
-        optionId: null, // Make this nullable
+        optionId: null,
       },
     ],
     createdAt: new Date(),

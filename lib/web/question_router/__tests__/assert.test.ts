@@ -12,7 +12,7 @@ describe("assertHasAccess", () => {
     createdAt: new Date(),
     comment: null,
     profileId: null,
-    type: "BINARY", // Assuming this is a valid QuestionType
+    type: "BINARY",
     resolveBy: new Date(),
     resolved: false,
     pingedForResolution: false,
@@ -25,9 +25,8 @@ describe("assertHasAccess", () => {
     sharedWith: [],
     sharedWithLists: [],
     forecasts: [],
-    hideForecastsUntilPrediction: null, // Add this line
-    unlisted: false, // Add this line
-    // ... Add any other missing properties
+    hideForecastsUntilPrediction: null,
+    unlisted: false,
   } as QuestionWithForecastsAndSharedWithAndLists
 
   it("should throw error if question is null", () => {

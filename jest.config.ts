@@ -10,6 +10,7 @@ const createJestConfig = nextJest({
   dir: "./",
 })
 
+// Allows jest to be able to use ESM correctly in test setup
 const esModules = [
   "@panva/hkdf",
   "data-uri-to-buffer",
@@ -33,7 +34,7 @@ const customConfig: Config = {
     "!**/vendor/**",
   ],
   coverageProvider: "v8",
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  // setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"], - can uncomment when jest.setup.ts is reintroduced
   testEnvironment: "jsdom",
   transformIgnorePatterns: [`/node_modules/(?!(${esModules.join("|")})/)`],
 }
