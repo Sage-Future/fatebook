@@ -247,6 +247,7 @@ export function Question({
                 alwaysExpand={alwaysExpand}
                 manuallyExpanded={manuallyExpanded}
                 setManuallyExpanded={setManuallyExpanded}
+                embedded={embedded}
               />
             </div>
           </div>
@@ -276,11 +277,13 @@ export function ActivityNumbers({
   alwaysExpand,
   manuallyExpanded,
   setManuallyExpanded,
+  embedded,
 }: {
   question: QuestionWithStandardIncludes
   alwaysExpand: boolean | undefined
   manuallyExpanded: boolean
   setManuallyExpanded: (expanded: boolean) => void
+  embedded?: boolean
 }) {
   const forecasters = new Set(question.forecasts.map((f) => f.userId)).size
   const forecasts = question.forecasts?.length ?? 0
@@ -290,7 +293,7 @@ export function ActivityNumbers({
   return (
     <div
       className={`${question.exclusiveAnswers ? "col-span-full" : ""} flex flex-row gap-2 text-sm text-neutral-400 justify-end hover:md:underline items-center`}
-      onClick={() => setManuallyExpanded(!manuallyExpanded)}
+      onClick={() => !embedded && setManuallyExpanded(!manuallyExpanded)}
     >
       <InfoButton
         tooltip={`${forecasts} forecast${
@@ -313,7 +316,7 @@ export function ActivityNumbers({
         </span>
       </InfoButton>
       {!alwaysExpand && (
-        <button className="button p-0">
+        <button className={clsx("button p-0", embedded && "hidden")}>
           <ChevronDownIcon
             className={clsx(
               "h-5 w-5 transition-transform",
