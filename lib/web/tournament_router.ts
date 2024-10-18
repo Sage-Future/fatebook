@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import prisma from "../prisma"
-import { scrubApiKeyPropertyRecursive } from "./question_router"
+import { scrubApiKeyPropertyRecursive } from "./question_router/scrub"
 import { publicProcedure, router } from "./trpc_base"
 import { matchesAnEmailDomain } from "./utils"
 

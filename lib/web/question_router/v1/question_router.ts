@@ -1,147 +1,73 @@
-import { Prisma, QuestionType, Tag, User } from "@prisma/client"
+import { QuestionType, Tag } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime/library"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
-import { getBucketedForecasts } from "../../pages/api/calibration_graph"
-import {
-  QuestionWithForecasts,
-  QuestionWithForecastsAndSharedWithAndLists,
-  QuestionWithUserAndSharedWith,
-} from "../../prisma/additional"
+import { getBucketedForecasts } from "../../../../pages/api/calibration_graph"
+import { QuestionWithUserAndSharedWith } from "../../../../prisma/additional"
 import {
   displayForecast,
   filterToUniqueIds,
   forecastsAreHidden,
   getDateYYYYMMDD,
-} from "../_utils_common"
+} from "../../../_utils_common"
 import {
   backendAnalyticsEvent,
   updateForecastQuestionMessages,
-} from "../_utils_server"
-import { deleteQuestion } from "../interactive_handlers/edit_question_modal"
-import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
+} from "../../../_utils_server"
+import { deleteQuestion } from "../../../interactive_handlers/edit_question_modal"
+import { syncToSlackIfNeeded } from "../../../interactive_handlers/postFromWeb"
 import {
   handleQuestionResolution,
   undoQuestionOptionResolution,
   undoQuestionResolution,
-} from "../interactive_handlers/resolve"
-import prisma from "../prisma"
-import { questionsToCsv } from "./export"
+} from "../../../interactive_handlers/resolve"
+import prisma from "../../../prisma"
+import { questionsToCsv } from "../../export"
+import { createNotification } from "../../notifications"
+import { getQuestionUrl } from "../../question_url"
+import { publicProcedure, router } from "../../trpc_base"
 import {
-  createNotification,
-  fatebookEmailFooter,
-  sendEmailUnbatched,
-} from "./notifications"
-import { getQuestionUrl } from "./question_url"
-import { Context, publicProcedure, router } from "./trpc_base"
+  ForecastSchema,
+  QuestionSchema,
+} from "../../../../prisma/generated/zod"
+import { zodExtraFilters } from "../types"
 import {
-  getHtmlLinkQuestionTitle,
-  getSearchedPredictionBounds,
-  matchesAnEmailDomain,
-} from "./utils"
-
-const questionIncludes = (userId: string | undefined) => ({
-  forecasts: {
-    include: {
-      user: true,
-    },
-  },
-  options: {
-    include: {
-      forecasts: {
-        include: {
-          user: true,
-        },
-      },
-    },
-  },
-  user: true,
-  sharedWith: true,
-  sharedWithLists: {
-    include: {
-      author: true,
-      users: true,
-    },
-  },
-  questionMessages: {
-    include: {
-      message: true,
-    },
-  },
-  comments: {
-    include: {
-      user: true,
-    },
-  },
-  tags: {
-    where: {
-      user: {
-        id:
-          userId || "match with no users (because no user with this ID exists)",
-      },
-    },
-  },
-})
-
-const zodExtraFilters = z.object({
-  resolved: z
-    .boolean({ description: "Only get resolved questions" })
-    .optional(),
-  unresolved: z
-    .boolean({ description: "Only get unresolved questions" })
-    .optional(),
-  readyToResolve: z
-    .boolean({ description: "Only get questions ready to be resolved" })
-    .optional(),
-  resolvingSoon: z
-    .boolean({ description: "Only get questions that are resolving soon" })
-    .optional(),
-  filterTagIds: z
-    .array(
-      z.string({ description: "Only get questions with any of these tags" }),
-    )
-    .optional(),
-  showAllPublic: z
-    .boolean({
-      description:
-        "Show all public questions from fatebook.io/public (if false, get only questions you've created, forecasted on, or are shared with you)",
-    })
-    .optional(),
-  searchString: z
-    .string({
-      description: "Only get questions or tags containing this search string",
-    })
-    .optional(),
-  theirUserId: z
-    .string({
-      description:
-        "Show questions created by this user (instead of your questions)",
-    })
-    .optional(),
-  filterTournamentId: z
-    .string({
-      description:
-        "Show questions in this tournament (instead of your questions)",
-    })
-    .optional(),
-  filterUserListId: z
-    .string({
-      description: "Show questions in this team (instead of your questions)",
-    })
-    .optional(),
-})
-export type ExtraFilters = z.infer<typeof zodExtraFilters>
+  scrubApiKeyPropertyRecursive,
+  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
+} from "../scrub"
+import {
+  getUserByApiKeyOrThrow,
+  getUserFromCtxOrApiKeyOrThrow,
+} from "../get_user"
+import { emailNewlySharedWithUsers } from "../email_shared"
+import { assertHasAccess, getQuestionAssertAuthor } from "../assert"
+import { getQuestionsUserCreatedOrForecastedOnOrIsSharedWith } from "../get_questions"
 
 export const questionRouter = router({
   getQuestion: publicProcedure
     .input(
       z.object({
         questionId: z.string().optional(),
+        apiKey: z.string().optional(),
       }),
     )
+    .output(QuestionSchema)
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/v1/getQuestion",
+        description: "Get details of a specific question",
+        example: {
+          request: {
+            questionId: "cm05iuuhx00066e7a1hncujn0",
+            apiKey: "your_api_key_here",
+          },
+        },
+      },
+    })
     .query(async ({ input, ctx }) => {
       if (!input.questionId) {
-        return null
+        return null as any // needed in order to appease type checker
       }
 
       const question = await prisma.question.findUnique({
@@ -203,9 +129,8 @@ export const questionRouter = router({
               }),
         },
       })
-      const user = await prisma.user.findUnique({
-        where: { id: ctx.userId || "NO MATCH" },
-      })
+
+      const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
       assertHasAccess(question, user)
       return (
         question &&
@@ -316,20 +241,21 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "GET",
-        path: "/v0/getQuestions",
+        path: "/v1/getQuestions",
         description:
           "By default, this fetches all questions that you've created, forecasted on, or are shared with you. Alternatively, if you set showAllPublic to true, it fetches all public questions from fatebook.io/public.",
       },
     })
     .output(
       z.object({
-        items: z.array(z.any()),
+        items: z.array(QuestionSchema),
+        nextCursor: z.number().optional(),
       }),
-    ) // required for openapi
+    )
     .query(async ({ input }) => {
       const user = await getUserByApiKeyOrThrow(input.apiKey)
 
-      return scrubApiKeyPropertyRecursive(
+      const result = scrubApiKeyPropertyRecursive(
         await getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
           {
             cursor: input.cursor || 0,
@@ -353,6 +279,11 @@ export const questionRouter = router({
           "staleReminder",
         ],
       )
+
+      return {
+        items: result.items.map((item) => QuestionSchema.parse(item)),
+        nextCursor: result.nextCursor,
+      }
     }),
 
   getForecastCountByDate: publicProcedure
@@ -431,8 +362,50 @@ export const questionRouter = router({
             }),
           )
           .optional(),
+        apiKey: z.string().optional(),
       }),
     )
+    .output(
+      z.object({
+        url: z.string(),
+        title: z.string(),
+        prediction: z.number().min(0).max(1).optional(),
+      }),
+    )
+    .meta({
+      openapi: {
+        method: "POST",
+        path: "/v1/createQuestion",
+        description: "Create a new question (binary or multiple choice)",
+        example: {
+          request: {
+            binaryExample: {
+              title: "Will it rain tomorrow?",
+              resolveBy: "2023-12-31T23:59:59Z",
+              prediction: 0.7,
+              tags: ["weather"],
+              unlisted: false,
+              sharedPublicly: true,
+              apiKey: "your_api_key_here",
+            },
+            multichoiceExample: {
+              title: "Which team will win the World Cup?",
+              resolveBy: "2023-12-31T23:59:59Z",
+              options: [
+                { text: "Brazil", prediction: 0.3 },
+                { text: "Germany", prediction: 0.25 },
+                { text: "France", prediction: 0.2 },
+                { text: "Other", prediction: 0.25 },
+              ],
+              tags: ["sports", "football"],
+              unlisted: false,
+              sharedPublicly: true,
+              apiKey: "your_api_key_here",
+            },
+          },
+        },
+      },
+    })
     .mutation(async ({ input, ctx }) => {
       if (!ctx.userId) {
         throw new TRPCError({
@@ -590,7 +563,7 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "POST",
-        path: "/v0/resolveQuestion",
+        path: "/v1/resolveQuestion",
         description:
           "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
         example: {
@@ -603,7 +576,7 @@ export const questionRouter = router({
         },
       },
     })
-    .output(z.undefined())
+    .output(z.object({ message: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -618,6 +591,10 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         resolution: input.resolution.toLowerCase(),
       })
+
+      return {
+        message: `Question ${input.questionId} resolved to ${input.resolution}`,
+      }
     }),
 
   undoResolution: publicProcedure
@@ -663,12 +640,12 @@ export const questionRouter = router({
     .meta({
       openapi: {
         method: "PATCH",
-        path: "/v0/setSharedPublicly",
+        path: "/v1/setSharedPublicly",
         description:
           "Change the visibility of the question. The 'sharedPublicly' parameter sets whether the question is accessible to anyone via a direct link. The 'unlisted' parameter sets whether the question is visible on fatebook.io/public",
       },
     })
-    .output(z.undefined())
+    .output(z.object({ message: z.string() }))
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -681,6 +658,10 @@ export const questionRouter = router({
           unlisted: input.unlisted,
         },
       })
+
+      return {
+        message: `Question ${input.questionId} updated; it is now ${input.sharedPublicly ? "shared publicly" : "not shared publicly"} and ${input.unlisted ? "unlisted" : "listed"}.`,
+      }
     }),
 
   setHideForecastsUntilPrediction: publicProcedure
@@ -857,11 +838,18 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
+    .output(
+      z
+        .object({
+          message: z.string(),
+          forecast: ForecastSchema,
+        })
+        .optional(),
+    )
     .meta({
       openapi: {
         method: "POST",
-        path: "/v0/addForecast",
+        path: "/v1/addForecast",
         description:
           "Add a forecast to the question. Forecasts are between 0 and 1.",
         example: {
@@ -1030,6 +1018,20 @@ export const questionRouter = router({
         question: question.id,
         forecast: input.forecast,
       })
+
+      return {
+        message: `Forecast ${input.forecast} successfully added to "${question.title}"`,
+        forecast: {
+          questionId: submittedForecast.questionId,
+          forecast: submittedForecast.forecast,
+          optionId: submittedForecast.optionId,
+          id: submittedForecast.id,
+          createdAt: submittedForecast.createdAt,
+          comment: submittedForecast.comment,
+          profileId: submittedForecast.profileId,
+          userId: submittedForecast.userId,
+        },
+      }
     }),
 
   addComment: publicProcedure
@@ -1040,11 +1042,15 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
+    .output(
+      z.object({
+        message: z.string(),
+      }),
+    )
     .meta({
       openapi: {
         method: "POST",
-        path: "/v0/addComment",
+        path: "/v1/addComment",
         description: "Add a comment to the question.",
         example: {
           request: {
@@ -1135,6 +1141,10 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         user: user.id,
       })
+
+      return {
+        message: `Comment "${input.comment}" successfully added to "${question.title}"`,
+      }
     }),
 
   deleteComment: publicProcedure
@@ -1264,8 +1274,12 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
-    .meta({ openapi: { method: "DELETE", path: "/v0/deleteQuestion" } })
+    .output(
+      z.object({
+        message: z.string(),
+      }),
+    )
+    .meta({ openapi: { method: "DELETE", path: "/v1/deleteQuestion" } })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -1275,6 +1289,10 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
       })
+
+      return {
+        message: `Question "${input.questionId}" successfully deleted`,
+      }
     }),
 
   editQuestion: publicProcedure
@@ -1286,8 +1304,13 @@ export const questionRouter = router({
         apiKey: z.string().optional(),
       }),
     )
-    .output(z.undefined())
-    .meta({ openapi: { method: "PATCH", path: "/v0/editQuestion" } })
+    .output(
+      z.object({
+        message: z.string(),
+        question: QuestionSchema,
+      }),
+    )
+    .meta({ openapi: { method: "PATCH", path: "/v1/editQuestion" } })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -1328,6 +1351,11 @@ export const questionRouter = router({
         platform: input.apiKey ? "api" : "web",
         user: ctx.userId,
       })
+
+      return {
+        message: `Question "${input.questionId}" successfully edited`,
+        question: question,
+      }
     }),
 
   exportAllQuestions: publicProcedure.mutation(async ({ ctx }) => {
@@ -1354,426 +1382,3 @@ export const questionRouter = router({
     return csv
   }),
 })
-
-async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
-  input: {
-    cursor: number
-    limit?: number | null | undefined
-    extraFilters?: ExtraFilters | undefined
-  },
-  ctx: Context,
-) {
-  const limit = input.limit || 100
-
-  const skip = input.cursor
-  const userIdIfAuthed = ctx.userId || "no user id, don't match" // because of prisma undefined rules
-
-  const user = ctx.userId
-    ? await prisma.user.findUnique({ where: { id: userIdIfAuthed } })
-    : null
-
-  const searchedPredictionBounds = getSearchedPredictionBounds(
-    input.extraFilters?.searchString,
-  )
-
-  const questions = await prisma.question.findMany({
-    skip: skip,
-    take: limit + 1,
-    orderBy: input.extraFilters?.resolvingSoon
-      ? {
-          resolveBy: "asc",
-        }
-      : input.extraFilters?.filterTournamentId
-        ? {
-            createdAt: "asc",
-          }
-        : {
-            createdAt: "desc",
-          },
-    where: {
-      AND: [
-        input.extraFilters?.showAllPublic
-          ? {
-              AND: [{ sharedPublicly: true }, { unlisted: false }],
-            }
-          : input.extraFilters?.theirUserId ||
-              input.extraFilters?.filterTournamentId
-            ? {
-                // show public, not unlisted questions by the user, and questions they've shared with me
-                userId: input.extraFilters.theirUserId,
-                tournaments: input.extraFilters.filterTournamentId
-                  ? {
-                      some: {
-                        id: input.extraFilters.filterTournamentId,
-                      },
-                    }
-                  : undefined,
-                OR: [
-                  {
-                    sharedPublicly: true,
-                    unlisted: input.extraFilters?.filterTournamentId
-                      ? undefined
-                      : false,
-                  },
-                  { sharedWith: { some: { id: userIdIfAuthed } } },
-                  {
-                    sharedWithLists: {
-                      some: {
-                        OR: [
-                          { authorId: userIdIfAuthed },
-                          { users: { some: { id: userIdIfAuthed } } },
-                          matchesAnEmailDomain(user),
-                        ],
-                      },
-                    },
-                  },
-                  input.extraFilters.filterTournamentId
-                    ? { userId: userIdIfAuthed }
-                    : {},
-                ],
-              }
-            : input.extraFilters?.filterUserListId
-              ? {
-                  OR: [
-                    {
-                      sharedWithLists: {
-                        some: {
-                          id: input.extraFilters.filterUserListId,
-                          OR: [
-                            { authorId: userIdIfAuthed },
-                            { users: { some: { id: userIdIfAuthed } } },
-                            matchesAnEmailDomain(user),
-                          ],
-                        },
-                      },
-                    },
-                    // if the question is in a tournament shared with the user list, also include it
-                    {
-                      tournaments: {
-                        some: {
-                          userList: {
-                            id: input.extraFilters?.filterUserListId,
-                            OR: [
-                              { authorId: userIdIfAuthed },
-                              { users: { some: { id: userIdIfAuthed } } },
-                              matchesAnEmailDomain(user),
-                            ],
-                          },
-                        },
-                      },
-                    },
-                  ],
-                }
-              : {
-                  // only show questions I've created, forecasted on, or are shared with me
-                  OR: [
-                    { userId: ctx.userId },
-                    {
-                      forecasts: {
-                        some: {
-                          userId: ctx.userId,
-                        },
-                      },
-                    },
-                    {
-                      sharedWith: {
-                        some: {
-                          id: ctx.userId,
-                        },
-                      },
-                    },
-                    {
-                      sharedWithLists: {
-                        some: {
-                          OR: [
-                            { authorId: userIdIfAuthed },
-                            { users: { some: { id: userIdIfAuthed } } },
-                            matchesAnEmailDomain(user),
-                          ],
-                        },
-                      },
-                    },
-                  ],
-                },
-        input.extraFilters?.resolved
-          ? {
-              resolution: {
-                not: null,
-              },
-            }
-          : {},
-        input.extraFilters?.unresolved
-          ? {
-              resolution: null,
-            }
-          : {},
-        input.extraFilters?.readyToResolve
-          ? {
-              resolution: null,
-              resolveBy: {
-                lte: new Date(),
-              },
-            }
-          : {},
-        input.extraFilters?.resolvingSoon
-          ? {
-              resolveBy: {
-                gte: new Date(),
-              },
-              resolution: null,
-            }
-          : {},
-        input.extraFilters?.filterTagIds
-          ? {
-              tags: {
-                some: {
-                  id: {
-                    in: input.extraFilters.filterTagIds,
-                  },
-                },
-              },
-            }
-          : {},
-        searchedPredictionBounds
-          ? {
-              forecasts: {
-                some: {
-                  userId: userIdIfAuthed,
-                  forecast: {
-                    gte: searchedPredictionBounds.lowerBound / 100,
-                    lte: searchedPredictionBounds.upperBound / 100,
-                  },
-                },
-              },
-            }
-          : input.extraFilters?.searchString
-            ? {
-                OR: [
-                  {
-                    title: {
-                      contains: input.extraFilters.searchString,
-                      mode: "insensitive",
-                    },
-                  },
-                  {
-                    comments: {
-                      some: {
-                        comment: {
-                          contains: input.extraFilters.searchString,
-                          mode: "insensitive",
-                        },
-                      },
-                    },
-                  },
-                  {
-                    tags: {
-                      some: {
-                        name: {
-                          contains: input.extraFilters.searchString,
-                          mode: "insensitive",
-                        },
-                        userId: userIdIfAuthed,
-                      },
-                    },
-                  },
-                ],
-              }
-            : {},
-      ],
-    },
-    include: questionIncludes(ctx.userId),
-  })
-
-  return {
-    items: questions
-      .map((q) =>
-        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(q, ctx.userId),
-      )
-      // don't include the extra one - it's just to see if there's another page
-      .slice(0, limit),
-
-    nextCursor: questions.length > limit ? skip + limit : undefined,
-  }
-}
-
-export async function emailNewlySharedWithUsers(
-  newlySharedWith: string[],
-  question: QuestionWithUserAndSharedWith,
-) {
-  await Promise.all(
-    newlySharedWith.map(async (email) => {
-      const author = question.user.name || question.user.email
-      const user = await prisma.user.findUnique({ where: { email } })
-      if (user) {
-        await createNotification({
-          userId: user.id,
-          title: `${author} shared a prediction with you`,
-          content: `${author} shared a prediction with you`,
-          url: getQuestionUrl(question),
-          tags: ["shared_prediction", question.id],
-          questionId: question.id,
-        })
-      } else {
-        await sendEmailUnbatched({
-          to: email,
-          subject: `${author} shared a prediction with you`,
-          textBody: `"${question.title}"`,
-          htmlBody: `<p>${author} shared a prediction with you: <b>${getHtmlLinkQuestionTitle(
-            question,
-          )}</p>
-<p><a href=${getQuestionUrl(
-            question,
-          )}>See ${author}'s prediction and add your own on Fatebook.</a></p>
-${fatebookEmailFooter()}`,
-        })
-      }
-    }),
-  )
-}
-
-export async function getQuestionAssertAuthor(
-  ctx: { userId: string | undefined },
-  questionId: string,
-  apiKey?: string,
-  questionInclude?: Prisma.QuestionInclude,
-) {
-  const question = await prisma.question.findUnique({
-    where: {
-      id: questionId,
-    },
-    include: questionInclude,
-  })
-
-  const userId = ctx?.userId || (await getUserByApiKeyOrThrow(apiKey || "")).id
-
-  if (!question) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
-  }
-  if (question.userId !== userId) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Only the question's author can do that",
-    })
-  }
-
-  return question
-}
-
-export function assertHasAccess(
-  question: QuestionWithForecastsAndSharedWithAndLists | null,
-  user: User | null,
-) {
-  if (question === null) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
-  }
-
-  const userId = user?.id || "NO MATCH"
-
-  if (
-    question.sharedPublicly ||
-    question.sharedWith.some((u) => u.id === userId) ||
-    question.sharedWithLists.some(
-      (l) =>
-        l.users.some((u) => u.id === userId) ||
-        l.authorId === userId ||
-        l.emailDomains.some((ed) => user && user.email.endsWith(ed)),
-    ) ||
-    question.userId === userId ||
-    question.forecasts.some((f) => f.userId === userId) // for slack questions
-  ) {
-    return question as QuestionWithForecasts
-  } else {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "You don't have access to that question",
-    })
-  }
-}
-
-export function scrubHiddenForecastsAndSensitiveDetailsFromQuestion<
-  QuestionX extends QuestionWithForecasts,
->(question: QuestionX, userId: string | undefined) {
-  question = scrubApiKeyPropertyRecursive(question, ["email", "discordUserId"])
-
-  if (!forecastsAreHidden(question, userId)) {
-    return question
-  }
-
-  return {
-    ...question,
-    forecasts: question.forecasts.map((f) => {
-      const hideForecast = f.userId !== userId || !userId
-      return {
-        ...f,
-        ...(hideForecast
-          ? {
-              forecast: null,
-              userId: null,
-              user: null,
-              profileId: null,
-              profile: null,
-              options: null,
-            }
-          : {}),
-      }
-    }),
-  }
-}
-
-export function scrubApiKeyPropertyRecursive<T>(
-  obj: T,
-  otherKeysToScrub?: string[],
-) {
-  // warning - this mutates the object
-  for (const key in obj) {
-    if (key === "apiKey" || otherKeysToScrub?.includes(key)) {
-      ;(obj as any)[key] = undefined
-    } else if (typeof obj[key] === "object") {
-      obj[key] = scrubApiKeyPropertyRecursive(obj[key], otherKeysToScrub)
-    }
-  }
-  return obj
-}
-
-async function getUserByApiKeyOrThrow(apiKey: string) {
-  const user = await prisma.user.findFirst({
-    where: {
-      apiKey,
-    },
-  })
-  if (user) {
-    return user
-  }
-  throw new TRPCError({
-    code: "UNAUTHORIZED",
-    message:
-      "Could not find a user with that API key. See fatebook.io/api-setup",
-  })
-}
-
-async function getUserFromCtxOrApiKeyOrThrow(
-  ctx: Context,
-  apiKey: string | undefined,
-) {
-  if (ctx.userId) {
-    const user = await prisma.user.findUnique({
-      where: { id: ctx.userId || "NO MATCH" },
-    })
-    if (!user) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Could not find a user with that ID",
-      })
-    }
-    return user
-  }
-
-  if (!apiKey) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "You must provide an API key. See fatebook.io/api-setup",
-    })
-  }
-
-  return await getUserByApiKeyOrThrow(apiKey)
-}

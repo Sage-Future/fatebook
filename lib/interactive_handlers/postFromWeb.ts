@@ -8,9 +8,9 @@ import {
 } from "../_utils_server"
 import { buildQuestionBlocks } from "../blocks-designs/question"
 import prisma from "../prisma"
-import { assertHasAccess } from "../web/question_router"
 import { getQuestionIdFromUrl } from "../web/question_url"
 import { getTournamentUrl, getUserListUrl } from "../web/utils"
+import { assertHasAccess } from "../web/question_router/assert"
 
 export async function postFromWeb(
   relativePath: string,
