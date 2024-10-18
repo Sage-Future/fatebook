@@ -92,7 +92,7 @@ export default function BlogPage({ posts }: BlogPageProps) {
           width={400}
           height={400}
           alt="An open book in front of a scale"
-          className="mx-auto"
+          className="mx-auto rounded-xl"
         />
       </div>
     </div>
