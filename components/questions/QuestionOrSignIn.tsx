@@ -5,7 +5,6 @@ import { useQuestionId } from "../../lib/web/question_url"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook, truncateString } from "../../lib/web/utils"
 import { Question as QuestionComp } from "./Question"
-import { QuestionWithStandardIncludes } from "../../prisma/additional"
 
 export function QuestionOrSignIn({
   embedded,
@@ -19,7 +18,7 @@ export function QuestionOrSignIn({
   const { data: session, status: authStatus } = useSession()
 
   const questionId = useQuestionId()
-  const qQuery = api.question.getQuestion.useQuery(
+  const qQuery = api.legacyQuestion.getQuestion.useQuery(
     { questionId },
     { retry: false },
   )
@@ -83,7 +82,7 @@ export function QuestionOrSignIn({
       <NextSeo title={truncateString(question?.title, 60)} />
       <QuestionComp
         embedded={embedded}
-        question={question as QuestionWithStandardIncludes}
+        question={question}
         alwaysExpand={alwaysExpand}
       />
     </div>
