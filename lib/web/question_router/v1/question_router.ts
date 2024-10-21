@@ -407,10 +407,16 @@ export const questionRouter = router({
       },
     })
     .mutation(async ({ input, ctx }) => {
-      if (!ctx.userId) {
+      let userId: string
+      if (ctx.userId) {
+        userId = ctx.userId
+      } else if (input.apiKey) {
+        const user = await getUserByApiKeyOrThrow(input.apiKey)
+        userId = user.id
+      } else {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "You must be logged in to create a question",
+          message: "You must be logged in or provide a valid API key to create a question",
         })
       }
 
@@ -418,7 +424,7 @@ export const questionRouter = router({
       if (input.tags && input.tags.length > 0) {
         tags = await prisma.tag.findMany({
           where: {
-            userId: ctx.userId,
+            userId: userId,
           },
         })
       }
@@ -429,7 +435,7 @@ export const questionRouter = router({
         data: {
           title: input.title,
           resolveBy: input.resolveBy,
-          user: { connect: { id: ctx.userId } }, // Changed from userId to user connect
+          user: { connect: { id: userId } },
           type: isMultiChoice
             ? QuestionType.MULTIPLE_CHOICE
             : QuestionType.BINARY,
@@ -447,7 +453,7 @@ export const questionRouter = router({
                     },
                     create: {
                       name: tag,
-                      userId: ctx.userId as string,
+                      userId: userId,
                     },
                   })),
                 }
@@ -471,7 +477,7 @@ export const questionRouter = router({
                   // https://github.com/prisma/prisma/issues/22090
                   create: [...input.options].reverse().map((option) => ({
                     text: option.text,
-                    user: { connect: { id: ctx.userId } },
+                    user: { connect: { id: userId } },
                   })),
                 }
               : undefined,
@@ -491,7 +497,7 @@ export const questionRouter = router({
               return prisma.forecast.create({
                 data: {
                   question: { connect: { id: question.id } },
-                  user: { connect: { id: ctx.userId } },
+                  user: { connect: { id: userId } },
                   forecast: new Decimal(option.prediction),
                   option: {
                     connect: {
@@ -509,7 +515,7 @@ export const questionRouter = router({
         await prisma.forecast.create({
           data: {
             question: { connect: { id: question.id } },
-            user: { connect: { id: ctx.userId } },
+            user: { connect: { id: userId } },
             forecast: new Decimal(input.prediction),
           },
         })
@@ -517,21 +523,21 @@ export const questionRouter = router({
 
       await backendAnalyticsEvent("question_created", {
         platform: "web",
-        user: ctx.userId,
+        user: userId,
       })
 
       // TODO: how do we want to handle analytics for MCQ forecasts?
       if (input.prediction) {
         await backendAnalyticsEvent("forecast_submitted", {
           platform: "web",
-          user: ctx.userId,
+          user: userId,
           question: question.id,
           forecast: input.prediction,
         })
       }
 
       try {
-        await syncToSlackIfNeeded(question, ctx.userId)
+        await syncToSlackIfNeeded(question, userId)
       } catch (error) {
         if (error instanceof Error && error.message.includes("is_archived")) {
           // If the error is due to an archived Slack channel, handle it gracefully
