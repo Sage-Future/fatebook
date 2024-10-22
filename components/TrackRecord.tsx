@@ -10,6 +10,14 @@ import { useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import GitHubCalendar from "react-github-contribution-calendar"
 import {
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts"
+import {
   getDateYYYYMMDD,
   joinWithOr,
   populateDetails,
@@ -222,10 +230,83 @@ export function TrackRecord({
                 </div>
               ))}
             </div>
+            <AbsoluteScoreOverTimeChart
+              userId={trackRecordUserId}
+              tags={tags}
+            />
             <ForecastsCalendarHeatmap tags={tags} userId={trackRecordUserId} />
           </>
         )}
       </ErrorBoundary>
+    </div>
+  )
+}
+
+function AbsoluteScoreOverTimeChart({
+  userId,
+  tags,
+}: {
+  userId: string
+  tags: string[]
+}) {
+  const absoluteScoresOverTime = api.question.getQuestionScores.useQuery({
+    userId,
+    tags,
+  })
+
+  const data = absoluteScoresOverTime.data?.map((qs) => ({
+    createdAt: qs.createdAt,
+    absoluteScore: qs.absoluteScore.toNumber(),
+  }))
+  if (!data) return null
+
+  // Calculate rolling 1 week average
+  const rollingAverage = data.map((item, index) => {
+    const lastWeek = data.slice(Math.max(0, index - 6), index + 1)
+    const average =
+      lastWeek.reduce((sum, d) => sum + d.absoluteScore, 0) / lastWeek.length
+    return {
+      ...item,
+      rollingAverage: lastWeek.length === 7 ? average : null,
+    }
+  })
+
+  return (
+    <div className="pt-12">
+      <h3>Brier Score Over Time</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={rollingAverage}>
+          <XAxis
+            dataKey="createdAt"
+            tick={{ fontSize: 10 }}
+            tickFormatter={(date) => new Date(date).toLocaleDateString()}
+            interval="preserveStartEnd"
+          />
+          <YAxis />
+          <Tooltip
+            labelFormatter={(label) => getDateYYYYMMDD(new Date(label))}
+            formatter={(value, name) => [
+              Number(value).toFixed(2),
+              name === "rollingAverage" ? "1 Week Average" : "Brier Score",
+            ]}
+          />
+          <Line
+            type="monotone"
+            dataKey="absoluteScore"
+            fill="#8884d8"
+            strokeWidth={0}
+            isAnimationActive={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="rollingAverage"
+            stroke="#82ca9d"
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </LineChart>
+      </ResponsiveContainer>
     </div>
   )
 }
