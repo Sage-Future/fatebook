@@ -105,7 +105,9 @@ describe("getQuestionsUserCreatedOrForecastedOnOrIsSharedWith", () => {
                 { title: { contains: "test", mode: "insensitive" } },
                 {
                   comments: {
-                    some: { comment: { contains: "test", mode: "insensitive" } },
+                    some: {
+                      comment: { contains: "test", mode: "insensitive" },
+                    },
                   },
                 },
                 {

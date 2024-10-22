@@ -66,7 +66,10 @@ describe("getUserFromCtxOrApiKeyOrThrow", () => {
 
   it("should throw error if neither userId nor apiKey is provided", async () => {
     await expect(
-      getUserFromCtxOrApiKeyOrThrow({ userId: undefined, session: null }, undefined),
+      getUserFromCtxOrApiKeyOrThrow(
+        { userId: undefined, session: null },
+        undefined,
+      ),
     ).rejects.toThrow(TRPCError)
   })
 })

@@ -1,6 +1,10 @@
 import { QuestionWithUserAndSharedWith } from "../../../prisma/additional"
 import prisma from "../../prisma"
-import { createNotification, fatebookEmailFooter, sendEmailUnbatched } from "../notifications"
+import {
+  createNotification,
+  fatebookEmailFooter,
+  sendEmailUnbatched,
+} from "../notifications"
 import { getQuestionUrl } from "../question_url"
 import { getHtmlLinkQuestionTitle } from "../utils"
 

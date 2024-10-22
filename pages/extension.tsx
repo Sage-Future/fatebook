@@ -165,29 +165,47 @@ export default function ExtensionPage() {
             >
               {browser === "Firefox" ? (
                 <>
-                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                  <span
+                    className="kbd kbd-lg mx-1"
+                    suppressHydrationWarning={true}
+                  >
                     {os === "macOS" ? "cmd" : "ctrl"}
                   </span>
                   <span>{"+"}</span>
-                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                  <span
+                    className="kbd kbd-lg mx-1"
+                    suppressHydrationWarning={true}
+                  >
                     {os === "macOS" ? "opt" : "alt"}
                   </span>
                   <span>{"+"}</span>
-                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                  <span
+                    className="kbd kbd-lg mx-1"
+                    suppressHydrationWarning={true}
+                  >
                     Q
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                  <span
+                    className="kbd kbd-lg mx-1"
+                    suppressHydrationWarning={true}
+                  >
                     {os === "macOS" ? "cmd" : "ctrl"}
                   </span>
                   <span>{"+"}</span>
-                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                  <span
+                    className="kbd kbd-lg mx-1"
+                    suppressHydrationWarning={true}
+                  >
                     shift
                   </span>
                   <span>{"+"}</span>
-                  <span className="kbd kbd-lg mx-1" suppressHydrationWarning={true}>
+                  <span
+                    className="kbd kbd-lg mx-1"
+                    suppressHydrationWarning={true}
+                  >
                     F
                   </span>
                 </>

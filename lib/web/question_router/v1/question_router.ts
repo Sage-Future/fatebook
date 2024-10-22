@@ -416,7 +416,8 @@ export const questionRouter = router({
       } else {
         throw new TRPCError({
           code: "UNAUTHORIZED",
-          message: "You must be logged in or provide a valid API key to create a question",
+          message:
+            "You must be logged in or provide a valid API key to create a question",
         })
       }
 

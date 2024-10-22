@@ -10,18 +10,21 @@ export const metadata = {
   title: "Concrete benefits of making predictions",
   date: "2024-10-17",
   author: "Jonny Spicer",
-  authorLink: "https://fatebook.io/user/Jonny-Spicer--289"
+  authorLink: "https://fatebook.io/user/Jonny-Spicer--289",
 }
 
 export default function BlogPage() {
   return (
     <div className="prose mx-auto my-8 px-4">
-      <Link href="/blog" className="flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4">
+      <Link
+        href="/blog"
+        className="flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+      >
         <ArrowLeftIcon className="w-4 h-4 mr-1" />
         Back to Blog
       </Link>
-      <NextSeo 
-        title={metadata.title} 
+      <NextSeo
+        title={metadata.title}
         description="Discover how making predictions can improve productivity, decision-making, and goal-setting. Learn practical tips for harnessing the power of forecasting in your personal and professional life."
         canonical="https://fatebook.io/blog/concrete-benefits-of-making-predictions"
       />
@@ -30,7 +33,7 @@ export default function BlogPage() {
         components={{
           p: ({ node, children, ...props }) => {
             const hasImage = node?.children?.some(
-              (child) => child.type === "element" && child.tagName === "img"
+              (child) => child.type === "element" && child.tagName === "img",
             )
 
             if (hasImage) {
@@ -43,7 +46,7 @@ export default function BlogPage() {
 
             return <p {...props}>{children}</p>
           },
-          img: ({ src, alt, className}) => {
+          img: ({ src, alt, className }) => {
             return (
               <Image
                 src={src || ""}
