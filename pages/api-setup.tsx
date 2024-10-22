@@ -86,6 +86,9 @@ export default function ApiPage() {
             </div>
           </div>
         )}
+        <div className="not-prose">
+          <SwaggerUI url="/api/openapi.json" />
+        </div>
         <h3>API Versions</h3>
         <p>
           Fatebook offers two versions of the API: <code>v0</code> and{" "}
@@ -110,8 +113,8 @@ export default function ApiPage() {
 
         <h4>V0 API (Legacy)</h4>
         <p>
-          The following documentation is for the <code>v0</code> API. If you{"'"}re
-          already using this version, you can continue to do so, but we
+          The following documentation is for the <code>v0</code> API. If you
+          {"'"}re already using this version, you can continue to do so, but we
           recommend migrating to <code>v1</code> for new integrations.
         </p>
 
@@ -241,7 +244,6 @@ export default function ApiPage() {
           </li>
         </ul>
       </div>
-      <SwaggerUI url="/api/openapi.json" />
     </div>
   )
 }
