@@ -110,7 +110,7 @@ export default function ApiPage() {
 
         <h4>V0 API (Legacy)</h4>
         <p>
-          The following documentation is for the <code>v0</code> API. If you're
+          The following documentation is for the <code>v0</code> API. If you{"'"}re
           already using this version, you can continue to do so, but we
           recommend migrating to <code>v1</code> for new integrations.
         </p>
