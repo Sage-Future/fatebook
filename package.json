@@ -16,7 +16,8 @@
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios",
     "zip": "echo \"have you set isDev=false and incremented version num?\" && bash zip-extensions.sh",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.0",
@@ -79,22 +80,25 @@
     "trpc-openapi": "^1.2.0",
     "trpc-transformer": "^3.2.2",
     "use-debounce": "^10.0.1",
+    "util": "^0.12.5",
     "vercel": "^34.2.7",
     "zod": "^3.23.8",
-    "zod-error": "^1.5.0"
+    "zod-error": "^1.5.0",
+    "zod-prisma-types": "^3.1.8"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.1.0",
     "@next/eslint-plugin-next": "^14.2.4",
     "@tailwindcss/typography": "^0.5.13",
     "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.4.8",
-    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
     "@types/graceful-fs": "^4.1.9",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.13",
     "@types/node": "^20.14.5",
     "@types/react": "^18.3.3",
     "@types/swagger-ui-react": "^4.18.3",
+    "@types/testing-library__jest-dom": "^5.14.9",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "@vercel/git-hooks": "^1.0.0",
@@ -112,6 +116,7 @@
     "prettier": "3.3.2",
     "prisma": "^5.15.0",
     "tailwindcss": "^3.3.2",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.4.5"
   },
   "lint-staged": {

@@ -86,6 +86,53 @@ export default function ApiPage() {
             </div>
           </div>
         )}
+        <div className="not-prose">
+          <SwaggerUI url="/api/openapi.json" />
+        </div>
+        <h3>API Versions</h3>
+        <p>
+          Fatebook offers two versions of the API: <code>v0</code> and{" "}
+          <code>v1</code>. New users should use the <code>v1</code> API, which
+          offers improved functionality and stability. The <code>v0</code>{" "}
+          documentation is preserved here for users who have already adopted
+          that version.
+        </p>
+
+        <h4>V1 API (Recommended for new users)</h4>
+        <p>
+          The latest V1 API documentation is available below on this page. You
+          can find detailed information about endpoints and usage in the
+          <Link
+            href="#operations-tag-v1"
+            className="text-blue-600 hover:underline ml-1"
+          >
+            V1 API Documentation section
+          </Link>
+          .
+        </p>
+
+        <h4>V0 API (Legacy)</h4>
+        <p>
+          The following documentation is for the <code>v0</code> API. If you
+          {"'"}re already using this version, you can continue to do so, but we
+          recommend migrating to <code>v1</code> for new integrations.
+        </p>
+
+        <p>
+          Below are examples of two common endpoints. For a complete list of
+          available endpoints and detailed documentation for the v0 API, please
+          refer to the
+          <Link
+            href="#operations-tag-v0"
+            className="text-blue-600 hover:underline ml-1"
+          >
+            V0 API Documentation section
+          </Link>{" "}
+          in the OpenAPI specification further down this page.
+        </p>
+
+        <b>GET /v0/createQuestion</b>
+
         <p>
           You can use your API key to create Fatebook questions just by going
           this URL (separated onto multiple lines for readability):
@@ -113,70 +160,6 @@ export default function ApiPage() {
           <br />
         </p>
 
-        <p>{"You can also add some optional parameters, here's an example:"}</p>
-
-        <p className="bg-neutral-100 outline outline-neutral-300 outline-1 p-2 rounded-md break-words">
-          {"https://fatebook.io/api/v0/createQuestion"}
-          {"?apiKey="}
-          {apiKey.data || "YOUR_API_KEY"}
-          <br />
-          {"&title="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"YOUR_QUESTION_TITLE"}
-          </span>
-          <br />
-          {"&resolveBy="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"RESOLUTION_DATE_YYYY-MM-DD"}
-          </span>
-          <br />
-          {"&forecast="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"FORECAST_BETWEEN_0_AND_1"}
-          </span>
-          <br />
-          {"&tags="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"TAG_1"}
-          </span>
-          <br />
-          {"&tags="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"TAG_2"}
-          </span>
-          <br />
-          {"&sharePublicly="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"yes"}
-          </span>
-          <br />
-          {"&shareWithLists="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"LIST_NAME_1"}
-          </span>
-          <br />
-          {"&shareWithLists="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"LIST_NAME_2"}
-          </span>
-          <br />
-          {"&shareWithEmail="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"EMAIL_1"}
-          </span>
-          <br />
-          {"&shareWithEmail="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"EMAIL_2"}
-          </span>
-          <br />
-          {"&hideForecastsUntil="}
-          <span className="bg-indigo-100 text-indigo-800 font-semibold">
-            {"HIDE_FORECASTS_UNTIL_DATE_YYYY-MM-DD"}
-          </span>
-          <br />
-        </p>
-
         <p>
           You can use this to integrate Fatebook with other tools, like iOS
           shortcuts. If you create an integration, let us know and we can tell
@@ -191,33 +174,10 @@ export default function ApiPage() {
           .
         </p>
 
-        <h3>Integrations that other Fatebook users have created:</h3>
-        <ul>
-          <li>
-            <Link href="https://www.icloud.com/shortcuts/25903acfcd3d4fd5bed31c2f50322928">
-              An iOS shortcut to create a Fatebook question
-            </Link>
-            {
-              " - by @JasperGo. You can add it to your homescreen or use Siri to create a question!"
-            }
-          </li>
-          <li>
-            <Link href="https://github.com/sonofhypnos/fatebook.el">
-              An Emacs plugin to create Fatebook questions
-            </Link>
-            {" - by @sonofhypnos"}
-          </li>
-          <li>
-            <Link href="https://github.com/Calebp98/alfred-fatebook-workflow">
-              An Alfred workflow to create Fatebook questions
-            </Link>
-            {" - by Caleb Parikh"}
-          </li>
-        </ul>
-        <h3>Use the API to get Fatebook questions by ID</h3>
+        <b>GET /v0/getQuestion</b>
         <p>
           {
-            "You can also use the API to get Fatebook questions by ID, here's an example:"
+            "You can also use the API toget Fatebook questions by ID, here's an example:"
           }
         </p>
 
@@ -260,8 +220,30 @@ export default function ApiPage() {
           </a>{" "}
           to see an example of the getQuestion endpoint in action.
         </p>
+        <h3>Integrations that other Fatebook users have created:</h3>
+        <ul>
+          <li>
+            <Link href="https://www.icloud.com/shortcuts/25903acfcd3d4fd5bed31c2f50322928">
+              An iOS shortcut to create a Fatebook question
+            </Link>
+            {
+              " - by @JasperGo. You can add it to your homescreen or use Siri to create a question!"
+            }
+          </li>
+          <li>
+            <Link href="https://github.com/sonofhypnos/fatebook.el">
+              An Emacs plugin to create Fatebook questions
+            </Link>
+            {" - by @sonofhypnos"}
+          </li>
+          <li>
+            <Link href="https://github.com/Calebp98/alfred-fatebook-workflow">
+              An Alfred workflow to create Fatebook questions
+            </Link>
+            {" - by Caleb Parikh"}
+          </li>
+        </ul>
       </div>
-      <SwaggerUI url="/api/openapi.json" />
     </div>
   )
 }

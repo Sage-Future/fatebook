@@ -18,7 +18,7 @@ export function QuestionOrSignIn({
   const { data: session, status: authStatus } = useSession()
 
   const questionId = useQuestionId()
-  const qQuery = api.question.getQuestion.useQuery(
+  const qQuery = api.legacyQuestion.getQuestion.useQuery(
     { questionId },
     { retry: false },
   )

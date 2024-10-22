@@ -3,12 +3,10 @@ import { z } from "zod"
 import { backendAnalyticsEvent, postSlackMessage } from "../_utils_server"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import prisma from "../prisma"
-import {
-  emailNewlySharedWithUsers,
-  getQuestionAssertAuthor,
-} from "./question_router"
 import { publicProcedure, router } from "./trpc_base"
 import { getUserListUrl, matchesAnEmailDomain } from "./utils"
+import { emailNewlySharedWithUsers } from "./question_router/email_shared"
+import { getQuestionAssertAuthor } from "./question_router/assert"
 
 export const userListRouter = router({
   getUserLists: publicProcedure.query(async ({ ctx }) => {

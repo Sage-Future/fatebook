@@ -130,7 +130,7 @@ export function Predict({
       if (!userId) {
         localStorage.setItem(
           "cached_question_content",
-          SuperJSON.stringify({ ...data, tags: tagsPreview })
+          SuperJSON.stringify({ ...data, tags: tagsPreview }),
         )
         if (embedded) {
           window.open(fatebookUrl, "_blank")?.focus()

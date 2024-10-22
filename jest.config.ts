@@ -10,7 +10,21 @@ const createJestConfig = nextJest({
   dir: "./",
 })
 
-const config: Config = {
+// Allows jest to be able to use ESM correctly in test setup
+const esModules = [
+  "@panva/hkdf",
+  "data-uri-to-buffer",
+  "fetch-blob",
+  "formdata-polyfill",
+  "jose",
+  "node-fetch",
+  "preact",
+  "preact-render-to-string",
+  "superjson",
+  "uncrypto",
+  "uuid",
+]
+const customConfig: Config = {
   clearMocks: true,
   collectCoverage: false,
   coverageDirectory: "coverage",
@@ -20,7 +34,18 @@ const config: Config = {
     "!**/vendor/**",
   ],
   coverageProvider: "v8",
+  // setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"], - can uncomment when jest.setup.ts is reintroduced
   testEnvironment: "jsdom",
+  transformIgnorePatterns: [`/node_modules/(?!(${esModules.join("|")})/)`],
 }
 
-export default createJestConfig(config)
+module.exports = async () => {
+  const jestConfig = await createJestConfig(customConfig)()
+  return {
+    ...jestConfig,
+    transformIgnorePatterns:
+      jestConfig.transformIgnorePatterns?.filter(
+        (ptn) => ptn !== "/node_modules/",
+      ) ?? [],
+  }
+}
