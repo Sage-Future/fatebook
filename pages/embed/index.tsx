@@ -19,7 +19,7 @@ export default function ApiPage() {
       />
       <div className="mx-auto prose">
         <ReactMarkdown remarkPlugins={[remarkGfm]}>{above}</ReactMarkdown>
-        <pre className="bg-neutral-200 text-neutral-800 p-2 rounded-md break-words">
+        <pre className="bg-neutral-200 text-neutral-800 p-2 rounded-md break-words text-wrap">
           {
             '<iframe\n\tsrc="https://fatebook.io/embed/q/QUESTION_ID?compact=true&requireSignIn=false"\n\twidth="400"\n\theight="200"\n/>'
           }
