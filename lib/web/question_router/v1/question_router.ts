@@ -57,6 +57,7 @@ export const questionRouter = router({
         method: "GET",
         path: "/v1/getQuestion",
         description: "Get details of a specific question",
+        tags: ["v1"],
         example: {
           request: {
             questionId: "cm05iuuhx00066e7a1hncujn0",
@@ -244,6 +245,7 @@ export const questionRouter = router({
         path: "/v1/getQuestions",
         description:
           "By default, this fetches all questions that you've created, forecasted on, or are shared with you. Alternatively, if you set showAllPublic to true, it fetches all public questions from fatebook.io/public.",
+        tags: ["v1"],
       },
     })
     .output(
@@ -377,6 +379,7 @@ export const questionRouter = router({
         method: "POST",
         path: "/v1/createQuestion",
         description: "Create a new question (binary or multiple choice)",
+        tags: ["v1"],
         example: {
           request: {
             binaryExample: {
@@ -573,6 +576,7 @@ export const questionRouter = router({
         path: "/v1/resolveQuestion",
         description:
           "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question",
+        tags: ["v1"],
         example: {
           request: {
             questionId: "cm05iuuhx00066e7a1hncujn0",
@@ -650,6 +654,7 @@ export const questionRouter = router({
         path: "/v1/setSharedPublicly",
         description:
           "Change the visibility of the question. The 'sharedPublicly' parameter sets whether the question is accessible to anyone via a direct link. The 'unlisted' parameter sets whether the question is visible on fatebook.io/public",
+        tags: ["v1"],
       },
     })
     .output(z.object({ message: z.string() }))
@@ -859,6 +864,7 @@ export const questionRouter = router({
         path: "/v1/addForecast",
         description:
           "Add a forecast to the question. Forecasts are between 0 and 1.",
+        tags: ["v1"],
         example: {
           request: {
             questionId: "cm05iuuhx00066e7a1hncujn0",
@@ -1059,6 +1065,7 @@ export const questionRouter = router({
         method: "POST",
         path: "/v1/addComment",
         description: "Add a comment to the question.",
+        tags: ["v1"],
         example: {
           request: {
             questionId: "cm05iuuhx00066e7a1hncujn0",
@@ -1286,7 +1293,13 @@ export const questionRouter = router({
         message: z.string(),
       }),
     )
-    .meta({ openapi: { method: "DELETE", path: "/v1/deleteQuestion" } })
+    .meta({ 
+      openapi: { 
+        method: "DELETE", 
+        path: "/v1/deleteQuestion",
+        tags: ["v1"],
+      } 
+    })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -1317,7 +1330,13 @@ export const questionRouter = router({
         question: QuestionSchema,
       }),
     )
-    .meta({ openapi: { method: "PATCH", path: "/v1/editQuestion" } })
+    .meta({ 
+      openapi: { 
+        method: "PATCH", 
+        path: "/v1/editQuestion",
+        tags: ["v1"],
+      } 
+    })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 

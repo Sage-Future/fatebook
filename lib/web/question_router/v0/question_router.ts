@@ -226,6 +226,7 @@ export const questionRouter = router({
         path: "/v0/getQuestions",
         description:
           "By default, this fetches all questions that you've created, forecasted on, or are shared with you. Alternatively, if you set showAllPublic to true, it fetches all public questions from fatebook.io/public.",
+        tags: ["v0"],
       },
     })
     .output(
@@ -508,6 +509,7 @@ export const questionRouter = router({
             apiKey: "your_api_key_here",
           },
         },
+        tags: ["v0"],
       },
     })
     .output(z.undefined())
@@ -573,6 +575,7 @@ export const questionRouter = router({
         path: "/v0/setSharedPublicly",
         description:
           "Change the visibility of the question. The 'sharedPublicly' parameter sets whether the question is accessible to anyone via a direct link. The 'unlisted' parameter sets whether the question is visible on fatebook.io/public",
+        tags: ["v0"],
       },
     })
     .output(z.undefined())
@@ -778,6 +781,7 @@ export const questionRouter = router({
             apiKey: "your_api_key_here",
           },
         },
+        tags: ["v0"],
       },
     })
     .mutation(async ({ input, ctx }) => {
@@ -960,6 +964,7 @@ export const questionRouter = router({
             apiKey: "your_api_key_here",
           },
         },
+        tags: ["v0"],
       },
     })
     .mutation(async ({ input, ctx }) => {
@@ -1172,7 +1177,13 @@ export const questionRouter = router({
       }),
     )
     .output(z.undefined())
-    .meta({ openapi: { method: "DELETE", path: "/v0/deleteQuestion" } })
+    .meta({ 
+      openapi: { 
+        method: "DELETE", 
+        path: "/v0/deleteQuestion",
+        tags: ["v0"],
+      } 
+    })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
@@ -1194,7 +1205,13 @@ export const questionRouter = router({
       }),
     )
     .output(z.undefined())
-    .meta({ openapi: { method: "PATCH", path: "/v0/editQuestion" } })
+    .meta({ 
+      openapi: { 
+        method: "PATCH", 
+        path: "/v0/editQuestion",
+        tags: ["v0"],
+      } 
+    })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
 
