@@ -97,7 +97,6 @@
     "@types/jest": "^29.5.13",
     "@types/node": "^20.14.5",
     "@types/react": "^18.3.3",
-    "@types/supertest": "^6.0.2",
     "@types/swagger-ui-react": "^4.18.3",
     "@types/testing-library__jest-dom": "^5.14.9",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
