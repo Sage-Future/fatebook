@@ -19,12 +19,12 @@ import { fatebookUrl } from "../../lib/_constants"
 import { getDateYYYYMMDD, tomorrowDate } from "../../lib/_utils_common"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook, utcDateStrToLocalDate } from "../../lib/web/utils"
+import { TagsSelect } from "../questions/TagsSelect"
+import { PredictFormType, usePredictForm } from "./PredictProvider"
 import QuestionSuggestions from "./QuestionSuggestions"
 import { QuestionTypeSelect } from "./QuestionTypeSelect"
 import BinaryQuestion from "./question-types/BinaryQuestion"
 import MultiChoiceQuestion from "./question-types/MultiChoiceQuestion"
-import { PredictFormType, usePredictForm } from "./PredictProvider"
-import { TagsSelect } from "../questions/TagsSelect"
 
 type CreateQuestionMutationOutput = NonNullable<
   ReturnType<typeof api.question.create.useMutation>["data"]
@@ -130,7 +130,7 @@ export function Predict({
       if (!userId) {
         localStorage.setItem(
           "cached_question_content",
-          SuperJSON.stringify({ ...data, tags: tagsPreview })
+          SuperJSON.stringify({ ...data, tags: tagsPreview }),
         )
         if (embedded) {
           window.open(fatebookUrl, "_blank")?.focus()

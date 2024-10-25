@@ -2,9 +2,7 @@ import { Transition } from "@headlessui/react"
 import { XMarkIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
 import clsx from "clsx"
-import { useFormContext } from "react-hook-form"
 import { OptionTextInput } from "./OptionTextInput"
-import { PredictFormType } from "./PredictProvider"
 import { PredictionPercentageInput } from "./PredictionPercentageInput"
 
 export function QuestionOption({
@@ -24,20 +22,6 @@ export function QuestionOption({
   canRemove: boolean
   onSubmit: (data: any) => void
 }) {
-  const { unregister, clearErrors, trigger } = useFormContext<PredictFormType>()
-  const handleRemove = () => {
-    // Unregister the removed fields
-    unregister(`options.${index}.text`)
-    unregister(`options.${index}.forecast`)
-
-    // Clear errors for the removed option
-    clearErrors("options")
-    void trigger("options")
-
-    // Call the original onRemove function
-    onRemove()
-  }
-
   return (
     <div className="flex flex-row justify-between items-center gap-1.5">
       <OptionTextInput {...{ optionId, index, small, onSubmit }} />
@@ -56,7 +40,7 @@ export function QuestionOption({
         leaveTo="opacity-0"
       >
         <button
-          onClick={handleRemove}
+          onClick={onRemove}
           className={clsx(
             "text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors duration-200 rounded-full",
             index === 0 && "mt-7",
