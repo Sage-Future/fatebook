@@ -1,7 +1,7 @@
 import { PlusIcon } from "@heroicons/react/20/solid"
 import { QuestionType } from "@prisma/client"
-import { useCallback, useState } from "react"
-import { useFormContext } from "react-hook-form"
+import { useCallback } from "react"
+import { useFieldArray, useFormContext } from "react-hook-form"
 import { FormCheckbox } from "../../ui/FormCheckbox"
 import { EmbeddedOptions } from "../EmbeddedOptions"
 import { PredictButton } from "../PredictButton"
@@ -17,23 +17,28 @@ export default function MultiChoiceQuestion({
   onSubmit,
   highlightResolveBy,
 }: QuestionTypeProps) {
-  const { trigger } = useFormContext()
+  const { trigger, control } = useFormContext()
 
   const MIN_OPTIONS = 2
   const MAX_OPTIONS = 10
-  const [optionIds, setOptionIds] = useState(() => [0, 1])
-  const [nextId, setNextId] = useState(2)
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "options",
+  })
 
   const addOption = useCallback(() => {
-    if (optionIds.length < MAX_OPTIONS) {
-      setOptionIds((prev) => [...prev, nextId])
-      setNextId((prev) => prev + 1)
+    if (fields.length < MAX_OPTIONS) {
+      append({ text: "", forecast: undefined })
     }
-  }, [optionIds.length, nextId])
+  }, [fields.length, append])
 
-  const removeOption = useCallback((idToRemove: number) => {
-    setOptionIds((prev) => prev.filter((id) => id !== idToRemove))
-  }, [])
+  const removeOption = useCallback(
+    (index: number) => {
+      remove(index)
+    },
+    [remove],
+  )
 
   return (
     <div
@@ -42,20 +47,20 @@ export default function MultiChoiceQuestion({
       {embedded && <EmbeddedOptions onSubmit={onSubmit} />}
 
       <div className="flex flex-col gap-2 w-fit">
-        {optionIds.map((id, index) => (
+        {fields.map((field, index) => (
           <QuestionOption
-            key={id}
-            optionId={id}
+            key={field.id}
+            optionId={index}
             small={small}
             onSubmit={onSubmit}
             index={index}
             questionType={QuestionType.MULTIPLE_CHOICE}
-            onRemove={() => removeOption(id)}
-            canRemove={optionIds.length > MIN_OPTIONS}
+            onRemove={() => removeOption(index)}
+            canRemove={fields.length > MIN_OPTIONS}
           />
         ))}
 
-        {optionIds.length < MAX_OPTIONS && (
+        {fields.length < MAX_OPTIONS && (
           <div className="flex flex-row justify-between items-center gap-2">
             <div className="flex-grow">
               <button
