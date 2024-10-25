@@ -88,7 +88,8 @@ export function TournamentLeaderboard({
         ),
         numQuestions:
           tournamentQ.data?.questions.filter((q) =>
-            q.forecasts.some((f) => f.userId === p.userId),
+            q.forecasts.some((f) => f.userId === p.userId) &&
+            q.questionScores.length > 0  // Only count resolved questions
           ).length || 0,
       }
     })
@@ -191,7 +192,9 @@ export function TournamentLeaderboard({
               >
                 Questions
                 <br />
-                forecasted{sortIndicator("numQuestions")}
+                forecasted
+                <br />
+                and resolved{sortIndicator("numQuestions")}
               </th>
               <th
                 className="cursor-pointer"
