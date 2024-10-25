@@ -87,12 +87,12 @@ export function Predict({
   // Trigger validation on any field change because our superRefine rule for summing to 100% isn't automatically revalidated otherwise (seemingly a react-hook-form bug)
   useEffect(() => {
     const subscription = watch((value, { name }) => {
-      if (name?.includes("options")) {
+      if (name?.includes("options") && Object.keys(touchedFields).length > 0) {
         void trigger("options")
       }
     })
     return () => subscription.unsubscribe()
-  }, [watch, trigger])
+  }, [watch, trigger, touchedFields])
 
   const question = watch("question")
   const resolveByUTCStr = watch(
