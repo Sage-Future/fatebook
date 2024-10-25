@@ -13,7 +13,7 @@ export function TournamentLeaderboard({
   })
 
   const [sortConfig, setSortConfig] = useState({
-    key: "absoluteScore",
+    key: "relativeScore",
     direction: "ascending",
   })
 
