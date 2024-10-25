@@ -18,36 +18,49 @@ interface BlogPageProps {
 
 export const getStaticProps: GetStaticProps<BlogPageProps> = async () => {
   const postsDirectory = path.join(process.cwd(), "pages/blog")
-  
+
   try {
     const filenames = fs.readdirSync(postsDirectory)
 
-    const posts = await Promise.all(filenames
-      .filter((filename) => filename.endsWith(".tsx") && filename !== "index.tsx")
-      .map(async (filename) => {
-        const filePath = path.join(postsDirectory, filename)
-        const fileContent = await fs.promises.readFile(filePath, 'utf8')
-        
-        const metadataMatch = fileContent.match(/export const metadata = ({[\s\S]*?})/)
-        let metadata = { title: '', date: '', author: '' }
-        
-        if (metadataMatch) {
-          // Use eval to parse the metadata object (be cautious with this approach in production)
-          metadata = eval(`(${metadataMatch[1]})`)
-        }
+    const posts = await Promise.all(
+      filenames
+        .filter(
+          (filename) => filename.endsWith(".tsx") && filename !== "index.tsx",
+        )
+        .map(async (filename) => {
+          const filePath = path.join(postsDirectory, filename)
+          const fileContent = await fs.promises.readFile(filePath, "utf8")
 
-        const slug = filename.replace(".tsx", "")
-        return {
-          slug,
-          title: metadata.title || slug.replace(/-/g, " ").toLowerCase().replace(/^[a-z]/, c => c.toUpperCase()),
-          date: metadata.date || '',
-          author: metadata.author || ''
-        }
-      }))
+          const metadataMatch = fileContent.match(
+            /export const metadata = ({[\s\S]*?})/,
+          )
+          let metadata = { title: "", date: "", author: "" }
+
+          if (metadataMatch) {
+            // Use eval to parse the metadata object (be cautious with this approach in production)
+            metadata = eval(`(${metadataMatch[1]})`)
+          }
+
+          const slug = filename.replace(".tsx", "")
+          return {
+            slug,
+            title:
+              metadata.title ||
+              slug
+                .replace(/-/g, " ")
+                .toLowerCase()
+                .replace(/^[a-z]/, (c) => c.toUpperCase()),
+            date: metadata.date || "",
+            author: metadata.author || "",
+          }
+        }),
+    )
 
     return {
       props: {
-        posts: posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+        posts: posts.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        ),
       },
     }
   } catch (error) {
@@ -70,11 +83,7 @@ export default function BlogPage({ posts }: BlogPageProps) {
           <ul>
             {posts.map((post) => (
               <li key={post.slug} className="mb-4">
-                <Link
-                  href={`/blog/${post.slug}`}
-                >
-                  {post.title}
-                </Link>
+                <Link href={`/blog/${post.slug}`}>{post.title}</Link>
                 <div className="text-sm text-gray-600">
                   {post.date && <span>{post.date}</span>}
                   {post.date && post.author && <span> • </span>}

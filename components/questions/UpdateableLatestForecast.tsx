@@ -130,22 +130,27 @@ export function UpdateableLatestForecast({
     ],
   )
 
-  const updateOrReset = useCallback((value: string) => {
-    const now = Date.now()
-    if (now - lastUpdateTime.current < 2000) return
-    lastUpdateTime.current = now
+  const updateOrReset = useCallback(
+    (value: string) => {
+      const now = Date.now()
+      if (now - lastUpdateTime.current < 2000) return
+      lastUpdateTime.current = now
 
-    if (defaultVal !== value && value !== "") {
-      updateForecast(value)
-    } else if (value === "" || !value) {
-      setLocalForecast(defaultVal)
-    }
-  }, [defaultVal, updateForecast])
+      if (defaultVal !== value && value !== "") {
+        updateForecast(value)
+      } else if (value === "" || !value) {
+        setLocalForecast(defaultVal)
+      }
+    },
+    [defaultVal, updateForecast],
+  )
 
   const updateOrResetDebounced = useDebouncedCallback(updateOrReset, 5000)
 
   useEffect(() => {
-    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream)
+    setIsIOS(
+      /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream,
+    )
   }, [])
 
   useEffect(() => {
@@ -220,7 +225,7 @@ export function UpdateableLatestForecast({
                 setErrorMessage(null)
                 e.target.value &&
                   checkForErrors(parseFloat(e.target.value) / 100)
-                
+
                 if (isIOS) {
                   updateOrResetDebounced(e.target.value)
                 }
