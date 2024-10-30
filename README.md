@@ -15,6 +15,17 @@ You can report bugs in the [Issues](https://github.com/Sage-Future/fatebook/issu
 - TRPC
 - Tailwind
 
+## User-made integrations
+
+Using the [Fatebook API](https://fatebook.io/api-setup), Fatebook users have created:
+
+- [An Obsidian plugin to create and preview Fatebook questions right inside your editor](https://github.com/GarretteBaker/obsidian-fatebook)
+- [An iOS shortcut to create a Fatebook question](https://www.icloud.com/shortcuts/25903acfcd3d4fd5bed31c2f50322928)
+- [An Alfred workflow to create Fatebook questions](https://github.com/Calebp98/alfred-fatebook-workflow)
+- [An Emacs plugin to create Fatebook questions](https://github.com/sonofhypnos/fatebook.el)
+
+Share your own API creations in [Discord](https://discord.gg/mt9YVB8VDE)!
+
 ## Contributing
 
 If you're interested in contributing, [let us know](https://github.com/Sage-Future/fatebook/issues), and we can help you get up and running - thank you!
