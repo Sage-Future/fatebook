@@ -230,10 +230,10 @@ export function TrackRecord({
                 </div>
               ))}
             </div>
-            <AbsoluteScoreOverTimeChart
+            {/* <AbsoluteScoreOverTimeChart
               userId={trackRecordUserId}
               tags={tags}
-            />
+            /> */}
             <ForecastsCalendarHeatmap tags={tags} userId={trackRecordUserId} />
           </>
         )}
@@ -242,6 +242,7 @@ export function TrackRecord({
   )
 }
 
+// eslint-disable-next-line no-unused-vars
 function AbsoluteScoreOverTimeChart({
   userId,
   tags,
@@ -260,20 +261,20 @@ function AbsoluteScoreOverTimeChart({
   }))
   if (!data) return null
 
-  // Calculate rolling 1 week average
+  // Calculate rolling average of last 10 scores
   const rollingAverage = data.map((item, index) => {
-    const lastWeek = data.slice(Math.max(0, index - 6), index + 1)
+    const lastTen = data.slice(Math.max(0, index - 9), index + 1)
     const average =
-      lastWeek.reduce((sum, d) => sum + d.absoluteScore, 0) / lastWeek.length
+      lastTen.reduce((sum, d) => sum + d.absoluteScore, 0) / lastTen.length
     return {
       ...item,
-      rollingAverage: lastWeek.length === 7 ? average : null,
+      rollingAverage: lastTen.length === 10 ? average : null,
     }
   })
 
   return (
     <div className="pt-12">
-      <h3>Brier Score Over Time</h3>
+      <h3>Brier score over time</h3>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={rollingAverage}>
           <XAxis
@@ -287,7 +288,9 @@ function AbsoluteScoreOverTimeChart({
             labelFormatter={(label) => getDateYYYYMMDD(new Date(label))}
             formatter={(value, name) => [
               Number(value).toFixed(2),
-              name === "rollingAverage" ? "1 Week Average" : "Brier Score",
+              name === "rollingAverage"
+                ? "Average of last 10 scores"
+                : "Brier Score",
             ]}
           />
           <Line
