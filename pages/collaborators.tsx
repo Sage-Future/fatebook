@@ -77,7 +77,7 @@ export default function CollaboratorsPage() {
     const container = containerRef.current
     if (container) {
       const preventScroll = (e: TouchEvent) => {
-        if (e.touches.length === 1) {
+        if (isDrawerOpen && e.touches.length === 1) {
           e.preventDefault()
         }
       }
@@ -86,7 +86,7 @@ export default function CollaboratorsPage() {
         container.removeEventListener("touchmove", preventScroll)
       }
     }
-  }, [])
+  }, [isDrawerOpen])
 
   useEffect(() => {
     const handleScroll = () => {
