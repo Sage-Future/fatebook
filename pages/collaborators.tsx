@@ -77,7 +77,8 @@ export default function CollaboratorsPage() {
     const container = containerRef.current
     if (container) {
       const preventScroll = (e: TouchEvent) => {
-        if (isDrawerOpen && e.touches.length === 1) {
+        const target = e.target as Element
+        if (isDrawerOpen && e.touches.length === 1 && !target.closest('.drawer')) {
           e.preventDefault()
         }
       }
@@ -85,6 +86,14 @@ export default function CollaboratorsPage() {
       return () => {
         container.removeEventListener("touchmove", preventScroll)
       }
+    }
+  }, [isDrawerOpen])
+
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.classList.add('overflow-hidden')
+    } else {
+      document.body.classList.remove('overflow-hidden')
     }
   }, [isDrawerOpen])
 
