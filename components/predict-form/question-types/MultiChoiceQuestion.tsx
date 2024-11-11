@@ -20,7 +20,7 @@ export default function MultiChoiceQuestion({
   const { trigger, control } = useFormContext()
 
   const MIN_OPTIONS = 2
-  const MAX_OPTIONS = 10
+  const MAX_OPTIONS = 100
 
   const { fields, append, remove } = useFieldArray({
     control,
