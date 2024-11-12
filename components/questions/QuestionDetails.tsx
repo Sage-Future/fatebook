@@ -177,7 +177,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               <FormattedDate date={c.createdAt} className="my-auto" />
               <DeleteCommentOverflow question={question} comment={c} />
             </span>
-            <span className="md:pl-7 col-span-4 -mt-1 break-all min-w-0 whitespace-pre-line">
+            <span className="md:pl-7 col-span-4 -mt-1 min-w-0 whitespace-pre-line">
               {c.comment}
             </span>
           </Fragment>
