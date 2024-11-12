@@ -202,7 +202,7 @@ export function getResolutionEmoji(resolution: Resolution | null) {
     case Resolution.YES:
       return "✅"
     case Resolution.NO:
-      return "❎"
+      return "❌"
     case Resolution.AMBIGUOUS:
       return "❔"
     default:
