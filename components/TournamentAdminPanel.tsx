@@ -53,7 +53,6 @@ export function TournamentAdminPanel({
     tournament: Partial<Tournament>
     questions?: string[]
   }) => {
-    console.log({ tournament })
     if (tournamentQ.data) {
       updateTournament.mutate({
         tournament: {

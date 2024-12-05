@@ -44,7 +44,7 @@ export default async function eventsApiHandler(
       break
 
     case "app_mention":
-      console.log("app_mentioned ", event.text)
+      console.log("app_mentioned ")
       await postEphemeralTextMessage(
         reqbody.team_id,
         event.channel,
@@ -67,7 +67,7 @@ export default async function eventsApiHandler(
         break
       }
 
-      console.log("app messaged ", event.text)
+      console.log("app messaged ")
       if (
         !event.bot_profile &&
         event.subtype !== "message_changed" &&

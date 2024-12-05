@@ -263,7 +263,7 @@ export async function questionModalSubmitted(
     }
 
     console.log(
-      `Updated question ${actionParts.questionId} with title: ${question}, resolveBy: ${resolutionDate}, notes: ${notes}`,
+      `Updated question ${actionParts.questionId} resolveBy: ${resolutionDate}, notes: ${notes}`,
     )
     await backendAnalyticsEvent("question_edited", {
       platform: "slack",

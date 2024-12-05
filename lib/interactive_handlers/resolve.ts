@@ -203,8 +203,6 @@ async function dbResolveExclusiveQuestionOption(
 
   // Prepare the updates for the options
   const updatedOptions = question.options.map((option) => {
-    console.log(`text ${option.text} | resolution: ${resolution}`)
-    console.log(option.text === resolution)
     return {
       where: { id: option.id },
       data: {

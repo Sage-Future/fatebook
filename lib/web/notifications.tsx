@@ -248,7 +248,7 @@ export async function sendEmailUnbatched({
   if (response?.ErrorCode) {
     log && console.error(`Error sending email: ${JSON.stringify(response)}`)
   } else {
-    log && console.log(`Sent email to ${to} with subject: ${subject}`)
+    log && console.log(`Sent email to ${to}`)
     await backendAnalyticsEvent("email_sent", { platform: "web" })
   }
 }

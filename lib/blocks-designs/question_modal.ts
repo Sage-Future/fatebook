@@ -142,7 +142,6 @@ function optionsCheckboxes(
   hideUntil: Date,
   questionId?: string,
 ) {
-  console.log({ isHidingUntilDate, isHidingUntilPrediction, hideUntil })
   const toCheckbox = (cb: CheckboxOption) => ({
     text: textBlock(cb.label),
     value: cb.valueLabel,

@@ -61,7 +61,6 @@ type PostEphemeralMessagePayload = PostEphemeralMessageAdditionalArgs & {
 export function tokenizeForecastString(instring: string): string[] | null {
   const regex = /([a-zA-Z_]+)\s?(["“][^"”]*["”])?\s?("?[^"\s]*"?)?\s?([\d.]*)?/
   const array: string[] | null = instring.match(regex)
-  console.log("Tokenized version:", array)
   return array
 }
 
@@ -216,7 +215,6 @@ export function tokenizeString(instring: string) {
   const array: string[] = instring.split(" ").filter((element) => {
     return element !== ""
   })
-  console.log("Tokenized version:", array)
   return array
 }
 
@@ -313,11 +311,8 @@ async function handleChannelNotFoundError(
   attemptedChannel: string,
   userId: string | undefined,
 ) {
-  console.log("in func`")
   if (response.ok === false) {
-    console.log("false")
     if (userId && response.error === "channel_not_found") {
-      console.log("bl")
       await postEphemeralSlackMessage(teamId, {
         channel: userId, // DM the user
         user: userId,
@@ -356,10 +351,7 @@ export async function postEphemeralSlackMessage(
   teamId: string,
   message: PostEphemeralMessagePayload,
 ) {
-  console.log(
-    `Posting ephemeral message to channel: ${message.channel}, text: ${message.text}, blocks: `,
-    message?.blocks,
-  )
+  console.log(`Posting ephemeral message to channel: ${message.channel}`)
 
   const url = "https://slack.com/api/chat.postEphemeral"
   return (await callSlackApi(teamId, message, url)) as {
@@ -374,10 +366,7 @@ export async function updateMessage(
   logToConsole: boolean = true,
   userId?: string,
 ) {
-  logToConsole &&
-    console.log(
-      `Updating message to channel: ${message.channel}, text: ${message.text}`,
-    )
+  logToConsole && console.log(`Updating message to channel: ${message.channel}`)
 
   const url = "https://slack.com/api/chat.update"
   const response = await callSlackApi(teamId, message, url, "POST", !userId) // don't throw if we have the user ID (we can maybe DM them an ephemeral)
@@ -406,7 +395,7 @@ export async function showModal(
   triggerId: string,
   view: ModalView,
 ) {
-  console.log("Showing modal view: ", view)
+  console.log("Showing modal view")
 
   const response = (await callSlackApi(
     teamId,
@@ -479,17 +468,15 @@ export async function callSlackApi(
         url.startsWith("https://slack.com/api/conversations.info")) // older slacks don't have right scopes
     ) {
       const modifiedResponse = JSON.stringify(data).replace("error", "slackerr")
-      console.log(
-        "Non-okay response calling Slack API:",
-        { response: modifiedResponse, message, url },
-        JSON.stringify(message, null, 2),
-      )
+      console.log("Non-okay response calling Slack API:", {
+        response: modifiedResponse,
+        url,
+      })
     } else {
-      console.error(
-        "Error calling Slack API:",
-        { response: JSON.stringify(data), message, url },
-        JSON.stringify(message, null, 2),
-      )
+      console.error("Error calling Slack API:", {
+        response: JSON.stringify(data),
+        url,
+      })
     }
     if (throwOnError)
       throw new Error(

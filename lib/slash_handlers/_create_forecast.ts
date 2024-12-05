@@ -117,7 +117,7 @@ export async function createForecastingQuestion(
     throw new Error("Missing message.ts in response")
   }
 
-  console.log(`updating `, { data })
+  console.log(`updating`)
   await prisma.question.update({
     where: {
       id: createdQuestion.id,

@@ -58,7 +58,6 @@ export function FilterControls({
 
   useEffect(() => {
     const handleSetSearchString = (event: Event) => {
-      console.log({ event })
       const customEvent = event as CustomEvent
       setSearchString(customEvent.detail)
       setSearchVisible(true)

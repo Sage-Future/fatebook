@@ -31,7 +31,6 @@ export default function ListPage() {
     }
 
     setIsJoining(true)
-    console.log({ listInviteId })
     joinViaLink.mutate(
       {
         listInviteId,

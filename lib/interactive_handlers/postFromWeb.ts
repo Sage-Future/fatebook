@@ -145,7 +145,7 @@ export async function postFromWeb(
     )
     console.log("initial question sync")
     for (const question of tournament.questions) {
-      console.log("posting question to slack ", question)
+      console.log("posting question to slack ", question.id)
       await postQuestionToSlack({
         questionId: question.id,
         teamId,
@@ -232,7 +232,7 @@ export async function postFromWeb(
     )
     console.log("initial question sync")
     for (const question of userList.questions) {
-      console.log("posting question to slack ", question)
+      console.log("posting question to slack ", question.id)
       await postQuestionToSlack({
         questionId: question.id,
         teamId,

@@ -33,7 +33,6 @@ export function ShareTournament({ tournamentId }: { tournamentId: string }) {
     tournament: Partial<Tournament>
     questions?: string[]
   }) => {
-    console.log({ tournament })
     if (tournamentQ.data && isAdmin) {
       updateTournament.mutate({
         tournament: {
@@ -172,7 +171,6 @@ function UserListSelect({ tournamentId }: { tournamentId: string }) {
     tournament: Partial<Tournament>
     questions?: string[]
   }) => {
-    console.log({ tournament })
     if (tournamentQ.data) {
       updateTournament.mutate({
         tournament: {

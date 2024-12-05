@@ -44,7 +44,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (!res.headersSent) {
-    console.log(JSON.stringify(req.body, null, 2))
     console.log("Interaction not handled! Sending 'ok'")
     res.send("ok")
   }

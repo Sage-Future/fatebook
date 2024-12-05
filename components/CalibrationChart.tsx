@@ -97,7 +97,6 @@ export function CalibrationChart({
               window.dispatchEvent(
                 new CustomEvent("setSearchString", { detail: searchString }),
               )
-              console.log({ searchString })
             })
         }}
       />
