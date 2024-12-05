@@ -1,5 +1,6 @@
+import { ChevronDownIcon } from "@heroicons/react/20/solid"
 import { Bars3Icon, ScaleIcon } from "@heroicons/react/24/outline"
-import { ChevronDownIcon, SparklesIcon } from "@heroicons/react/24/solid"
+import { SparklesIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
@@ -169,7 +170,7 @@ function IntegrationsDropdown() {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
-        <ChevronDownIcon width={16} /> Integrations
+        <ChevronDownIcon className="text-neutral-400" width={16} /> Integrations
       </label>
       <ul
         tabIndex={0}
@@ -265,7 +266,7 @@ function LearnDropdown() {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
-        <ChevronDownIcon width={16} /> Learn
+        <ChevronDownIcon className="text-neutral-400" width={16} /> Learn
       </label>
       <ul
         tabIndex={0}
