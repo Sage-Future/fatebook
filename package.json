@@ -16,7 +16,7 @@
     "iOS": "npx next build && npx next export && npx cap sync ios && npx cap run ios",
     "zip": "echo \"have you set isDev=false and incremented version num?\" && bash zip-extensions.sh",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "LC_ALL=en-US jest"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.0",
