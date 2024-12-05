@@ -136,7 +136,6 @@ function MenuItems({
       <li>
         <Link href="/blog" className={isActive("/blog") ? "bg-base-200" : ""}>
           Blog
-          <NewDot />
         </Link>
       </li>
       {isDrawer ? (
