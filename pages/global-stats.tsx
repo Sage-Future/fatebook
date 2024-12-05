@@ -840,7 +840,7 @@ export default function GlobalStatsPage({
                             <YAxis />
                             <Tooltip />
                             <Legend />
-                            {Object.keys(chart.data[0].values).map(
+                            {Object.keys(chart.data[0]?.values ?? {}).map(
                               (key, index) => (
                                 <Bar
                                   key={key}
