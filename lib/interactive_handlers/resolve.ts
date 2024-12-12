@@ -443,7 +443,7 @@ async function messageUsers(
     },
   })
 
-  console.log("Messaging profiles ", profiles)
+  console.log("Messaging profiles ", profiles?.map((p) => p.id).join(", "))
 
   // go over each profile and send a message to each workspace they are in which
   //   are also in the question's workspace

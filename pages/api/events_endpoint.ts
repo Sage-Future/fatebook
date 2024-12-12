@@ -11,7 +11,6 @@ export default async function eventsApiHandler(
   req: VercelRequest,
   res: VercelResponse,
 ) {
-  console.log(req.body)
   const reqbody = typeof req.body === "string" ? JSON.parse(req.body) : req.body
 
   if (reqbody?.type === "url_verification") {

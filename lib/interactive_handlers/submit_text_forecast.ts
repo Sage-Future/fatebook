@@ -126,7 +126,7 @@ export async function submitTextForecast(
     },
   })
 
-  console.log("Forecast created: ", forecastCreated)
+  console.log("Forecast created: ", forecastCreated.id)
 
   if (
     actionParts.reminderBlockForecastIds &&
@@ -285,7 +285,7 @@ async function updateQuestionMessages(
     return
   }
 
-  console.log(`Updating ${questions.length} question messages `, questions)
+  console.log(`Updating ${questions.length} question messages `)
   for (const question of questions) {
     const questionBlocks = await buildQuestionBlocks(teamId, question)
     await updateMessage(

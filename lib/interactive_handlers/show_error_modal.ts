@@ -8,6 +8,6 @@ export async function showWrongChannelModalView(
   questionInput: string,
 ) {
   const view = buildWrongConversationModalView(teamId, channelId, questionInput)
-  const response = await showModal(teamId, triggerId, view)
-  console.log("showCreateQuestionModal response", response)
+  await showModal(teamId, triggerId, view)
+  console.log("showCreateQuestionModal")
 }

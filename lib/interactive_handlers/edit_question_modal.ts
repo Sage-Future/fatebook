@@ -36,8 +36,8 @@ export async function showCreateQuestionModal(
     true,
     channelId,
   )
-  const response = await showModal(teamId, triggerId, view)
-  console.log("showCreateQuestionModal response", response)
+  await showModal(teamId, triggerId, view)
+  console.log("showCreateQuestionModal")
 }
 
 function parseQuestion(str: string): Partial<Question> {
@@ -116,8 +116,8 @@ export async function showEditQuestionModal(
     // user is question author
     // WARNING: assumes that the channel where the button was pressed is the same as the channel where the question was asked
     const view = buildEditQuestionModalView(question, false, payload.channel.id)
-    const response = await showModal(payload.team.id, payload.trigger_id, view)
-    console.log("showEditQuestionModal response", response)
+    await showModal(payload.team.id, payload.trigger_id, view)
+    console.log("showEditQuestionModal")
   }
 }
 
@@ -141,20 +141,11 @@ export async function questionModalSubmitted(
       payload.view.state.values as ViewStateValues,
     ).find((v) => v[actionId] !== undefined)
     if (!blockObj && throwIfMissing) {
-      console.error(
-        "missing blockObj for actionId",
-        actionId,
-        ". values: ",
-        payload.view.state.values,
-      )
+      console.error("missing blockObj for actionId", actionId)
       throw new Error("missing blockObj for actionId")
     }
     return blockObj ? blockObj[actionId] : undefined
   }
-  console.log(
-    "    blockObj",
-    Object.values(payload.view.state.values as ViewStateValues),
-  )
 
   const question = getVal("forecast_question")?.value
   const resolutionDate = getVal(
@@ -263,7 +254,7 @@ export async function questionModalSubmitted(
     }
 
     console.log(
-      `Updated question ${actionParts.questionId} resolveBy: ${resolutionDate}, notes: ${notes}`,
+      `Updated question ${actionParts.questionId} resolveBy: ${resolutionDate}`,
     )
     await backendAnalyticsEvent("question_edited", {
       platform: "slack",
@@ -277,8 +268,6 @@ export async function deleteQuestionSlack(
   actionParts: DeleteQuestionActionParts,
   payload: any,
 ) {
-  console.log({ payload })
-
   // we can't close a modal from a button click, so update the modal to say the question was deleted
   await callSlackApi(
     payload.view.team_id,

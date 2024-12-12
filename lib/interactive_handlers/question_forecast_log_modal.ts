@@ -68,6 +68,6 @@ export async function showForecastLogModal(
     question,
     payload.user.id,
   )
-  const response = await showModal(payload.team.id, payload.trigger_id, view)
-  console.log("showForecastLogModal response", response)
+  await showModal(payload.team.id, payload.trigger_id, view)
+  console.log("showForecastLogModal")
 }

@@ -123,7 +123,7 @@ export async function postFromWeb(
       )
     }
 
-    console.log("syncing tournament ", tournament)
+    console.log("syncing tournament ", tournament.id)
     await prisma.tournament.update({
       where: { id },
       data: {
@@ -206,7 +206,7 @@ export async function postFromWeb(
       )
     }
 
-    console.log("syncing team ", userList)
+    console.log("syncing team ", userList.id)
     await prisma.userList.update({
       where: { id },
       data: {
