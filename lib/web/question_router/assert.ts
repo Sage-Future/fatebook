@@ -1,10 +1,10 @@
 import { Prisma, User } from "@prisma/client"
-import prisma from "../../prisma"
 import { TRPCError } from "@trpc/server"
 import {
   QuestionWithForecasts,
   QuestionWithForecastsAndSharedWithAndLists,
 } from "../../../prisma/additional"
+import prisma from "../../prisma"
 import { getUserByApiKeyOrThrow } from "./get_user"
 
 export async function getQuestionAssertAuthor(
