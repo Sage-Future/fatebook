@@ -1,9 +1,9 @@
-import {
-  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
-  scrubApiKeyPropertyRecursive,
-} from "../scrub"
-import { QuestionWithForecasts } from "../../../../prisma/additional"
 import { Decimal } from "@prisma/client/runtime/library"
+import { QuestionWithForecasts } from "../../../../prisma/additional"
+import {
+  scrubApiKeyPropertyRecursive,
+  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
+} from "../scrub"
 
 describe("scrubHiddenForecastsAndSensitiveDetailsFromQuestion", () => {
   const mockQuestion: QuestionWithForecasts = {
@@ -15,7 +15,7 @@ describe("scrubHiddenForecastsAndSensitiveDetailsFromQuestion", () => {
       {
         id: 1,
         userId: "user1",
-        forecast: new Decimal(50),
+        forecast: new Decimal(0.5),
         createdAt: new Date(),
         comment: null,
         profileId: null,
@@ -25,7 +25,7 @@ describe("scrubHiddenForecastsAndSensitiveDetailsFromQuestion", () => {
       {
         id: 2,
         userId: "user2",
-        forecast: new Decimal(70),
+        forecast: new Decimal(0.7),
         createdAt: new Date(),
         comment: null,
         profileId: null,
@@ -51,16 +51,16 @@ describe("scrubHiddenForecastsAndSensitiveDetailsFromQuestion", () => {
     sharedWithLists: [],
   } as QuestionWithForecasts
 
-  it("should not scrub forecasts for the question owner", () => {
+  it("should show your and other user's predictions if you've predicted", () => {
     const result = scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
       mockQuestion,
       "user1",
     )
-    expect(result.forecasts[0].forecast).toStrictEqual(new Decimal(50))
-    expect(result.forecasts[1].forecast).toStrictEqual(new Decimal(70))
+    expect(result.forecasts[0].forecast).toStrictEqual(new Decimal(0.5))
+    expect(result.forecasts[1].forecast).toStrictEqual(new Decimal(0.7))
   })
 
-  it("should scrub all forecasts for other users", () => {
+  it("should scrub all forecasts if you haven't predicted", () => {
     const result = scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
       mockQuestion,
       "user3",
@@ -89,10 +89,16 @@ describe("scrubApiKeyPropertyRecursive", () => {
   })
 
   it("should remove specified keys", () => {
-    const obj = { name: "Test", email: "test@example.com", apiKey: "12345" }
+    const obj = {
+      name: "Test",
+      email: "test@example.com",
+      apiKey: "12345",
+      nested: { email: "another@example.com" },
+    }
     const result = scrubApiKeyPropertyRecursive(obj, ["email"])
     expect(result.apiKey).toBeUndefined()
     expect(result.email).toBeUndefined()
     expect(result.name).toBe("Test")
+    expect(result.nested.email).toBeUndefined()
   })
 })
