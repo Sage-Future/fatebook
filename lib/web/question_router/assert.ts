@@ -22,6 +22,12 @@ export async function getQuestionAssertAuthor(
 
   const userId = ctx?.userId || (await getUserByApiKeyOrThrow(apiKey || "")).id
 
+  if (!userId) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to do that",
+    })
+  }
   if (!question) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Question not found" })
   }
