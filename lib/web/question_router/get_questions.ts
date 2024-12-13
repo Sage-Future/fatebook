@@ -1,8 +1,10 @@
+import SlackNotify from "slack-notify"
 import prisma from "../../prisma"
 import { Context } from "../trpc_base"
-import { ExtraFilters, questionIncludes } from "./types"
 import { getSearchedPredictionBounds, matchesAnEmailDomain } from "../utils"
+import { assertHasAccess } from "./assert"
 import { scrubHiddenForecastsAndSensitiveDetailsFromQuestion } from "./scrub"
+import { ExtraFilters, questionIncludes } from "./types"
 
 export async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
   input: {
@@ -233,14 +235,29 @@ export async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
     include: questionIncludes(ctx.userId),
   })
 
+  // double check that we're not returning questions that the user doesn't have access to
+  // should never be necessary, but just as a sanity check
+  const questionsWithAccess = questions.filter((q) => assertHasAccess(q, user))
+  if (questionsWithAccess.length !== questions.length) {
+    const questionsWithoutAccess = questions.filter(
+      (q) => !questionsWithAccess.includes(q),
+    )
+    const message = `Important warning: ${user?.id || "logged out user"} was prevented from being returned ${questionsWithoutAccess.map((q) => q.id).join(", ")} by assertHasAccess, need to correct getQuestions[...] func`
+    await SlackNotify(process.env.SAGE_SLACK_WEBHOOK_URL || "").send({
+      text: message,
+      unfurl_links: 0,
+    })
+    console.error(message)
+  }
+
   return {
-    items: questions
+    items: questionsWithAccess
       .map((q) =>
         scrubHiddenForecastsAndSensitiveDetailsFromQuestion(q, ctx.userId),
       )
       // don't include the extra one - it's just to see if there's another page
       .slice(0, limit),
 
-    nextCursor: questions.length > limit ? skip + limit : undefined,
+    nextCursor: questionsWithAccess.length > limit ? skip + limit : undefined,
   }
 }

@@ -1,6 +1,6 @@
-import { getQuestionsUserCreatedOrForecastedOnOrIsSharedWith } from "../get_questions"
 import prisma from "../../../prisma"
 import { Context } from "../../trpc_base"
+import { getQuestionsUserCreatedOrForecastedOnOrIsSharedWith } from "../get_questions"
 import { ExtraFilters } from "../types"
 
 jest.mock("../../../prisma", () => ({
@@ -10,6 +10,10 @@ jest.mock("../../../prisma", () => ({
   user: {
     findUnique: jest.fn(),
   },
+}))
+
+jest.mock("../assert", () => ({
+  assertHasAccess: jest.fn().mockReturnValue(true),
 }))
 
 describe("getQuestionsUserCreatedOrForecastedOnOrIsSharedWith", () => {
