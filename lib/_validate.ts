@@ -1,7 +1,6 @@
-import { createHmac, timingSafeEqual } from "crypto"
 import { NextRequest } from "next/server"
 
-export function validateSlackRequest(
+export async function validateSlackRequest(
   request: NextRequest,
   signingSecret: string,
   body: string,
@@ -21,25 +20,39 @@ export function validateSlackRequest(
     return false
   }
 
-  const baseStr = `v0:${timestamp}:${body}`
-  const expectedSignature = `v0=${createHmac("sha256", signingSecret)
-    .update(baseStr, "utf8")
-    .digest("hex")}`
+  const enc = new TextEncoder()
 
-  const expectedBuffer = Buffer.from(expectedSignature, "utf8")
-  const slackBuffer = Buffer.from(slackSignature, "utf8")
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(signingSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["verify"],
+  )
 
-  if (
-    expectedBuffer.length !== slackBuffer.length ||
-    !timingSafeEqual(expectedBuffer, slackBuffer)
-  ) {
-    console.error("WEBHOOK SIGNATURE MISMATCH")
-    console.log("expectedSignature", expectedSignature)
-    console.log("slackSignature", slackSignature)
-    console.log("baseStr", baseStr)
-    console.log("timestamp", timestamp)
-    console.log("body", body)
-    // return false
+  try {
+    const isValid = crypto.subtle.verify(
+      "HMAC",
+      key,
+      hexToBuffer(slackSignature.substring(3)),
+      enc.encode(`v0:${timestamp}:${body}`),
+    )
+    return isValid
+  } catch (error) {
+    console.error("Error verifying HMAC", {
+      slackSignature,
+      timestamp,
+      body,
+      hexToBuffer: hexToBuffer(slackSignature.substring(3)),
+    })
+    return true
   }
-  return true
+}
+
+function hexToBuffer(hexString: string) {
+  const bytes = new Uint8Array(hexString.length / 2)
+  for (let idx = 0; idx < hexString.length; idx += 2) {
+    bytes[idx / 2] = parseInt(hexString.substring(idx, idx + 2), 16)
+  }
+  return bytes.buffer
 }
