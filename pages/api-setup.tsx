@@ -62,7 +62,7 @@ export default function ApiPage() {
               <div className="flex flex-grow gap-2">
                 <div className="relative flex-grow">
                   <input
-                    className="input w-full pr-10"
+                    className="input w-full pr-10 font-mono text-sm"
                     type="text"
                     value={apiKey.data ?? ""}
                     readOnly

@@ -5,6 +5,10 @@ import { z } from "zod"
 import { getBucketedForecasts } from "../../../../pages/api/calibration_graph"
 import { QuestionWithUserAndSharedWith } from "../../../../prisma/additional"
 import {
+  ForecastSchema,
+  QuestionSchema,
+} from "../../../../prisma/generated/zod"
+import {
   displayForecast,
   filterToUniqueIds,
   forecastsAreHidden,
@@ -26,29 +30,34 @@ import { questionsToCsv } from "../../export"
 import { createNotification } from "../../notifications"
 import { getQuestionUrl } from "../../question_url"
 import { publicProcedure, router } from "../../trpc_base"
-import {
-  ForecastSchema,
-  QuestionSchema,
-} from "../../../../prisma/generated/zod"
-import { zodExtraFilters } from "../types"
-import {
-  scrubApiKeyPropertyRecursive,
-  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
-} from "../scrub"
+import { assertHasAccess, getQuestionAssertAuthor } from "../assert"
+import { emailNewlySharedWithUsers } from "../email_shared"
+import { getQuestionsUserCreatedOrForecastedOnOrIsSharedWith } from "../get_questions"
 import {
   getUserByApiKeyOrThrow,
   getUserFromCtxOrApiKeyOrThrow,
 } from "../get_user"
-import { emailNewlySharedWithUsers } from "../email_shared"
-import { assertHasAccess, getQuestionAssertAuthor } from "../assert"
-import { getQuestionsUserCreatedOrForecastedOnOrIsSharedWith } from "../get_questions"
+import {
+  scrubApiKeyPropertyRecursive,
+  scrubHiddenForecastsAndSensitiveDetailsFromQuestion,
+} from "../scrub"
+import { zodExtraFilters } from "../types"
 
 export const questionRouter = router({
   getQuestion: publicProcedure
     .input(
       z.object({
-        questionId: z.string().optional(),
-        apiKey: z.string().optional(),
+        questionId: z
+          .string({
+            description: "ID of the question to fetch",
+          })
+          .optional(),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .output(QuestionSchema)
@@ -70,6 +79,8 @@ export const questionRouter = router({
       if (!input.questionId) {
         return null as any // needed in order to appease type checker
       }
+
+      const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
 
       const question = await prisma.question.findUnique({
         where: {
@@ -109,12 +120,12 @@ export const questionRouter = router({
               user: true,
             },
           },
-          ...(ctx.userId
+          ...(user.id
             ? {
                 tags: {
                   where: {
                     user: {
-                      id: ctx.userId,
+                      id: user.id,
                     },
                   },
                 },
@@ -131,14 +142,10 @@ export const questionRouter = router({
         },
       })
 
-      const user = await getUserFromCtxOrApiKeyOrThrow(ctx, input.apiKey)
       assertHasAccess(question, user)
       return (
         question &&
-        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
-          question,
-          ctx.userId,
-        )
+        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(question, user.id)
       )
     }),
 
@@ -348,23 +355,67 @@ export const questionRouter = router({
     .input(
       z.object({
         title: z.string(),
-        resolveBy: z.date(),
-        prediction: z.number().max(1).min(0).optional(),
+        resolveBy: z.date({
+          description: "Get a resolution reminder on this date",
+        }),
+        prediction: z
+          .number({
+            description: "Your initial forecast between 0 and 1",
+          })
+          .max(1)
+          .min(0)
+          .optional(),
         tags: z.array(z.string()).optional(),
-        unlisted: z.boolean().optional(),
-        sharedPublicly: z.boolean().optional(),
-        tournamentId: z.string().optional(),
-        shareWithListIds: z.array(z.string()).optional(),
-        exclusiveAnswers: z.boolean().optional(),
-        options: z
+        unlisted: z
+          .boolean({
+            description: "Hide from fatebook.io/public",
+          })
+          .optional(),
+        sharedPublicly: z
+          .boolean({
+            description: "Allow anyone with the link to view",
+          })
+          .optional(),
+        tournamentId: z
+          .string({
+            description: "ID of a tournament to add this question to",
+          })
+          .optional(),
+        shareWithListIds: z
           .array(
-            z.object({
-              text: z.string(),
-              prediction: z.number().min(0).max(1).optional(),
+            z.string({
+              description: "Team IDs to share this question with",
             }),
           )
           .optional(),
-        apiKey: z.string().optional(),
+        exclusiveAnswers: z
+          .boolean({
+            description:
+              "For multiple choice: true = you can only resolve to one option",
+          })
+          .optional(),
+        options: z
+          .array(
+            z.object({
+              text: z.string({
+                description: "Text for this multiple choice option",
+              }),
+              prediction: z
+                .number({
+                  description: "Your initial forecast for this option (0-1)",
+                })
+                .min(0)
+                .max(1)
+                .optional(),
+            }),
+          )
+          .optional(),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .output(
@@ -382,7 +433,7 @@ export const questionRouter = router({
         tags: ["v1"],
         example: {
           request: {
-            binaryExample: {
+            "[Example of creating a binary question]": {
               title: "Will it rain tomorrow?",
               resolveBy: "2023-12-31T23:59:59Z",
               prediction: 0.7,
@@ -391,7 +442,7 @@ export const questionRouter = router({
               sharedPublicly: true,
               apiKey: "your_api_key_here",
             },
-            multichoiceExample: {
+            "[Example of creating a multiple choice question]": {
               title: "Which team will win the World Cup?",
               resolveBy: "2023-12-31T23:59:59Z",
               options: [
@@ -560,14 +611,27 @@ export const questionRouter = router({
   resolveQuestion: publicProcedure
     .input(
       z.object({
-        questionId: z.string(),
+        questionId: z.string({
+          description: "ID of the question to resolve",
+        }),
         resolution: z.string({
           description:
-            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and AMBIGUOUS, OTHER, or $OPTION if it's a multi-choice question. You can only resolve your own questions.",
+            "Resolve to YES, NO or AMBIGUOUS if it's a binary question and $OPTION, AMBIGUOUS, or OTHER if it's a multi-choice question. You can only resolve your own questions.",
         }),
-        questionType: z.string(),
-        apiKey: z.string().optional(),
-        optionId: z.string().optional(),
+        questionType: z.string({
+          description: "BINARY or MULTIPLE_CHOICE",
+        }),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
+        optionId: z
+          .string({
+            description: "For multiple choice: ID of the option to resolve",
+          })
+          .optional(),
       }),
     )
     .meta({
@@ -632,20 +696,25 @@ export const questionRouter = router({
   setSharedPublicly: publicProcedure
     .input(
       z.object({
-        questionId: z.string(),
+        questionId: z.string({
+          description: "ID of the question to update",
+        }),
         sharedPublicly: z
           .boolean({
-            description:
-              "Change whether the question is shared with anyone with the link",
+            description: "Allow anyone with the link to view",
           })
           .optional(),
         unlisted: z
           .boolean({
-            description:
-              "Change whether the question is unlisted (not shown on fatebook.io/public)",
+            description: "Hide from fatebook.io/public",
           })
           .optional(),
-        apiKey: z.string().optional(),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .meta({
@@ -834,20 +903,26 @@ export const questionRouter = router({
   addForecast: publicProcedure
     .input(
       z.object({
-        questionId: z.string(),
+        questionId: z.string({
+          description: "ID of the question to forecast on",
+        }),
         forecast: z
           .number({
-            description: "The forecast to add. Must be between 0 and 1.",
+            description: "Your forecast between 0 and 1",
           })
           .max(1)
           .min(0),
         optionId: z
-          .string()
-          .optional()
-          .describe(
-            "The ID of the selected option for multiple-choice questions. Only required for multiple-choice questions.",
-          ),
-        apiKey: z.string().optional(),
+          .string({
+            description: "For multiple choice: ID of the option to forecast on",
+          })
+          .optional(),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .output(
@@ -1050,9 +1125,18 @@ export const questionRouter = router({
   addComment: publicProcedure
     .input(
       z.object({
-        questionId: z.string(),
-        comment: z.string(),
-        apiKey: z.string().optional(),
+        questionId: z.string({
+          description: "ID of the question to comment on",
+        }),
+        comment: z.string({
+          description: "Your comment text",
+        }),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .output(
@@ -1284,8 +1368,15 @@ export const questionRouter = router({
   deleteQuestion: publicProcedure
     .input(
       z.object({
-        questionId: z.string(),
-        apiKey: z.string().optional(),
+        questionId: z.string({
+          description: "ID of the question to delete",
+        }),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .output(
@@ -1293,12 +1384,12 @@ export const questionRouter = router({
         message: z.string(),
       }),
     )
-    .meta({ 
-      openapi: { 
-        method: "DELETE", 
+    .meta({
+      openapi: {
+        method: "DELETE",
         path: "/v1/deleteQuestion",
         tags: ["v1"],
-      } 
+      },
     })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
@@ -1318,10 +1409,25 @@ export const questionRouter = router({
   editQuestion: publicProcedure
     .input(
       z.object({
-        questionId: z.string(),
-        title: z.string().optional(),
-        resolveBy: z.date().optional(),
-        apiKey: z.string().optional(),
+        questionId: z.string({
+          description: "ID of the question to edit",
+        }),
+        title: z
+          .string({
+            description: "New title for the question",
+          })
+          .optional(),
+        resolveBy: z
+          .date({
+            description: "New resolution date",
+          })
+          .optional(),
+        apiKey: z
+          .string({
+            description:
+              "Your Fatebook API key. Get it at fatebook.io/api-setup",
+          })
+          .optional(),
       }),
     )
     .output(
@@ -1330,12 +1436,12 @@ export const questionRouter = router({
         question: QuestionSchema,
       }),
     )
-    .meta({ 
-      openapi: { 
-        method: "PATCH", 
+    .meta({
+      openapi: {
+        method: "PATCH",
         path: "/v1/editQuestion",
         tags: ["v1"],
-      } 
+      },
     })
     .mutation(async ({ input, ctx }) => {
       await getQuestionAssertAuthor(ctx, input.questionId, input.apiKey)
