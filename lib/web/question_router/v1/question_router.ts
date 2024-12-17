@@ -43,6 +43,8 @@ import {
 } from "../scrub"
 import { zodExtraFilters } from "../types"
 
+const exampleQuestionId = "clkqtczp00001l008qcrma6s7"
+
 export const questionRouter = router({
   getQuestion: publicProcedure
     .input(
@@ -65,11 +67,11 @@ export const questionRouter = router({
       openapi: {
         method: "GET",
         path: "/v1/getQuestion",
-        description: "Get details of a specific question",
+        description: "Get the details of a specific question from its ID",
         tags: ["v1"],
         example: {
           request: {
-            questionId: "cm05iuuhx00066e7a1hncujn0",
+            questionId: exampleQuestionId,
             apiKey: "your_api_key_here",
           },
         },
@@ -643,7 +645,7 @@ export const questionRouter = router({
         tags: ["v1"],
         example: {
           request: {
-            questionId: "cm05iuuhx00066e7a1hncujn0",
+            questionId: exampleQuestionId,
             resolution: "YES",
             questionType: "BINARY",
             apiKey: "your_api_key_here",
@@ -942,7 +944,7 @@ export const questionRouter = router({
         tags: ["v1"],
         example: {
           request: {
-            questionId: "cm05iuuhx00066e7a1hncujn0",
+            questionId: exampleQuestionId,
             forecast: 0.75,
             apiKey: "your_api_key_here",
           },
@@ -1152,7 +1154,7 @@ export const questionRouter = router({
         tags: ["v1"],
         example: {
           request: {
-            questionId: "cm05iuuhx00066e7a1hncujn0",
+            questionId: exampleQuestionId,
             comment: "This is an interesting question!",
             apiKey: "your_api_key_here",
           },
