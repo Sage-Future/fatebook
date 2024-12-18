@@ -39,13 +39,8 @@ export async function validateSlackRequest(
     )
     return isValid
   } catch (error) {
-    console.error("Error verifying HMAC", {
-      slackSignature,
-      timestamp,
-      body,
-      hexToByteArray: hexToByteArray(slackSignature.substring(3)),
-    })
-    return true
+    console.error("Error verifying HMAC ", error)
+    return false
   }
 }
 
