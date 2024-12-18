@@ -34,7 +34,7 @@ export async function validateSlackRequest(
     const isValid = await crypto.subtle.verify(
       "HMAC",
       key,
-      hexToBuffer(slackSignature.substring(3)),
+      hexToByteArray(slackSignature.substring(3)),
       enc.encode(`v0:${timestamp}:${body}`),
     )
     return isValid
@@ -43,16 +43,16 @@ export async function validateSlackRequest(
       slackSignature,
       timestamp,
       body,
-      hexToBuffer: hexToBuffer(slackSignature.substring(3)),
+      hexToByteArray: hexToByteArray(slackSignature.substring(3)),
     })
     return true
   }
 }
 
-function hexToBuffer(hexString: string) {
+function hexToByteArray(hexString: string) {
   const bytes = new Uint8Array(hexString.length / 2)
   for (let idx = 0; idx < hexString.length; idx += 2) {
     bytes[idx / 2] = parseInt(hexString.substring(idx, idx + 2), 16)
   }
-  return bytes.buffer
+  return bytes
 }
