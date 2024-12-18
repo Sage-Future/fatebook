@@ -265,6 +265,57 @@ export const appRouter = router({
         })
       }
     }),
+
+  countForecasts: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      }),
+    )
+    .meta({
+      openapi: {
+        method: "GET",
+        path: "/v0/countForecasts",
+        description: "Count the total number of forecasts that a user has made",
+      },
+    })
+    .output(
+      z.object({
+        numForecasts: z.number(),
+        userName: z.string().nullable(),
+      }),
+    )
+    .query(async ({ input }) => {
+      if (!input.userId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User ID is required",
+        })
+      }
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+      })
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        })
+      }
+
+      const numForecasts = await prisma.forecast.count({
+        where: {
+          userId: input.userId,
+        },
+      })
+
+      return {
+        numForecasts,
+        userName: user?.name,
+      }
+    }),
 })
 
 export type AppRouter = typeof appRouter
