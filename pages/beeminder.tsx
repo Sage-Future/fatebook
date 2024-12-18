@@ -45,17 +45,6 @@ export default function BeeminderPage() {
               <li>Beeminder will help you hit your goal!</li>
             </ol>
           </div>
-          <p className="text-sm text-neutral-600">
-            Having problems? Join our{" "}
-            <a
-              href="https://discord.gg/K7V8jGCw9D"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Discord
-            </a>{" "}
-            for support.
-          </p>
         </div>
         {!userId && (
           <div className="flex w-full p-4">
@@ -68,7 +57,7 @@ export default function BeeminderPage() {
           </div>
         )}
         {userId && (
-          <div className="flex flex-col w-full gap-2">
+          <div className="flex flex-col w-full gap-2 mt-4">
             <div className="flex flex-wrap items-center gap-2">
               <label className="label whitespace-nowrap font-semibold">
                 Your user ID
@@ -89,6 +78,20 @@ export default function BeeminderPage() {
             </div>
           </div>
         )}
+
+        <div className="mt-4 prose mx-auto">
+          <p className="text-sm text-neutral-600">
+            Having problems? Join our{" "}
+            <a
+              href="https://discord.gg/K7V8jGCw9D"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Discord
+            </a>{" "}
+            for support.
+          </p>
+        </div>
       </div>
     </div>
   )
