@@ -31,7 +31,7 @@ export async function validateSlackRequest(
   )
 
   try {
-    const isValid = crypto.subtle.verify(
+    const isValid = await crypto.subtle.verify(
       "HMAC",
       key,
       hexToBuffer(slackSignature.substring(3)),
