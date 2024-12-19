@@ -134,7 +134,16 @@ export function ShareTournament({ tournamentId }: { tournamentId: string }) {
           />
           <label className="label" htmlFor="unlisted">
             <span className="label-text">
-              {"Show in the public list of tournaments (coming soon!)"}
+              {tournamentQ.data?.predictYourYear ? (
+                <span>
+                  Show in the{" "}
+                  <Link href="/predict-your-year" target="_blank">
+                    {`public list of ${tournamentQ.data.predictYourYear} predictions`}
+                  </Link>
+                </span>
+              ) : (
+                "Show in the public list of tournaments (coming soon!)"
+              )}
             </span>
           </label>
         </div>

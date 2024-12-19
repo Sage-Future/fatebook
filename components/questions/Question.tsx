@@ -199,8 +199,11 @@ export function Question({
                         resolveBy: newDate,
                       })
                     } else {
+                      const year = new Date(
+                        Date.now() + 1000 * 60 * 60 * 24 * 90,
+                      ).getFullYear() // 90 days from now
                       toast.error(
-                        "The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. 2024-09-30",
+                        `The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. ${year}-09-30`,
                         {
                           duration: 8000,
                         },

@@ -20,7 +20,9 @@ export default function PredictYourYearLandingPage() {
 
   const createTournament = api.tournament.create.useMutation()
 
-  const year = 2024
+  const upcomingYear = new Date(
+    Date.now() + 1000 * 60 * 60 * 24 * 60,
+  ).getFullYear() // 60 days from now
   const user = useSession()?.data?.user
 
   const tournamentsQ = api.tournament.getAll.useQuery()
@@ -29,19 +31,22 @@ export default function PredictYourYearLandingPage() {
     if (!user) {
       return void signInToFatebook()
     }
-
     const tournamentId = generateRandomId()
-    const name = teamMode
-      ? "Your team's predictions for 2024"
-      : `${user?.name}'s predictions for 2024`
+    const baseName = teamMode
+      ? `Your team's predictions for ${upcomingYear}`
+      : `${user?.name}'s predictions for ${upcomingYear}`
+
+    let name = baseName
+    let counter = 2
+    while (tournamentsQ.data?.some((tournament) => tournament.name === name)) {
+      name = `${baseName} (${counter})`
+      counter++
+    }
+
     await createTournament.mutateAsync({
       id: tournamentId,
-      name: `${
-        tournamentsQ.data?.some((tournament) => tournament.name === name)
-          ? `${name} (2)`
-          : name
-      }`,
-      predictYourYear: year,
+      name,
+      predictYourYear: upcomingYear,
     })
     void router.push(
       `/predict-your-year/${tournamentId}${teamMode ? "?team=1" : ""}`,
@@ -51,12 +56,12 @@ export default function PredictYourYearLandingPage() {
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto prose">
       <NextSeo
-        title={`Predict your ${year}`}
+        title={`Predict your ${upcomingYear}`}
         description="What will the new year hold for you? Write down your predictions and review at the end of the year."
         canonical="https://fatebook.io/predict-your-year"
         openGraph={{
           url: "https://fatebook.io/predict-your-year",
-          title: `Predict your ${year}`,
+          title: `Predict your ${upcomingYear}`,
           description:
             "What will the new year hold for you? Write down your predictions and review at the end of the year.",
           images: [
@@ -110,7 +115,7 @@ export default function PredictYourYearLandingPage() {
           }}
         >
           <UserIcon className="h-5 w-5 mr-1" />
-          Predict your 2024: Personal predictions
+          Predict your {upcomingYear}: Personal predictions
         </button>
         <button
           className="btn btn-lg max-sm:btn-md py-4 flex items-center gap-2"
@@ -120,7 +125,7 @@ export default function PredictYourYearLandingPage() {
           }}
         >
           <UsersIcon className="h-5 w-5 mr-1" />
-          Predict your 2024: Team predictions
+          Predict your {upcomingYear}: Team predictions
         </button>
       </div>
 
@@ -161,13 +166,20 @@ export default function PredictYourYearLandingPage() {
           </li>
         </ul>
       </div>
-
-      <Tournaments
-        title="Public predictions for 2024"
-        onlyIncludePredictYourYear={true}
-        includePublic={true}
-        showCreateButton={false}
-      />
+      {/* Show public predictions for upcoming year and each year back to 2024, when PYY began */}
+      {Array.from(
+        { length: upcomingYear - 2023 },
+        (_, i) => upcomingYear - i,
+      ).map((year) => (
+        <div key={year}>
+          <Tournaments
+            title={`Public predictions for ${year}`}
+            predictYourYear={year}
+            includePublic={true}
+            showCreateButton={false}
+          />
+        </div>
+      ))}
 
       <Image
         src="/telescope_future_1200_white.png"

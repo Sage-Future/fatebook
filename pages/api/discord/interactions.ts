@@ -71,9 +71,10 @@ async function createForecast(
     forwardDate: true,
   })
   if (!dateResult || dateResult.length === 0) {
+    const year = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).getFullYear() // 60 days from now
     return sendDiscordEphemeral(
       res,
-      "Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and 2024/12/5" +
+      `Please provide a valid 'resolve by' date. I recognise dates like 22 Sept, tomorrow, and ${year}/12/5` +
         youSaid,
     )
   }

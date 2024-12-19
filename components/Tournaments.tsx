@@ -7,21 +7,21 @@ import { getTournamentUrl } from "../lib/web/utils"
 export function Tournaments({
   title = "Tournaments",
   includePublic = false,
-  onlyIncludePredictYourYear = false,
+  predictYourYear,
   showCreateButton = true,
   inCarousel = false,
   onItemClick,
 }: {
   title?: string
   includePublic?: boolean
-  onlyIncludePredictYourYear?: boolean
+  predictYourYear?: number
   showCreateButton?: boolean
   inCarousel?: boolean
   onItemClick?: (id: string) => void
 }) {
   const tournamentsQ = api.tournament.getAll.useQuery({
     includePublic,
-    onlyIncludePredictYourYear,
+    predictYourYear,
   })
   const createTournament = api.tournament.create.useMutation()
   const router = useRouter()

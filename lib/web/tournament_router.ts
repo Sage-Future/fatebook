@@ -239,12 +239,12 @@ export const tournamentRouter = router({
       z
         .object({
           includePublic: z.boolean().optional(),
-          onlyIncludePredictYourYear: z.boolean().optional(),
+          predictYourYear: z.number().optional(),
         })
         .optional(),
     )
     .query(async ({ input, ctx }) => {
-      if (!ctx.userId && !input?.onlyIncludePredictYourYear) {
+      if (!ctx.userId && !input?.predictYourYear) {
         throw new TRPCError({
           code: "UNAUTHORIZED",
           message: "You must be logged in to view tournaments",
@@ -272,8 +272,12 @@ export const tournamentRouter = router({
                     },
                   ],
                 },
-            input?.onlyIncludePredictYourYear
-              ? { predictYourYear: { gt: 0 } }
+            input?.predictYourYear
+              ? {
+                  predictYourYear: {
+                    equals: input.predictYourYear,
+                  },
+                }
               : {},
           ],
         },

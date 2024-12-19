@@ -9,11 +9,11 @@ import { toast } from "react-hot-toast"
 import { Questions } from "../../components/Questions"
 import { TabbedQuestionSuggestions } from "../../components/TabbedQuestionSuggestions"
 import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
+import { TournamentSettingsButton } from "../../components/TournamentSettingsButton"
 import { Predict } from "../../components/predict-form/Predict"
 import { generateRandomId } from "../../lib/_utils_common"
 import { api } from "../../lib/web/trpc"
 import { signInToFatebook } from "../../lib/web/utils"
-import { TournamentSettingsButton } from "../../components/TournamentSettingsButton"
 
 export default function PredictYourYearPage() {
   const router = useRouter()
@@ -28,7 +28,7 @@ export default function PredictYourYearPage() {
     }
   }, [router.query.team])
 
-  const year = 2024
+  const year = new Date(Date.now() + 1000 * 60 * 60 * 24 * 60).getFullYear() // 60 days from now
 
   // allow an optional ignored slug text before `--` character
   const parts =
@@ -186,7 +186,7 @@ export default function PredictYourYearPage() {
                         date: new Date(`${year + 1}-01-01`),
                       },
                     ]}
-                    placeholder="Will I move house in 2024?"
+                    placeholder={`Will I move house in ${year}?`}
                     showQuestionSuggestionsButton={false}
                     small={true}
                     smartSetDates={false}

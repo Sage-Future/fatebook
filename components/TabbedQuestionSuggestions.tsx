@@ -213,7 +213,7 @@ const personalSuggestions = (year: number) => [
         q: `Will I meditate 20 times during ${year}?`,
       },
       {
-        q: `Will I feel overall more satisfied with life than in ${year} than in the previous year?`,
+        q: `Will I feel overall more satisfied with life in ${year} than in the previous year?`,
       },
       {
         q: `Will I cycle at least 100 miles in ${year}?`,

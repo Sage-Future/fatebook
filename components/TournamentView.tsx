@@ -1,15 +1,15 @@
-import { Username } from "./ui/Username"
-import { Questions } from "./Questions"
-import { TournamentLeaderboard } from "./TournamentLeaderboard"
+import { PlusIcon } from "@heroicons/react/20/solid"
 import { useSession } from "next-auth/react"
-import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
-import { TabbedQuestionSuggestions } from "./TabbedQuestionSuggestions"
-import { Predict } from "./predict-form/Predict"
+import { useEffect, useState } from "react"
 import { generateRandomId } from "../lib/_utils_common"
 import { api } from "../lib/web/trpc"
+import { Questions } from "./Questions"
+import { TabbedQuestionSuggestions } from "./TabbedQuestionSuggestions"
+import { TournamentLeaderboard } from "./TournamentLeaderboard"
 import { TournamentSettingsButton } from "./TournamentSettingsButton"
-import { PlusIcon } from "@heroicons/react/20/solid"
+import { Predict } from "./predict-form/Predict"
+import { Username } from "./ui/Username"
 
 export function TournamentView({ tournamentId }: { tournamentId: string }) {
   const router = useRouter()
@@ -31,7 +31,7 @@ export function TournamentView({ tournamentId }: { tournamentId: string }) {
     }
   }, [router.query.team])
 
-  const year = new Date().getFullYear()
+  const year = tournamentQ.data?.predictYourYear ?? new Date().getFullYear()
 
   const isAdmin =
     (userId && tournamentQ.data?.authorId === userId) ||
@@ -111,7 +111,7 @@ export function TournamentView({ tournamentId }: { tournamentId: string }) {
                   { label: "9 months", date: new Date(`${year}-10-01`) },
                   { label: "End of year", date: new Date(`${year + 1}-01-01`) },
                 ]}
-                placeholder="Will I move house in 2024?"
+                placeholder={`Will I move house in ${year}?`}
                 showQuestionSuggestionsButton={false}
                 small={true}
                 smartSetDates={false}
