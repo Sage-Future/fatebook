@@ -33,10 +33,10 @@ export async function createNotification({
 }
 
 export async function sendBatchedEmails() {
-  const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000)
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const users = await prisma.user.findMany({
     where: {
-      // user has some unsent emails and no emails sent in the last 5 hours
+      // user has some unsent emails and no emails sent in the last 24 hours
       AND: [
         {
           notifications: {
@@ -49,7 +49,7 @@ export async function sendBatchedEmails() {
           notifications: {
             none: {
               emailSentAt: {
-                gte: fiveHoursAgo,
+                gte: twentyFourHoursAgo,
               },
             },
           },
