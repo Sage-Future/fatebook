@@ -68,6 +68,11 @@ export default function PredictYourYearLandingPage() {
       tournament.questions.length > 0,
   )
 
+  const hasExistingPredictions =
+    (tournamentsQ.data?.filter(
+      (tournament) => tournament.predictYourYear === upcomingYear,
+    ).length || 0) > 0
+
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto prose">
       <NextSeo
@@ -119,31 +124,48 @@ export default function PredictYourYearLandingPage() {
             ))}
         </div>
       )}
-      <h2 className="text-base font-bold mb-4">
-        {(tournamentsQ.data?.filter((tournament) => tournament.predictYourYear)
-          .length || 0) > 0
-          ? `Or make another page of ${upcomingYear} predictions`
-          : "Let's get started"}
-      </h2>
-      <div className="flex gap-4 flex-wrap">
-        {[false, true].map((isTeam) => (
-          <button
-            key={isTeam ? "team" : "personal"}
-            className="btn max-sm:btn-md py-4 flex items-center gap-2"
-            disabled={createTournament.isLoading}
-            onClick={() => {
-              void handleGetStarted({ teamMode: isTeam })
-            }}
-          >
-            {isTeam ? (
-              <UsersIcon className="h-5 w-5 mr-1" />
-            ) : (
-              <UserIcon className="h-5 w-5 mr-1" />
-            )}
-            Predict your {upcomingYear}: {isTeam ? "Team" : "Personal"}{" "}
-            predictions
-          </button>
-        ))}
+      <div
+        className={clsx(
+          "rounded-xl p-6 mb-8 mt-4 group",
+          hasExistingPredictions
+            ? "bg-base-200"
+            : "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-xl",
+        )}
+      >
+        <h2
+          className={clsx(
+            "font-bold mb-4 mt-0 text-center select-none",
+            hasExistingPredictions ? "text-base" : "text-2xl text-white",
+          )}
+        >
+          {hasExistingPredictions
+            ? `Or make another page of ${upcomingYear} predictions`
+            : `Predict your ${upcomingYear}`}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[false, true].map((isTeam) => (
+            <button
+              key={isTeam ? "team" : "personal"}
+              className={clsx(
+                "btn transition-all hover:scale-[1.02] group-hover:scale-[1.008]",
+                hasExistingPredictions
+                  ? "bg-neutral-100 hover:bg-neutral-300"
+                  : "bg-white/10 hover:bg-white/20 text-white",
+              )}
+              disabled={createTournament.isLoading}
+              onClick={() => {
+                void handleGetStarted({ teamMode: isTeam })
+              }}
+            >
+              {isTeam ? (
+                <UsersIcon className="h-5 w-5" />
+              ) : (
+                <UserIcon className="h-5 w-5" />
+              )}
+              <span>{isTeam ? "Team" : "Personal"} predictions</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {(previousYearsNonEmptyTournaments?.length || 0) > 0 && (
