@@ -29,6 +29,9 @@ export default function Meta() {
           href: "https://fatebook.io/scale.svg",
         },
       ]}
+      twitter={{
+        handle: "@sage_future_",
+      }}
     />
   )
 }
