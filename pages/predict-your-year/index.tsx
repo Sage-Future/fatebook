@@ -6,16 +6,41 @@ import {
   UserIcon,
   UsersIcon,
 } from "@heroicons/react/24/solid"
+import { createServerSideHelpers } from "@trpc/react-query/server"
 import clsx from "clsx"
+import type { NextApiRequest, NextApiResponse } from "next"
+import { GetServerSideProps } from "next"
 import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
+import superjson from "superjson"
 import { Tournaments } from "../../components/Tournaments"
 import { generateRandomId } from "../../lib/_utils_common"
+import { appRouter } from "../../lib/web/app_router"
 import { api } from "../../lib/web/trpc"
+import { createContext } from "../../lib/web/trpc_base"
 import { signInToFatebook } from "../../lib/web/utils"
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const helpers = createServerSideHelpers({
+    router: appRouter,
+    ctx: await createContext({
+      req: context.req as NextApiRequest,
+      res: context.res as NextApiResponse,
+    }),
+    transformer: superjson,
+  })
+
+  await helpers.tournament.getAll.prefetch()
+
+  return {
+    props: {
+      trpcState: helpers.dehydrate(),
+    },
+  }
+}
 
 export default function PredictYourYearLandingPage() {
   const router = useRouter()
@@ -27,7 +52,11 @@ export default function PredictYourYearLandingPage() {
   ).getFullYear() // 60 days from now
   const user = useSession()?.data?.user
 
-  const tournamentsQ = api.tournament.getAll.useQuery()
+  const { data: tournaments } = api.tournament.getAll.useQuery(undefined, {
+    // This query will be pre-populated from the server
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  })
 
   const handleGetStarted = async ({ teamMode }: { teamMode: boolean }) => {
     if (!user) {
@@ -40,7 +69,7 @@ export default function PredictYourYearLandingPage() {
 
     let name = baseName
     let counter = 2
-    while (tournamentsQ.data?.some((tournament) => tournament.name === name)) {
+    while (tournaments?.some((tournament) => tournament.name === name)) {
       name = `${baseName} (${counter})`
       counter++
     }
@@ -61,7 +90,7 @@ export default function PredictYourYearLandingPage() {
   const primaryStyles =
     "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-indigo-500/50 hover:glow-indigo-500/50"
 
-  const previousYearsNonEmptyTournaments = tournamentsQ.data?.filter(
+  const previousYearsNonEmptyTournaments = tournaments?.filter(
     (tournament) =>
       tournament.predictYourYear !== upcomingYear &&
       tournament.predictYourYear &&
@@ -69,7 +98,7 @@ export default function PredictYourYearLandingPage() {
   )
 
   const hasExistingPredictions =
-    (tournamentsQ.data?.filter(
+    (tournaments?.filter(
       (tournament) => tournament.predictYourYear === upcomingYear,
     ).length || 0) > 0
 
@@ -101,11 +130,11 @@ export default function PredictYourYearLandingPage() {
         review at the end of the year.
       </p>
 
-      {(tournamentsQ.data?.filter(
+      {(tournaments?.filter(
         (tournament) => tournament.predictYourYear === upcomingYear,
       ).length || 0) > 0 && (
         <div className="flex gap-2 flex-col mt-8">
-          {tournamentsQ.data
+          {tournaments
             ?.filter(
               (tournament) => tournament.predictYourYear === upcomingYear,
             )
