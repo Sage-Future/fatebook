@@ -283,6 +283,15 @@ export const tournamentRouter = router({
         },
         include: {
           author: true,
+          questions: {
+            select: {
+              _count: {
+                select: {
+                  forecasts: true,
+                },
+              },
+            },
+          },
         },
       })
       return tournaments

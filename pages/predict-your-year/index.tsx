@@ -1,10 +1,12 @@
 import {
+  ArrowRightIcon,
   ChatBubbleOvalLeftIcon,
   RocketLaunchIcon,
   TrophyIcon,
   UserIcon,
   UsersIcon,
 } from "@heroicons/react/24/solid"
+import clsx from "clsx"
 import { useSession } from "next-auth/react"
 import { NextSeo } from "next-seo"
 import Image from "next/image"
@@ -53,6 +55,19 @@ export default function PredictYourYearLandingPage() {
     )
   }
 
+  const actionButton =
+    "flex flex-col items-start sm:flex-row sm:items-center text-left justify-between px-4 py-3 rounded-lg border-none shadow-md transition-all hover:shadow-lg hover:scale-[1.02] no-underline btn"
+
+  const primaryStyles =
+    "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:shadow-indigo-500/50 hover:glow-indigo-500/50"
+
+  const previousYearsNonEmptyTournaments = tournamentsQ.data?.filter(
+    (tournament) =>
+      tournament.predictYourYear !== upcomingYear &&
+      tournament.predictYourYear &&
+      tournament.questions.length > 0,
+  )
+
   return (
     <div className="px-4 pt-12 lg:pt-16 mx-auto prose">
       <NextSeo
@@ -81,53 +96,80 @@ export default function PredictYourYearLandingPage() {
         review at the end of the year.
       </p>
 
-      {(tournamentsQ.data?.filter((tournament) => tournament.predictYourYear)
-        .length || 0) > 0 && (
-        <div className="flex gap-2 flex-col">
-          <h2 className="text-2xl font-bold mb-4">
-            Pick up where you left off
-          </h2>
+      {(tournamentsQ.data?.filter(
+        (tournament) => tournament.predictYourYear === upcomingYear,
+      ).length || 0) > 0 && (
+        <div className="flex gap-2 flex-col mt-8">
           {tournamentsQ.data
-            ?.filter((tournament) => tournament.predictYourYear)
+            ?.filter(
+              (tournament) => tournament.predictYourYear === upcomingYear,
+            )
             .map((tournament) => (
               <Link
                 key={tournament.id}
                 href={`/predict-your-year/${tournament.id}`}
-                className="btn flex justify-start"
+                className={clsx(actionButton, primaryStyles)}
               >
-                {tournament.name}
+                <span className="text-lg font-medium">{tournament.name}</span>
+                <div className="flex items-center gap-2 text-purple-50">
+                  <span className="text-sm">Predict</span>
+                  <ArrowRightIcon className="w-4 h-4" />
+                </div>
               </Link>
             ))}
         </div>
       )}
-      <h2 className="text-2xl font-bold mb-4">
+      <h2 className="text-base font-bold mb-4">
         {(tournamentsQ.data?.filter((tournament) => tournament.predictYourYear)
           .length || 0) > 0
-          ? "Or make a new page of predictions"
+          ? `Or make another page of ${upcomingYear} predictions`
           : "Let's get started"}
       </h2>
       <div className="flex gap-4 flex-wrap">
-        <button
-          className="btn btn-lg max-sm:btn-md py-4 flex items-center gap-2"
-          disabled={createTournament.isLoading}
-          onClick={() => {
-            void handleGetStarted({ teamMode: false })
-          }}
-        >
-          <UserIcon className="h-5 w-5 mr-1" />
-          Predict your {upcomingYear}: Personal predictions
-        </button>
-        <button
-          className="btn btn-lg max-sm:btn-md py-4 flex items-center gap-2"
-          disabled={createTournament.isLoading}
-          onClick={() => {
-            void handleGetStarted({ teamMode: true })
-          }}
-        >
-          <UsersIcon className="h-5 w-5 mr-1" />
-          Predict your {upcomingYear}: Team predictions
-        </button>
+        {[false, true].map((isTeam) => (
+          <button
+            key={isTeam ? "team" : "personal"}
+            className="btn max-sm:btn-md py-4 flex items-center gap-2"
+            disabled={createTournament.isLoading}
+            onClick={() => {
+              void handleGetStarted({ teamMode: isTeam })
+            }}
+          >
+            {isTeam ? (
+              <UsersIcon className="h-5 w-5 mr-1" />
+            ) : (
+              <UserIcon className="h-5 w-5 mr-1" />
+            )}
+            Predict your {upcomingYear}: {isTeam ? "Team" : "Personal"}{" "}
+            predictions
+          </button>
+        ))}
       </div>
+
+      {(previousYearsNonEmptyTournaments?.length || 0) > 0 && (
+        <>
+          <h2 className="text-base font-bold mb-4">
+            Review your previous predictions
+          </h2>
+          <div className="flex gap-2 flex-col mt-4">
+            {previousYearsNonEmptyTournaments
+              ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // Sort by most recent first
+              .map((tournament) => (
+                <Link
+                  key={tournament.id}
+                  href={`/predict-your-year/${tournament.id}`}
+                  className={clsx(actionButton)}
+                >
+                  <span className="text-md font-medium">{tournament.name}</span>
+                  <div className="flex items-center gap-2 text-neutral-700">
+                    <span className="text-sm">Reflect</span>
+                    <ArrowRightIcon className="w-4 h-4" />
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </>
+      )}
 
       <div className="my-6">
         <h2 className="text-2xl font-bold mb-4">{"Why predict your year?"}</h2>
