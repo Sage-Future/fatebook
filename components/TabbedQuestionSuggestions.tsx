@@ -176,6 +176,9 @@ const personalSuggestions = (year: number) => [
         q: `Will I think my ${year} goals were appropriately ambitious at the end of the year?`,
       },
       {
+        q: `Will my self-experiment <x> lead to me continue doing it until the end of ${year}?`,
+      },
+      {
         label:
           "Feeling bold? You could make a friendly bet with a friend to give you extra motivation to hit your goal!",
       },
@@ -195,9 +198,6 @@ const personalSuggestions = (year: number) => [
         q: `Will I go to the gym 50 times in ${year}?`,
       },
       {
-        q: `Will I get COVID in ${year}?`,
-      },
-      {
         q: `Will my total steps in ${year} be higher than in the previous year?`,
       },
       {
@@ -205,6 +205,9 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will I be able to do 30 push-ups at some point in ${year}?`,
+      },
+      {
+        q: `Will I spend more on food delivery in ${year} than in the previous year?`,
       },
       {
         q: `Will I get a cold in ${year}?`,
@@ -217,6 +220,9 @@ const personalSuggestions = (year: number) => [
       },
       {
         q: `Will I cycle at least 100 miles in ${year}?`,
+      },
+      {
+        q: `Will I eat only vegetarian food in ${year}?`,
       },
     ],
   },
@@ -330,22 +336,19 @@ const personalSuggestions = (year: number) => [
     icon: <GlobeAsiaAustraliaIcon className="w-6 h-6" />,
     questions: [
       {
-        q: `Will Biden be re-elected in ${year}?`,
+        q: `Will Trump's approval rating be over 45% at the end of ${year}?`,
       },
       {
-        q: `Will the loser of the 2024 US election concede defeat in ${year}?`,
-      },
-      {
-        q: `Will Taylor Swift and Travis Kelce break up in ${year}?`,
+        q: `Will there be a ceasefire in Ukraine at the end of ${year}?`,
       },
       {
         q: `Will GPT-5 be released in ${year}?`,
       },
       {
-        q: `Will the Chiefs win the Super Bowl in ${year}?`,
+        q: `Will New Zealand win the 2025 Women's Rugby World Cup?`,
       },
       {
-        q: `Will BJP win India's ${year} general election?`,
+        q: `Will Taylor Swift release a new album in ${year}?`,
       },
     ],
   },
@@ -401,6 +404,10 @@ const teamSuggestions = (year: number) => [
       {
         q: `Will we expand to a new region or demographic in ${year}?`,
       },
+
+      {
+        q: `Will we hit at least 80% of our KPIs in ${year}?`,
+      },
     ],
   },
   {
@@ -414,7 +421,7 @@ const teamSuggestions = (year: number) => [
         q: `Will we find a new major investor or donor in ${year}?`,
       },
       {
-        q: `Will our spending be higher than our mainline ${year} budget?`,
+        q: `Will our ${year} spending be higher than our mainline budget?`,
       },
       {
         q: `Will we reduce operational costs by at least <x>% in ${year}?`,
@@ -463,7 +470,7 @@ const teamSuggestions = (year: number) => [
         q: `Will we hire a new <role> in ${year}?`,
       },
       {
-        q: `Will we fire any team members in ${year}?`,
+        q: `Will any team members leave in ${year}?`,
       },
       {
         q: `Will we have a team off-site in ${year}?`,
@@ -542,9 +549,6 @@ const teamSuggestions = (year: number) => [
       },
       {
         q: `Will we consider having made yearly predictions a valuable use of our time at the end of ${year}?`,
-      },
-      {
-        q: `Will we write down 100 predictions during ${year}?`,
       },
       {
         q: `Will <x>'s predictions about our team in ${year} be more accurate than any other team member?`,
