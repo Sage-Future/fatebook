@@ -190,6 +190,10 @@ export default function PredictYourYearPage() {
                     showQuestionSuggestionsButton={false}
                     small={true}
                     smartSetDates={false}
+                    autoFocus={
+                      questionDrafts.length > 1 ||
+                      tournamentQ.data?.questions.length === 0
+                    }
                   />
                   {questionDrafts.length > 1 && (
                     <button

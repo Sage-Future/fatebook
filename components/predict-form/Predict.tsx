@@ -51,6 +51,7 @@ export function Predict({
   placeholder,
   small,
   smartSetDates = true,
+  autoFocus = false,
 }: {
   questionDefaults?: QuestionDefaults
   textAreaRef?: React.RefObject<HTMLTextAreaElement>
@@ -63,9 +64,10 @@ export function Predict({
   placeholder?: string
   small?: boolean
   smartSetDates?: boolean
+  autoFocus?: boolean
 }) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
-  textAreaRef = textAreaRef || nonPassedRef
+  textAreaRef = textAreaRef ?? nonPassedRef
 
   const methods = usePredictForm() // for useFormContext
   const {
@@ -209,7 +211,6 @@ export function Predict({
 
       reset()
       textAreaRef?.current?.focus()
-      console.log({ textAreaRef })
     },
     [
       createQuestion,
@@ -400,6 +401,7 @@ export function Predict({
                     onFocus={() => setQuestionInFocus(true)}
                     onBlur={() => setQuestionInFocus(false)}
                     ref={mergeRefs([textAreaRef, formRef])}
+                    autoFocus={autoFocus}
                   />
                   <div className="flex flex-row items-center p-2 sm:px-4 gap-1 z-20">
                     <TagsSelect

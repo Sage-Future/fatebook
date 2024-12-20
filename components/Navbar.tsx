@@ -156,10 +156,12 @@ function MenuItems({
           </li>
         </>
       )}
-      {userId && (
+      {userId ? (
         <li className="hidden lg:block">
           <NotificationsPopover />
         </li>
+      ) : (
+        <span className="sm:w-[3.25rem]" />
       )}
     </>
   )
