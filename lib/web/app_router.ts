@@ -226,7 +226,7 @@ export const appRouter = router({
       })
 
       return {
-        items: notifications,
+        items: notifications.slice(0, limit), // don't include the extra one - it's just to see if there's another page
         nextCursor: notifications.length > limit ? skip + limit : undefined,
       }
     }),
