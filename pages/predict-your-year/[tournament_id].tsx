@@ -21,7 +21,6 @@ export default function PredictYourYearPage() {
   const user = useSession()?.data?.user
   const userId = user?.id
 
-  // eslint-disable-next-line no-unused-vars
   const [teamMode, setTeamMode] = useState(router.query.team === "1")
   useEffect(() => {
     if (router.query.team === "1") {

@@ -39,20 +39,6 @@ interface QuestionDefaults {
   unlisted?: boolean
 }
 
-interface PredictProps {
-  questionDefaults?: QuestionDefaults
-  textAreaRef?: React.RefObject<HTMLTextAreaElement>
-  onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
-  embedded?: boolean
-  resetTrigger?: boolean
-  setResetTrigger?: (arg: boolean) => void
-  resolveByButtons?: { date: Date; label: string }[]
-  showQuestionSuggestionsButton?: boolean
-  placeholder?: string
-  small?: boolean
-  smartSetDates?: boolean
-}
-
 export function Predict({
   questionDefaults,
   textAreaRef,
@@ -65,7 +51,19 @@ export function Predict({
   placeholder,
   small,
   smartSetDates = true,
-}: PredictProps) {
+}: {
+  questionDefaults?: QuestionDefaults
+  textAreaRef?: React.RefObject<HTMLTextAreaElement>
+  onQuestionCreate?: (output: CreateQuestionMutationOutput) => void
+  embedded?: boolean
+  resetTrigger?: boolean
+  setResetTrigger?: (arg: boolean) => void
+  resolveByButtons?: { date: Date; label: string }[]
+  showQuestionSuggestionsButton?: boolean
+  placeholder?: string
+  small?: boolean
+  smartSetDates?: boolean
+}) {
   const nonPassedRef = useRef(null) // ref must be created every time, even if not always used
   textAreaRef = textAreaRef || nonPassedRef
 
@@ -211,6 +209,7 @@ export function Predict({
 
       reset()
       textAreaRef?.current?.focus()
+      console.log({ textAreaRef })
     },
     [
       createQuestion,
