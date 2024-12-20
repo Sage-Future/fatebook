@@ -118,6 +118,7 @@ function MenuItems({
 }) {
   const router = useRouter()
   const isActive = (path: string) => router.pathname === path
+  const { status: sessionStatus } = useSession()
 
   return (
     <>
@@ -161,7 +162,7 @@ function MenuItems({
           <NotificationsPopover />
         </li>
       ) : (
-        <span className="sm:w-[3.25rem]" />
+        <span className={clsx(sessionStatus === "loading" && "sm:w-[3.25rem]")} />
       )}
     </>
   )
