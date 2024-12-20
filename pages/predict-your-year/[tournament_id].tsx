@@ -7,13 +7,14 @@ import { useRouter } from "next/router"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 import { Questions } from "../../components/Questions"
+import { SyncToSlack } from "../../components/SyncToSlack"
 import { TabbedQuestionSuggestions } from "../../components/TabbedQuestionSuggestions"
 import { TournamentLeaderboard } from "../../components/TournamentLeaderboard"
 import { TournamentSettingsButton } from "../../components/TournamentSettingsButton"
 import { Predict } from "../../components/predict-form/Predict"
 import { generateRandomId } from "../../lib/_utils_common"
 import { api } from "../../lib/web/trpc"
-import { signInToFatebook } from "../../lib/web/utils"
+import { getTournamentUrl, signInToFatebook } from "../../lib/web/utils"
 
 export default function PredictYourYearPage() {
   const router = useRouter()
@@ -263,6 +264,16 @@ export default function PredictYourYearPage() {
               <TournamentLeaderboard tournamentId={tournamentId} />
             </div>
           )}
+
+          <div className="mt-4 mx-auto">
+            {tournamentQ.data && (
+              <SyncToSlack
+                listType="page"
+                url={getTournamentUrl(tournamentQ.data, false)}
+                entity={tournamentQ.data}
+              />
+            )}
+          </div>
 
           {userId !== tournamentQ.data?.authorId && (
             <div className="text-sm mt-4 mx-auto">

@@ -375,7 +375,7 @@ const personalSuggestions = (year: number) => [
         q: `Will my predictions about my life in ${year} be more accurate than any of my friends?`,
       },
       {
-        label: `We'll send you a reminder at the end of ${year} to reflect on your predictions and record what actually happened.\n\nIn the meantime, you can always come back to [Fatebook](https://fatebook.io) to update your predictions or add new ones. You can also use Fatebook to predict their day-to-day - e.g. 'will I finish writing this blogpost by the end of the day?'\n\nHere's to a great ${year}!`,
+        label: `We'll send you a reminder at the end of ${year} to reflect on your predictions and record what actually happened.\n\nIn the meantime, you can always come back to [Fatebook](https://fatebook.io) to update your predictions or add new ones.\n\nYou can also use Fatebook to predict day-to-day - e.g. 'will I finish writing this blogpost by the end of the day?'\n\nYou can use Fatebook through [fatebook.io](https://fatebook.io), [Fatebook for Slack](https://fatebook.io/for-slack) or anywhere on the web with the [browser extension](https://fatebook.io/browser-extension).\n\nHere's to a great ${year}!`,
       },
     ],
   },

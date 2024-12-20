@@ -87,9 +87,10 @@ export function TournamentLeaderboard({
           0,
         ),
         numQuestions:
-          tournamentQ.data?.questions.filter((q) =>
-            q.forecasts.some((f) => f.userId === p.userId) &&
-            q.questionScores.length > 0  // Only count resolved questions
+          tournamentQ.data?.questions.filter(
+            (q) =>
+              q.forecasts.some((f) => f.userId === p.userId) &&
+              q.questionScores.length > 0, // Only count resolved questions
           ).length || 0,
       }
     })
@@ -151,7 +152,7 @@ export function TournamentLeaderboard({
   return (
     <div>
       <h2 className="select-none">Leaderboard</h2>
-      <div className="bg-white overflow-auto max-h-[60vh]">
+      <div className="bg-white overflow-auto max-h-[60vh] rounded-xl mb-2 shadow-sm">
         <table className="table w-full py-2">
           <thead className="sticky top-0 bg-white">
             <tr>
@@ -224,7 +225,10 @@ export function TournamentLeaderboard({
                 </tr>
               )),
               <tr>
-                <td colSpan={6} className="italic text-neutral-500 text-center">
+                <td
+                  colSpan={6}
+                  className="italic text-neutral-500 text-center py-6"
+                >
                   No resolved questions yet
                 </td>
               </tr>,

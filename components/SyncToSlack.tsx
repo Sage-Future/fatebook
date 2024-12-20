@@ -86,7 +86,7 @@ export function SyncToSlack({
             Paste into a Slack channel to share these questions there - and any
             questions added in the future
           </span>
-          <span className="block text-neutral-400 italic mt-2">
+          <span className="block text-neutral-500 italic mt-2">
             Make sure{" "}
             <Link href="/for-slack" target="_blank">
               Fatebook for Slack

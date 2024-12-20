@@ -94,8 +94,8 @@ function NavbarContent({
         </Link>
         {userId && (
           <SpecialButton
-            url="https://sage-future.org/jobs"
-            label={<span className="">{"We're hiring!"}</span>}
+            url="/predict-your-year"
+            label={<span className="">{"Predict your 2025"}</span>}
           />
         )}
       </div>
