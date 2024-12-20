@@ -63,9 +63,10 @@ export default function PredictYourYearLandingPage() {
       return void signInToFatebook()
     }
     const tournamentId = generateRandomId()
+    const firstName = user.name ? `${user?.name?.split(" ")[0]}'s` : "Your"
     const baseName = teamMode
       ? `Your team's predictions for ${upcomingYear}`
-      : `${user?.name}'s predictions for ${upcomingYear}`
+      : `${firstName} predictions for ${upcomingYear}`
 
     let name = baseName
     let counter = 2
