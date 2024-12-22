@@ -1,10 +1,11 @@
-import { Prisma, QuestionType, Tag, User } from "@prisma/client"
+import { Forecast, Prisma, QuestionType, Tag, User } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime/library"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
 import {
   QuestionWithForecasts,
+  QuestionWithForecastsAndOptions,
   QuestionWithForecastsAndSharedWithAndLists,
   QuestionWithUserAndSharedWith,
 } from "../../prisma/additional"
@@ -1691,7 +1692,7 @@ export function assertHasAccess(
 }
 
 export function scrubHiddenForecastsAndSensitiveDetailsFromQuestion<
-  QuestionX extends QuestionWithForecasts,
+  QuestionX extends QuestionWithForecastsAndOptions,
 >(question: QuestionX, userId: string | undefined) {
   question = scrubApiKeyPropertyRecursive(question, ["email", "discordUserId"])
 
@@ -1699,24 +1700,32 @@ export function scrubHiddenForecastsAndSensitiveDetailsFromQuestion<
     return question
   }
 
+  const anonymiseForecast = (f: Forecast) => {
+    const hideForecast = f.userId !== userId || !userId
+    return {
+      ...f,
+      ...(hideForecast
+        ? {
+            forecast: null,
+            userId: null,
+            user: null,
+            profileId: null,
+            profile: null,
+            options: null,
+          }
+        : {}),
+    }
+  }
+
   return {
     ...question,
-    forecasts: question.forecasts.map((f) => {
-      const hideForecast = f.userId !== userId || !userId
-      return {
-        ...f,
-        ...(hideForecast
-          ? {
-              forecast: null,
-              userId: null,
-              user: null,
-              profileId: null,
-              profile: null,
-              options: null,
-            }
-          : {}),
-      }
-    }),
+    forecasts: question.forecasts.map(anonymiseForecast),
+    options:
+      question.options &&
+      question.options.map((o) => ({
+        ...o,
+        forecasts: o.forecasts.map(anonymiseForecast),
+      })),
   }
 }
 
