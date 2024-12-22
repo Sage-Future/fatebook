@@ -9,6 +9,7 @@ import { QuestionOption } from "../QuestionOption"
 import { ResolveBy } from "../ResolveBy"
 import { QuestionTypeProps } from "./question-types"
 import { OptionType } from "../PredictProvider"
+import { normalizeOptionsToHundred } from "../../../lib/_utils_multiple-choice"
 import { formatDecimalNicely } from "../../../lib/_utils_common"
 
 export default function MultiChoiceQuestion({
@@ -44,44 +45,11 @@ export default function MultiChoiceQuestion({
 
   const options = watch("options") as OptionType[]
   const normalizeToHundred = useCallback(() => {
-    const optionsWithForecasts = options.filter(
-      ({ forecast }) => forecast !== undefined && !Number.isNaN(forecast)
-    ) as Array<OptionType & { forecast: number }>
+    const normalizedOptions = normalizeOptionsToHundred(options)
 
-    const optionsWithoutForecasts = options.filter(
-      ({ forecast }) => forecast === undefined || Number.isNaN(forecast)
-    )
-
-    const allOptionsHaveForecasts = optionsWithForecasts.length === options.length
-
-    if (allOptionsHaveForecasts) {
-      const totalPercentage = optionsWithForecasts.reduce(
-        (acc, option) => acc + option.forecast,
-        0,
-      )
-      optionsWithForecasts.forEach((option, index) => {
-        const scaledValue = (option.forecast! * 100) / totalPercentage
-        setValue(
-          `options.${index}.forecast`,
-          formatDecimalNicely(scaledValue, 0),
-        )
-      })
-    } else if (!allOptionsHaveForecasts) {
-      const totalPercentage = optionsWithForecasts.reduce(
-        (sum, option) => sum + option.forecast,
-        0,
-      )
-
-      if (totalPercentage > 100) return
-
-      const remainingMass = Math.max(0, 100 - totalPercentage)
-      const massPerOption = remainingMass / optionsWithoutForecasts.length
-      const roundedMassPerOption = formatDecimalNicely(massPerOption, 0)
-      optionsWithoutForecasts.forEach((option) => {
-        const originalIndex = options.findIndex((o) => o === option)
-        setValue(`options.${originalIndex}.forecast`, roundedMassPerOption)
-      })
-    }
+    normalizedOptions.forEach((option, index) => {
+        setValue(`options.${index}.forecast`, formatDecimalNicely((option.forecast || 0), 0))
+    })
 
     void trigger("options")
   }, [options, setValue, trigger])
