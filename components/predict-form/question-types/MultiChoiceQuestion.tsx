@@ -48,7 +48,10 @@ export default function MultiChoiceQuestion({
     const normalizedOptions = normalizeOptionsToHundred(options)
 
     normalizedOptions.forEach((option, index) => {
-        setValue(`options.${index}.forecast`, formatDecimalNicely((option.forecast || 0), 0))
+      setValue(
+        `options.${index}.forecast`,
+        formatDecimalNicely(option.forecast || 0, 0),
+      )
     })
 
     void trigger("options")

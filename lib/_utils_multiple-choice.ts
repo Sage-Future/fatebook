@@ -3,16 +3,17 @@ import { OptionType } from "../components/predict-form/PredictProvider"
 export function normalizeOptionsToHundred(options: OptionType[]) {
   const optionsCopy = [...options]
   const optionsWithForecasts = optionsCopy.filter(
-    ({ forecast }) => forecast !== undefined && !Number.isNaN(forecast)
+    ({ forecast }) => forecast !== undefined && !Number.isNaN(forecast),
   ) as Array<OptionType & { forecast: number }>
   const optionsWithoutForecasts = optionsCopy.filter(
-    ({ forecast }) => forecast === undefined || Number.isNaN(forecast)
+    ({ forecast }) => forecast === undefined || Number.isNaN(forecast),
   )
 
-  const allOptionsHaveForecasts = optionsWithForecasts.length === optionsCopy.length
+  const allOptionsHaveForecasts =
+    optionsWithForecasts.length === optionsCopy.length
   const totalPercentage = optionsWithForecasts.reduce(
     (acc, option) => acc + option.forecast,
-    0
+    0,
   )
 
   if (allOptionsHaveForecasts) {
@@ -20,7 +21,7 @@ export function normalizeOptionsToHundred(options: OptionType[]) {
       const scaledValue = (option.forecast * 100) / totalPercentage
       optionsCopy[index] = {
         ...option,
-        forecast: scaledValue
+        forecast: scaledValue,
       }
     })
   } else {
@@ -31,7 +32,7 @@ export function normalizeOptionsToHundred(options: OptionType[]) {
       const originalIndex = options.findIndex((o) => o === option)
       optionsCopy[originalIndex] = {
         ...option,
-        forecast: massPerOption
+        forecast: massPerOption,
       }
     })
   }
