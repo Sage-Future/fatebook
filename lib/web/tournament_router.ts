@@ -48,6 +48,7 @@ export const tournamentRouter = router({
           showLeaderboard: z.boolean().optional(),
           questions: z.array(z.string()).optional(),
           anyoneInListCanEdit: z.boolean().optional(),
+          currentQuestions: z.array(z.string()),
         }),
       }),
     )
@@ -58,81 +59,98 @@ export const tournamentRouter = router({
           message: "You must be logged in to update a tournament",
         })
       }
-      const oldTournament = await prisma.tournament.findUnique({
-        where: {
-          id: input.tournament.id,
-        },
-        include: {
-          userList: {
-            include: {
-              users: true,
+
+      return await prisma.$transaction(async (tx) => {
+        const oldTournament = await tx.tournament.findUnique({
+          where: {
+            id: input.tournament.id,
+          },
+          include: {
+            userList: {
+              include: {
+                users: true,
+              },
+            },
+            questions: {
+              include: {
+                tournaments: true,
+                sharedWithLists: true,
+              },
             },
           },
-          questions: {
-            include: {
-              tournaments: true,
-              sharedWithLists: true,
-            },
-          },
-        },
-      })
-      if (!oldTournament) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Tournament not found",
         })
-      }
-      if (
-        oldTournament.authorId !== ctx.userId &&
-        !(
-          oldTournament.anyoneInListCanEdit &&
-          oldTournament.userList?.users.find((u) => u.id === ctx.userId)
-        )
-      ) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You are not the author of this tournament",
-        })
-      }
 
-      const updatedTournament = await prisma.tournament.update({
-        where: {
-          id: input.tournament.id,
-        },
-        data: {
-          name: input.tournament.name,
-          description: input.tournament.description,
-          sharedPublicly: input.tournament.sharedPublicly,
-          unlisted: input.tournament.unlisted,
-          userListId: input.tournament.userListId,
-          showLeaderboard: input.tournament.showLeaderboard,
-          anyoneInListCanEdit: input.tournament.anyoneInListCanEdit,
-          questions: input.tournament.questions
-            ? {
-                set: input.tournament.questions.map((q) => ({ id: q })),
-              }
-            : undefined,
-        },
-        include: {
-          questions: {
-            include: {
-              tournaments: true,
-              sharedWithLists: true,
+        if (!oldTournament) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tournament not found",
+          })
+        }
+
+        const currentQuestionIds = oldTournament.questions.map(q => q.id).sort()
+        const clientQuestionIds = input.tournament.currentQuestions.sort()
+        
+        if (JSON.stringify(currentQuestionIds) !== JSON.stringify(clientQuestionIds)) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Tournament questions have been modified. Please refresh and try again.",
+          })
+        }
+
+        if (
+          oldTournament.authorId !== ctx.userId &&
+          !(
+            oldTournament.anyoneInListCanEdit &&
+            oldTournament.userList?.users.find((u) => u.id === ctx.userId)
+          )
+        ) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "You are not authorized to edit this tournament",
+          })
+        }
+
+        const updatedTournament = await tx.tournament.update({
+          where: {
+            id: input.tournament.id,
+          },
+          data: {
+            name: input.tournament.name,
+            description: input.tournament.description,
+            sharedPublicly: input.tournament.sharedPublicly,
+            unlisted: input.tournament.unlisted,
+            userListId: input.tournament.userListId,
+            showLeaderboard: input.tournament.showLeaderboard,
+            anyoneInListCanEdit: input.tournament.anyoneInListCanEdit,
+            questions: input.tournament.questions
+              ? {
+                  set: input.tournament.questions.map((q) => ({ id: q })),
+                }
+              : undefined,
+          },
+          include: {
+            questions: {
+              include: {
+                tournaments: true,
+                sharedWithLists: true,
+              },
             },
           },
-        },
+        })
+
+        if (input.tournament.questions !== undefined) {
+          await Promise.all([
+            ...updatedTournament.questions.map(q => 
+              syncToSlackIfNeeded(q, ctx.userId)
+            ),
+            ...oldTournament.questions.map(q => 
+              syncToSlackIfNeeded(q, ctx.userId, [oldTournament])
+            )
+          ])
+        }
+
+        return updatedTournament
       })
-
-      if (input.tournament.questions !== undefined) {
-        for (const question of updatedTournament.questions) {
-          await syncToSlackIfNeeded(question, ctx.userId)
-        }
-        for (const question of oldTournament.questions) {
-          await syncToSlackIfNeeded(question, ctx.userId, [oldTournament])
-        }
-      }
-
-      return updatedTournament
     }),
 
   get: publicProcedure

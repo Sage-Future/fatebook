@@ -59,6 +59,7 @@ export function TournamentAdminPanel({
           id: tournamentQ.data.id,
           ...tournament,
           questions: questions,
+          currentQuestions: tournamentQ.data.questions.map(q => q.id),
         },
       })
     }
