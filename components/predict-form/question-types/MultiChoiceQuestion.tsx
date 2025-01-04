@@ -113,7 +113,7 @@ export default function MultiChoiceQuestion({
           helpText="If selected, you can resolve multiple options to YES. Otherwise, you can only resolve a single option to YES (and an OTHER option is added by default)."
           labelClassName="text-sm"
           onChange={() => {
-            void trigger("options")
+            void trigger("options") // needed because our superRefine rule for summing to 100% isn't automatically revalidated otherwise
           }}
         />
       </div>
