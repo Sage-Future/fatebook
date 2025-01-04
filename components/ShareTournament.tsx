@@ -39,6 +39,7 @@ export function ShareTournament({ tournamentId }: { tournamentId: string }) {
           id: tournamentQ.data.id,
           ...tournament,
           questions: questions,
+          currentQuestions: tournamentQ.data.questions.map(q => q.id)
         },
       })
     }
@@ -186,6 +187,7 @@ function UserListSelect({ tournamentId }: { tournamentId: string }) {
           id: tournamentQ.data.id,
           ...tournament,
           questions: questions,
+          currentQuestions: tournamentQ.data.questions.map(q => q.id)
         },
       })
     }
