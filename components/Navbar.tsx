@@ -162,7 +162,9 @@ function MenuItems({
           <NotificationsPopover />
         </li>
       ) : (
-        <span className={clsx(sessionStatus === "loading" && "sm:w-[3.25rem]")} />
+        <span
+          className={clsx(sessionStatus === "loading" && "sm:w-[3.25rem]")}
+        />
       )}
     </>
   )
@@ -418,7 +420,7 @@ function AccountMenu(showCreateAccountButton: boolean) {
         <li
           onClick={() => {
             const newImage = prompt(
-              "Enter the URL of your new profile picture. You can upload it to a site like imgur.com.",
+              'Enter the URL of your new profile picture. You can upload it to a site like imgur.com. Make sure you right click the uploaded image and "Copy image address" if pasting from imgur.',
               user.imageUrl,
             )
             if (newImage) {
