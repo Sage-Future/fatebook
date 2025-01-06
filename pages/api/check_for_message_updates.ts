@@ -13,6 +13,7 @@ import { buildTargetNotification } from "../../lib/blocks-designs/target_setting
 import prisma from "../../lib/prisma"
 import { sendWelcomeEmail } from "../../lib/web/drip_emails"
 import {
+  createNotification,
   fatebookEmailFooter,
   sendEmailUnbatched,
 } from "../../lib/web/notifications"
@@ -166,16 +167,13 @@ async function notifyAuthorsToResolveQuestions() {
 export async function sendEmailReadyToResolveNotification(
   question: Question & { user: User },
 ) {
-  await sendEmailUnbatched({
-    subject: `Ready to resolve: ${question.title}`,
-    to: question.user.email,
-    textBody: `Are you ready to resolve your question: ${question.title}`,
-    htmlBody: `<p>Are you ready to resolve your question: <b>${getHtmlLinkQuestionTitle(
-      question,
-    )}</b></p>\n
-<p><a href=${getQuestionUrl(
-      question,
-    )}>Resolve your question</a>.</p>${fatebookEmailFooter()}`,
+  await createNotification({
+    title: `Ready to resolve: ${question.title}`,
+    content: `Are you ready to resolve your question: ${question.title}`,
+    url: getQuestionUrl(question),
+    tags: ["ready_to_resolve"],
+    userId: question.userId,
+    questionId: question.id,
   })
 
   await prisma.question.update({
