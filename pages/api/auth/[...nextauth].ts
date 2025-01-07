@@ -1,8 +1,12 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
+import EmailProvider from "next-auth/providers/email"
 import GoogleProvider from "next-auth/providers/google"
-import { subscribeToMailingList } from "../../../lib/_utils_common"
+import {
+  capitalizeFirstLetter,
+  subscribeToMailingList,
+} from "../../../lib/_utils_common"
 import { backendAnalyticsEvent } from "../../../lib/_utils_server"
 import prisma from "../../../lib/prisma"
 
@@ -81,7 +85,19 @@ export const authOptions: NextAuthOptions = {
   adapter: {
     ...PrismaAdapter(prisma),
     createUser: async (user) => {
-      const createdUser = await PrismaAdapter(prisma).createUser!(user)
+      const createdUser = await PrismaAdapter(prisma).createUser!({
+        ...user,
+        // if the user has no name (e.g. if signed up using Email provider), use the email as the name
+        // capitalize and replace dots with spaces to make it more name-y
+        name:
+          user.name ||
+          (user.email
+            ? capitalizeFirstLetter(user.email?.split("@")[0]).replaceAll(
+                ".",
+                " ",
+              )
+            : undefined),
+      })
 
       if (createdUser.email) {
         console.log("Subscribing to mailing list", createdUser.email)
@@ -101,6 +117,10 @@ export const authOptions: NextAuthOptions = {
       // allow slackbot users to link Google OAuth Accounts later in web
       // "dangerous" if Google does not verify the email address
       allowDangerousEmailAccountLinking: true,
+    }),
+    EmailProvider({
+      server: process.env.AUTH_EMAIL_SERVER,
+      from: process.env.AUTH_EMAIL_FROM,
     }),
   ],
   theme: {

@@ -23,7 +23,7 @@ export async function signInToFatebook() {
     )
     return
   }
-  await signIn("google", { redirect: true })
+  await signIn(undefined, { redirect: true })
 }
 
 export function getChartJsParams(

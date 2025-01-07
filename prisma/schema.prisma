@@ -324,3 +324,12 @@ model Feedback {
   email     String?
   userId    String?
 }
+
+// Used by next-auth for email verification
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
