@@ -683,11 +683,12 @@ export const questionRouter = router({
       })
     }),
 
-  setHideForecastsUntilPrediction: publicProcedure
+  setHideForecasts: publicProcedure
     .input(
       z.object({
         questionId: z.string(),
-        hideForecastsUntilPrediction: z.boolean(),
+        hideForecastsUntilPrediction: z.boolean().optional(),
+        hideForecastsUntil: z.date().nullable().optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -699,6 +700,7 @@ export const questionRouter = router({
         },
         data: {
           hideForecastsUntilPrediction: input.hideForecastsUntilPrediction,
+          hideForecastsUntil: input.hideForecastsUntil,
         },
       })
     }),

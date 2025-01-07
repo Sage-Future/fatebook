@@ -108,12 +108,16 @@ const SharePanel = React.forwardRef<
   }
 
   const utils = api.useContext()
-  const hideForecastsUntilPredict =
-    api.question.setHideForecastsUntilPrediction.useMutation({
-      async onSuccess() {
-        await invalidateQuestion(utils, question)
-      },
-    })
+  const hideForecasts = api.question.setHideForecasts.useMutation({
+    async onSuccess() {
+      await invalidateQuestion(utils, question)
+    },
+  })
+
+  console.log(hideForecasts.isLoading, hideForecasts.status)
+
+  const [hideForecastsUntilLocal, setHideForecastsUntilLocal] =
+    React.useState<Date>(question.hideForecastsUntil || question.resolveBy)
 
   return (
     <Popover.Panel
@@ -135,13 +139,10 @@ const SharePanel = React.forwardRef<
                   "checkbox",
                   userId !== question.userId && "cursor-not-allowed",
                 )}
-                disabled={
-                  userId !== question.userId ||
-                  hideForecastsUntilPredict.isLoading
-                }
+                disabled={userId !== question.userId || hideForecasts.isLoading}
                 checked={!!question.hideForecastsUntilPrediction}
                 onChange={(e) => {
-                  hideForecastsUntilPredict.mutate({
+                  hideForecasts.mutate({
                     questionId: question.id,
                     hideForecastsUntilPrediction: e.target.checked,
                   })
@@ -155,6 +156,52 @@ const SharePanel = React.forwardRef<
                   "Hide forecasts for each viewer until they've made a prediction"
                 }
               </label>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 items-center">
+              <div className="flex gap-2 items-center">
+                <input
+                  id="hideForecastsUntil"
+                  type="checkbox"
+                  className={clsx(
+                    "checkbox",
+                    userId !== question.userId && "cursor-not-allowed",
+                  )}
+                  disabled={
+                    userId !== question.userId || hideForecasts.isLoading
+                  }
+                  checked={!!question.hideForecastsUntil}
+                  onChange={(e) => {
+                    hideForecasts.mutate({
+                      questionId: question.id,
+                      hideForecastsUntil: e.target.checked
+                        ? question.resolveBy
+                        : null,
+                    })
+                  }}
+                />
+                <label
+                  htmlFor="hideForecastsUntil"
+                  className="text-sm my-auto cursor-pointer"
+                >
+                  {"Hide forecasts until a specific date"}
+                </label>
+              </div>
+              <input
+                type="date"
+                className={clsx(
+                  "input input-sm",
+                  !question.hideForecastsUntil && "hidden",
+                )}
+                disabled={!question.hideForecastsUntil}
+                value={hideForecastsUntilLocal.toISOString().split("T")[0]}
+                onChange={(e) => {
+                  setHideForecastsUntilLocal(new Date(e.target.value))
+                  hideForecasts.mutate({
+                    questionId: question.id,
+                    hideForecastsUntil: new Date(e.target.value),
+                  })
+                }}
+              />
             </div>
           </div>
           {sharedToSlack ? (
