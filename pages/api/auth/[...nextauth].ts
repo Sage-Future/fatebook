@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { NextApiRequest, NextApiResponse } from "next"
 import NextAuth, { NextAuthOptions, Session, User } from "next-auth"
 import { JWT } from "next-auth/jwt"
 import EmailProvider from "next-auth/providers/email"
@@ -189,4 +190,14 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
-export default NextAuth(authOptions)
+const nextAuthHandler = NextAuth(authOptions)
+
+export default async function auth(req: NextApiRequest, res: NextApiResponse) {
+  // handle HEAD requests from Outlook SafeLink
+  // https://next-auth.js.org/tutorials/avoid-corporate-link-checking-email-provider
+  if (req.method === "HEAD") {
+    return res.status(200).end()
+  }
+
+  await nextAuthHandler(req, res)
+}
