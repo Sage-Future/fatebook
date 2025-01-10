@@ -196,8 +196,11 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
   // handle HEAD requests from Outlook SafeLink
   // https://next-auth.js.org/tutorials/avoid-corporate-link-checking-email-provider
   if (req.method === "HEAD") {
+    console.log("HEAD request, returning 200")
     return res.status(200).end()
   }
+
+  console.log(JSON.stringify(req, null, 2))
 
   await nextAuthHandler(req, res)
 }
