@@ -106,7 +106,7 @@ export async function sendBatchedEmails() {
               url: latestNotification.url,
               header: latestNotification.question?.title || "Notifications",
               notifications: notifications.map((n) => ({
-                title: n.title,
+                title: n.content,
               })),
             }
           },
