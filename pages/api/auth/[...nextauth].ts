@@ -200,7 +200,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).end()
   }
 
-  console.log(JSON.stringify(req, null, 2))
-
+  console.log("body", req.body)
+  console.log("req", req)
   await nextAuthHandler(req, res)
 }
