@@ -110,6 +110,23 @@ export const authOptions: NextAuthOptions = {
 
       return createdUser
     },
+    async useVerificationToken(identifier_token) {
+      try {
+        // this is a workaround for Outlook SafeLink which pre-fetches links in emails and is hard to detect
+        // the rest of this function is copied from PrismaAdapter
+        const verificationToken = await prisma.verificationToken.findUnique({
+          where: { identifier_token },
+        })
+        // @ts-expect-errors // MongoDB needs an ID, but we don't
+        if (verificationToken.id) delete verificationToken.id
+        return verificationToken
+      } catch (error: any) {
+        // If token already used/deleted, just return null
+        // https://www.prisma.io/docs/reference/api-reference/error-reference#p2025
+        if (error.code === "P2025") return null
+        throw error
+      }
+    },
   },
   providers: [
     GoogleProvider({
@@ -122,6 +139,7 @@ export const authOptions: NextAuthOptions = {
     EmailProvider({
       server: process.env.AUTH_EMAIL_SERVER,
       from: process.env.AUTH_EMAIL_FROM,
+      maxAge: 20 * 60, // 20 minutes in seconds. Reduced because of Outlook SafeLink workaround
     }),
   ],
   theme: {
@@ -200,7 +218,5 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).end()
   }
 
-  console.log("body", req.body)
-  console.log("req", req)
   await nextAuthHandler(req, res)
 }
