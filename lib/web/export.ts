@@ -46,6 +46,9 @@ export async function questionsToCsv(
         "Question comments": question?.comments
           ?.map((c) => `${c.user?.name}: ${c.comment}`)
           .join("; "),
+        "Question tags": question?.tags
+          ?.map((t) => t.name)
+          .join("; "),
       }
     }),
   )
