@@ -1,9 +1,9 @@
 import { NextSeo } from "next-seo"
 import { useRouter } from "next/router"
-import { TournamentView } from "../../components/TournamentView"
-import { TournamentAdminPanel } from "../../components/TournamentAdminPanel"
-import { api } from "../../lib/web/trpc"
-import { signInToFatebook, useUserId } from "../../lib/web/utils"
+import { TournamentAdminPanel } from "../../../components/TournamentAdminPanel"
+import { TournamentView } from "../../../components/TournamentView"
+import { api } from "../../../lib/web/trpc"
+import { signInToFatebook, useUserId } from "../../../lib/web/utils"
 
 export default function TournamentPage() {
   const userId = useUserId()

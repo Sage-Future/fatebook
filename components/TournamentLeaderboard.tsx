@@ -1,6 +1,9 @@
+import { LinkIcon } from "@heroicons/react/24/outline"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useMemo, useState } from "react"
 import { api } from "../lib/web/trpc"
-import { ifEmpty } from "../lib/web/utils"
+import { getTournamentUrl, ifEmpty } from "../lib/web/utils"
 import { InfoButton } from "./ui/InfoButton"
 
 export function TournamentLeaderboard({
@@ -8,6 +11,7 @@ export function TournamentLeaderboard({
 }: {
   tournamentId: string
 }) {
+  const pathname = usePathname()
   const tournamentQ = api.tournament.get.useQuery({
     id: tournamentId,
   })
@@ -151,7 +155,19 @@ export function TournamentLeaderboard({
 
   return (
     <div>
-      <h2 className="select-none">Leaderboard</h2>
+      <h2 className="select-none">
+        {pathname?.endsWith("/leaderboard") ? (
+          "Leaderboard"
+        ) : (
+          <Link
+            href={`${getTournamentUrl(tournamentQ.data, true)}/leaderboard`}
+            className="no-underline hover:underline inline-flex items-center"
+          >
+            Leaderboard
+            <LinkIcon className="w-4 h-4 ml-1 text-neutral-600" />
+          </Link>
+        )}
+      </h2>
       <div className="bg-white overflow-auto max-h-[60vh] rounded-xl mb-2 shadow-sm">
         <table className="table w-full py-2">
           <thead className="sticky top-0 bg-white">
