@@ -1286,6 +1286,7 @@ export const questionRouter = router({
         title: z.string().optional(),
         resolveBy: z.date().optional(),
         apiKey: z.string().optional(),
+        notes: z.string().optional(),
       }),
     )
     .output(z.undefined())
@@ -1300,6 +1301,7 @@ export const questionRouter = router({
         data: {
           title: input.title,
           resolveBy: input.resolveBy,
+          notes: input.notes,
         },
         include: {
           forecasts: {

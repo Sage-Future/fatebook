@@ -53,6 +53,7 @@ const createQuestionSchema = z.object({
     .or(z.array(z.string()))
     .optional()
     .transform((val) => (typeof val === "string" ? [val] : val)),
+  notes: z.string().optional(),
 })
 
 interface Request extends NextApiRequest {
@@ -81,6 +82,7 @@ const createQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
     hideForecastsUntil,
     sharePublicly,
     shareWithEmail,
+    notes,
   } = result.data
 
   const user = await prisma.user.findFirst({
@@ -199,6 +201,7 @@ const createQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
       hideForecastsUntil: hideForecastsUntil
         ? new Date(hideForecastsUntil)
         : undefined,
+      notes: notes,
     },
     include: {
       user: {
