@@ -1009,13 +1009,16 @@ export const questionRouter = router({
         ...q.sharedWithLists.flatMap((l) => l.users),
       ]).filter((u) => u && u.id !== submittedForecast.user.id)) {
         const forecastsHidden = forecastsAreHidden(q, userToNotify.id)
-        const userPredictedNStr = `${
-          (!forecastsHidden && submittedForecast.user.name) || "Someone"
-        } predicted${
-          forecastsHidden
-            ? ""
-            : ` ${displayForecast(submittedForecast, 2, true)}`
-        }`
+
+        if (forecastsHidden) {
+          return // don't notify if forecasts are hidden - there's no info to show!
+        }
+
+        const userPredictedNStr = `${submittedForecast.user.name} predicted ${displayForecast(
+          submittedForecast,
+          2,
+          true,
+        )}`
         await createNotification({
           userId: userToNotify.id,
           title: `${userPredictedNStr} on "${q.title}"`,
