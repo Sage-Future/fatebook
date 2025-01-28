@@ -34,7 +34,10 @@ export default function ExtensionPage() {
               )}
 
               <p>
-                Try <Link href="https://doc.new">creating a Google Doc</Link>{" "}
+                Try{" "}
+                <Link href="https://doc.new" target="_blank">
+                  creating a Google Doc
+                </Link>{" "}
                 and press{" "}
                 <span className="font-semibold whitespace-nowrap">
                   {browser === "Firefox"
@@ -113,6 +116,7 @@ export default function ExtensionPage() {
                     ? "https://addons.mozilla.org/en-US/firefox/addon/fatebook-for-firefox/"
                     : "https://chrome.google.com/webstore/detail/fatebook-for-chrome/bbmkpfopjckjieficoddmcjmlkggillm"
                 }
+                target="_blank"
               >
                 <button className="inline-flex items-center border border-transparent rounded-md my-4 text-2xl py-4 px-6 shadow-2xl shadow-indigo-500 hover:scale-105 transition-transform bg-white text-black font-semibold hover:bg-white">
                   <>
@@ -143,6 +147,7 @@ export default function ExtensionPage() {
                   <Link
                     href="https://chrome.google.com/webstore/detail/fatebook-for-chrome/bbmkpfopjckjieficoddmcjmlkggillm"
                     className="text-blue-500 hover:text-blue-600"
+                    target="_blank"
                   >
                     Chrome
                   </Link>
@@ -150,6 +155,7 @@ export default function ExtensionPage() {
                   <Link
                     href="https://addons.mozilla.org/en-US/firefox/addon/fatebook-for-firefox/"
                     className="text-blue-500 hover:text-blue-600"
+                    target="_blank"
                   >
                     Firefox
                   </Link>
@@ -215,6 +221,63 @@ export default function ExtensionPage() {
         </div>
 
         <DemoVideoDisplay />
+
+        <div className="prose mx-auto mt-36 pb-12">
+          <h2 id="tips-and-tricks">Tips and tricks</h2>
+          <h3 id="how-to-change-the-keyboard-shortcut">
+            How to change the keyboard shortcut
+          </h3>
+          <p>
+            You can change the keyboard shortcut for the extension using your
+            browser settings.{" "}
+            {browser === "Firefox" ? (
+              <>
+                Go to <span className="font-semibold">about:addons</span>, click
+                the cog and go to{" "}
+                <span className="font-semibold">
+                  &quot;Manage extension shortcuts&quot;
+                </span>
+              </>
+            ) : (
+              <>
+                Go to{" "}
+                <span className="font-semibold">
+                  chrome://extensions/shortcuts
+                </span>{" "}
+                (you&apos;ll need to copy and paste that into your address bar)
+              </>
+            )}
+            .
+          </p>
+          <h3 id="trouble-signing-in">Having trouble signing in?</h3>
+          <p>
+            First, open{" "}
+            <Link href="https://fatebook.io" target="_blank" rel="noreferrer">
+              Fatebook
+            </Link>{" "}
+            and make sure you&apos;re signed in. Then, if you&apos;re still
+            having trouble, go to{" "}
+            <span className="font-semibold">chrome://settings/cookies</span>{" "}
+            (you&apos;ll need to copy and paste that into your address bar) and
+            select{" "}
+            <span className="font-semibold">
+              &quot;Block third-party cookies in Incognito mode&quot;
+            </span>
+            . Then close and re-open your original tab and try using the
+            Fatebook extension again.
+          </p>
+          <p>
+            Fatebook for {browser} uses cookies to check that you&apos;re logged
+            in to Fatebook. Like all of Fatebook, Fatebook for {browser} is{" "}
+            <Link
+              href="https://github.com/sage-future/fatebook"
+              target="_blank"
+            >
+              open source
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     </div>
   )

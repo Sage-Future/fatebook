@@ -40,13 +40,25 @@ export function QuestionOrSignIn({
   // check signed in
   if (!session?.user.id && (requireSignIn || !question?.sharedPublicly)) {
     return embedded ? (
-      <div className="flex h-full items-center justify-center">
-        <h3 className="text-neutral-600">
-          <a className="font-bold" href="/" target="_blank">
+      <div className="flex flex-col gap-4 items-center justify-center bg-neutral-50 h-screen">
+        <h3 className="text-neutral-600 text-lg">
+          <a className="font-bold underline" href="/" target="_blank">
             Sign in{" "}
           </a>
           to view this question
         </h3>
+
+        <div className="text-neutral-500 text-sm px-6">
+          If {"you've"} signed in and are still seeing this message,{" "}
+          <a
+            className="underline"
+            href="/extension#trouble-signing-in"
+            target="_blank"
+          >
+            check your cookies settings
+          </a>
+          .
+        </div>
       </div>
     ) : (
       <h3 className="text-neutral-600">
