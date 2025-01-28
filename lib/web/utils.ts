@@ -285,9 +285,10 @@ export function getSlug(string: string | undefined) {
 export function getTournamentUrl(
   tournament: Tournament,
   useRelativePath: boolean,
+  usePredictYourYearUrl = true,
 ) {
   const fullSlug = `${getSlug(tournament.name)}--${tournament.id}`
-  if (tournament.predictYourYear) {
+  if (tournament.predictYourYear && usePredictYourYearUrl) {
     return `${getClientBaseUrl(useRelativePath)}/predict-your-year/${fullSlug}`
   } else {
     return `${getClientBaseUrl(useRelativePath)}/tournament/${fullSlug}`

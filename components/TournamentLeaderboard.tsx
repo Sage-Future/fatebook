@@ -160,7 +160,7 @@ export function TournamentLeaderboard({
           "Leaderboard"
         ) : (
           <Link
-            href={`${getTournamentUrl(tournamentQ.data, true)}/leaderboard`}
+            href={`${getTournamentUrl(tournamentQ.data, true, false)}/leaderboard`}
             className="no-underline hover:underline inline-flex items-center"
           >
             Leaderboard
