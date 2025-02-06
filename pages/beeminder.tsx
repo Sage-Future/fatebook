@@ -32,13 +32,12 @@ export default function BeeminderPage() {
               <li>Copy your Fatebook user ID below</li>
               <li>
                 <a
-                  href="https://www.beeminder.com/new"
+                  href="https://www.beeminder.com/fatebook?utm_source=fatebook"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Create a new goal on Beeminder
+                  Create a Beeminder goal with the Fatebook integration
                 </a>
-                , and choose the Fatebook integration
               </li>
               <li>Paste your ID when setting up the goal</li>
               <li>Choose how many forecasts you want to make per week</li>

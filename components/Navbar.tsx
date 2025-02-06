@@ -175,7 +175,8 @@ function IntegrationsDropdown() {
   return (
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
-        <ChevronDownIcon className="text-neutral-400" width={16} /> Integrations
+        <ChevronDownIcon className="text-neutral-400" width={16} /> Integrations{" "}
+        <NewDot />
       </label>
       <ul
         tabIndex={0}
@@ -235,6 +236,15 @@ function IntegrationsItems({
       <li>
         <Link href="/embed" className={isActive("/embed") ? "bg-base-200" : ""}>
           Embed in your website
+        </Link>
+      </li>
+      <li>
+        <Link
+          href="/beeminder"
+          className={isActive("/beeminder") ? "bg-base-200" : ""}
+        >
+          Beeminder
+          <NewDot />
         </Link>
       </li>
       <li className="menu-title">Your prediction data</li>
