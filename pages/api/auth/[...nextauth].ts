@@ -85,7 +85,10 @@ function getCookies() {
 export const authOptions: NextAuthOptions = {
   adapter: {
     ...PrismaAdapter(prisma),
-    createUser: async (user) => {
+    createUser: async (user: {
+      email?: string | null
+      name?: string | null
+    }) => {
       const createdUser = await PrismaAdapter(prisma).createUser!({
         ...user,
         // if the user has no name (e.g. if signed up using Email provider), use the email as the name
