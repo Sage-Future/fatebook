@@ -73,8 +73,10 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
       forecasts: {
         include: {
           user: true,
+          option: true,
         },
       },
+      options: true,
       sharedWith: true,
       sharedWithLists: {
         include: {
@@ -129,6 +131,7 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
       title: question?.title,
       user: { name: userName },
       prediction,
+      type: question?.type,
     })
   } else {
     res.status(200).json(
@@ -140,6 +143,7 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
           resolution: question?.resolution,
           resolveBy: question?.resolveBy,
           resolvedAt: question?.resolvedAt,
+          type: question?.type,
           forecasts: scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
             question,
             authedUserId,
@@ -151,6 +155,14 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
               name: f.user.name,
               image: f.user.image,
             },
+            ...(f.option
+              ? {
+                  option: {
+                    id: f.option.id,
+                    text: f.option.text,
+                  },
+                }
+              : {}),
           })),
           createdAt: question?.createdAt,
           notes: question?.notes,
