@@ -1,11 +1,15 @@
-import { EllipsisVerticalIcon } from "@heroicons/react/20/solid"
-import { Resolution } from "@prisma/client"
+import {
+  EllipsisVerticalIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/20/solid"
+import { Forecast, Resolution } from "@prisma/client"
 import { useRouter } from "next/router"
 import { Fragment, LegacyRef, ReactNode, forwardRef, useState } from "react"
 import { ErrorBoundary } from "react-error-boundary"
 import { toast } from "react-hot-toast"
 import {
   displayForecast,
+  forecastHiddenReasonText,
   forecastsAreHidden,
   formatDecimalNicely,
   getCommunityForecast,
@@ -89,13 +93,11 @@ export const QuestionDetails = forwardRef(function QuestionDetails(
           </div>
         )}
         {forecastsAreHidden(question, userId) && (
-          <div className="mt-2 mb-6 text-sm text-neutral-400 italic">
-            {question.hideForecastsUntil
-              ? `Other users' forecasts are hidden until ${getDateYYYYMMDD(
-                  question.hideForecastsUntil,
-                )} to reduce anchoring.`
-              : question.hideForecastsUntilPrediction &&
-                "Other users' forecasts are hidden until you make a prediction, to reduce anchoring."}
+          <div className="mt-2 mb-2 text-sm text-neutral-600 font-semibold flex items-center gap-4 bg-indigo-50 px-4 py-2 rounded-md border border-indigo-100">
+            <InformationCircleIcon className="w-6 h-6 text-indigo-600" />
+            {`Other users' forecasts are hidden ${forecastHiddenReasonText(
+              question,
+            )} to reduce anchoring.`}
           </div>
         )}
         {showEvents ? (
@@ -124,6 +126,27 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
     return option ? `“${option.text}”` : question.resolution
   }
 
+  function forecastElement(forecast: Forecast) {
+    if (forecastsAreHidden(question, userId)) {
+      return (
+        <InfoButton
+          tooltip={`This forecast is hidden ${forecastHiddenReasonText(question)}`}
+          showInfoButton={false}
+        >
+          <span className="font-bold text-lg text-indigo-800 opacity-70">
+            {displayForecast(forecast, 2)}
+          </span>
+        </InfoButton>
+      )
+    } else {
+      return (
+        <span className="font-bold text-lg text-indigo-800">
+          {displayForecast(forecast, 2)}
+        </span>
+      )
+    }
+  }
+
   const forecastEvents: { timestamp: Date; el: ReactNode }[] =
     question.type === "MULTIPLE_CHOICE"
       ? question
@@ -134,9 +157,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                 <Fragment key={f.id}>
                   <Username user={f.user} className="font-semibold" />
                   <span className="font-bold overflow-x-auto">{o.text}</span>
-                  <span className="font-bold text-lg text-indigo-800">
-                    {displayForecast(f, 2)}
-                  </span>
+                  {forecastElement(f)}
                   <div className="text-neutral-400">
                     <FormattedDate date={f.createdAt || new Date()} />
                   </div>
@@ -149,11 +170,17 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
           timestamp: f.createdAt,
           el: (
             <Fragment key={f.id}>
-              <Username user={f.user} className="font-semibold" />
+              <Username
+                user={f.user}
+                className="font-semibold"
+                unknownUserReason={
+                  forecastsAreHidden(question, userId)
+                    ? `This forecast is hidden ${forecastHiddenReasonText(question)}`
+                    : undefined
+                }
+              />
               <span />
-              <span className="font-bold text-lg text-indigo-800">
-                {displayForecast(f, 2)}
-              </span>
+              {forecastElement(f)}
               <div className="text-neutral-400">
                 <FormattedDate date={f.createdAt} />
               </div>

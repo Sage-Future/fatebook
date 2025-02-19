@@ -1,6 +1,9 @@
 import { Forecast, QuestionScore, Resolution } from "@prisma/client"
 import type { Decimal } from "@prisma/client/runtime/library"
-import { QuestionWithForecasts } from "../prisma/additional"
+import {
+  QuestionWithForecasts,
+  QuestionWithStandardIncludes,
+} from "../prisma/additional"
 import {
   maxDecimalPlacesScoreForecastListing,
   maxScoreDecimalPlacesListing,
@@ -19,6 +22,18 @@ export function forecastsAreHidden(
       (!!question.hideForecastsUntilPrediction &&
         (!userId || !question.forecasts.some((f) => f.userId === userId))))
   )
+}
+
+export function forecastHiddenReasonText(
+  question: QuestionWithStandardIncludes,
+) {
+  if (question.hideForecastsUntil) {
+    return `until ${getDateYYYYMMDD(question.hideForecastsUntil)}`
+  }
+  if (question.hideForecastsUntilPrediction) {
+    return "until you make a prediction"
+  }
+  return ""
 }
 
 export function getMostRecentForecastPerUser(

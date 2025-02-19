@@ -4,22 +4,25 @@ import Image from "next/image"
 import Link from "next/link"
 import { useIsEmbedded } from "../../lib/web/embed"
 import { getUserPageUrl } from "../../pages/user/[id]"
+import { InfoButton } from "./InfoButton"
 
 export function Username({
   user,
   className,
   unknownUserText = "Anonymous",
+  unknownUserReason = "",
 }: {
   user: User | null
   className?: string
   unknownUserText?: string
+  unknownUserReason?: string
 }) {
   const embedded = useIsEmbedded()
   if (!user) {
-    return (
+    const anonymousUsername = (
       <span className={clsx(className)}>
         <Image
-          src={"/default_avatar.png"}
+          src={"/anonymous_avatar.png"}
           width={20}
           height={20}
           className="inline m-0 mr-1.5 rounded-full select-none aspect-square"
@@ -27,6 +30,14 @@ export function Username({
         />
         <span>{unknownUserText}</span>
       </span>
+    )
+
+    return unknownUserReason ? (
+      <InfoButton tooltip={unknownUserReason} showInfoButton={false}>
+        {anonymousUsername}
+      </InfoButton>
+    ) : (
+      anonymousUsername
     )
   }
 
