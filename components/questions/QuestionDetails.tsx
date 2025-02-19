@@ -24,6 +24,7 @@ import {
 import { QuestionWithStandardIncludes } from "../../prisma/additional"
 import { FormattedDate } from "../ui/FormattedDate"
 import { InfoButton } from "../ui/InfoButton"
+import { PromptDialog } from "../ui/PromptDialog"
 import { Username } from "../ui/Username"
 import { CommentBox, DeleteCommentOverflow } from "./CommentBox"
 import { TagsSelect } from "./TagsSelect"
@@ -120,10 +121,10 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
     question: QuestionWithStandardIncludes,
   ) {
     if (question.resolution === Resolution.NO) {
-      return "“Other”"
+      return '"Other"'
     }
     const option = question.options?.find((opt) => opt.resolution === "YES")
-    return option ? `“${option.text}”` : question.resolution
+    return option ? `"${option.text}"` : question.resolution
   }
 
   function forecastElement(forecast: Forecast) {
@@ -277,7 +278,7 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
                 </span>
                 <span />
                 <span className="italic text-indigo-800 overflow-x-auto">
-                  Resolved &ldquo;{option.text}&ldquo;{" "}
+                  Resolved &ldquo;{option.text}&rdquo;{" "}
                   {option.resolution ? option.resolution : "unknown"}
                 </span>
                 <span className="text-neutral-400">
@@ -330,6 +331,8 @@ function EditQuestionOverflow({
   question: QuestionWithStandardIncludes
 }) {
   const [isVisible, setIsVisible] = useState(false)
+  const [editTitleDialogOpen, setEditTitleDialogOpen] = useState(false)
+  const [editDateDialogOpen, setEditDateDialogOpen] = useState(false)
   const utils = api.useContext()
   const router = useRouter()
 
@@ -346,88 +349,97 @@ function EditQuestionOverflow({
   })
 
   return (
-    <div className="dropdown dropdown-end not-prose">
-      <label
-        tabIndex={0}
-        className="btn btn-xs btn-ghost"
-        onClick={() => setIsVisible(!isVisible)}
-      >
-        <EllipsisVerticalIcon height={15} />
-      </label>
-      {isVisible && (
-        <ul
+    <>
+      <div className="dropdown dropdown-end not-prose">
+        <label
           tabIndex={0}
-          className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
+          className="btn btn-xs btn-ghost"
+          onClick={() => setIsVisible(!isVisible)}
         >
-          <li>
-            <a
-              onClick={() => {
-                const newTitle = prompt(
-                  "Edit the title of your question:",
-                  question.title,
-                )
-                if (newTitle && newTitle !== question.title) {
-                  editQuestion.mutate({
-                    questionId: question.id,
-                    title: newTitle,
-                  })
-                }
-              }}
-            >
-              Edit question
-            </a>
-          </li>
-          <li>
-            <a
-              onClick={() => {
-                const newDateStr = prompt(
-                  "Edit the resolution date of your question (YYYY-MM-DD):",
-                  getDateYYYYMMDD(question.resolveBy),
-                )
-                const newDate = newDateStr ? new Date(newDateStr) : undefined
-                if (newDate && !isNaN(newDate.getTime())) {
-                  editQuestion.mutate({
-                    questionId: question.id,
-                    resolveBy: newDate,
-                  })
-                } else {
-                  const year = new Date(
-                    Date.now() + 1000 * 60 * 60 * 24 * 90,
-                  ).getFullYear() // 90 days from now
-                  toast.error(
-                    `The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. ${year}-09-30`,
-                    {
-                      duration: 8000,
-                    },
-                  )
-                }
-              }}
-            >
-              Edit resolve by date
-            </a>
-          </li>
-          <li>
-            <a
-              onClick={() => {
-                if (
-                  confirm(
-                    "Are you sure you want to delete this question? This cannot be undone",
-                  )
-                ) {
-                  deleteQuestion.mutate({
-                    questionId: question.id,
-                  })
-                  if (router.asPath.startsWith("/q/")) {
-                    void router.push("/")
+          <EllipsisVerticalIcon height={15} />
+        </label>
+        {isVisible && (
+          <ul
+            tabIndex={0}
+            className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-52"
+          >
+            <li>
+              <a onClick={() => setEditTitleDialogOpen(true)}>Edit question</a>
+            </li>
+            <li>
+              <a onClick={() => setEditDateDialogOpen(true)}>
+                Edit resolve by date
+              </a>
+            </li>
+            <li>
+              <a
+                onClick={() => {
+                  if (
+                    confirm(
+                      "Are you sure you want to delete this question? This cannot be undone",
+                    )
+                  ) {
+                    deleteQuestion.mutate({
+                      questionId: question.id,
+                    })
+                    if (router.asPath.startsWith("/q/")) {
+                      void router.push("/")
+                    }
                   }
-                }
-              }}
-            >
-              Delete question
-            </a>
-          </li>
-        </ul>
-      )}
-    </div>
+                }}
+              >
+                Delete question
+              </a>
+            </li>
+          </ul>
+        )}
+      </div>
+
+      <PromptDialog
+        isOpen={editTitleDialogOpen}
+        onClose={() => setEditTitleDialogOpen(false)}
+        title="Edit question"
+        description="Update the title of your question"
+        defaultValue={question.title}
+        submitLabel="Save"
+        onSubmit={(newTitle) => {
+          if (newTitle && newTitle !== question.title) {
+            editQuestion.mutate({
+              questionId: question.id,
+              title: newTitle,
+            })
+          }
+        }}
+      />
+
+      <PromptDialog
+        isOpen={editDateDialogOpen}
+        onClose={() => setEditDateDialogOpen(false)}
+        title="Edit resolution date"
+        description="When should I remind you to resolve this question?"
+        defaultValue={getDateYYYYMMDD(question.resolveBy)}
+        type="date"
+        submitLabel="Save"
+        onSubmit={(newDateStr) => {
+          const newDate = newDateStr ? new Date(newDateStr) : undefined
+          if (newDate && !isNaN(newDate.getTime())) {
+            editQuestion.mutate({
+              questionId: question.id,
+              resolveBy: newDate,
+            })
+          } else {
+            const year = new Date(
+              Date.now() + 1000 * 60 * 60 * 24 * 90,
+            ).getFullYear() // 90 days from now
+            toast.error(
+              `The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. ${year}-09-30`,
+              {
+                duration: 8000,
+              },
+            )
+          }
+        }}
+      />
+    </>
   )
 }

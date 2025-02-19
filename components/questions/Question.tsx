@@ -26,6 +26,7 @@ import { getQuestionUrl } from "../../lib/web/question_url"
 import { api } from "../../lib/web/trpc"
 import { invalidateQuestion, useUserId } from "../../lib/web/utils"
 import { InfoButton } from "../ui/InfoButton"
+import { PromptDialog } from "../ui/PromptDialog"
 import { QuestionDetailsOption } from "./QuestionDetailsOptions"
 
 export function Question({
@@ -45,6 +46,7 @@ export function Question({
 }) {
   const [manuallyExpanded, setManuallyExpanded] =
     useState<boolean>(!!startExpanded)
+  const [editDateDialogOpen, setEditDateDialogOpen] = useState(false)
 
   const utils = api.useContext()
   const editQuestion = api.question.editQuestion.useMutation({
@@ -185,30 +187,7 @@ export function Question({
                   disabled={!editable}
                   onClick={(e) => {
                     e.stopPropagation()
-                    const newDateStr = prompt(
-                      "Edit the resolution date of your question (YYYY-MM-DD):",
-                      getDateYYYYMMDD(question.resolveBy),
-                    )
-                    if (!newDateStr) return
-                    const newDate = newDateStr
-                      ? new Date(newDateStr)
-                      : undefined
-                    if (newDate && !isNaN(newDate.getTime())) {
-                      editQuestion.mutate({
-                        questionId: question.id,
-                        resolveBy: newDate,
-                      })
-                    } else {
-                      const year = new Date(
-                        Date.now() + 1000 * 60 * 60 * 24 * 90,
-                      ).getFullYear() // 90 days from now
-                      toast.error(
-                        `The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. ${year}-09-30`,
-                        {
-                          duration: 8000,
-                        },
-                      )
-                    }
+                    setEditDateDialogOpen(true)
                   }}
                   key={`${question.id}resolve`}
                 >
@@ -271,6 +250,35 @@ export function Question({
           />
         </Transition>
       </motion.div>
+
+      <PromptDialog
+        isOpen={editDateDialogOpen}
+        onClose={() => setEditDateDialogOpen(false)}
+        title="Edit resolution date"
+        description="Select the new resolution date"
+        defaultValue={getDateYYYYMMDD(question.resolveBy)}
+        type="date"
+        submitLabel="Save"
+        onSubmit={(newDateStr) => {
+          const newDate = newDateStr ? new Date(newDateStr) : undefined
+          if (newDate && !isNaN(newDate.getTime())) {
+            editQuestion.mutate({
+              questionId: question.id,
+              resolveBy: newDate,
+            })
+          } else {
+            const year = new Date(
+              Date.now() + 1000 * 60 * 60 * 24 * 90,
+            ).getFullYear() // 90 days from now
+            toast.error(
+              `The date you entered looks invalid. Please use YYYY-MM-DD format.\nE.g. ${year}-09-30`,
+              {
+                duration: 8000,
+              },
+            )
+          }
+        }}
+      />
     </ErrorBoundary>
   )
 }

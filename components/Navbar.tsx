@@ -6,7 +6,7 @@ import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/router"
-import { ReactNode } from "react"
+import { ReactNode, useState } from "react"
 import { toast } from "react-hot-toast"
 import { api } from "../lib/web/trpc"
 import {
@@ -17,6 +17,7 @@ import {
 } from "../lib/web/utils"
 import Footer from "./Footer"
 import NotificationsPopover from "./NotificationsPopover"
+import { PromptDialog } from "./ui/PromptDialog"
 
 export function Navbar({
   // eslint-disable-next-line no-unused-vars
@@ -371,6 +372,8 @@ function useExportData() {
 function AccountMenu(showCreateAccountButton: boolean) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [editNameDialogOpen, setEditNameDialogOpen] = useState(false)
+  const [editImageDialogOpen, setEditImageDialogOpen] = useState(false)
 
   const user = {
     name: session?.user?.name ?? "",
@@ -400,57 +403,70 @@ function AccountMenu(showCreateAccountButton: boolean) {
   }
 
   return user.email ? (
-    <details className="dropdown dropdown-end z-[9999]">
-      <summary
-        tabIndex={0}
-        className="btn btn-ghost btn-circle avatar hover:bg-opacity-0 hover:scale-[1.03]"
-      >
-        <div className="w-10 rounded-full">
-          <Image src={user.imageUrl} width={40} height={40} alt={user.name} />
-        </div>
-      </summary>
-      <ul
-        tabIndex={0}
-        className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-64"
-      >
-        <li className="px-3 py-2 text-neutral-500 select-none break-all">
-          Signed in as {user.email}
-        </li>
-        <li
-          onClick={() => {
-            const newName = prompt("Enter your new username:", user.name)
-            if (newName) {
-              editName.mutate({ newName })
-              router.reload()
-            }
-          }}
+    <>
+      <details className="dropdown dropdown-end z-[9999]">
+        <summary
+          tabIndex={0}
+          className="btn btn-ghost btn-circle avatar hover:bg-opacity-0 hover:scale-[1.03]"
         >
-          <a>Change your username</a>
-        </li>
-        <li
-          onClick={() => {
-            const newImage = prompt(
-              'Enter the URL of your new profile picture. You can upload it to a site like imgur.com. Make sure you right click the uploaded image and "Copy image address" if pasting from imgur.',
-              user.imageUrl,
+          <div className="w-10 rounded-full">
+            <Image src={user.imageUrl} width={40} height={40} alt={user.name} />
+          </div>
+        </summary>
+        <ul
+          tabIndex={0}
+          className="menu menu-sm dropdown-content mt-1 p-2 shadow bg-base-100 rounded-box w-64"
+        >
+          <li className="px-3 py-2 text-neutral-500 select-none break-all">
+            Signed in as {user.email}
+          </li>
+          <li onClick={() => setEditNameDialogOpen(true)}>
+            <a>Change your username</a>
+          </li>
+          <li onClick={() => setEditImageDialogOpen(true)}>
+            <a>Change your profile picture</a>
+          </li>
+          <li onClick={() => void signOut({ redirect: true })}>
+            <a>Logout</a>
+          </li>
+        </ul>
+      </details>
+
+      <PromptDialog
+        isOpen={editNameDialogOpen}
+        onClose={() => setEditNameDialogOpen(false)}
+        title="Change username"
+        description="Enter your new username"
+        defaultValue={user.name}
+        submitLabel="Save"
+        onSubmit={(newName) => {
+          if (newName) {
+            editName.mutate({ newName })
+            router.reload()
+          }
+        }}
+      />
+
+      <PromptDialog
+        isOpen={editImageDialogOpen}
+        onClose={() => setEditImageDialogOpen(false)}
+        title="Change profile picture"
+        description="Enter the URL of your new profile picture. You can upload it to a site like imgur.com. Make sure you right click the uploaded image and 'Copy image address' if pasting from imgur."
+        defaultValue={user.imageUrl}
+        submitLabel="Save"
+        onSubmit={(newImage) => {
+          if (newImage) {
+            editName.mutate({ newImage })
+            toast.success(
+              "Profile picture updated! Sign in again to see the change.",
             )
-            if (newImage) {
-              editName.mutate({ newImage })
-              toast.success(
-                "Profile picture updated! Sign in again to see the change.",
-              )
-              setTimeout(() => {
-                void signOut()
-              }, 2000)
-            }
-          }}
-        >
-          <a>Change your profile picture</a>
-        </li>
-        <li onClick={() => void signOut({ redirect: true })}>
-          <a>Logout</a>
-        </li>
-      </ul>
-    </details>
+            setTimeout(() => {
+              void signOut()
+            }, 2000)
+          }
+        }}
+      />
+    </>
   ) : (
     showCreateAccountButton && (
       <button className="btn" onClick={() => void signInToFatebook()}>
