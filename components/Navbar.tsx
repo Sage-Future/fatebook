@@ -370,7 +370,7 @@ function useExportData() {
 }
 
 function AccountMenu(showCreateAccountButton: boolean) {
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
   const router = useRouter()
   const [editNameDialogOpen, setEditNameDialogOpen] = useState(false)
   const [editImageDialogOpen, setEditImageDialogOpen] = useState(false)
@@ -382,6 +382,9 @@ function AccountMenu(showCreateAccountButton: boolean) {
   }
 
   const editName = api.editName.useMutation()
+
+  // Show welcome dialog for new users without a username
+  const showWelcomeDialog = user.email && !user.name
 
   if (status === "loading") {
     return (
@@ -433,16 +436,37 @@ function AccountMenu(showCreateAccountButton: boolean) {
       </details>
 
       <PromptDialog
-        isOpen={editNameDialogOpen}
+        isOpen={showWelcomeDialog || editNameDialogOpen}
         onClose={() => setEditNameDialogOpen(false)}
-        title="Change username"
-        description="Enter your new username"
-        defaultValue={user.name}
+        title={
+          showWelcomeDialog ? "Choose your display name" : "Change display name"
+        }
+        description={
+          showWelcomeDialog
+            ? "You can enter your name or a psuedonym"
+            : "Enter your new display name"
+        }
+        defaultValue={
+          user.name
+            ? user.name
+            : user.email
+              ? user.email
+                  .split("@")[0]
+                  .replace(/\./g, " ")
+                  .split(" ")
+                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                  .join(" ")
+              : ""
+        }
         submitLabel="Save"
+        showCloseButtons={!showWelcomeDialog}
         onSubmit={(newName) => {
           if (newName) {
-            editName.mutate({ newName })
-            router.reload()
+            void (async () => {
+              await editName.mutateAsync({ newName })
+              await update({ user: { name: newName } })
+              router.reload()
+            })()
           }
         }}
       />

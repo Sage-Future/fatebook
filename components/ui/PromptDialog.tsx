@@ -20,6 +20,7 @@ interface PromptDialogProps {
   submitLabel?: string
   cancelLabel?: string
   type?: "text" | "date"
+  showCloseButtons?: boolean
 }
 
 export function PromptDialog({
@@ -33,6 +34,7 @@ export function PromptDialog({
   submitLabel = "Submit",
   cancelLabel = "Cancel",
   type = "text",
+  showCloseButtons = true,
 }: PromptDialogProps) {
   const [value, setValue] = useState(defaultValue)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -85,13 +87,15 @@ export function PromptDialog({
                   >
                     {title}
                   </DialogTitle>
-                  <button
-                    type="button"
-                    className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
-                    onClick={onClose}
-                  >
-                    <XMarkIcon className="h-5 w-5" aria-hidden="true" />
-                  </button>
+                  {showCloseButtons && (
+                    <button
+                      type="button"
+                      className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                      onClick={onClose}
+                    >
+                      <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  )}
                 </div>
 
                 {description && (
@@ -115,17 +119,19 @@ export function PromptDialog({
                   />
 
                   <div className="mt-6 flex justify-end gap-3">
-                    <button
-                      type="button"
-                      className={clsx(
-                        "rounded-md px-4 py-2 text-sm font-medium",
-                        "border border-neutral-300 bg-white text-neutral-700",
-                        "hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
-                      )}
-                      onClick={onClose}
-                    >
-                      {cancelLabel}
-                    </button>
+                    {showCloseButtons && (
+                      <button
+                        type="button"
+                        className={clsx(
+                          "rounded-md px-4 py-2 text-sm font-medium",
+                          "border border-neutral-300 bg-white text-neutral-700",
+                          "hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2",
+                        )}
+                        onClick={onClose}
+                      >
+                        {cancelLabel}
+                      </button>
+                    )}
                     <button
                       type="submit"
                       className={clsx(

@@ -202,10 +202,18 @@ export const authOptions: NextAuthOptions = {
       }
       return Promise.resolve(session)
     },
-    jwt: (params: { token: JWT; user?: User | undefined }) => {
-      const { token, user } = params
+    jwt: (params: {
+      token: JWT
+      user?: User | undefined
+      trigger?: "update" | "signIn" | "signUp"
+      session?: Session
+    }) => {
+      const { token, user, trigger, session } = params
       if (user) {
         token.id = user.id
+      }
+      if (trigger === "update" && session?.user?.name) {
+        token.name = session.user.name
       }
       return Promise.resolve(token)
     },
