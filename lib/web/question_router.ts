@@ -1,8 +1,13 @@
+import type { Forecast } from "@prisma/client"
 import { Prisma, QuestionType, Tag, User } from "@prisma/client"
 import { Decimal } from "@prisma/client/runtime/library"
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
 import { getBucketedForecasts } from "../../pages/api/calibration_graph"
+import type {
+  QuestionOptionWithForecasts,
+  QuestionWithForecastsAndOptions,
+} from "../../prisma/additional"
 import {
   QuestionWithForecasts,
   QuestionWithForecastsAndSharedWithAndLists,
@@ -39,6 +44,25 @@ import {
   getSearchedPredictionBounds,
   matchesAnEmailDomain,
 } from "./utils"
+
+function calculateUniqueForecasterCount(
+  question: QuestionWithForecasts | QuestionWithForecastsAndOptions,
+) {
+  const directForecasterIds = question.forecasts.map((f: Forecast) => f.userId)
+  const optionForecasterIds =
+    "options" in question && question.options
+      ? question.options.flatMap(
+          (option: QuestionOptionWithForecasts) =>
+            option.forecasts?.map((forecast) => forecast.userId) ?? [],
+        )
+      : []
+
+  const uniqueForecasterIds = Array.from(
+    new Set([...directForecasterIds, ...optionForecasterIds]),
+  )
+
+  return uniqueForecasterIds.length
+}
 
 const questionIncludes = (userId: string | undefined) => ({
   forecasts: {
@@ -209,10 +233,18 @@ export const questionRouter = router({
       assertHasAccess(question, user)
       return (
         question &&
-        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
-          question,
-          ctx.userId,
-        )
+        (() => {
+          // Add count of forecasters to the question object because it can't be calculated client-side if forecasts are hidden
+          const questionWithDetails =
+            scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
+              question,
+              ctx.userId,
+            )
+          return {
+            ...questionWithDetails,
+            uniqueForecasterCount: calculateUniqueForecasterCount(question),
+          }
+        })()
       )
     }),
 
@@ -1593,9 +1625,15 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
 
   return {
     items: questions
-      .map((q) =>
-        scrubHiddenForecastsAndSensitiveDetailsFromQuestion(q, ctx.userId),
-      )
+      .map((q) => {
+        // Add count of forecasters to the question object because it can't be calculated client-side if forecasts are hidden
+        const questionWithDetails =
+          scrubHiddenForecastsAndSensitiveDetailsFromQuestion(q, ctx.userId)
+        return {
+          ...questionWithDetails,
+          uniqueForecasterCount: calculateUniqueForecasterCount(q),
+        }
+      })
       // don't include the extra one - it's just to see if there's another page
       .slice(0, limit),
 

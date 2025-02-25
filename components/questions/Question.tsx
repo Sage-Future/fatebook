@@ -296,7 +296,10 @@ export function ActivityNumbers({
   setManuallyExpanded: (expanded: boolean) => void
   embedded?: boolean
 }) {
-  const forecasters = new Set(question.forecasts.map((f) => f.userId)).size
+  const forecasters =
+    (question as any).uniqueForecasterCount !== undefined
+      ? (question as any).uniqueForecasterCount
+      : new Set(question.forecasts.map((f) => f.userId)).size
   const forecasts = question.forecasts?.length ?? 0
   const numComments =
     (question.comments?.length ?? 0) + (question.notes ? 1 : 0)
