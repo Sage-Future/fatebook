@@ -1,5 +1,5 @@
-import { ForwardedRef, forwardRef, useState } from "react"
 import { QuestionType } from "@prisma/client"
+import { ForwardedRef, forwardRef, useState } from "react"
 
 interface QuestionSuggestionsProps {
   chooseSuggestion: (suggestion: string) => void
@@ -12,19 +12,19 @@ const QuestionSuggestions = forwardRef<
   QuestionSuggestionsProps
 >(({ chooseSuggestion, questionType }, ref: ForwardedRef<HTMLDivElement>) => {
   const binarySuggestions = [
-    "Will GPT-5 be released before Jan 2025?",
     "Will I write a blog post this week?",
+    "Will GPT-5 be released before Jan 2026?",
     "Will volunteering abroad make me all-things-considered happier?",
     "Each day I’ll write down whether I want to leave or stay in my job. After 2 months, will I have chosen ‘leave’ on >30 days?",
-    "Will I judge that AI was a major topic of debate in the US election?",
+    "Will I judge that AI was a major topic of debate in the next US election?",
     "Will I finish my todo list today?",
     "Will our user satisfaction rating exceed 8.0/10?",
     "Will I win my next game of Agricola?",
     "Will Our World in Data report that >5% of global deaths are due to air pollution by 2030?",
-    "Will I still be discussing my fear of flying with my therapist in 2025?",
+    "Will I still be discussing my fear of flying with my therapist in 2026?",
     "If we choose this HR provider, will I think it was a good idea in two month’s time?",
     "Will AMF be funding-constrained this year?",
-    "Will I have a child by Jan 2025?",
+    "Will I have a child by Jan 2026?",
     "Will my mentor agree that pivoting now was the right choice?",
     "Will I meditate every day this week?",
     "Will the rest of the team prefer this redesign to the current layout?",
@@ -44,10 +44,10 @@ const QuestionSuggestions = forwardRef<
     "What will our user satisfaction rating be at the end of the quarter?",
     "Who will win our next game night?",
     "According to Our World in Data, what percentage of global deaths will be due to air pollution by 2030?",
-    "What will be the primary focus of my therapy sessions in 2025?",
+    "What will be the primary focus of my therapy sessions in 2026?",
     "How will our team rate the new HR provider after two months?",
     "Which global health charity will have the highest funding gap this year?",
-    "How many children will I have by Jan 2025?",
+    "How many children will I have by Jan 2026?",
     "How will my mentor evaluate our recent business pivot?",
     "How many days will I meditate this week?",
     "Which aspect of the new design will receive the most positive feedback from the team?",
