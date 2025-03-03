@@ -76,7 +76,15 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
           option: true,
         },
       },
-      options: true,
+      options: {
+        include: {
+          forecasts: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
       sharedWith: true,
       sharedWithLists: {
         include: {
