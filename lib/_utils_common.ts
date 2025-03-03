@@ -15,13 +15,25 @@ export function forecastsAreHidden(
   question: QuestionWithForecasts,
   userId: string | undefined,
 ) {
-  return (
-    !question.resolved &&
-    ((!!question.hideForecastsUntil &&
-      question.hideForecastsUntil.getTime() > Date.now()) ||
-      (!!question.hideForecastsUntilPrediction &&
-        (!userId || !question.forecasts.some((f) => f.userId === userId))))
-  )
+  if (question.resolved) {
+    return false
+  }
+
+  if (
+    question.hideForecastsUntil &&
+    question.hideForecastsUntil.getTime() > Date.now()
+  ) {
+    return true
+  }
+
+  if (question.hideForecastsUntilPrediction) {
+    if (!userId || !question.forecasts.some((f) => f.userId === userId)) {
+      return true
+    }
+  }
+
+  // No hiding conditions met
+  return false
 }
 
 export function forecastHiddenReasonText(

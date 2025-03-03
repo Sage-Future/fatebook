@@ -1736,7 +1736,7 @@ export function assertHasAccess(
 }
 
 export function scrubHiddenForecastsAndSensitiveDetailsFromQuestion<
-  QuestionX extends QuestionWithForecasts,
+  QuestionX extends QuestionWithForecastsAndOptions,
 >(question: QuestionX, userId: string | undefined) {
   question = scrubApiKeyPropertyRecursive(question, ["email", "discordUserId"])
 
@@ -1744,24 +1744,42 @@ export function scrubHiddenForecastsAndSensitiveDetailsFromQuestion<
     return question
   }
 
+  function shouldHideForecast(f: Forecast) {
+    if (f.userId === userId) {
+      return false
+    }
+    if (
+      question.hideForecastsUntil &&
+      question.hideForecastsUntil.getTime() > Date.now()
+    ) {
+      return true
+    }
+    if (question.hideForecastsUntilPrediction) {
+      return true
+    }
+    return false
+  }
+
+  const hideForecasts = (f: Forecast) => ({
+    ...f,
+    ...(shouldHideForecast(f)
+      ? {
+          forecast: null,
+          userId: null,
+          user: null,
+          profileId: null,
+          profile: null,
+        }
+      : {}),
+  })
+
   return {
     ...question,
-    forecasts: question.forecasts.map((f) => {
-      const hideForecast = f.userId !== userId || !userId
-      return {
-        ...f,
-        ...(hideForecast
-          ? {
-              forecast: null,
-              userId: null,
-              user: null,
-              profileId: null,
-              profile: null,
-              options: null,
-            }
-          : {}),
-      }
-    }),
+    forecasts: question.forecasts.map(hideForecasts),
+    options: question.options?.map((option) => ({
+      ...option,
+      forecasts: option.forecasts?.map(hideForecasts),
+    })),
   }
 }
 

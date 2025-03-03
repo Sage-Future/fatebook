@@ -156,7 +156,15 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
               timestamp: f.createdAt || new Date(),
               el: (
                 <Fragment key={f.id}>
-                  <Username user={f.user} className="font-semibold" />
+                  <Username
+                    user={f.user}
+                    className="font-semibold"
+                    unknownUserReason={
+                      forecastsAreHidden(question, userId)
+                        ? `This forecast is hidden ${forecastHiddenReasonText(question)}`
+                        : undefined
+                    }
+                  />
                   <span className="font-bold overflow-x-auto">{o.text}</span>
                   {forecastElement(f)}
                   <div className="text-neutral-400">
