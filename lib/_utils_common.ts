@@ -27,6 +27,9 @@ export function forecastsAreHidden(
 export function forecastHiddenReasonText(
   question: QuestionWithStandardIncludes,
 ) {
+  if (question.hideForecastsUntilPrediction && question.hideForecastsUntil) {
+    return `until you make a prediction and the date is at least ${getDateYYYYMMDD(question.hideForecastsUntil)}`
+  }
   if (question.hideForecastsUntil) {
     return `until ${getDateYYYYMMDD(question.hideForecastsUntil)}`
   }
