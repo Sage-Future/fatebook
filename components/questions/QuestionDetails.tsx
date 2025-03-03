@@ -305,6 +305,19 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
     numForecasters > 1 &&
     getCommunityForecast(question, new Date())
 
+  const getCommunityAverageForOption = (optionId: string) => {
+    const optionForecasts =
+      question.options?.find((o) => o.id === optionId)?.forecasts || []
+    const numOptionForecasters = new Set(optionForecasts.map((f) => f.userId))
+      .size
+    if (numOptionForecasters <= 1 || forecastsAreHidden(question, userId))
+      return false
+    return getCommunityForecast(
+      { forecasts: optionForecasts } as any,
+      new Date(),
+    )
+  }
+
   return (
     <ErrorBoundary fallback={<div>Something went wrong</div>}>
       <div className="grid grid-cols-[minmax(80px,_auto)_minmax(0,_300px)_auto_auto] gap-2 items-center max-h-[48vh] overflow-y-auto showScrollbar">
@@ -320,14 +333,46 @@ function EventsLog({ question }: { question: QuestionWithStandardIncludes }) {
           </span>
         )}
       </div>
-      {communityAverage !== false && (
-        <div className="mx-auto flex gap-2 items-center">
-          <span className="font-semibold">Community:</span>
-          <span className="font-bold text-xl text-indigo-800">
-            {formatDecimalNicely(communityAverage * 100, 1)}%
-          </span>
-          <InfoButton tooltip="The geometric mean of odds of all forecasters' latest predictions" />
-        </div>
+      {question.type === "MULTIPLE_CHOICE" && question.options ? (
+        question.options.some((option) => {
+          const numOptionForecasters = new Set(
+            option.forecasts?.map((f) => f.userId),
+          ).size
+          return (
+            numOptionForecasters > 1 && !forecastsAreHidden(question, userId)
+          )
+        }) ? (
+          <div className="mx-auto flex flex-col gap-2 mt-4 bg-neutral-50 outline outline-neutral-200 px-4 py-2 rounded-md">
+            <span className="font-semibold text-center flex flex-row gap-x-1 mx-auto">
+              Community Averages
+              <InfoButton tooltip="The geometric mean of odds of all forecasters' latest predictions for each option" />
+            </span>
+            <div className="flex flex-row flex-wrap gap-x-4 justify-center w-full">
+              {question.options.map((option) => {
+                const optionAverage = getCommunityAverageForOption(option.id)
+                if (optionAverage === false) return null
+                return (
+                  <div key={option.id} className="flex gap-2 items-center">
+                    <span className="font-medium text-sm">{option.text}</span>
+                    <span className="font-bold text-lg text-indigo-800">
+                      {formatDecimalNicely(optionAverage * 100, 1)}%
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ) : null
+      ) : (
+        communityAverage !== false && (
+          <div className="mx-auto flex gap-2 items-center mt-4">
+            <span className="font-semibold">Community:</span>
+            <span className="font-bold text-xl text-indigo-800">
+              {formatDecimalNicely(communityAverage * 100, 1)}%
+            </span>
+            <InfoButton tooltip="The geometric mean of odds of all forecasters' latest predictions" />
+          </div>
+        )
       )}
     </ErrorBoundary>
   )
