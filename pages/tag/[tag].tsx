@@ -31,17 +31,15 @@ export default function TagPage() {
             </>
           )}
           {tagQ.data ? (
-            <>
-              <Questions
-                title={
-                  tagQ.data?.name
-                    ? `Your “${tagQ.data.name}” questions`
-                    : "Loading..."
-                }
-                filterTagIds={[tagQ.data.id]}
-                noQuestionsText="No questions tagged with this tag yet."
-              />
-            </>
+            <Questions
+              title={
+                tagQ.data?.name
+                  ? `Your “${tagQ.data.name}” questions`
+                  : "Loading..."
+              }
+              filterTagIds={[tagQ.data.id]}
+              noQuestionsText="No questions tagged with this tag yet."
+            />
           ) : (
             <h3 className="text-neutral-600">
               {tagQ.isLoading ? "Loading..." : ""}
