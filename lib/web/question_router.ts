@@ -153,6 +153,12 @@ const zodExtraFilters = z.object({
       description: "Show questions in this team (instead of your questions)",
     })
     .optional(),
+  sortEarliestFirst: z
+    .boolean({
+      description:
+        "Show questions in chronological order. If not true, usually shows them in reverse-chronological (latest first).",
+    })
+    .optional(),
 })
 export type ExtraFilters = z.infer<typeof zodExtraFilters>
 
@@ -1422,7 +1428,7 @@ async function getQuestionsUserCreatedOrForecastedOnOrIsSharedWith(
       ? {
           resolveBy: "asc",
         }
-      : input.extraFilters?.filterTournamentId
+      : input.extraFilters?.sortEarliestFirst
         ? {
             createdAt: "asc",
           }

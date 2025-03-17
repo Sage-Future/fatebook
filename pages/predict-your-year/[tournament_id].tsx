@@ -127,6 +127,7 @@ export default function PredictYourYearPage() {
               noQuestionsText=" "
               filterTournamentId={tournamentId}
               description={tournamentQ.data?.description || undefined}
+              sortEarliestFirst={true}
               // showFilterButtons={false}
             />
           ) : (

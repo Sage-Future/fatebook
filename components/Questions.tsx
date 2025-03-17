@@ -19,6 +19,7 @@ export function Questions({
   filterUserListId = undefined,
   showAllPublic = false,
   theirUserId = undefined,
+  sortEarliestFirst = false,
   description = undefined,
   showFilterButtons = true,
 }: {
@@ -30,6 +31,7 @@ export function Questions({
   filterUserListId?: string
   showAllPublic?: boolean
   theirUserId?: string
+  sortEarliestFirst?: boolean
   description?: ReactNode | string
   showFilterButtons?: boolean
 }) {
@@ -53,6 +55,7 @@ export function Questions({
           filterUserListId,
           showAllPublic,
           theirUserId,
+          sortEarliestFirst,
         },
       },
       {
