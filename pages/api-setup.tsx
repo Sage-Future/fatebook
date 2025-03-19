@@ -113,7 +113,7 @@ export default function ApiPage() {
           <br />
         </p>
 
-        <p>{"Note a date by itself will default to a time of 00:00 in the UTC timezone, which may not be the date you intended in your local timezone.  You can pass an ISO 8601 datetime for localization; for example, 2025-01-01T00:00+00:00.  You can also add some optional parameters, here's an example:"}</p>
+        <p>{"Note: a date by itself will default to a time of 00:00 in the UTC timezone, which may not be the date you intended in your local timezone.  You can pass an ISO 8601 datetime for localization; for example, 2025-01-01T00:00+00:00.  You can also add some optional parameters, here's an example:"}</p>
 
         <p className="bg-neutral-100 outline outline-neutral-300 outline-1 p-2 rounded-md break-words">
           {"https://fatebook.io/api/v0/createQuestion"}
