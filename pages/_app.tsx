@@ -14,6 +14,7 @@ import { Layout } from "../components/Layout"
 import Meta from "../components/Meta"
 import { api } from "../lib/web/trpc"
 import "../styles/globals.css"
+import { HeapAnalytics } from "../components/HeapAnalytics"
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode
@@ -44,6 +45,7 @@ function App({
         session={session}
         refetchOnWindowFocus={refetchOnWindowFocus}
       >
+        <HeapAnalytics />
         {getLayout(<Component {...pageProps} />)}
         <Toaster />
       </SessionProvider>
