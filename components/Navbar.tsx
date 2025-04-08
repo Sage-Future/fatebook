@@ -177,7 +177,6 @@ function IntegrationsDropdown() {
     <div className="dropdown dropdown-hover dropdown-bottom dropdown-end">
       <label className="flex gap-1" tabIndex={0}>
         <ChevronDownIcon className="text-neutral-400" width={16} /> Integrations{" "}
-        <NewDot />
       </label>
       <ul
         tabIndex={0}
@@ -226,6 +225,7 @@ function IntegrationsItems({
           Fatebook for Discord
         </Link>
       </li>
+      <li className="menu-title">Advanced integrations</li>
       <li>
         <Link
           href="/api-setup"
@@ -245,7 +245,6 @@ function IntegrationsItems({
           className={isActive("/beeminder") ? "bg-base-200" : ""}
         >
           Beeminder
-          <NewDot />
         </Link>
       </li>
       <li className="menu-title">Your prediction data</li>
