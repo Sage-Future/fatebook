@@ -46,9 +46,7 @@ export async function questionsToCsv(
         "Question comments": question?.comments
           ?.map((c) => `${c.user?.name}: ${c.comment}`)
           .join("; "),
-        "Question tags": question?.tags
-          ?.map((t) => t.name)
-          .join("; "),
+        "Question tags": question?.tags?.map((t) => t.name).join("; "),
       }
     }),
   )
@@ -56,7 +54,7 @@ export async function questionsToCsv(
   return csv
 }
 
-function jsonToCsv(json: any) {
+export function jsonToCsv(json: any) {
   if (!json) return ""
 
   const keys = Object.keys(json[0])

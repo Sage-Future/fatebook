@@ -1,10 +1,11 @@
+import { ArrowDownTrayIcon } from "@heroicons/react/24/outline"
 import { ChevronDownIcon, ChevronLeftIcon } from "@heroicons/react/24/solid"
 import { Tournament } from "@prisma/client"
 import clsx from "clsx"
 import { useRouter } from "next/router"
 import { useState } from "react"
 import { api } from "../lib/web/trpc"
-import { useUserId } from "../lib/web/utils"
+import { downloadBlob, useUserId } from "../lib/web/utils"
 import { FixTournamentQuestionSharing } from "./FixTournamentQuestionSharing"
 import { QuestionsMultiselect } from "./QuestionsMultiselect"
 import { ShareTournament } from "./ShareTournament"
@@ -39,6 +40,16 @@ export function TournamentAdminPanel({
     },
   })
 
+  const exportToCsv = api.tournament.exportToCsv.useMutation({
+    onSuccess: (data) => {
+      if (!data) {
+        alert("Nothing to export")
+        return
+      }
+      downloadBlob(data, `tournament-forecasts.csv`, "text/csv")
+    },
+  })
+
   const adminPanelCollapsedLocalStorageKey = `tournamentAdminCollapsed_${tournamentId}`
   const [isCollapsed, setIsCollapsed] = useState(
     localStorage.getItem(adminPanelCollapsedLocalStorageKey) === "true",
@@ -59,7 +70,7 @@ export function TournamentAdminPanel({
           id: tournamentQ.data.id,
           ...tournament,
           questions: questions,
-          currentQuestions: tournamentQ.data.questions.map(q => q.id),
+          currentQuestions: tournamentQ.data.questions.map((q) => q.id),
         },
       })
     }
@@ -239,7 +250,16 @@ export function TournamentAdminPanel({
             </label>
           </div>
           {isAdmin && (
-            <div className="form-control flex-row items-center gap-2">
+            <div className="form-control sm:flex-row items-center gap-2">
+              <button
+                type="button"
+                className="btn"
+                onClick={() => exportToCsv.mutate({ tournamentId })}
+                disabled={exportToCsv.isLoading}
+              >
+                <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
+                {exportToCsv.isLoading ? "Exporting..." : "Export to CSV"}
+              </button>
               <button
                 type="button"
                 className="btn"

@@ -1,7 +1,9 @@
 import { TRPCError } from "@trpc/server"
 import { z } from "zod"
+import { forecastsAreHidden } from "../_utils_common"
 import { syncToSlackIfNeeded } from "../interactive_handlers/postFromWeb"
 import prisma from "../prisma"
+import { jsonToCsv } from "./export"
 import { scrubApiKeyPropertyRecursive } from "./question_router"
 import { publicProcedure, router } from "./trpc_base"
 import { matchesAnEmailDomain } from "./utils"
@@ -87,13 +89,19 @@ export const tournamentRouter = router({
           })
         }
 
-        const currentQuestionIds = oldTournament.questions.map(q => q.id).sort()
+        const currentQuestionIds = oldTournament.questions
+          .map((q) => q.id)
+          .sort()
         const clientQuestionIds = input.tournament.currentQuestions.sort()
-        
-        if (JSON.stringify(currentQuestionIds) !== JSON.stringify(clientQuestionIds)) {
+
+        if (
+          JSON.stringify(currentQuestionIds) !==
+          JSON.stringify(clientQuestionIds)
+        ) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "Tournament questions have been modified. Please refresh and try again.",
+            message:
+              "Tournament questions have been modified. Please refresh and try again.",
           })
         }
 
@@ -140,12 +148,12 @@ export const tournamentRouter = router({
 
         if (input.tournament.questions !== undefined) {
           await Promise.all([
-            ...updatedTournament.questions.map(q => 
-              syncToSlackIfNeeded(q, ctx.userId)
+            ...updatedTournament.questions.map((q) =>
+              syncToSlackIfNeeded(q, ctx.userId),
             ),
-            ...oldTournament.questions.map(q => 
-              syncToSlackIfNeeded(q, ctx.userId, [oldTournament])
-            )
+            ...oldTournament.questions.map((q) =>
+              syncToSlackIfNeeded(q, ctx.userId, [oldTournament]),
+            ),
           ])
         }
 
@@ -351,5 +359,102 @@ export const tournamentRouter = router({
           id: input.id,
         },
       })
+    }),
+
+  exportToCsv: publicProcedure
+    .input(
+      z.object({
+        tournamentId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You must be logged in to export tournament data",
+        })
+      }
+
+      const tournament = await prisma.tournament.findUnique({
+        where: {
+          id: input.tournamentId,
+        },
+        include: {
+          questions: {
+            include: {
+              forecasts: {
+                include: {
+                  user: true,
+                },
+              },
+              user: true,
+              options: true,
+            },
+          },
+          userList: {
+            include: {
+              users: true,
+            },
+          },
+        },
+      })
+
+      if (!tournament) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tournament not found",
+        })
+      }
+
+      // Check if user is admin
+      if (
+        tournament.authorId !== ctx.userId &&
+        !(
+          tournament.anyoneInListCanEdit &&
+          tournament.userList?.users.find((u) => u.id === ctx.userId)
+        )
+      ) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to export this tournament",
+        })
+      }
+
+      // Get all forecasts from all questions in the tournament
+      const forecasts = tournament.questions.flatMap((q) => {
+        // Filter out forecasts from questions where forecasts are hidden
+        if (forecastsAreHidden(q, ctx.userId)) {
+          return []
+        }
+        return q.forecasts
+      })
+
+      if (!forecasts || forecasts.length === 0) return ""
+
+      const csv = jsonToCsv(
+        forecasts.map((f) => {
+          const question = tournament.questions.find(
+            (q) => q.id === f.questionId,
+          )
+          const mcqOption = question?.options?.find((o) => o.id === f.optionId)
+
+          return {
+            "Tournament name": tournament.name,
+            "Question title": question?.title,
+            "Multiple choice option": mcqOption?.text,
+            "Forecast created by": f.user?.name,
+            "Forecast (scale = 0-1)": f.forecast,
+            "Forecast created at": f.createdAt,
+            "Question created by": question?.user?.name,
+            "Question created at": question?.createdAt,
+            "Question resolve by": question?.resolveBy,
+            Resolution: mcqOption?.resolution || question?.resolution,
+            "Resolved at": mcqOption?.resolvedAt || question?.resolvedAt,
+            "Question notes": question?.notes,
+          }
+        }),
+      )
+
+      return csv
     }),
 })
