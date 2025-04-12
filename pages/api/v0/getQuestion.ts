@@ -155,23 +155,25 @@ const getQuestionPublicApi = async (req: Request, res: NextApiResponse) => {
           forecasts: scrubHiddenForecastsAndSensitiveDetailsFromQuestion(
             question,
             authedUserId,
-          )?.forecasts.map((f) => ({
-            forecast: f.forecast.toNumber(),
-            createdAt: f.createdAt,
-            user: {
-              id: f.user.id,
-              name: f.user.name,
-              image: f.user.image,
-            },
-            ...(f.option
-              ? {
-                  option: {
-                    id: f.option.id,
-                    text: f.option.text,
-                  },
-                }
-              : {}),
-          })),
+          )
+            ?.forecasts.filter((f) => f.forecast !== null) // filter out hidden forecasts
+            .map((f) => ({
+              forecast: f.forecast.toNumber(),
+              createdAt: f.createdAt,
+              user: {
+                id: f.user.id,
+                name: f.user.name,
+                image: f.user.image,
+              },
+              ...(f.option
+                ? {
+                    option: {
+                      id: f.option.id,
+                      text: f.option.text,
+                    },
+                  }
+                : {}),
+            })),
           createdAt: question?.createdAt,
           notes: question?.notes,
           questionScores: question?.questionScores,
