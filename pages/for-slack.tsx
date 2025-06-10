@@ -129,7 +129,7 @@ export default function ForSlackPage() {
                       Niel Bowerman
                     </div>
                     <div className="pl-2 text-sm font-light text-neutral-500">
-                      Director of Special Projects at 80,000 Hours
+                      CEO at 80,000 Hours
                     </div>
                   </div>
                 </figcaption>
