@@ -63,6 +63,9 @@
     url.searchParams.set("fatebook-embed-id", iframeId)
     iframe.src = url.toString()
 
+    // Add clipboard-write permission for modern clipboard API
+    iframe.allow = "clipboard-write"
+
     iframeMap[iframeId] = iframe
     return iframe
   }
