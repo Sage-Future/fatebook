@@ -2,7 +2,7 @@
   "name": "Fatebook for Chrome",
   "description": "The fastest way to make and track predictions",
   "homepage_url": "https://fatebook.io/",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "manifest_version": 3,
   "action": {
     "default_title": "Click to make a prediction",

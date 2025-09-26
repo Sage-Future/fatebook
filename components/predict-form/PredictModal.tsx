@@ -79,7 +79,7 @@ export default function PredictModal() {
         name: session!.user.name,
       }
 
-      copyToClipboard({
+      void copyToClipboard({
         "text/plain": urlObj.toString(),
         ...// skip HTML version for twitter (it uses that instead of the plain text version)
         (window.location?.ancestorOrigins?.contains("https://twitter.com") ||
