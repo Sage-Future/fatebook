@@ -46,7 +46,7 @@ function SlackComposeContent() {
         const demoStrings = [
           "/forecast Will we release the podcast by Tuesday?",
           "/forecast Will we double our users by March?",
-          "/forecast Will GPT-5 be released before 2025?",
+          "/forecast Will GPT-6 be released before 2027?",
           "/forecast Will we move office this year?",
           "/forecast If we share the report publicly, will there be major negative consequences?",
           "/forecast Will AMF be funding-constrained this year?",

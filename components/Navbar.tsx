@@ -81,6 +81,9 @@ function NavbarContent({
   menuItems: ReactNode
   showCreateAccountButton: boolean
 }) {
+  const upcomingYear = new Date(
+    Date.now() + 1000 * 60 * 60 * 24 * 60,
+  ).getFullYear() // 60 days from now
   return (
     <div className="navbar max-w-5xl mx-auto">
       <div className="flex-none lg:hidden">
@@ -96,7 +99,7 @@ function NavbarContent({
         {userId && (
           <SpecialButton
             url="/predict-your-year"
-            label={<span className="">{"Predict your 2025"}</span>}
+            label={<span className="">{`Predict your ${upcomingYear}`}</span>}
           />
         )}
       </div>

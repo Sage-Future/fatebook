@@ -94,7 +94,7 @@ If you want to make private forecasts, that only you can see, you can type \`/fo
 Some ideas of questions we can forecast on:\n
   :trophy: Project outcomes: \`"/forecast Will we double our users by March?"\`\n
   :chart_with_upwards_trend: Project progress: \`"/forecast Will we move office this year?"\`\n
-  :earth_africa: Project-relevant events: \`"/forecast Will GPT-5 be released before 2025?"\`\n
+  :earth_africa: Project-relevant events: \`"/forecast Will GPT-6 be released before 2027?"\`\n
 <${questionWritingTipsUrl}|More question ideas>\n`,
         mrkdwn: true,
       },

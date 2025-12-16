@@ -342,10 +342,7 @@ const personalSuggestions = (year: number) => [
         q: `Will there be a ceasefire in Ukraine at the end of ${year}?`,
       },
       {
-        q: `Will GPT-5 be released in ${year}?`,
-      },
-      {
-        q: `Will New Zealand win the 2025 Women's Rugby World Cup?`,
+        q: `Will GPT-6 be released in ${year}?`,
       },
       {
         q: `Will Taylor Swift release a new album in ${year}?`,
