@@ -2,6 +2,7 @@
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
+  staticPageGenerationTimeout: 1000,
   eslint: {
     dirs: ["api", "lib", "pages", "public", "styles", "components"],
   },
@@ -17,7 +18,7 @@ const nextConfig = {
       //   unoptimized: true,
     ],
   },
-  async headers() {
+  headers() {
     return [
       {
         // matching all API routes
