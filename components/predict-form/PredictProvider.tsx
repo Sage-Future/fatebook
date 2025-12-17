@@ -26,6 +26,8 @@ const optionSchema = z.object({
     .optional(),
 })
 
+export type OptionType = z.infer<typeof optionSchema>
+
 const unifiedPredictFormSchema = z
   .object({
     question: z

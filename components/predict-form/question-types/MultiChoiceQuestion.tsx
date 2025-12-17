@@ -8,6 +8,9 @@ import { PredictButton } from "../PredictButton"
 import { QuestionOption } from "../QuestionOption"
 import { ResolveBy } from "../ResolveBy"
 import { QuestionTypeProps } from "./question-types"
+import { OptionType } from "../PredictProvider"
+import { normalizeOptionsToHundred } from "../../../lib/_utils_multiple-choice"
+import { formatDecimalNicely } from "../../../lib/_utils_common"
 
 export default function MultiChoiceQuestion({
   small,
@@ -17,7 +20,7 @@ export default function MultiChoiceQuestion({
   onSubmit,
   highlightResolveBy,
 }: QuestionTypeProps) {
-  const { trigger, control } = useFormContext()
+  const { trigger, control, watch, setValue } = useFormContext()
 
   const MIN_OPTIONS = 2
   const MAX_OPTIONS = 100
@@ -40,6 +43,20 @@ export default function MultiChoiceQuestion({
     [remove],
   )
 
+  const options = watch("options") as OptionType[]
+  const normalizeToHundred = useCallback(() => {
+    const normalizedOptions = normalizeOptionsToHundred(options)
+
+    normalizedOptions.forEach((option, index) => {
+      setValue(
+        `options.${index}.forecast`,
+        formatDecimalNicely(option.forecast || 0, 0),
+      )
+    })
+
+    void trigger("options")
+  }, [options, setValue, trigger])
+
   return (
     <div
       className={`flex flex-col gap-4 flex-wrap justify-between ${embedded ? "flex-col" : "flex-row"}`}
@@ -60,24 +77,34 @@ export default function MultiChoiceQuestion({
           />
         ))}
 
-        {fields.length < MAX_OPTIONS && (
-          <div className="flex flex-row justify-between items-center gap-2">
-            <div className="flex-grow">
+        <div className="flex flex-row justify-between items-center gap-2">
+          <div className="flex-grow flex gap-2">
+            <button
+              onClick={(e) => {
+                e.preventDefault()
+                addOption()
+              }}
+              className="btn btn-sm text-neutral-500"
+            >
+              <PlusIcon className="w-5 h-5" />
+              Add option
+            </button>
+
+            {
               <button
                 onClick={(e) => {
                   e.preventDefault()
-                  addOption()
+                  normalizeToHundred()
                 }}
                 className="btn btn-sm text-neutral-500"
               >
-                <PlusIcon className="w-5 h-5" />
-                Add option
+                Sum to 100%
               </button>
-            </div>
-            <div className=""></div>
-            <div className=""></div>
+            }
           </div>
-        )}
+          <div className=""></div>
+          <div className=""></div>
+        </div>
 
         <FormCheckbox
           onSubmit={onSubmit}
