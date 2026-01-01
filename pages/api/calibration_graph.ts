@@ -19,12 +19,12 @@ export default async function handler(
     res.send("No results")
     return
   }
-  const { buckets, bucketedForecasts } = results
+  const { bucketedForecasts } = results
 
   const chartJs = new ChartJSImage()
   const lineChart = chartJs
     //@ts-ignore - the library's type definition is incorrect
-    .chart(getChartJsParams(buckets, bucketedForecasts))
+    .chart(getChartJsParams(bucketedForecasts))
     .backgroundColor("#111")
     .width("550")
     .height("500")
@@ -166,26 +166,45 @@ export async function getBucketedForecasts(userId: string, tags?: string[]) {
 
   forecasts.push(...mcqForecasts)
 
-  const halfBucketSize = 0.05
-  const buckets = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
-  const bucketedForecasts = buckets.map((bucket) => {
-    const forecastsInBucket = forecasts.filter((f) => {
-      return (
-        f.forecast >= bucket - halfBucketSize &&
-        // without this fudge, 0.85 is included in the 0.8 and 0.9 buckets
-        f.forecast < bucket + halfBucketSize - 0.00000001
-      )
-    })
+  // Create 10 equal-width bins: [0-10%), [10-20%), ..., [90-100%]
+  const NUM_BINS = 10
+  const BIN_WIDTH = 1.0 / NUM_BINS
+
+  // Guarantees each forecast goes to exactly one bin
+  function getBinIndex(value: number): number {
+    if (value >= 1.0) return NUM_BINS - 1
+    return Math.floor(value * NUM_BINS)
+  }
+
+  const bins: typeof forecasts[] = Array.from({ length: NUM_BINS }, () => [])
+  forecasts.forEach((f) => {
+    bins[getBinIndex(f.forecast)].push(f)
+  })
+
+  const bucketedForecasts = bins.map((forecastsInBin, i) => {
+    const binStart = i * BIN_WIDTH
+    const binEnd = (i + 1) * BIN_WIDTH
+    const binCenter = (binStart + binEnd) / 2
+
+    const count = forecastsInBin.length
+    const meanPrediction =
+      count > 0
+        ? forecastsInBin.reduce((sum, f) => sum + f.forecast, 0) / count
+        : binCenter
+
+    const meanOutcome =
+      count > 0
+        ? forecastsInBin.filter((f) => f.resolution === Resolution.YES).length /
+          count
+        : NaN
 
     return {
-      bucket: bucket,
-      mean:
-        forecastsInBucket.reduce(
-          (acc, f) => acc + (f.resolution === Resolution.YES ? 1 : 0),
-          0,
-        ) / forecastsInBucket.length,
-      count: forecastsInBucket.length,
+      binCenter,
+      meanPrediction,
+      meanOutcome,
+      count,
     }
   })
-  return { buckets, bucketedForecasts }
+
+  return { bucketedForecasts }
 }

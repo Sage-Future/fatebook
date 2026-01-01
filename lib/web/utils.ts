@@ -27,22 +27,38 @@ export async function signInToFatebook() {
 }
 
 export function getChartJsParams(
-  buckets: number[],
-  bucketedForecasts: { bucket: number; mean: number; count: number }[],
+  bucketedForecasts: {
+    binCenter: number
+    meanPrediction: number
+    meanOutcome: number
+    count: number
+  }[],
   interactive = false,
   hideTitles = false,
   isThisUser = true,
 ) {
   const pronoun = isThisUser ? "Your" : "Their"
+
+  // Perfect calibration line: diagonal y=x from 0% to 100%
+  const perfectCalibrationData = [
+    { x: 0, y: 0 },
+    { x: 100, y: 100 },
+  ]
+
+  // User calibration: plot at actual mean prediction (not bin center)
+  const userCalibrationData = bucketedForecasts.map((f) => ({
+    x: f.meanPrediction * 100,
+    y: isNaN(f.meanOutcome) ? null : f.meanOutcome * 100,
+  }))
+
   return {
     type: "line",
     data: {
-      labels: buckets.map((b) => (b * 100).toFixed(0) + "%"),
       datasets: [
         {
           backgroundColor: "#4e46e59c",
           borderColor: "#4e46e59c",
-          data: bucketedForecasts.map((f) => f.mean * 100),
+          data: userCalibrationData,
           label: `${pronoun} calibration`,
           borderWidth: 1,
           fill: false,
@@ -51,7 +67,7 @@ export function getChartJsParams(
         {
           backgroundColor: "#22c55e",
           borderColor: "#22c55e",
-          data: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+          data: perfectCalibrationData,
           label: "Perfect calibration",
           fill: false,
           pointRadius: 0,
@@ -71,20 +87,23 @@ export function getChartJsParams(
         ? {
             tooltip: {
               callbacks: {
+                title: () => null,
                 label: (context: any) => {
-                  const label = context.dataset.label || ""
-                  if (label) {
-                    const resolvedForecasts =
-                      bucketedForecasts?.[context?.dataIndex]?.count
+                  const datasetLabel = context.dataset.label || ""
 
-                    return `${label}: ${context.parsed.y.toFixed(0)}%${
-                      resolvedForecasts !== undefined &&
-                      ` (on ${resolvedForecasts} forecast${
-                        resolvedForecasts > 1 ? "s" : ""
-                      })`
-                    }`
+                  // Skip tooltip for perfect calibration line
+                  if (datasetLabel.includes("Perfect")) {
+                    return null
                   }
-                  return ""
+
+                  const bucket = bucketedForecasts?.[context?.dataIndex]
+                  if (!bucket) return ""
+
+                  const n = bucket.count
+                  const pred = (bucket.meanPrediction * 100).toFixed(1)
+                  const outcome = (bucket.meanOutcome * 100).toFixed(1)
+
+                  return [`n=${n}`, `${pred}% pred`, `${outcome}% outcome`]
                 },
               },
             },
@@ -117,10 +136,17 @@ export function getChartJsParams(
               },
             },
             x: {
+              type: "linear",
+              min: 0,
+              max: 100,
               title: {
                 display: true,
-                text: `${pronoun} forecast (bucketed by nearest 10%)`,
+                text: `${pronoun} forecast`,
                 color: hideTitles ? "transparent" : "gray",
+              },
+              ticks: {
+                stepSize: 10,
+                callback: (value: any) => value + "%",
               },
             },
           }
@@ -128,9 +154,15 @@ export function getChartJsParams(
             xAxes: [
               {
                 display: true,
+                type: "linear",
+                ticks: {
+                  min: 0,
+                  max: 100,
+                  callback: (value: any) => value + "%",
+                },
                 scaleLabel: {
                   display: true,
-                  labelString: `${pronoun} forecast (bucketed by nearest 10%)`,
+                  labelString: `${pronoun} forecast`,
                 },
                 gridLines: {
                   color: "#1e1e1e",

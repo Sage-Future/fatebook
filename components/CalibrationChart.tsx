@@ -50,9 +50,8 @@ export function CalibrationChart({
 
   if (!bucketedForecastsQ.data) return <div className="min-h-[331px]"></div>
 
-  const { buckets, bucketedForecasts } = bucketedForecastsQ.data
+  const { bucketedForecasts } = bucketedForecastsQ.data
   const params = getChartJsParams(
-    buckets,
     bucketedForecasts,
     true,
     !axisTitlesShown,
@@ -88,15 +87,17 @@ export function CalibrationChart({
         onClick={(event) => {
           chartRef.current &&
             getElementAtEvent(chartRef.current, event)?.forEach((element) => {
-              const midpoint = element.index * 10 // e.g. "70"
-              const range = [
-                Math.max(0, midpoint - 5),
-                Math.min(100, midpoint + 5),
-              ]
-              const searchString = `${range[0]}-${range[1]}%`
-              window.dispatchEvent(
-                new CustomEvent("setSearchString", { detail: searchString }),
-              )
+              const clickedBucket = bucketedForecasts[element.index]
+              if (clickedBucket) {
+                // Calculate bin boundaries (10% wide bins)
+                const binWidth = 10
+                const binIndex = element.index
+                const range = [binIndex * binWidth, (binIndex + 1) * binWidth]
+                const searchString = `${range[0]}-${range[1]}%`
+                window.dispatchEvent(
+                  new CustomEvent("setSearchString", { detail: searchString }),
+                )
+              }
             })
         }}
       />
