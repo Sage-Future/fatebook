@@ -43,9 +43,7 @@ docker compose up
 
 The app will be available at http://localhost:3000. The database is created automatically and migrations run on startup.
 
-**Signing in:** Use the email magic link option. Add `AUTH_EMAIL_SERVER` and `AUTH_EMAIL_FROM` to your `.env` to configure an SMTP server, or see the next section for a zero-config mail catcher.
-
-**Signing in without any external services:** Add a local mail catcher to `docker-compose.yml` — see [Mailpit](https://mailpit.axllent.org/) for a simple option.
+**Signing in:** Use the email magic link option. Docker Compose includes [Mailpit](https://mailpit.axllent.org/) as a local mail catcher — check http://localhost:8025 to see the sign-in email after requesting one. No SMTP account needed.
 
 **Note:** The local dev SSL proxy is skipped in Docker, so the app runs on plain HTTP. The `.env.example` shared Google OAuth credentials require HTTPS and won't work; either set up your own OAuth credentials with `http://localhost:3000` redirect URIs, or use the email provider instead.
 
