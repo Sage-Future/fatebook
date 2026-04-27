@@ -17,15 +17,16 @@ function getCookies() {
     https://github.com/nextauthjs/next-auth/blob/c0f9af4c567a905c9d55b732cc0610d44fbae5a6/packages/next-auth/src/core/init.ts#L77
   */
 
-  const useSecureCookies = true
+  const useSecureCookies = process.env.NODE_ENV === "production"
   const cookiePrefix = useSecureCookies ? "__Secure-" : ""
+  const sameSite = useSecureCookies ? ("none" as "none") : ("lax" as "lax")
 
   return {
     sessionToken: {
       name: `${cookiePrefix}next-auth.session-token`,
       options: {
         httpOnly: true,
-        sameSite: "none" as "none",
+        sameSite,
         path: "/",
         secure: useSecureCookies,
       },
@@ -34,7 +35,7 @@ function getCookies() {
       name: `${cookiePrefix}next-auth.callback-url`,
       options: {
         httpOnly: true,
-        sameSite: "none" as "none",
+        sameSite,
         path: "/",
         secure: useSecureCookies,
       },
@@ -45,7 +46,7 @@ function getCookies() {
       name: `${useSecureCookies ? "__Host-" : ""}next-auth.csrf-token`,
       options: {
         httpOnly: true,
-        sameSite: "none" as "none",
+        sameSite,
         path: "/",
         secure: useSecureCookies,
       },
@@ -54,7 +55,7 @@ function getCookies() {
       name: `${cookiePrefix}next-auth.pkce.code_verifier`,
       options: {
         httpOnly: true,
-        sameSite: "none" as "none",
+        sameSite,
         path: "/",
         secure: useSecureCookies,
         maxAge: 60 * 15, // 15 minutes in seconds
@@ -64,7 +65,7 @@ function getCookies() {
       name: `${cookiePrefix}next-auth.state`,
       options: {
         httpOnly: true,
-        sameSite: "none" as "none",
+        sameSite,
         path: "/",
         secure: useSecureCookies,
         maxAge: 60 * 15, // 15 minutes in seconds
@@ -74,7 +75,7 @@ function getCookies() {
       name: `${cookiePrefix}next-auth.nonce`,
       options: {
         httpOnly: true,
-        sameSite: "none" as "none",
+        sameSite,
         path: "/",
         secure: useSecureCookies,
       },
@@ -158,7 +159,7 @@ export const authOptions: NextAuthOptions = {
   jwt: {
     secret: process.env.SECRET,
   },
-  useSecureCookies: true,
+  useSecureCookies: process.env.NODE_ENV === "production",
 
   cookies: getCookies(),
 

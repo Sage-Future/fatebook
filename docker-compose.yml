@@ -1,4 +1,10 @@
 services:
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+
   db:
     image: postgres:16-alpine
     environment:
@@ -30,6 +36,9 @@ services:
       # HTTP (no SSL proxy in Docker)
       NEXTAUTH_URL: http://localhost:3000/api/auth
       HOST_URL: http://localhost:3000
+      # Local mail catcher — view sent emails at http://localhost:8025
+      AUTH_EMAIL_SERVER: smtp://mail:1025
+      AUTH_EMAIL_FROM: fatebook@localhost
     volumes:
       - .:/app
       - /app/node_modules  # preserve node_modules installed in image
