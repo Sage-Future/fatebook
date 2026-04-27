@@ -30,7 +30,28 @@ Share your own API creations in [Discord](https://discord.gg/mt9YVB8VDE)!
 
 If you're interested in contributing, [let us know](https://github.com/Sage-Future/fatebook/issues), and we can help you get up and running - thank you!
 
-These following instructions assume you're using macOS and Homebrew.
+### Using Docker
+
+The easiest way to get a local dev environment running:
+
+```shell
+git clone https://github.com/Sage-Future/fatebook.git
+cd fatebook
+cp .env.example .env
+docker compose up
+```
+
+The app will be available at http://localhost:3000. The database is created automatically and migrations run on startup.
+
+**Signing in:** Use the email magic link option. Add `AUTH_EMAIL_SERVER` and `AUTH_EMAIL_FROM` to your `.env` to configure an SMTP server, or see the next section for a zero-config mail catcher.
+
+**Signing in without any external services:** Add a local mail catcher to `docker-compose.yml` — see [Mailpit](https://mailpit.axllent.org/) for a simple option.
+
+**Note:** The local dev SSL proxy is skipped in Docker, so the app runs on plain HTTP. The `.env.example` shared Google OAuth credentials require HTTPS and won't work; either set up your own OAuth credentials with `http://localhost:3000` redirect URIs, or use the email provider instead.
+
+---
+
+The following instructions assume you're using macOS and Homebrew.
 
 ### Clone the repository
 

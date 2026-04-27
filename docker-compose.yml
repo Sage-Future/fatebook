@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fatebook
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fatebook_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fatebook -d fatebook_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      # Override DB URLs to point to the compose db service instead of localhost
+      DATABASE_URL: postgresql://fatebook:postgres@db:5432/fatebook_development
+      DATABASE_DIRECT_URL: postgresql://fatebook:postgres@db:5432/fatebook_development
+      # HTTP (no SSL proxy in Docker)
+      NEXTAUTH_URL: http://localhost:3000/api/auth
+      HOST_URL: http://localhost:3000
+    volumes:
+      - .:/app
+      - /app/node_modules  # preserve node_modules installed in image
+      - /app/.next         # preserve Next.js build cache
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma generate --no-hints &&
+             npx prisma migrate deploy &&
+             npx next dev -p 3000"
+
+volumes:
+  postgres_data:
