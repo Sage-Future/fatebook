@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { tomorrowDate } from "../../lib/_utils_common"
 import {
   channelVisible,
@@ -9,8 +9,8 @@ import { showWrongChannelModalView } from "../../lib/interactive_handlers/show_e
 import { createForecastingQuestion } from "../../lib/slash_handlers/_create_forecast"
 
 export default async function forecast(
-  req: VercelRequest,
-  res: VercelResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
 ) {
   const reqbody = typeof req.body === "string" ? JSON.parse(req.body) : req.body
 

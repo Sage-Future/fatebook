@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { BlockActionPayload } from "seratch-slack-types/app-backend/interactive-components/BlockActionPayload"
 import {
   QuestionModalActionParts,
@@ -124,7 +124,7 @@ async function blockActions(payload: BlockActionPayload) {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const reqbody = typeof req.body === "string" ? JSON.parse(req.body) : req.body
   const payload = JSON.parse(reqbody.payload) as BlockActionPayload
   switch (payload.type) {

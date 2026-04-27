@@ -1,10 +1,10 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { updateForecastQuestionMessages } from "../../lib/_utils_server"
 import prisma from "../../lib/prisma"
 
 export default async function updateLastWeeksQuestions(
-  req: VercelRequest,
-  res: VercelResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
 ) {
   const LAST_X_DAYS = 7
   const qs = await prisma.question.findMany({

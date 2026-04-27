@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 
 import { Question, Target, User } from "@prisma/client"
 import { conciseDateTime } from "../../lib/_utils_common"
@@ -529,7 +529,7 @@ async function sendWelcomeEmailToNewUsers() {
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (
     ((process.env.NODE_ENV === "development" ||
       process.env.NODE_ENV === "test") &&

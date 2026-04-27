@@ -5,7 +5,7 @@ import {
   QuestionType,
   Resolution,
 } from "@prisma/client"
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { relativeBrierScoring } from "../../lib/_scoring"
 import { floatEquality } from "../../lib/_utils_common"
 
@@ -82,7 +82,7 @@ function getQuestion(days: number): Question {
   }
 }
 
-export default function testScoring(req: VercelRequest, res: VercelResponse) {
+export default function testScoring(req: NextApiRequest, res: NextApiResponse) {
   const scoreMulti = relativeBrierScoring(testMultiForecasts, question)
 
   if (

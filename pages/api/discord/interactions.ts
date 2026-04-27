@@ -1,5 +1,5 @@
 import { User } from "@prisma/client"
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import * as chrono from "chrono-node"
 import { InteractionResponseType, InteractionType } from "discord-interactions"
 import { backendAnalyticsEvent } from "../../../lib/_utils_server"
@@ -9,7 +9,7 @@ import { getQuestionUrl } from "../../../lib/web/question_url"
 import { truncateString } from "../../../lib/web/utils"
 import { QuestionWithUserAndForecasts } from "../../../prisma/additional"
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log("Handling interaction")
 
   const { type, data } = req.body
@@ -50,8 +50,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 async function createForecast(
-  req: VercelRequest,
-  res: VercelResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
   user: User,
 ) {
   const title = req.body.data.options?.[0]?.value
@@ -126,7 +126,7 @@ async function createForecast(
 }
 
 function postQuestionMessage(
-  res: VercelResponse,
+  res: NextApiResponse,
   question: QuestionWithUserAndForecasts,
   authorDiscordName: string | undefined,
   authorForecastPercent: number,
@@ -170,7 +170,7 @@ function postQuestionMessage(
   })
 }
 
-async function getFatebookUser(req: VercelRequest) {
+async function getFatebookUser(req: NextApiRequest) {
   return await prisma.user.findUnique({
     where: {
       discordUserId: req.body.member.user.id,
@@ -178,7 +178,7 @@ async function getFatebookUser(req: VercelRequest) {
   })
 }
 
-function showApiInputModal(res: VercelResponse) {
+function showApiInputModal(res: NextApiResponse) {
   return res.send({
     type: InteractionResponseType.MODAL,
     data: {
@@ -206,7 +206,7 @@ function showApiInputModal(res: VercelResponse) {
   })
 }
 
-async function handleLoginModalSubmit(req: VercelRequest, res: VercelResponse) {
+async function handleLoginModalSubmit(req: NextApiRequest, res: NextApiResponse) {
   const apiKey = req.body?.data?.components?.[0]?.components?.[0]?.value
   if (!apiKey) {
     return sendDiscordEphemeral(res, "You must provide an API key")

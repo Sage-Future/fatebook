@@ -1,7 +1,7 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { baseUrl, clientId } from "../../../lib/_constants"
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const redirectUrl = baseUrl + "/api/auth/install_approved"
 
   console.log("redirecting to slack for install approval. ", {

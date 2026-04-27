@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import fetch from "node-fetch"
 import {
   clientId,
@@ -11,7 +11,7 @@ import {
 } from "../../../lib/_utils_server"
 import prisma from "../../../lib/prisma"
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.query?.error && req.query?.error === "access_denied") {
     res.redirect("/for-slack")
   }

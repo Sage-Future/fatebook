@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { slackAppId } from "../../lib/_constants"
 import {
   channelVisible,
@@ -9,8 +9,8 @@ import { postFromWeb } from "../../lib/interactive_handlers/postFromWeb"
 import { showWrongChannelModalView } from "../../lib/interactive_handlers/show_error_modal"
 
 export default async function forecast(
-  req: VercelRequest,
-  res: VercelResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
 ) {
   const reqbody = typeof req.body === "string" ? JSON.parse(req.body) : req.body
 

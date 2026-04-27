@@ -1,6 +1,6 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 
-export default function handler(req: VercelRequest, res: VercelResponse): void {
+export default function handler(req: NextApiRequest, res: NextApiResponse): void {
   console.log("In failed_validation.ts")
   res.send({
     response_action: "errors",

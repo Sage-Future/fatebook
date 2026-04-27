@@ -1,12 +1,12 @@
 import { Forecast, QuestionType, Resolution } from "@prisma/client"
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import ChartJSImage from "chart.js-image"
 import prisma from "../../lib/prisma"
 import { getChartJsParams } from "../../lib/web/utils"
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
 ): Promise<void> {
   if (!req.query.user) {
     res.send("Missing user in query")

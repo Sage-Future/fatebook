@@ -1,6 +1,6 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!process.env.DISCORD_APP_ID) {
     res.status(500).send("Missing DISCORD_APP_ID")
     return

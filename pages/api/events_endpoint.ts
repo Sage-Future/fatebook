@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from "@vercel/node"
+import type { NextApiRequest, NextApiResponse } from "next"
 import { slackAppId } from "../../lib/_constants"
 import {
   backendAnalyticsEvent,
@@ -8,8 +8,8 @@ import {
 import { refreshAppHome } from "../../lib/interactive_handlers/app_home"
 
 export default async function eventsApiHandler(
-  req: VercelRequest,
-  res: VercelResponse,
+  req: NextApiRequest,
+  res: NextApiResponse,
 ) {
   const reqbody = typeof req.body === "string" ? JSON.parse(req.body) : req.body
 

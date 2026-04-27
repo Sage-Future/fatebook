@@ -1,4 +1,4 @@
-import { VercelResponse } from "@vercel/node"
+import type { NextApiResponse } from "next"
 import { verifyKey } from "discord-interactions"
 import { NextRequest } from "next/server"
 
@@ -70,7 +70,7 @@ export async function installGlobalCommands(appId: string, commands: any) {
   }
 }
 
-export function sendDiscordEphemeral(res: VercelResponse, content: string) {
+export function sendDiscordEphemeral(res: NextApiResponse, content: string) {
   return res.send({
     type: 4,
     data: {
