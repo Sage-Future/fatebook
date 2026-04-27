@@ -43,16 +43,6 @@ export async function getStaticProps() {
           absoluteScore: true,
           createdAt: true,
           userId: true,
-          question: {
-            select: {
-              forecasts: {
-                select: {
-                  userId: true,
-                  createdAt: true,
-                },
-              },
-            },
-          },
         },
       },
       comments: {
@@ -179,17 +169,22 @@ export async function getStaticProps() {
   const forecasts = questions.flatMap((q) => q.forecasts)
   forecasts.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 
-  const questionScores = questions.flatMap((q) => q.questionScores)
+  const questionScores = questions.flatMap((q) =>
+    q.questionScores.map((score) => ({
+      ...score,
+      questionForecasts: q.forecasts,
+    })),
+  )
 
   // sort questionScores by that userId's average forecast time on that question
   questionScores.sort((a, b) => {
     const aAvgTime = mean(
-      a.question.forecasts
+      a.questionForecasts
         .filter((f) => f.userId === a.userId)
         .map((f) => f.createdAt.getTime()),
     )
     const bAvgTime = mean(
-      b.question.forecasts
+      b.questionForecasts
         .filter((f) => f.userId === b.userId)
         .map((f) => f.createdAt.getTime()),
     )
