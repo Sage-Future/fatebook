@@ -14,8 +14,6 @@ const nextConfig = {
         port: "",
         pathname: "**",
       },
-      // Need this only for capacitor export (todo: control this with env var)
-      //   unoptimized: true,
     ],
   },
   headers() {
