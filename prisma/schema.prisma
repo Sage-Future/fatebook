@@ -15,6 +15,30 @@ enum QuestionType {
   QUANTITY
 }
 
+// --- Mark-to-Market My Words: the claim standard ---
+
+// The kind of outcome a claim describes. Null on a Question means it was
+// made the old Fatebook way and never went through the rigor engine.
+enum ClaimShape {
+  NUMBER_BY_DATE
+  EVENT_BY_DATE
+  A_BEATS_B
+  RANK_OR_AWARD
+  FREE_TEXT
+}
+
+// Fixed list of confidence words. Each maps to a probability range in
+// lib/claims/confidence.ts. Null means "not given".
+enum ConfidenceWord {
+  ALMOST_CERTAIN
+  VERY_LIKELY
+  LIKELY
+  TOSS_UP
+  UNLIKELY
+  VERY_UNLIKELY
+  ALMOST_NO_CHANCE
+}
+
 model Workspace {
   teamId    String   @id @unique
   teamName  String
@@ -23,18 +47,20 @@ model Workspace {
 }
 
 model Forecast {
-  id         Int             @id @default(autoincrement())
-  createdAt  DateTime        @default(now())
-  comment    String?
-  forecast   Decimal
-  profileId  Int?
-  questionId String
-  optionId   String?
-  option     QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  userId     String
-  profile    Profile?        @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
-  question   Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             Int             @id @default(autoincrement())
+  createdAt      DateTime        @default(now())
+  comment        String?
+  forecast       Decimal
+  // the word I used for this update, if I gave a word rather than a number
+  confidenceWord ConfidenceWord?
+  profileId      Int?
+  questionId     String
+  optionId       String?
+  option         QuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId         String
+  profile        Profile?        @relation(fields: [profileId], references: [id], onDelete: Cascade, map: "Forecast_authorId_fkey")
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model QuestionScore {
@@ -99,6 +125,69 @@ model Question {
   tournaments                  Tournament[]
   exclusiveAnswers             Boolean?                 @default(true)
   notifications                Notification[]
+
+  // --- Mark-to-Market My Words: the claim standard ---
+  // title = claim text, resolveBy = deadline, createdAt = when it was logged.
+  // When I made the claim. Null = same as createdAt. Earlier than createdAt = back-dated.
+  // Relative dates in the claim text are resolved against this, never against today.
+  claimDate            DateTime?
+  claimShape           ClaimShape?
+  // The outcome parts this shape needs, each with a status:
+  // { [partName]: { value, status: "stated" | "extracted" | "working" } }
+  // Shape of this JSON is defined and checked in lib/claims/types.ts
+  outcomeParts         Json?
+  // true if I hedged the number with "about", "roughly" or "around"
+  approximate          Boolean         @default(false)
+  // latest confidence word. Null = not given.
+  confidenceWord       ConfidenceWord?
+  // 1-5, written by the grading code every time the claim is saved
+  grade                Int?
+  // how many questions the rigor engine has asked about this claim (it stops at 3)
+  engineQuestionsAsked Int             @default(0)
+  // where anyone can check the outcome. Only counts once checkLinkConfirmedAt is set.
+  checkLinkUrl         String?
+  checkLinkConfirmedAt DateTime?
+  // the earlier, vaguer claim this one grew out of
+  parentId             String?
+  parent               Question?       @relation("claimLineage", fields: [parentId], references: [id], onDelete: SetNull)
+  children             Question[]      @relation("claimLineage")
+  // replaces delete: hidden everywhere but kept, with its history
+  withdrawnAt          DateTime?
+  // "partly right": resolved YES or NO for the score, but the result landed
+  // within tolerance of an approximate number
+  closeCall            Boolean         @default(false)
+  // what actually happened, in my words (e.g. "5.8%")
+  actualResult         String?
+  versions             ClaimVersion[]
+
+  @@index([parentId])
+}
+
+// Append-only history. Every change to a claim writes a new row holding the
+// full claim state. Rows are never updated or deleted: the migration adds a
+// database trigger that rejects both, and a claim that has history cannot be
+// hard-deleted (onDelete: Restrict).
+model ClaimVersion {
+  id            String   @id @default(cuid())
+  questionId    String
+  question      Question @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  // 1, 2, 3... within one claim
+  version       Int
+  createdAt     DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  // where the change came from: "web", "api", "mcp"
+  source        String
+  // names of the fields that differ from the previous version (for the timeline)
+  changedFields String[]
+  // full snapshot of the claim at this point
+  state         Json
+  // hash of the previous version's row. Null for version 1.
+  prevHash      String?
+  // SHA-256 of this row's contents plus prevHash
+  hash          String
+
+  @@unique([questionId, version])
 }
 
 model Tag {
@@ -172,6 +261,7 @@ model User {
   tournaments              Tournament[]
   notifications            Notification[]
   questionOptions          QuestionOption[] @relation("author")
+  claimVersions            ClaimVersion[]
 
   // Used by next-auth:
   emailVerified DateTime?

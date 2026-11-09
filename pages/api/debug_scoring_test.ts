@@ -31,6 +31,7 @@ function createForecast(
     createdAt: addDays(startDate, dateOffset),
     comment: "test",
     optionId: null,
+    confidenceWord: null,
   }
 
   return forecast
@@ -79,6 +80,19 @@ function getQuestion(days: number): Question {
     unlisted: false,
     type: QuestionType.BINARY,
     exclusiveAnswers: true,
+    claimDate: null,
+    claimShape: null,
+    outcomeParts: null,
+    approximate: false,
+    confidenceWord: null,
+    grade: null,
+    engineQuestionsAsked: 0,
+    checkLinkUrl: null,
+    checkLinkConfirmedAt: null,
+    parentId: null,
+    withdrawnAt: null,
+    closeCall: false,
+    actualResult: null,
   }
 }
 
