@@ -2,6 +2,9 @@
 CREATE TYPE "ClaimShape" AS ENUM ('NUMBER_BY_DATE', 'EVENT_BY_DATE', 'A_BEATS_B', 'RANK_OR_AWARD', 'FREE_TEXT');
 
 -- CreateEnum
+CREATE TYPE "EntrySource" AS ENUM ('WEB', 'API', 'PHONE', 'AGENT');
+
+-- CreateEnum
 CREATE TYPE "ConfidenceWord" AS ENUM ('ALMOST_CERTAIN', 'VERY_LIKELY', 'LIKELY', 'TOSS_UP', 'UNLIKELY', 'VERY_UNLIKELY', 'ALMOST_NO_CHANCE');
 
 -- AlterTable
@@ -17,6 +20,7 @@ ADD COLUMN     "claimShape" "ClaimShape",
 ADD COLUMN     "closeCall" BOOLEAN NOT NULL DEFAULT false,
 ADD COLUMN     "confidenceWord" "ConfidenceWord",
 ADD COLUMN     "engineQuestionsAsked" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "entrySource" "EntrySource",
 ADD COLUMN     "grade" INTEGER,
 ADD COLUMN     "outcomeParts" JSONB,
 ADD COLUMN     "parentId" TEXT,
@@ -29,7 +33,7 @@ CREATE TABLE "ClaimVersion" (
     "version" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" TEXT NOT NULL,
-    "source" TEXT NOT NULL,
+    "source" "EntrySource" NOT NULL,
     "changedFields" TEXT[],
     "state" JSONB NOT NULL,
     "prevHash" TEXT,

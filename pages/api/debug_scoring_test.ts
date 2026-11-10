@@ -82,6 +82,7 @@ function getQuestion(days: number): Question {
     exclusiveAnswers: true,
     claimDate: null,
     claimShape: null,
+    entrySource: null,
     outcomeParts: null,
     approximate: false,
     confidenceWord: null,

@@ -1,5 +1,5 @@
 /**
- * Mark-to-Market My Words: the shape of a claim's outcome.
+ * My Mark-to-Market: the shape of a claim's outcome.
  *
  * A claim's outcome is stored on Question as:
  *   - claimShape:   which of the five shapes it is
@@ -21,7 +21,13 @@ import { z } from "zod"
 export const PART_STATUSES = ["stated", "extracted", "working"] as const
 export type PartStatus = (typeof PART_STATUSES)[number]
 
-export const COMPARISONS = ["above", "below", "at_least", "between"] as const
+export const COMPARISONS = [
+  "above",
+  "below",
+  "at_least",
+  "at_most",
+  "between",
+] as const
 export type Comparison = (typeof COMPARISONS)[number]
 
 export const outcomePartSchema = z.object({
@@ -37,7 +43,8 @@ export type OutcomePart = z.infer<typeof outcomePartSchema>
  *
  * "deadline" appears in every shape. Its value lives in Question.resolveBy
  * (Fatebook requires that column), so the part here only records the
- * deadline's status - e.g. "working" when the engine suggested it.
+ * deadline's status. A "working" deadline is one the engine suggested; on a
+ * vague hunch the UI labels it "check back by" rather than "deadline".
  */
 export const SHAPE_PARTS = {
   NUMBER_BY_DATE: {

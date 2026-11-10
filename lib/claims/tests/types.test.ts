@@ -1,4 +1,4 @@
-import { parseOutcomeParts, SHAPE_PARTS } from "../types"
+import { COMPARISONS, parseOutcomeParts, SHAPE_PARTS } from "../types"
 
 describe("parseOutcomeParts", () => {
   it("accepts a complete number-by-date outcome", () => {
@@ -45,6 +45,17 @@ describe("parseOutcomeParts", () => {
         value: { value: "six", status: "stated" },
       }).ok,
     ).toBe(false)
+  })
+
+  it("accepts every comparison on the list, including at_most", () => {
+    for (const c of COMPARISONS) {
+      expect(
+        parseOutcomeParts("NUMBER_BY_DATE", {
+          comparison: { value: c, status: "stated" },
+        }).ok,
+      ).toBe(true)
+    }
+    expect(COMPARISONS).toContain("at_most")
   })
 
   it("every shape needs a deadline except free text", () => {

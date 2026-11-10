@@ -15,7 +15,7 @@ enum QuestionType {
   QUANTITY
 }
 
-// --- Mark-to-Market My Words: the claim standard ---
+// --- My Mark-to-Market: the claim standard ---
 
 // The kind of outcome a claim describes. Null on a Question means it was
 // made the old Fatebook way and never went through the rigor engine.
@@ -25,6 +25,14 @@ enum ClaimShape {
   A_BEATS_B
   RANK_OR_AWARD
   FREE_TEXT
+}
+
+// How a claim (or a change to it) came in.
+enum EntrySource {
+  WEB // typed into the site
+  API // a direct API call
+  PHONE // the iPhone Shortcut
+  AGENT // an AI agent through the MCP server
 }
 
 // Fixed list of confidence words. Each maps to a probability range in
@@ -126,12 +134,14 @@ model Question {
   exclusiveAnswers             Boolean?                 @default(true)
   notifications                Notification[]
 
-  // --- Mark-to-Market My Words: the claim standard ---
+  // --- My Mark-to-Market: the claim standard ---
   // title = claim text, resolveBy = deadline, createdAt = when it was logged.
   // When I made the claim. Null = same as createdAt. Earlier than createdAt = back-dated.
   // Relative dates in the claim text are resolved against this, never against today.
   claimDate            DateTime?
   claimShape           ClaimShape?
+  // how the claim was first logged. Null on old-style Fatebook questions.
+  entrySource          EntrySource?
   // The outcome parts this shape needs, each with a status:
   // { [partName]: { value, status: "stated" | "extracted" | "working" } }
   // Shape of this JSON is defined and checked in lib/claims/types.ts
@@ -168,16 +178,16 @@ model Question {
 // database trigger that rejects both, and a claim that has history cannot be
 // hard-deleted (onDelete: Restrict).
 model ClaimVersion {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   questionId    String
-  question      Question @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Restrict)
   // 1, 2, 3... within one claim
   version       Int
-  createdAt     DateTime @default(now())
+  createdAt     DateTime    @default(now())
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Restrict)
-  // where the change came from: "web", "api", "mcp"
-  source        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  // how this change came in
+  source        EntrySource
   // names of the fields that differ from the previous version (for the timeline)
   changedFields String[]
   // full snapshot of the claim at this point
